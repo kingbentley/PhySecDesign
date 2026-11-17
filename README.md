@@ -22,7 +22,7 @@ npm run dev -- --host 127.0.0.1 --port 4174
 
 Open <http://127.0.0.1:4174/>. See the [Site Studio README](site-studio/README.md) for usage, build commands, and prototype limitations. The [POC roadmap](site-studio/POC-ROADMAP.md) describes scope; [design QA notes](site-studio/design-qa.md) record verification separately.
 
-Dependencies, generated build/PDF.js assets, local environment settings, and private review data are excluded from version control. The BMAD framework and generated agent skills are also excluded; shared configuration, team customizations, and planning artifacts are retained. BMAD Core and Method 6.12.4 are used by this workspace.
+Dependencies, generated build/PDF.js assets, local environment settings, and private review data are excluded from version control. All files under `_bmad/`, including configuration and customizations, and generated agent skills are also excluded; planning artifacts under `_bmad-output/` are retained. BMAD Core and Method 6.12.4 are used by this workspace.
 
 ## License and scope
 
