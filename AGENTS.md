@@ -1,0 +1,14 @@
+# PhySecDesign workspace
+
+- The Site Studio proof of concept is in `site-studio/`. Read its `AGENTS.md` before changing the application.
+- Existing project context is in `site-studio/README.md`, `site-studio/POC-ROADMAP.md`, and `site-studio/design-qa.md`.
+- Design references and mockups are in `design-references/` and `design-mockups/`.
+
+## BMAD planning
+
+- BMAD Core and Method 6.12.4 are installed at this workspace root. Use this directory as `{project-root}` for BMAD commands.
+- The current Codex skills are in `.agents/skills/bmad-*/SKILL.md`. Start with `bmad-help` for workflow guidance.
+- Shared configuration is in `_bmad/config.toml`, with personal settings in `_bmad/config.user.toml`. Use the installed configuration resolver to merge these settings.
+- Planning artifacts belong in `_bmad-output/planning-artifacts/`. The existing prototype documents provide the starting context for planning.
+- The current guided PRD workspace is `_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/`. Before continuing PRD work, read its `source-index.md` and `.memlog.md`, then check the cited source files for changes since the inventory snapshot. Keep existing capabilities, verified evidence, and future requirements distinct.
+- On this Windows workstation, uv is installed at `C:\Users\Kevin\.local\bin\uv.exe`. If an existing shell has a stale PATH, invoke that executable by its full path for BMAD's `uv run` commands.

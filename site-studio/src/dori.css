@@ -1,0 +1,50 @@
+.coverage-style-control {
+  display: flex;
+  padding: 3px;
+  border: 1px solid #dce7e2;
+  border-radius: 6px;
+  background: #f3f7f5;
+  margin: 5px 0 10px;
+}
+.coverage-style-control button {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: #557267;
+  font-size: 11px;
+  background: transparent;
+}
+.coverage-style-control button[aria-pressed="true"] {
+  color: #006e65;
+  background: #fff;
+  font-weight: 650;
+  box-shadow: 0 1px 2px #164b4024;
+}
+.dori-map-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 6px;
+  row-gap: 5px;
+}
+.dori-near-key { border: 1px dashed #92662e; }
+.dori-breakdown { padding: 8px 0 4px; color: #456258; }
+.dori-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.dori-summary strong { font-size: 22px; color: #087c70; font-variant-numeric: tabular-nums; }
+.dori-breakdown p { line-height: 1.55; font-size: 11px; margin: 8px 0 12px; }
+.dori-breakdown table { width: 100%; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums; }
+.dori-breakdown th, .dori-breakdown td { padding: 7px 0; border-bottom: 1px solid #e3ebe6; text-align: right; }
+.dori-breakdown th:first-child { text-align: left; padding-right: 8px; }
+.dori-breakdown tbody th { vertical-align: middle; font-weight: 600; }
+.dori-breakdown tbody th span { display: inline-block; vertical-align: middle; }
+.dori-breakdown th small { display: block; font-size: 10px; color: #698176; font-weight: 450; }
+.dori-swatch { width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.dori-breakdown .dori-footnote { color: #536e63; margin-top: 12px; }
+.dori-footnote a { color: #08756b; text-decoration: underline; }
+.camera-dori-settings { margin-bottom: 14px; }

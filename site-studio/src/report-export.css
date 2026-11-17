@@ -1,0 +1,24 @@
+.modal.report-export-modal { width: min(1100px, 96vw); max-width: 96vw; min-width: 0; }
+.report-export { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 22px; }
+.report-options { min-width: 0; }
+.report-options fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.report-options legend { color: #204d43; margin-bottom: 14px; font-size: 13px; font-weight: 650; }
+.report-photo-option { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #355e53; margin: 12px 0 18px; }
+.report-photo-option input { accent-color: #087c70; }
+.report-export-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.report-backup { margin-top: 16px; border-top: 1px solid #dce9e3; padding-top: 14px; }
+.report-status, .report-error { font-size: 11px; line-height: 1.5; color: #597068; margin-top: 8px; }
+.report-error { color: #a04940; }
+.report-preview { min-width: 0; border: 1px solid #dce8e2; padding: 12px; border-radius: 8px; background: #f4f8f6; }
+.report-preview-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.report-preview-toolbar label { min-width: 0; flex: 1; }
+.report-preview-toolbar select { width: 100%; padding: 6px 7px; border-radius: 5px; border: 1px solid #d3e1da; background: white; color: #32564b; font-size: 11px; text-overflow: ellipsis; }
+.report-preview > img { display: block; max-width: 100%; max-height: 56vh; width: auto; height: auto; margin: 0 auto; background: white; box-shadow: 0 2px 8px #24382d22; }
+.report-preview-count { text-align: center; color: #628073; font-size: 11px; margin: 8px 0 0; }
+.report-empty { min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: #476c60; padding: 16px; }
+.report-empty svg { color: #168777; }
+.report-empty p { max-width: 260px; font-size: 11px; color: #657f74; margin: 0; line-height: 1.5; }
+@media (max-width: 690px) {
+  .report-export { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .report-empty { min-height: 120px; }
+}

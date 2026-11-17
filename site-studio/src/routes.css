@@ -1,0 +1,33 @@
+.route-inspector-header .title-row { align-items: center; gap: 8px; }
+.route-inspector-header .title-row h1 { font-size: 20px; min-width: 0; overflow-wrap: anywhere; }
+.route-status { flex-shrink: 0; color: #347665; background: #e9f5ef; border: 1px solid #d6e8df; border-radius: 4px; padding: 4px 6px; font-size: 10px; font-weight: 600; }
+.route-guide { display: flex; gap: 9px; align-items: flex-start; padding: 12px; margin-bottom: 21px; border: 1px solid #d5e9e0; border-radius: 6px; color: #376554; background: #edf7f1; }
+.route-guide svg { flex-shrink: 0; margin-top: 1px; }
+.route-guide p { margin: 0; font-size: 11px; line-height: 1.6; }
+.route-field { display: block; margin-bottom: 18px; color: #39513d; font-size: 12px; }
+.route-field > span { display: block; margin-bottom: 8px; }
+.route-field input, .route-field select { width: 100%; min-width: 0; min-height: 39px; border: 1px solid #dbe3d9; border-radius: 5px; padding: 9px 10px; background: #fcfdfb; color: #39513d; font: inherit; line-height: 1.5; }
+.route-field select { padding-right: 22px; text-overflow: ellipsis; }
+.route-field input::placeholder { color: #8a978e; font-size: 11px; }
+.route-field input:focus-visible, .route-field select:focus-visible { outline: 2px solid #86bcb0; outline-offset: 2px; }
+.route-field small { display: block; margin-top: 7px; color: #7a877f; font-size: 10px; line-height: 1.5; }
+.route-field-message { margin: -6px 0 18px; color: #947137; font-size: 11px; line-height: 1.5; }
+.route-number-field { display: flex; align-items: center; border: 1px solid #dbe3d9; border-radius: 5px; background: #fcfdfb; }
+.route-number-field input { border: 0; background: transparent; flex: 1; width: 0; }
+.route-number-field > span { padding: 0 12px 0 4px; color: #7a877f; }
+.route-length-card { margin: 22px 0 18px; padding: 14px; border: 1px solid #dbe8df; border-radius: 7px; background: #f5f9f5; }
+.route-length-heading { display: flex; align-items: center; gap: 7px; color: #3c705d; font-size: 11px; font-weight: 600; margin-bottom: 14px; }
+.route-length-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #70816c; font-size: 11px; }
+.route-length-row strong { color: #39513d; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.route-length-total { margin-top: 11px; padding-top: 11px; border-top: 1px solid #dbe8df; }
+.route-length-total strong { font-size: 18px; color: var(--teal, #217967); }
+.route-path-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 21px; }
+.route-path-summary strong { display: block; font-size: 12px; font-weight: 500; color: #39513d; }
+.route-path-summary span { display: block; margin-top: 5px; color: #7a877f; font-size: 10px; line-height: 1.4; }
+.route-undo { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 34px; height: 34px; border: 1px solid #dbe3d9; border-radius: 5px; color: #3b7965; background: white; cursor: pointer; }
+.route-undo:hover:not(:disabled) { background: #edf7f1; }
+.route-undo:disabled, .route-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.route-actions { display: grid; gap: 10px; }
+.route-inspector-body .route-actions .full-width + .full-width, .route-inspector-body .route-actions .danger { margin-top: 0; }
+.route-estimate-note { display: flex; align-items: flex-start; gap: 7px; margin: 20px 0 0; color: #7a877f; font-size: 10px; line-height: 1.6; }
+.route-estimate-note svg { flex-shrink: 0; margin-top: 1px; }

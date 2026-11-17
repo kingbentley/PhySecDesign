@@ -1,0 +1,149 @@
+# Site Studio — PRD source index
+
+Implementation snapshot date: **2026-11-16**. Planning mode: **guided, starting with vision and features**. Intended POC scope now extends through **design, optional installer handoff, installation, commissioning, and lifecycle records**. The implementation snapshot remains the earlier baseline; new user direction is recorded separately below.
+
+This index gives the PRD workflow a durable starting point for everything built in this workspace. It connects user intent, implementation, design references, and evidence. It is an inventory of the current baseline, not an approved requirements document. The [current PRD draft](prd.md) consolidates the confirmed decisions and existing capabilities; it remains draft pending review. Technical context and limits are in the [addendum](addendum.md).
+
+## How to resume
+
+1. Read [workspace instructions](../../../../AGENTS.md), [app instructions](../../../../site-studio/AGENTS.md), and this index.
+2. Read the [conversation context](sources/conversation-context.md) and the canonical [decision log](.memlog.md). The user selected guided discovery and then explicitly requested the first full draft after confirming the continuing-property model. Do not ask already settled questions again.
+3. Use the source digests below to locate relevant evidence. Open the cited current files when defining a requirement or resolving a conflict.
+4. Check whether the source files have changed since this snapshot. The [file inventory](sources/file-inventory.json) records paths, sizes, and SHA-256 hashes. Refresh affected extracts when the app changes.
+5. Review `prd.md` and its explicit open questions. Closeout, device archives, field evidence, mixed-device online access, shared demo projects, direct installer changes with a preserved issued design, and one continuing property project with reopened revisions are confirmed. The shared access model and existing-site workflow are confirmed. Shared update/conflict behavior is also confirmed; implementation choices remain architecture work. The checklist/pass-criteria model is confirmed; final template wording and project values are implementation/domain work. Targeted change-to-retest rules are also confirmed. Work-scope, scoped estimates and issue carryover are also confirmed. The design/closeout package structure and retention are also confirmed. Model-specific cameras, bounded panoramic support and additional equipment/linked openings are also confirmed; annotations, closet/port planning and physical inter-floor cable routing are also confirmed. OQ-7 is resolved; cable-lifecycle behavior is also confirmed. Changed/deleted-floor restoration, accidental draft deletion and acceptance/limits remain open. Do not treat prototype implementation details as permanent requirements.
+
+The root `AGENTS.md` links here so future BMAD sessions can find this context without depending on chat memory. `.gitignore` does not prevent reading local BMAD files. This planning folder, shared BMAD configuration, team customizations, and workspace instructions remain eligible for version control.
+
+## Source pack
+
+| Source | What it contributes | Evidence boundary |
+| --- | --- | --- |
+| [Conversation context](sources/conversation-context.md) | Original purpose, target audience, requested features, visual direction, and current planning choices | Condensed from this chat; not a claim of access to other conversations |
+| [Project documents](sources/project-docs.md) | README, roadmap, app instructions, QA history, and documented limitations | Separates historical claims from present verification; flags stale statements |
+| [Design and coverage implementation](sources/design-and-coverage.md) | Maps, import/alignment, floors, catalog, cables, geometry, DORI, zones, and persistence | Static source extraction with file/line references and relevant tests |
+| [Delivery and review implementation](sources/delivery-and-reviews.md) | Surveys, reports, capacity, costs, recovery, revisions, and reviewer workflow | Static source extraction; distinguishes local POC behavior from production requirements |
+| [Original product references](sources/reference-context.md) | Current official-page context for CCTV Design Tool, SiteOwl, JVSG, and IPVM | External comparison context only; no automatic adoption of features |
+| [Commissioning reference notes](sources/commissioning-context.md) | User-confirmed phase names and limited external grounding for review, acceptance, and handover additions | Confirmed product choices plus limited external context; no adopted compliance or contractual requirement |
+| [Draft baseline extract](sources/draft-baseline-extract.md) | Consolidated capabilities and evidence boundaries for the first full draft | Source snapshot check, not fresh application acceptance |
+| [Draft decision extract](sources/draft-decision-extract.md) | Confirmed choices, latest later-work confirmation, and remaining gaps | Product decisions distinguished from implementation |
+| [Confirmed access and existing-site extract](sources/confirmed-access-existing-site-extract.md) | Maps the latest accepted decisions to the draft requirements | Product-scope refinement; the subsequent shared-update confirmation is recorded separately |
+| [Confirmed shared-editing extract](sources/confirmed-shared-editing-extract.md) | Maps accepted OQ-2 behavior to requirements and implementation boundaries | The subsequent checklist confirmation is recorded separately |
+| [Confirmed checklist extract](sources/confirmed-checklist-extract.md) | Maps accepted OQ-3 structure, pass/evidence rules and phase/site checks | Subsequent targeted-retest confirmation is recorded separately; broader defect disposition remains open |
+| [Confirmed targeted-retest extract](sources/confirmed-retest-extract.md) | Maps accepted OQ-4 triggers, historical results, current-context evidence and completion rules | Subsequent work-scope and issue-carryover confirmation is recorded separately |
+| [Confirmed work-scope extract](sources/confirmed-work-scope-extract.md) | Maps accepted OQ-5 scope categories, estimates and continuing issue records; identifies OQ-6 baseline | Subsequent package confirmation is recorded separately |
+| [Export package references](sources/export-package-reference.md) | Limited official-source context for plan/report separation and closeout evidence | Supports the confirmed package direction; no adoption of contractual gates or certification |
+| [Confirmed export-package extract](sources/confirmed-export-package-extract.md) | Maps accepted OQ-6 packages, evidence, defaults and exact-file retention; records OQ-7 baseline | Subsequent equipment/site/cable confirmations are recorded separately; this is a historical extraction |
+| [Equipment/cable references](sources/equipment-cable-reference.md) | Official-source context for generic models, opening components, switch ports and cable heights | Supports OQ-7 discussion; no universal wiring or compliance model |
+| [Camera-model template extract](sources/camera-model-template-extract.md) | Maps the confirmed model-specific camera direction to existing optics/DORI inputs and missing behavior | Does not accept the remaining OQ-7 catalog/cable proposal |
+| [Camera optical references](sources/camera-template-reference.md) | Official-source context for resolution/modes, lens ranges, angular FoV and active sensor geometry | Input/modeling context only; no changed DORI thresholds or certification |
+| [Panoramic camera references](sources/panoramic-camera-reference.md) | Official distinctions between independent heads, stitched panoramas and fisheye/dewarped output | Grounds the subsequently confirmed bounded support; no detailed calibrated panoramic DORI |
+| [Panoramic scope extract](sources/panoramic-camera-scope-extract.md) | Maps view IDs, combined DORI, hardware/stream counts and unassessed behavior to current limits | Historical extraction; subsequent support confirmation is recorded separately; no implementation claim |
+| [Confirmed panoramic-camera extract](sources/confirmed-panoramic-camera-extract.md) | Maps accepted asset/view/stream separation, head analysis, unassessed output and deferred calibration | Subsequent equipment/site/cable confirmations are recorded separately; this is a historical extraction |
+| [Confirmed equipment-catalog extract](sources/confirmed-equipment-catalog-extract.md) | Maps accepted extra types and independently tracked opening components; records annotation primitives | Subsequent annotation confirmation is recorded separately; no dedicated noncamera template automation was added |
+| [Site annotation references](sources/site-annotation-reference.md) | Official examples of labels, arrows, dimensions and independent drawing layers | Grounds the subsequently confirmed annotation scope; no analytical semantics inferred from markup |
+| [Confirmed annotation extract](sources/confirmed-site-annotation-extract.md) | Maps accepted markup, measurement/evidence distinctions and shared/export behavior | Subsequent closet/port and physical cable confirmations are recorded separately |
+| [Closet/port references](sources/closet-port-reference.md) | Official context for device grouping, port capabilities, power bases and terminal/patching distinctions | Grounds the subsequently confirmed manual connection model, not a universal wiring/capacity rule |
+| [Confirmed closet/port extract](sources/confirmed-closet-port-extract.md) | Maps accepted locations, assignments, capacity bases and logical/physical distinctions | Subsequent physical inter-floor route/allowance confirmation is recorded separately |
+| [Confirmed inter-floor routing extract](sources/confirmed-interfloor-routing-extract.md) | Maps accepted run/segment/riser identities, length components and allowance/supply rules | Resolves OQ-7; subsequent cable-lifecycle confirmation is recorded separately |
+| [Cable connection lifecycle reference](sources/connection-lifecycle-reference.md) | Limited official asset-history/archive context and proposed cable/port safeguards | Cable reuse/release/restore semantics were subsequently confirmed as Site Studio product choices |
+| [Confirmed cable-lifecycle extract](sources/confirmed-cable-lifecycle-extract.md) | Maps accepted retained-run, endpoint-change, port occupancy and reconnection rules | FR-53 is confirmed; changed/deleted-floor restoration and accidental draft deletion remain open |
+| [Floor restoration reference](sources/floor-restoration-reference.md) | Limited official floor-editing and inactive-asset-history context | Proposed guided restoration is pending, not verified competitor behavior |
+| [Inter-floor cable references](sources/interfloor-cable-reference.md) | Official examples of cross-floor connections, schedules, height inputs and separate patch leads | Supports pending manual routing/allowance convention; no universal heights or cable limits |
+| [Preserved discovery notes](sources/discovery-notes.md) | Earlier detailed proposals and discussion | Historical; current PRD/log supersede old proposal labels |
+| [File inventory](sources/file-inventory.json) | 148 first-party project files, categorized and fingerprinted | Discovery snapshot; file presence is not proof of runtime correctness |
+
+## Existing capability map
+
+This table helps the facilitator find all major areas before drafting. The digests contain the detailed boundaries and citations. “Existing” describes an implementation found in the source, not a new acceptance decision or a fresh test pass.
+
+| Area | Existing baseline to bring into discovery | Primary implementation | Evidence to consult |
+| --- | --- | --- | --- |
+| Property map and search | Persistent geographic canvas; OSM and optional Google; address/coordinate lookup; satellite/aerial view | `site-studio/src/MapCanvas.jsx`, `AddressSearch.jsx`, `geocoding.js` | `tests/geocoding.test.mjs`; address/satellite QA |
+| Drawing overlay and alignment | Image import; move, rotate, uniform scale, opacity, lock; two-point preview/apply/cancel/undo | `src/App.jsx`, `alignment.js`, `AlignmentGuide.jsx`, `MapCanvas.jsx` | `tests/alignment.test.mjs`; alignment QA |
+| PDF drawing import | Local page preview/selection, rasterized selected sheet, password/cancel/error handling, source-page identity | `src/pdfImport.js`, `pdfImportUtils.js`, `PdfPagePicker.jsx` | `tests/pdf-import.test.mjs`; page-picker/aligned-overlay QA |
+| Buildings, floors, and draft | Independent floor content, add/rename/remove floor, browser autosave, portable project import/export and migration | `src/FloorManager.jsx`, `projectModel.js`, `projectStorage.js` | `tests/project-model.test.mjs`, `project-storage.test.mjs` |
+| Equipment and schedules | Generic catalog, geographic placement, device metadata/IDs, existing/proposed status, property-wide equipment schedule | `src/catalog.js`, `EquipmentPanel.jsx`, `App.jsx` | Project-model tests; core-workflow QA |
+| Cable pathways | Same-floor endpoint connections, editable waypoints, cable types, horizontal length and slack | `src/cables.js`, `RouteInspector.jsx` | `tests/cables.test.mjs`; route/BOM QA |
+| Camera visibility and barriers | Lens/FOV and mounting geometry; wall/solid-obstruction tracing and heights; visible/blocked/near-blind display | `src/coverage.js`, `CameraControls.jsx`, `BarrierInspector.jsx` | `tests/coverage.test.mjs`; camera/wall QA |
+| Combined and clean coverage display | Union, overlap and unseen areas; floor analysis boundary/common height; vector contours over sampled results | `src/coverage.js`, `coverageArea.js`, `coverageContours.js`, `CombinedCoveragePanel.jsx` | `tests/combined-coverage.test.mjs`, `coverage-area.test.mjs`; contour QA |
+| DORI and required security zones | Resolution-based detail estimates; best single-camera DORI; named polygons and required qualifying percentages | `src/dori.js`, `DoriControls.jsx`, `securityZones.js`, `ZoneInspector.jsx` | `tests/dori.test.mjs`, `security-zones.test.mjs`; DORI/zone images |
+| Survey notes and photos | Device or floor-pin notes, measurements, installation observations, local image attachments | `src/survey.js`, `SurveyInspector.jsx` | `tests/survey.test.mjs`; survey image |
+| Printable design package | Selected/all-floor PDF, labeled plans, legends, equipment/cable schedules, zones, notes and optional photos | `src/designReport.js`, `reportPlan.js`, `reportPaper.js`, `rasterPdf.js`, `ReportExportPanel.jsx` | `tests/raster-pdf.test.mjs`; printable-PDF image |
+| Capacity planning | Bitrate/retention-based storage and bandwidth, endpoint/switch ports, PoE budgets and assignment gaps | `src/capacity.js`, `CapacityPanel.jsx` | `tests/capacity.test.mjs`; capacity image |
+| Bill of materials and cost | Equipment/cable totals, editable allowances, manual accessories, optional labor, subtotals and CSV | `src/materials.js`, `MaterialsPanel.jsx` | `tests/materials.test.mjs`; estimate image |
+| Recovery and alternatives | Session undo/redo; saved named revisions; restore; common-scale layout/device comparison | `src/projectHistory.js`, `revisionComparison.js`, `RevisionPanel.jsx`, `RevisionLayout.jsx` | `tests/project-history.test.mjs`; revision-comparison image |
+| Reviewer collaboration | Immutable named-version review, separate revocable reviewer links, floor-pin comments, approval/change decisions and history | `src/reviewModel.js`, `reviewClient.js`, `RevisionReview.jsx`, `server/reviewApi.mjs` | `tests/review-api.test.mjs`; review/approval images |
+| Build and hosting boundary | Local Vite app/review service and a separate static Sites package | `site-studio/vite.config.mjs`, `worker/index.js`, `scripts/prepare-sites-build.mjs`, `.openai/hosting.json` | `tests/sites-worker.test.mjs`; build notes |
+
+Paths abbreviated to `src/` or `tests/` in this table are relative to `site-studio/`.
+
+## Design references and visual evidence
+
+The selected design source is [04-map-overlay-studio.png](../../../../design-mockups/04-map-overlay-studio.png), inspected for this discovery. It establishes the white/teal map-first workspace: project/floors/layers on the left, map and aligned drawing in the center, contextual properties on the right, and direct placement tools. Preserve this user-selected direction when eliciting UX requirements.
+
+The earlier mockups remain available as alternatives and history, not equal authorities for the current UI:
+
+- [01-site-studio.png](../../../../design-mockups/01-site-studio.png)
+- [02-coverage-lab.png](../../../../design-mockups/02-coverage-lab.png)
+- [03-risk-to-design.png](../../../../design-mockups/03-risk-to-design.png)
+
+`design-references/` retains four competitor screenshots. They are historical visual references; the reference-context digest supplies dated current-page context.
+
+The inventory includes 33 retained QA/fixture images. Relevant app captures include `site-studio/qa/address-satellite-desktop.jpg`, `two-point-alignment-preview.jpg`, `pdf-aligned-overlay.jpg`, `coverage-contours.jpg`, `dori-combined.jpg`, `security-zone-coverage.jpg`, `site-survey-note.jpg`, `printable-pdf-preview.jpg`, `capacity-planning.jpg`, `materials-estimate.jpg`, `revision-comparison.jpg`, `pinned-revision-review.jpg`, and `revision-approvals.jpg`.
+
+Screenshots are historical evidence of a captured state, not proof of every current interaction. In particular, `final-desktop.jpg` is an early editor capture despite its filename. Files under `site-studio/qa/backups/` are historical source backups; use `site-studio/src/` as current implementation.
+
+## Evidence and limitations to preserve
+
+- The inventory includes **18 automated test files**. Their assertions help identify intended behavior; no tests, builds, or browser acceptance flows were rerun for this documentation-only intake. The existing QA document's latest detailed entry concerns combined coverage. Later screenshots and test source exist, but that does not establish a fresh acceptance pass.
+- The README contains stale statements that general undo is absent and the original core workflow still awaits validation. Newer documentation and current source supersede those claims. The roadmap's original four-stage “Complete” status does not establish that every later feature or production concern is complete.
+- One local project draft and portable backups are different from hosted project accounts. The review service stores review data on the local server; the static Sites package does not include that API. Shared review snapshots contain floor drawings and layout, rather than the complete survey, cost, capacity, and camera-analysis data. Named bearer links do not authenticate the reviewer's real-world identity.
+- Camera and DORI results are sampled 2.5D estimates. Clean contours improve presentation; they do not make visibility areas exact or establish real image detail in the field. Zone percentages depend on their full polygon area, selected common target height, and the model's assumptions.
+- The requested equipment list includes doors and gates beyond the current generic catalog. Explicit network closets/port assignments, vertical/riser cable planning, production identity/deployment, vendor data, and certified calculations must not be implied by related prototype controls.
+- The original wish to consult PSP documentation remains an unmet source dependency. Kevin supplied no additional documents during intake. No full PSP reference collection or compliance baseline has been reviewed.
+- The end-to-end desired outcome now includes installation, commissioning, and lifecycle archives. These are new scope beyond the captured implementation; the existing/proposed equipment distinction, draft revisions, survey notes, and local review API do not establish those workflows. Detailed success criteria, priorities, and production scope remain guided decisions.
+- The delivery/review digest records a possible missing icon import in the revision-comparison UI. This is a static defect candidate requiring validation, not a reproduced failure or a resolved issue.
+
+## What the inventory excludes
+
+Generated dependencies and PDF.js assets, built bundles, installed BMAD framework/skills, preview logs, machine configuration, private review records, and browser-local user data are outside the first-party source snapshot. Generated planning files are also excluded from that snapshot to avoid indexing the index itself. These exclusions do not remove the files or limit BMAD's access to the actual project source.
+
+Browser-only drawings and notes are not automatically included in the codebase. This baseline captures the software and the repository's fixtures; it does not claim to archive private working designs or unsaved user state.
+
+## Current planning position
+
+- Product: Site Studio, a web planning tool for physical security professionals.
+- Scope: proof of concept spanning design, optional installer handoff, installation documentation, commissioning, and later building/device history.
+- Inputs: current project, design references, QA evidence, and this conversation; no extra inputs supplied.
+- Method: guided discussion, beginning with vision and features.
+- Confirmed core phases: planning, installation, configuration, and testing. Design approval and final acceptance are recommended, optional checkpoints that can be bypassed.
+- Confirmed approval policy: assign client/site-owner approvers per project; design approval and final acceptance can have different people, the same person, or the internal user doing the work. No separate reviewer or sign-off is required to progress.
+- Confirmed closeout: In progress, Completed, or Closed with outstanding items. Explicit closure with outstanding items retains a brief note and visible remaining-work records in exports, preserves failed tests/retests, permits reopening, and leaves follow-up owners/due dates optional. Approvals remain independent and optional.
+- Confirmed removed-device archives: retain captured history and removal metadata, exclude removed devices from the current plan/calculations, provide searchable archives and an optional historical plan view, include records in backups, restore the same ID/history, and link physical replacements as new records.
+- Confirmed field documentation: editable device-type checklists with notes/photos, Pass/Fail/Not tested/Not applicable outcomes, explanations for Fail/Not applicable, recorded actor/time, retained retests, and remaining-work summaries feeding closeout.
+- Confirmed field platform: installers use a mix of phones, tablets, and laptops. Online access is sufficient; offline capture/later sync is outside the POC scope.
+- Confirmed collaboration: designers and installers work in the same shared online project. Existing local draft storage and revision-review rooms do not yet implement this.
+- Confirmed installer changes: direct updates to the working installation record, a fixed issued-design reference, logged before/after changes with actor/time/reason, attention to affected calculations/tests, and optional review. Changes do not inherit the issued revision's approval.
+- Confirmed access model (OQ-1 resolved): hosted HTTPS demo, revocable project editing links and separate fixed-revision reviewer links, server-enforced project/file scope, display names with unverified attribution, and sample/sanitized data. Individual accounts are not required. Hosting vendor remains an architecture choice.
+- Confirmed later work: one continuing property project, fixed closeout records, read-only project archival, and reopening into a new named revision with stable device IDs, retained history, fresh scoped estimates/evidence, and visible unresolved work. Previous approvals and passes do not automatically qualify new work.
+- Confirmed existing buildings: surveyed baseline with provenance/unknowns; retain, relocate, service/reconfigure, replace, remove and add actions; Current installation/Proposed design/Changes views; scoped costs/tests; archive only after actual removal. See FR-39–41.
+- Confirmed shared editing (OQ-2 resolved): autosave with visible status; updates within a few seconds; independent-item concurrent edits and explicit same-item conflicts; separate evidence entries and duplicate-safe retries; guarded own-session undo; preserved pending input in the open page; consistent saved snapshots. See FR-21/42 and related clauses.
+- Confirmed checklists (OQ-3 resolved): common/type-specific editable templates, project-defined expectations, required/optional applicability, observed outcomes/evidence, separate phase progress, and scoped site-level checks. See FR-29–31/43.
+- Confirmed targeted retesting (OQ-4 resolved): distinguish proposed work, record corrections and actual changes; flag affected checks/dependencies; preserve dated outcomes; use separate review/retest follow-ups; require evidence applicable to current conditions before completion. See FR-28/31/32/44.
+- Confirmed scope and issue carryover (OQ-5 resolved): one active named work scope; Work now/Inspect-test only/Reference only categories; scoped supply/accessory/labor costs; stable issues carried across revisions; deferred/out-of-scope faults remain outstanding at closeout. See FR-17/32/38/45/46.
+- Confirmed export packages (OQ-6 resolved): Design/Closeout PDF presets, quantity/capacity defaults, optional costs, detailed current-scope evidence, clear partial/omission labels, exact retained historical PDFs and separate editable backups/CSV. See FR-33/34 and NFR-6.
+- Confirmed camera-template refinement (within OQ-7): user-defined manufacturer/model-number selection, explicit pixel resolution and H/V FoV profiles, fixed/varifocal focal data, sufficient sourced optical inputs and instance/history separation. See FR-7/10/47.
+- Confirmed bounded panoramic support (within OQ-7): one physical asset, distinct view IDs and configured streams; supported conventional-head coverage/DORI; illustrative fisheye/stitched previews with DORI Not assessed; honest zone/combined results and separate hardware/stream accounting. Detailed calibrated panoramic DORI is follow-on scope. See FR-48 and related clauses.
+- Confirmed additional equipment (within OQ-7): doors/gates, controllers, locks/strikes, REX, power supplies, NVRs and custom records; linked opening components retain separate IDs, costs, work states and evidence. Shared equipment is not cloned by association. See FR-7/29/49.
+- Confirmed annotations (within OQ-7): named perimeter lines, entrance markers/arrows, existing zones for area labels, callouts and scaled dimensions; reuse survey evidence and preserve drawing-versus-analysis distinctions. See FR-20/33/42/50.
+- Confirmed closets/ports (within OQ-7): named equipment locations, manual switch/terminal references, planned/current assignments and reservations, known power bases and incomplete assessments for unknowns. Logical assignments may cross floors without asserting a drawn/installed route. See FR-51 and related clauses.
+- Confirmed physical routing (OQ-7 resolved): one physical run ID across ordered scaled floor segments and named risers; explicit transition/drop lengths, fixed loops plus one percentage on the route subtotal, separate supply/measured quantities and honest incomplete inputs. Count each run once across floor sheets. See FR-9/17/33/42/52 and the addendum.
+- Confirmed cable lifecycle (within OQ-8): independent retained runs/history, explicit endpoint disconnection/reuse/removal, occupancy-aware port release and validated restoration/reconnection with current-context checks. See FR-35/36/53 and the addendum.
+- Current discussion (2026-11-17): restoring a device when its original floor has changed or been deleted. The [addendum](addendum.md) proposes stable floor identity, explicit placement confirmation against the current plan, selection/creation of a valid destination when missing, preserved historical evidence and cancellation without restoring the device. No automatic floor recreation, whole-project rollback or reconnection. This remains pending; accidental draft deletion is a separate OQ-8 detail and acceptance/limits remains OQ-9.
+- Current deliverable: draft 0.14 with 53 stable functional requirements, acceptance checks and two remaining owned open questions (OQ-8/9). Resolve floor-restoration/deletion and acceptance details before related implementation commitments. See [conversation context](sources/conversation-context.md).
+
+Use the consolidated draft to review how existing features and new requirements support the confirmed workflow. The PRD links back to this baseline so existing work remains discoverable throughout planning.
+
+## First-draft review records
+
+The [review disposition](review-disposition.md) links baseline/decision reconciliation, the PRD rubric, and structure/prose checks. Findings were addressed in draft 0.1. Remaining product choices are the owned open questions in the PRD; this documentation review is not application acceptance or final product approval.
