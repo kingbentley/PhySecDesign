@@ -297,7 +297,7 @@ The [implementation extract](sources/camera-model-template-extract.md) and [opti
 
 ## Confirmed equipment/cable scope — OQ-7 resolved
 
-Initially proposed 2026-11-17 after export-package confirmation, then refined and accepted in successive guided decisions. Camera-model templates, bounded multi-view/panoramic support, additional equipment/linked openings, site annotations, closets/ports and physical inter-floor routing are now confirmed in FR-7/47–52 and related clauses. The latest routing acceptance resolves OQ-7; OQ-8 lifecycle edges and OQ-9 acceptance/limits remain separate open questions.
+Initially proposed 2026-11-17 after export-package confirmation, then refined and accepted in successive guided decisions. Camera-model templates, bounded multi-view/panoramic support, additional equipment/linked openings, site annotations, closets/ports and physical inter-floor routing are now confirmed in FR-7/47–52 and related clauses. The latest routing acceptance resolves OQ-7; OQ-8 lifecycle edges were subsequently resolved in FR-53–55; OQ-9 acceptance/limits remains open.
 
 The accepted scope supports generic equipment and model-specific cameras, a basic controlled opening, explicit manual switch-port assignments and transparent cable estimates. It builds on the existing same-floor route baseline without treating the new requirements as implemented. Full vendor catalogs, rack/patch-panel engineering, automatic routing and detailed electrical calculations remain outside the POC extension.
 
