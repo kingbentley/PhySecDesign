@@ -12,6 +12,8 @@ This document breaks the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) in
 
 It is a draft. The epic order, the story boundaries and the acceptance criteria are proposals for Kevin to review. Nothing here has been built.
 
+**Out of date since PRD amendment 1.2 (2026-11-18).** This document was written for link-based access and a Cloudflare-only server. It does not cover FR-66–72 (self-hosting, accounts, administration, activity log, updates), and stories 1.1, 1.2, 3.6 and Epic 7 assume the earlier architecture. Kevin deferred its revision. Use [architecture 2.0, section 14](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for the current build order until it is revised.
+
 ## How to read it
 
 - **Seven epics**, each ending in something a person can use and demonstrate. They follow the five delivery slices kept as [input](../../prds/prd-PhySecDesign-2026-11-16/sources/delivery-slices-input.md), with the workspace restructure and the recovery work drawn out as their own epics.

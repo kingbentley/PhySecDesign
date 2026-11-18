@@ -29,5 +29,17 @@ Created 2026-11-18, and extended the same day after Kevin confirmed decisions D1
 | Close out | S-23 | Completed unavailable with reasons; Closed with outstanding items and its note; optional final acceptance (FR-32). |
 | Packages | S-21 | Presets, floors with a Partial notice, options with prices off, a visible failed job, kept editions with cutoffs (FR-33, FR-34). |
 | Reviewer view | S-24 | A fixed revision with plan comments and two decisions (FR-24). |
+| Sign in; two-step code on a phone | S-26 | Email and password with one failure message; the authenticator step and recovery-code route (FR-67). |
+| First-run set-up | S-25 | Set-up code, installation name, first administrator (FR-66). |
+| Accept an invitation | S-27 | Single-use invitation, name, password rules as they are met, required two-step notice (FR-67). |
+| Projects | S-28 | The page after signing in, with the update-available marker for an administrator (FR-68, FR-72). |
+| My account | S-29 | Profile, password, two-step verification and recovery codes, signed-in sessions (FR-67). |
+| Administration: Users | S-30 | People with role, state and two-step status; one user's controls (FR-70). |
+| Administration: Projects and members | S-31 | Every project with storage and backup; members as Editor or Viewer (FR-68, FR-70). |
+| Administration: Software update | S-35 | Installed and available versions, release notes, what the update will do, and the progress and failure states (FR-72, NFR-8). |
+| Administration: Backups and restore | S-34 | Backup status including a failure, and the isolated restore with its checks (FR-34, FR-70). |
+| Administration: Activity | S-36 | The activity log with filters and export (FR-71). |
 
-Not drawn as separate artboards, and described in the specification: the remaining import steps (file, column mapping, result), camera-model templates, doors and gates, annotations, checklist editors, the warranty step of closeout, revision comparison, the sharing dialog and the tablet layout.
+The eleven screens above were added on 2026-11-18 for PRD amendment 1.2. On the same day the frames of the Plan workspace, Overview, Equipment and Issue screens were changed to show a signed-in account in place of an unverified name; the Reviewer view keeps its unverified name by design.
+
+Not drawn as separate artboards, and described in the specification: the administration screens for Reviewer links (S-32) and Settings (S-33), the Viewer's read-only project view, the remaining import steps (file, column mapping, result), camera-model templates, doors and gates, annotations, checklist editors, the warranty step of closeout, revision comparison, the sharing dialog and the tablet layout.

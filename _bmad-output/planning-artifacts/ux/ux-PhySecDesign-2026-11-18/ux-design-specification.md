@@ -1,14 +1,14 @@
 ---
 title: "Site Studio — UX Design Specification"
-status: draft 0.2, design decisions D1-D9 confirmed by Kevin on 2026-11-18
+status: draft 0.3; D1-D9 confirmed by Kevin on 2026-11-18; section 17 added for PRD amendment 1.2, with D10-D14 awaiting review
 created: 2026-11-18
-inputs: "PRD 1.0 with proposed amendment 1.1 (FR-1–65, NFR-1–6, SM-1–5)"
+inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
 # Site Studio — UX Design Specification
 
-This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62 and the proposed FR-63–65. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all nine on 2026-11-18.
+This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62, the proposed FR-63–65 and, in section 17, FR-66–72 from proposed amendment 1.2. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all nine on 2026-11-18.
 
 Three kinds of statement are kept apart throughout:
 
@@ -31,7 +31,7 @@ The design work therefore has four parts:
 
 ## 2. Users and their situations
 
-The PRD names three roles, which one person may hold at once. Individual accounts do not exist; a display name is attribution only (FR-2, NFR-5).
+The PRD names three roles, which one person may hold at once. Since amendment 1.2 each person signs in with an account, and an administrator looks after the installation (FR-66–70); section 17 designs those screens. A client reviewing through a link still has no account, and the name they give is not verified.
 
 | Role | Where they work | What they need from the interface |
 | --- | --- | --- |
@@ -101,8 +101,8 @@ Not yet present in any form, and designed in this document: the shared project a
 | Issued design chip | "Issued: Rev B, 12 Nov" or "Not issued", opening the reference. Approval state shows separately as Approved, Bypassed or Awaiting decision. Current never implies approved. | FR-61 |
 | View switch | Design or Installation. A view preference only; it grants nothing. | FR-2 |
 | Save status | Saving, Saved, Unsaved or Conflict, with a count. Opens the list of pending and conflicting items. | FR-21, NFR-2 |
-| Who | The display name in use, editable, labelled "not verified". | FR-2, NFR-5 |
-| Share | Edit link and reviewer links: copy, replace, revoke. | FR-2, FR-24 |
+| Account menu | Amended for 1.2. The signed-in user's name and their role in this project, with My account and Sign out. Administrators also see Administration. A Viewer sees a "View only" chip. | FR-67–69 |
+| Members and reviewer links | Amended for 1.2. Who belongs to this project and in which role (managed by administrators), and reviewer links: create, copy, replace, revoke. | FR-24, FR-68 |
 | Archived banner | When the project is archived: "Archived — view, search and export only", with Un-archive. | FR-37 |
 
 ### 5.2 Areas of work
@@ -504,3 +504,99 @@ Every functional requirement has a home. Requirements that govern behaviour with
 - Analysis results need a status (Final, Updating, Not assessed) and must be cancellable and restartable as inputs change, within the 10-second target.
 - The field shell loads one floor and one device at a time and should not need the whole property in memory to open a device from a search result.
 - Import, package and backup jobs need progress, visible failure and retry.
+
+## 17. Accounts, administration and updates (amendment 1.2)
+
+PRD amendment 1.2 replaced edit links with accounts and added self-hosting, administrator controls and updates from the interface (FR-66–72). This section designs those screens, S-25 to S-36. It follows the choices Kevin made on 2026-11-18: email and password, accounts to edit with reviewer links kept, and the roles Administrator, Editor and Viewer. The design choices made here are proposals D10 to D14 below.
+
+### 17.1 What changes in the screens already designed
+
+| Place | Change |
+| --- | --- |
+| Project frame (S-01) | The unverified display name is replaced by an account menu: the user's name, their role in this project, My account, and Sign out. Administrators also see Administration. Share becomes "Members and reviewer links". |
+| Every record of who did something | Shows the account's name. Only a reviewer-link name carries the label "name not verified". |
+| Viewer in a project | Editing controls are removed, not greyed out, and a persistent "View only" chip sits in the frame. The device sheet shows results and evidence without the recording controls. |
+| Reviewer view (S-24) | Unchanged. It still asks for a name and labels it not verified. A signed-in member reviewing the same revision sees their account name instead. |
+| Field shell (S-F1) | Opens at sign-in when there is no session. The session lasts long enough for a working day, within the administrator's setting. |
+| Records (S-20) | Decisions show whether they were made by an account or through a link. |
+
+### 17.2 Getting in
+
+**First-run set-up (S-25, FR-66).** Shown only when the installation has no users. One page: the set-up code from the server output, the installation's name, and the first administrator's name, email and password. It states that this page disappears once an administrator exists.
+
+**Sign in (S-26, FR-67).** Email and password, then a second step for the authenticator code when two-step verification is on, with "Use a recovery code" beneath. One message covers every failure: "That email and password do not match." After repeated failures it says how long to wait. "Forgot password" either sends an email or, where email is not set up, says "Ask an administrator for a reset link". Fields are 16 px and labelled, and work with password managers.
+
+**Accept an invitation or reset a password (S-27, FR-67).** Opened from a single-use link. Shows who invited the person and to which installation, asks for their name and a password, and shows the password rules as they are met. An expired or used link says so and tells the person to ask for a new one. After setting a password, the person is offered two-step verification, or required to set it up if the administrator requires it.
+
+**Projects (S-28, FR-68).** The page after signing in. Lists the projects the user belongs to with property name, role, scope state, last activity and attention count. A user with one project goes straight to it. Administrators see every project and a Create project action; standard users see Create only if the administrator allows it. An empty list says "You have not been added to a project yet. Ask an administrator."
+
+### 17.3 My account (S-29, FR-67)
+
+- **Profile:** name and email.
+- **Password:** change it, which signs out other sessions.
+- **Two-step verification:** turn on with a code to scan, confirm with one code, then show recovery codes once with Copy and Download. Turning off asks for the password.
+- **Where you are signed in:** each session with device, place of last use and time, and "Sign out everywhere else".
+
+### 17.4 Administration (S-30 to S-36, FR-70–72)
+
+Administration is its own area with a left-hand list: Users, Projects, Reviewer links, Settings, Backups, Software, Activity. It is reached from the account menu and is never shown to standard users.
+
+**Users (S-30).** A table of name, email, role, state (Invited, Active, Deactivated), two-step verification (On, Off, Required but not set up), projects and last sign-in. Invite opens a panel for email, name and role, with optional projects to add them to; it ends with a link to copy and, where email is set up, "Email it". A user's row opens their detail: change role, issue a password reset, reset two-step verification, sign them out everywhere, deactivate. Deactivating explains that their records keep their name. The last administrator's role and Deactivate controls are disabled with the reason.
+
+**Projects (S-31).** A table of every project with state, members, last activity, stored size and latest backup. A project's row opens its members: add a user as Editor or Viewer, change a role, remove. Removing explains that the person's earlier entries stay. Create project, Archive and Un-archive are here.
+
+**Reviewer links (S-32).** Every active link with project, revision, named reviewer, created by and last used. Revoke on each row. Revoked links move to a history list with their decisions intact.
+
+**Settings (S-33).** Grouped as Installation (name), Sign-in (session length, require two-step verification, who may create projects), Email (off, or server details with Send a test message), Maps (optional provider keys) and Limits (the storage limits, read-only where the host fixes them). A saved secret shows only its last characters. Each group saves on its own and says what changed.
+
+**Backups (S-34).** Each project and the installation's own records, with latest backup, age and outcome. A warning appears when the backup location is the same disk as the live data on a self-hosted installation. Back up now starts one. Restore opens a three-step flow: choose a backup and see its date and the loss window; build and check a separate copy, with each check listed; then, only if every check passes, "Make this copy current", which states that everyone will be signed out and reviewer links stay revoked.
+
+**Software (S-35, FR-72).** The most consequential screen, so it is laid out as a sequence the administrator can follow.
+
+| State | What is shown |
+| --- | --- |
+| Up to date | Installed version, when it was installed, when updates were last checked, and Check now. |
+| Checks turned off | Installed version and "Update checks are off", with the manual steps. |
+| Update available | The new version, its release notes, what the update will do in order, how long users will be interrupted, and Update now. |
+| Cloudflare without one-step deployment | The same, with numbered manual steps in place of the button. |
+| Updating | A full-page progress list: signature checked, backup taken, new version installed, data converted, checked. Each step shows done, in progress or waiting. No other control is available. |
+| Done | The new version and a link to the release notes. |
+| Failed and returned | Which step failed, a plain statement that the earlier version and its data are running again, and the log entry. |
+| Failed and not returned | A prominent warning, what state the installation is in, and the command-line recovery steps. |
+
+Other signed-in users see a banner before the update starts ("An update starts in 2 minutes. Your unsaved work will be kept on this page.") and a full-page "Updating" notice while it runs, which clears by itself.
+
+**Activity (S-36, FR-71).** A table of time, who, what and detail, newest first, with filters for person, kind of event and date, and Export. Failed sign-ins and administrative changes are visually distinct by an icon and label. No entry shows a secret.
+
+### 17.5 Status language additions
+
+| Family | Values | Appearance |
+| --- | --- | --- |
+| Account state | Invited, Active, Deactivated | Chip. Invited shows when the invitation expires. |
+| Role | Administrator, Editor, Viewer | Text chip beside the name. "View only" in the frame for a Viewer. |
+| Attribution | Account, Name not verified | The label "name not verified" follows only a reviewer-link name. |
+| Two-step verification | On, Off, Required but not set up | Chip in the user table and on My account. |
+| Software | Up to date, Update available, Updating, Update failed | Chip beside the version; a dot on Administration in the account menu when an update is available. |
+| Backup | Succeeded with age, Failed, Never | Chip with the age always shown. |
+
+### 17.6 Design decisions proposed for Kevin
+
+| # | Question | Recommendation |
+| --- | --- | --- |
+| D10 | Administration as a separate area reached from the account menu, not a ninth project tab? | Yes. It concerns the installation, not one property. |
+| D11 | A projects list as the page after signing in, skipped when a user has exactly one project? | Yes. |
+| D12 | For a Viewer, remove editing controls and show "View only", instead of showing them disabled? | Yes. Disabled controls on every screen would be noise. |
+| D13 | Lock the whole interface during an update, with a two-minute warning to signed-in users? | Yes. Saving cannot work while the server restarts. |
+| D14 | Show recovery codes once only, with Copy and Download? | Yes. It is the usual, safe pattern. |
+
+### 17.7 Requirements coverage for amendment 1.2
+
+| Screens | Requirements |
+| --- | --- |
+| S-25 First-run set-up | FR-66 |
+| S-26 Sign in, S-27 Invitation and reset, S-29 My account | FR-67 |
+| S-28 Projects, S-31 Administration: Projects, S-01 account menu and View only | FR-68 |
+| S-01, S-04 History, S-20, S-24, packages | FR-69 |
+| S-30 Users, S-31 Projects, S-32 Reviewer links, S-33 Settings, S-34 Backups | FR-70 |
+| S-36 Activity | FR-71 |
+| S-35 Software | FR-72, NFR-8 |

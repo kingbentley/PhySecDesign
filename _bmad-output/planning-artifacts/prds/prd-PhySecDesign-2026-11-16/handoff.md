@@ -1,5 +1,7 @@
 # Site Studio — planning handoff
 
+**Update 2026-11-18, later:** Kevin decided that organisations can host Site Studio themselves or on Cloudflare, with user accounts, administrator controls and updates from the interface. This is [proposed amendment 1.2](amendment-1.2-status.md) (FR-66–72). It withdraws project edit links, so every mention below of scoped demo links and unverified display names for editors is superseded. The UX specification (section 17) and the architecture (draft 2.0) are revised for it; the epics are not.
+
 Prepared 2026-11-17. Use the [final PRD 1.0](prd.md) as the product requirements baseline. The [addendum](addendum.md) carries implementation context, examples and downstream responsibilities; the [source index](source-index.md) locates the existing prototype and evidence. Preserve FR-1–62, NFR-1–6 and SM-1–5 when deriving work. A proposed amendment 1.1, added on 2026-11-18 and not yet through finalization review, adds FR-63–65 and small additions; see the [amendment status](amendment-1.1-status.md) before relying on them.
 
 ## Recommended BMAD sequence
