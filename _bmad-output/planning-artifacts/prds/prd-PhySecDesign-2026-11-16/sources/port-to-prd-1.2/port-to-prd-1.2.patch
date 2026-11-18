@@ -1,0 +1,130 @@
+diff --git a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/prd.md b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/prd.md
+index a3ab151..c204af2 100644
+--- a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/prd.md
++++ b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/prd.md
+@@ -70,6 +70,11 @@ These journeys organize the workflow Kevin described; they are not additional cu
+ | Outstanding item | Unfinished in-scope work, an applicable required check not performed, a required follow-up/retest, or a documented unresolved property issue, including deferred/out-of-scope faults. Unknown inventory details and unscoped tests are not automatically faults. |
+ | Archive | Retained history excluded from normal active work. Archiving a device and archiving a project are separate actions. |
+ | DORI | Estimated image-detail levels: Detect, Observe, Recognize, and Identify. These are planning estimates, not field-test results. |
++| Home position, stored position | A stored position is a named pan, tilt and zoom setting of a pan/tilt/zoom camera. The home position is the stored position where the camera rests; its view, the resting view, is the only one counted in coverage (FR-63). |
++| Reach | The area a pan/tilt/zoom camera could view on demand within its limits. Shown separately and never counted as covered (FR-63). |
++| Reliability stage, run | A stage is one part of an optional reliability period; a run is one started period of observed operation for a stage, with its downtime log; FR-64 states when a run counts as a test attempt. |
++| Service visit | A recorded attendance on an issue, with what was found and done. It never resolves the issue by itself (FR-65). |
++| Warranty status | Calculated Not started, In warranty, Expired or Unknown, for information only (FR-65). |
+ | Security zone | Named floor area with a zone type and an optional coverage target, expressed as a DORI level and qualifying-area percentage. |
+ | Installation (1.2) | One running copy of Site Studio belonging to one organisation, with its own users, projects, settings and backups. Not to be confused with the installation of equipment on site. |
+ | Administrator, Editor, Viewer (1.2) | An administrator manages the installation. An Editor can change a project they belong to; a Viewer can read it. Design and Installation remain views, not permissions. |
+@@ -206,7 +211,7 @@ Validate the current container and dependencies together at deletion, retain act
+ 
+ **FR-22 — Named revisions and comparison.** Save named versions, compare layouts at a common scale and inspect changed devices/settings, and restore a prior design into working state without deleting subsequent historical records. Include full revision content in portable project backups and support existing project-format migration. Named snapshots and restoration use a consistent server-saved version and validate the current project state. Resolve the initiating user’s relevant pending/conflicting edits before snapshot creation; other clients’ unsaved work is not represented as included. A full restoration is a deliberate guarded project action, separate from ordinary undo and the per-device restoration in FR-54. Draft deletion/undo preserves snapshots and follows FR-55.
+ 
+-A full restoration restores design content only: proposed devices, planned positions, planned actions, scope categories, proposed routes, proposed port assignments, zones, obstructions, annotations, estimate lines and settings. It never changes recorded facts or checklists. Recorded actual positions and routes, current connections and port assignments, recorded installation and configuration work, checklist definitions and checks, evidence, test attempts, issues, cancellations, corrections and archive state stay as they are. A draft deleted since that revision returns with its original ID where its placement and related records remain valid. Where restored content refers to a device since removed, a floor that no longer exists or a connection since reassigned, leave that item out and list it for review.
++A full restoration restores design content only: proposed devices, planned positions, planned actions, scope categories, proposed routes, proposed port assignments, zones, obstructions, annotations, estimate lines and settings. It never changes recorded facts or checklists. Recorded attributes of Existing devices, the stored positions and limits of an installed pan/tilt/zoom camera, recorded actual positions and routes, current connections and port assignments, recorded installation and configuration work, checklist definitions and checks, evidence, test attempts, issues, cancellations, corrections and archive state stay as they are. A draft deleted since that revision returns with its original ID where its placement and related records remain valid. Where restored content refers to a device since removed, a floor that no longer exists or a connection since reassigned, leave that item out and list it for review.
+ 
+ **Check:** Restoring a design preserves its drawing/equipment context, remains reversible, and does not rewrite prior issued designs, approvals, test attempts, or closeouts. Restoring a revision saved before a camera was moved in the field, or before it was removed, leaves its recorded position and its removal as they are and lists the affected item for review.
+ 
+@@ -621,6 +626,8 @@ Use readable Letter/A4 landscape pages, separate clean plan and coverage sheets,
+ 
+ When needed, split a complete edition into numbered PDF volumes by building or logical section, with one manifest listing all volumes, included content and the common source revision/edition. Deliver the edition together and retain each exact PDF and manifest. All parts use the same fixed source; a per-volume page/byte limit must not silently become a whole-property omission. Apply the confirmed file/edition limits below and report failure if the complete selected scope cannot fit.
+ 
++The Closeout preset also carries reliability runs under FR-64 and warranty details and service visits under FR-65, and analysis sheets identify a pan/tilt/zoom camera’s resting view, previews and reach under FR-63.
++
+ **Check:** A design package links planned device IDs to schedules and installation checks. A closeout package preserves actual conditions, failures/retests and all unresolved property issues even when a subset of floors is exported. Optional cost/photo choices do not alter saved records, outcomes or permissions, and an incomplete package is visibly identified.
+ 
+ **FR-34 — Fixed packages, backups and recovery (amended by 1.2).** Generate from a consistent saved named revision or fixed closeout, resolving the initiating editor’s relevant pending/conflicting edits first. Retain the exact issued-design and closeout PDFs and their source/edition/content manifests with the property for historical download, project archival and backup/recovery. Redownload returns the retained file; regeneration or later decision information creates a new dated edition with the same fixed source and an explicit decision-history cutoff. Never overwrite the earlier package or substitute later installation edits into it.
+diff --git a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/source-index.md b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/source-index.md
+index 11fc9e1..4c3fa24 100644
+--- a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/source-index.md
++++ b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/source-index.md
+@@ -81,6 +81,7 @@ The root `AGENTS.md` links here so future BMAD sessions can find this context wi
+ | [Preserved discovery notes](sources/discovery-notes.md) | Earlier detailed proposals and discussion | Historical; current PRD/log supersede old proposal labels |
+ | [Reference-context reconciliation](reconcile-reference-context.md) | External/product-reference coverage, PSP boundary and source-status findings | Finalization input check against draft 0.27; no new external research or software acceptance |
+ | [File inventory](sources/file-inventory.json) | 148 first-party project files, categorized and fingerprinted | Discovery snapshot; file presence is not proof of runtime correctness |
++| [Planned future feature: project schedule](sources/future-schedule-gantt.md) | Kevin’s decisions from a party-mode discussion on a Gantt-style schedule for one property, with what it reuses, what is new and the open questions | After the POC; not a requirement; project scheduling remains excluded from PRD 1.2 |
+ 
+ ## Existing capability map
+ 
+diff --git a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md
+new file mode 100644
+index 0000000..fcdb2b5
+--- /dev/null
++++ b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md
+@@ -0,0 +1,78 @@
++# Planned future feature — project schedule (Gantt chart)
++
++Prepared 2026-11-18 from a party-mode discussion with Kevin (John, Mary, Sally, Winston, Amelia). This is a planned feature for after the POC. It is **not** a requirement of the [final PRD 1.1](../prd.md), which still lists project scheduling among its exclusions. Nothing here has been through PRD review.
++
++**Note added when carried into PRD 1.2 (2026-11-18).** This was written against PRD 1.1, and its references to “PRD 1.1” are left as written. Amendment 1.2 has since added accounts and roles (FR-67–69). Two points below should be re-read against it before this feature is planned: “Who sets a baseline” assumed unverified display names, and the excluded item on individual accounts and a manager with rights over all projects is now partly answered by accounts and the Administrator role. Nothing else here has been changed, and it remains a planned feature, not a requirement.
++
++## Purpose
++
++Give the project manager for a property a schedule of the work on that property: what is planned when, what depends on what, how far along each part is, and what is running late against the plan.
++
++The project manager may be the installer or someone else. The chart covers one property at a time.
++
++## Decisions Kevin made
++
++| Subject | Decision |
++| --- | --- |
++| Primary user | The project manager for the project |
++| Scope of one chart | One property at a time |
++| Dates | The manager enters planned dates |
++| Dependencies | Supported: one row can be required before another |
++| Rows built by the app | Yes, from the work in scope |
++| Rows typed by the manager | Yes, but only for work that is not a function of the app, so a typed row can never duplicate an app-built row |
++| When work runs late | Flag it. The app never moves dates by itself. |
++| Original plan | Kept, so the chart shows planned against actual |
++| Default grouping of app-built rows | By subsystem, each expandable into its installation, configuration and testing phases; the manager can switch to grouping by floor |
++| Freezing the plan | A separate “set baseline” action, not tied to issuing the design. Re-baselining is allowed, and every earlier baseline is kept and dated. |
++| Installers | See the schedule read-only. In the narrow field layout it is a short list of what is due, late and next, not a chart. |
++| Clients | Included in the Design package only if the manager opts in; off by default; labelled as planned dates, not a commitment |
++| Belongs to | A work scope. Each scope has its own schedule, which is optional and freezes with that scope’s closeout record. A scope with no dates entered has no chart. |
++| Late (red) | A row is past its planned end and not finished |
++| At risk (amber) | A row should have started and has not, or something it depends on is not finished by the row’s planned start |
++| No estimate of “percent behind” | Work does not proceed evenly across a bar, so the app does not guess how far along a row should be |
++| Slipped against the plan | A separate signal from red and amber: how far the current dates have moved from the baseline. Red and amber work from current dates at all times, with or without a baseline. |
++| Before a baseline is set | The chart works normally and is labelled as having no baseline |
++| Typed tasks: done | A tick with name and time, and an optional note. It can be un-ticked, with the change kept in history. No photos. |
++| Dependencies | One kind only: a row cannot start until another is finished. Allowed between any two rows, including typed tasks. A loop is refused when saving, with the rows named. |
++| Editing dependencies | By dragging on the chart and from a plain list on the row, so the action never depends on dragging alone |
++| Rows with no dates | Shown with an empty “not scheduled” track, and counted |
++| Closeout package | Optional and off by default. When included, it shows final dates beside the latest baseline. |
++| Finished | A phase row is finished when its required checks have passed, as PRD 1.1 defines phase completion (FR-31). A subsystem row is finished when all its phases are. |
++| Progress on the bar | The fill shows recorded work, so “work recorded, checks outstanding” is visible and is not shown as finished |
++| Where dates are set | On a subsystem row for a rough plan. Once any of its phases has its own dates, the subsystem row’s dates become the span of its phases. |
++| Work removed from scope | A row whose work has all left scope stays visible, marked “no work in scope”, with the rows that depend on it flagged, until the manager removes it. Baselines already taken keep their copy. |
++| Who sets a baseline | Anyone with edit access, recorded with display name and time as unverified attribution, the same as approvals in PRD 1.1 |
++| Typed task that repeats app work | A hint beside the entry box says typed tasks are for work outside the app. No automatic detection. |
++
++## What it can reuse from PRD 1.1
++
++- Progress per phase from recorded work and checks (FR-30, FR-31), so app-built rows show progress without anyone setting it by hand.
++- Work-scope membership and planned actions (FR-40, FR-45), which decide what work has a row.
++- Subsystem grouping, already used for estimate subtotals (FR-18).
++- The pattern of fixed, dated records that are never rewritten, used for issued designs and closeouts (FR-26, FR-32, FR-34), for baselines.
++- Optional package content that is off by default, as prices are today (FR-33).
++
++## What is new
++
++- Planned start and end dates on rows.
++- Dependencies between rows.
++- Manager-typed tasks with a done mark.
++- Baselines, and the comparison of the current schedule with a baseline.
++- Late flags.
++
++The discussion rated this a substantial feature: it reuses progress and grouping, and everything about time is new.
++
++## Not included
++
++- Automatic rescheduling when a row slips.
++- A view across several properties.
++- Individual accounts or a manager with rights over all projects. PRD 1.1 has link-based access with no accounts (FR-2, NFR-5); a cross-project manager is a separate access question.
++
++## Open questions
++
++None recorded. Every question raised in the discussion on 2026-11-18 was settled with Kevin and is in the table above. The feature still needs requirements and Checks written, and review, before it can be built.
++
++## Before this can be built
++
++- Project scheduling comes off the exclusions list in a later PRD revision, with requirements and Checks written for the items above.
++- Architecture places dates, dependencies and baselines in the shared-edit and conflict rules (FR-21, FR-42).
