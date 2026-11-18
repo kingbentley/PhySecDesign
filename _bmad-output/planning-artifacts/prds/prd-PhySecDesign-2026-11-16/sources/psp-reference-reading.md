@@ -58,7 +58,7 @@ The expected-relevance column is from general knowledge of these titles, not fro
 Ordered by how much the answer could change the PRD. Rough notes or pasted highlights are both fine.
 
 1. **Patterson — acceptance testing (answered; see findings).** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
-2. **Patterson — closeout.** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
+2. **Patterson — closeout (partly answered; see findings).** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
 3. **Patterson — design package.** Which drawings and schedules does he expect in a design submission? Compare with the Design preset (FR-33a).
 4. **Patterson — estimating.** Which cost components does he list beyond equipment, cable and labour? Compare with FR-17/18.
 5. **Garcia — video assessment.** How does she define levels of image detail, and by what measure? Compare with the DORI convention (FR-14).
@@ -116,7 +116,29 @@ Further comparison with PRD draft 0.21:
 
 Shape of a possible requirement, not proposed or decided: an optional, project-defined reliability period recorded as a site-level check whose attempt has a start, a planned duration, a downtime log and a computed availability compared with a project-defined target, reusing the existing outcome, issue and retest rules.
 
-Question 1 is answered. Optional follow-up: what the after-implementation testing section covers.
+Question 1 is answered.
+
+### After-implementation testing, warranty and repair logs (2026-11-18)
+
+Source: Patterson, 2nd edition, the pages that close the same chapter, shared by Kevin as a screenshot. Kevin searched the book for “closeout” and found nothing; the book’s own term on these pages is a certificate of practical completion.
+
+- **Tests after implementation.** Six kinds are described: periodic operational tests that confirm things work without verifying specifications; performance tests that verify equipment against specifications and may need instruments; tests after preventive or remedial maintenance; subsystem tests of parts working together; limited-scope tests of one segment of a complex system; and periodic independent evaluation tests, at least yearly, that revisit overall effectiveness.
+- **Warranty.** Defects are corrected for at least 12 months from the certificate of practical completion. The book also covers response time, spares, contact details and maintenance to the manufacturer’s recommendations, which are contractual matters.
+- **Repair logs.** Each service visit should record when the fault was reported, what was reported, when the visit took place, the fault actually found, the parts used, the work done and the time spent, with reports available on request.
+
+| Finding | PRD position | Assessment |
+| --- | --- | --- |
+| Test after maintenance or repair | A repaired, replaced or returned-to-service device flags its relevant checks (FR-28/44). | Covered. |
+| Periodic operational and limited-scope tests | A later work scope can mark devices Inspect/test only with their own checks (FR-38/45). | Mechanism covered. Nothing schedules or reminds. |
+| Performance tests against specifications | Measured checks with project-defined values (FR-29/30). | Covered generically. |
+| Yearly independent evaluation | None. | Gap, tied to the risk-assessment gap in Domain 1. |
+| Warranty period from completion | No warranty record. A closeout record has a date that could start one (FR-32). | Gap. Already an after-POC candidate. |
+| Repair log fields | Issue records hold the fault, the corrective work, evidence, actor and time (FR-46); change records hold before/after values and a reason (FR-27). No reported-versus-visited times, parts used or time spent. | Partial. |
+| Response times, spares, service levels | None. | Out of scope: contractual. |
+
+The chapter’s reference list names Garcia’s 2nd edition, which Kevin holds, and a United States Department of Energy inspectors guide for physical security systems (2009). The latter is a government publication that may be publicly readable; it has not been looked for or read.
+
+Question 2 is partly answered: warranty and repair records are covered above, but the deliverables handed over at completion are not. Search terms to try in Patterson: practical completion, as-built, record drawings, manuals, training, handover, turnover, punch list, final acceptance.
 
 ## Pending decisions (proposed 2026-11-18, not confirmed)
 
