@@ -1,400 +1,378 @@
 ---
 title: "Site Studio — Architecture"
-status: 1.0, decisions K1-K8 confirmed by Kevin on 2026-11-18; nothing built or measured
+status: draft 2.0 for Kevin's review; replaces 1.0 after PRD amendment 1.2
 created: 2026-11-18
-inputs: "PRD 1.0 with proposed amendment 1.1; UX design specification draft 0.2; the site-studio prototype"
+inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2; UX design specification; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
 # Site Studio — Architecture
 
-This document decides how the Site Studio proof of concept is built and hosted so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
+This document decides how Site Studio is built, hosted and updated so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
 
-Kevin decided on 2026-11-18 that the application is hosted on Cloudflare, and that new server and shared code is written in TypeScript and tested with Vitest in Cloudflare's runtime (AD-15). On the same day he confirmed the remaining choices listed in [Confirmed decisions](#12-confirmed-decisions) as recommended. The decisions stand subject to the early experiments in section 11; a failed experiment brings its decision back to him.
+**What changed from version 1.0.** Version 1.0 was written for one hosted demo on Cloudflare, opened by links. On 2026-11-18 Kevin decided that organisations can also host the software on their own servers, that people sign in with accounts, that releases are public and that an administrator can update from the interface ([amendment 1.2](../../prds/prd-PhySecDesign-2026-11-16/amendment-1.2-status.md)). Version 2.0 therefore makes the server portable between two hosts and adds accounts, administration, releases and updates. Version 1.0 is in the repository history.
 
-Three kinds of statement are kept apart:
+Decisions Kevin has already confirmed are marked **confirmed**. The new ones are **proposed** and are listed in [Decisions for Kevin](#13-decisions-for-kevin).
 
-- **Prototype today** — what the code in `site-studio/` does now.
-- **Required** — what the PRD or UX specification asks for, cited by number.
-- **Decided / Proposed** — what this architecture commits to.
-
-Nothing here has been built or measured. Cloudflare limits quoted are from Cloudflare's documentation as read on 2026-11-18 and are collected, with sources, in [cloudflare-limits.md](cloudflare-limits.md).
+Nothing here has been built or measured. Cloudflare limits are from Cloudflare's documentation as read on 2026-11-18 and are collected in [cloudflare-limits.md](cloudflare-limits.md).
 
 ## 1. Summary
 
-Site Studio becomes one Cloudflare Worker that serves the existing React application and a small API.
+Site Studio is one application that an organisation runs in one of two ways, with the same features either way (NFR-7).
 
-- Each property project lives in its own **Durable Object**, a small single-threaded server with a private SQLite database. It is the one place where a project's records are read, checked and changed, which is what makes the PRD's conflict and consistency rules straightforward to enforce.
-- Drawings, photos, fixed snapshots and PDF packages live in **R2** object storage, addressed by their content hash.
-- A small **D1** database lists the projects and their backups.
-- Coverage analysis, PDF and photo previews, spreadsheet parsing and PDF package generation stay **in the browser**, where the prototype already does them. The server stores and verifies their results.
-- Browsers save with small, retry-safe operations and learn of other people's changes by **polling** every few seconds.
-- A daily scheduled job copies every project to a **separate backup bucket**, and a restore job rebuilds a project in an isolated copy before any switch.
+| | On Cloudflare | Self-hosted |
+| --- | --- | --- |
+| Runs as | A Cloudflare Worker | A Node.js server in a Docker container, on Linux |
+| Project records | One Durable Object with SQLite per project | One SQLite file per project |
+| Users, sessions, settings, activity log | A D1 database | One SQLite file |
+| Files | An R2 bucket | A folder on disk, or any S3-compatible store |
+| Scheduled and long jobs | Cron Triggers and Workflows | A scheduler inside the server |
+| Updates | Starts the organisation's own deployment | An updater container installs the release |
 
-Expected running cost is the Workers Paid plan at 5 US dollars a month plus a few cents of storage. The Free plan is not enough: it allows 10 ms of processor time per request and 1 GB per Durable Object.
+The parts that decide behaviour are written once and shared by both: the rules for saving, conflicts, roles, snapshots, backups and data conversion. Each host supplies only thin adapters for storage, files, jobs and updates.
+
+- People sign in with email and password. A session cookie identifies them; their role and project membership are checked on the server for every request, including every file.
+- Clients can still review one fixed revision through a reviewer link, without an account.
+- Browsers save with small, retry-safe operations and learn of other people's changes by polling.
+- Coverage analysis, previews, spreadsheet parsing and PDF packages stay in the browser.
+- Each release is published on GitHub, signed, with notes. An installation checks for a newer one and an administrator installs it with one action, after an automatic backup and with a return to the earlier version if anything fails.
 
 ## 2. What drives the design
 
 | Driver | Source | Consequence |
 | --- | --- | --- |
-| One shared, durable project; saves acknowledged within 2 s; others see them within 5 s | FR-2, FR-21, NFR-2, acceptance table | A server-side store per project with a change feed. |
-| Per-item conflict detection, and connected changes validated together | FR-42 | Every editable item carries a version. Multi-item operations are checked and applied as one unit. |
-| Retries never duplicate; evidence additions never conflict | FR-21, FR-31 | Every operation has a client-chosen identifier. Evidence is append-only. |
-| Fixed issued designs, closeouts and exact package files | FR-26, FR-32, FR-34, NFR-1, NFR-6 | Immutable snapshots and files, addressed by content hash, never rewritten. |
-| Access by revocable links, enforced on the server, for records and files | FR-2, FR-24, NFR-5 | Every request, including file downloads, passes through the Worker and is checked against a link. |
-| Files up to 100 MiB, 8 GiB per project, 10 GiB portable backup | Acceptance table | Object storage with uploads in parts and streaming downloads. |
-| Daily backups, seven generations, restore within 60 minutes into an isolated copy | FR-34 | A scheduled backup job, a separate bucket and a scripted restore. |
-| Honest analysis within 10 s on the busiest plan, with stale results labelled | FR-13, NFR-4 | Analysis runs off the main thread, keyed to the inputs it used. |
-| Phones do field work online | NFR-3, UX section 8 | A light field route that loads one floor and one device at a time. |
-| One or two simultaneous users | Acceptance profile | No need for live cursors, merge algorithms or multi-region scaling. |
+| Self-hosted or on Cloudflare, same product | FR-66, NFR-7 | A portable core with two sets of adapters, and one test suite run against both. |
+| Accounts, roles and membership, enforced on the server | FR-67–69, NFR-5 | An installation-wide store for users and sessions; an access check in front of every project request and file. |
+| Administrator controls and an activity log | FR-70, FR-71 | An administration interface over the installation store. |
+| Update from the interface, safely | FR-72, NFR-8 | Signed public releases, ordered data conversions, backup first, health check, automatic return. |
+| One shared durable project; saves within 2 s; others see them within 5 s | FR-2, FR-21, NFR-2 | A store per project with a change feed. |
+| Per-item conflicts; connected changes validated together | FR-42 | Versioned items; multi-item operations applied as one unit by a single writer per project. |
+| Fixed issued designs, closeouts and exact package files | FR-26, FR-32, FR-34, NFR-1, NFR-6 | Immutable snapshots and files named by content hash. |
+| Files to 100 MiB, 8 GiB per project, 10 GiB portable backup | Acceptance table | Uploads in parts; streaming downloads. |
+| Daily backups, seven generations, restore within 60 minutes | FR-34 | A scheduled job, separate backup storage, scripted isolated restore. |
+| Honest analysis within 10 s | FR-13, NFR-4 | Analysis off the main thread, keyed to its inputs. |
 
 ## 3. Starting point
 
-**Prototype today.**
+**Prototype today.** React 19 and Vite 6 in plain JavaScript, Leaflet, pdf.js; about 8,800 lines in `site-studio/src`; 137 test cases on Node's test runner (not rerun for this document). The project is one JSON document in the browser. A review service with revocable links exists only inside the development server. The build is already packaged as a Cloudflare-style Worker serving static assets. The repository carries an MIT licence.
 
-- React 19 and Vite 6, plain JavaScript, Leaflet for the map, pdf.js for PDF import. About 8,800 lines in `site-studio/src`.
-- The project is one JSON document in the browser's IndexedDB, with portable export and import and migration from an older format.
-- Coverage, DORI, zones, cables, capacity and materials are pure JavaScript modules with tests (137 test cases in `site-studio/tests`, using Node's test runner; not rerun for this document).
-- PDF design packets are generated in the browser as raster pages.
-- A review service runs only inside the Vite development server and stores JSON files on disk. It already uses revocable bearer links, hashed tokens, a version counter and serialised writes.
-- The build is already packaged as a Cloudflare-style Worker that serves static assets, with a hosting file that names D1 and R2 as unused.
+**What carries over.** The interface, the map, every calculation module, PDF import and export, and the link and version ideas from the review service.
 
-**What carries over.** The interface, the map engine, every calculation module, the PDF import and export code, and the link and version ideas from the review service.
-
-**What is replaced.** IndexedDB as the place of record, the single-document project model, the dialogs that the UX specification turns into pages, and the development-only review service.
+**What is replaced.** Browser storage as the place of record, the single-document model, the dialogs, and the development-only review service.
 
 ## 4. Architecture at a glance
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph Browser
-    UI[React app<br/>desktop workspace and field shell]
-    Store[Sync store<br/>per-item save state]
-    Calc[Web Worker<br/>coverage and zones]
-    Files[File work<br/>previews, spreadsheet parsing, PDF packages]
+    UI[React app<br/>workspace, field shell, admin, reviewer view]
+    Store[Sync store]
+    Calc[Web Worker: coverage]
+    Files[Previews, spreadsheets, PDF packages]
   end
-  subgraph Cloudflare
-    W[Worker<br/>static assets, API, access checks]
-    DO[(Project room<br/>Durable Object with SQLite<br/>one per project)]
-    R2[(R2 live bucket<br/>originals, previews, snapshots, packages)]
-    D1[(D1 registry<br/>projects and backup catalogue)]
-    Jobs[Workflows and Cron<br/>backup, restore, portable backup]
-    B[(R2 backup bucket)]
+  subgraph Core["Portable core (TypeScript, shared by both hosts)"]
+    API[HTTP API and access checks]
+    Auth[Accounts, sessions, roles, membership]
+    Room[Project room: operations, versions, change log, snapshots]
+    Jobs[Backup, restore, portable backup, data conversion]
+    Admin[Administration, activity log, version check]
   end
-  UI --> Store --> W
+  subgraph CF["Cloudflare adapters"]
+    DO[(Durable Object SQLite per project)]
+    D1[(D1 installation store)]
+    R2[(R2 files and backups)]
+    WF[Cron and Workflows]
+    Deploy[Deployment trigger]
+  end
+  subgraph Node["Self-hosted adapters"]
+    SQ[(SQLite file per project)]
+    IS[(SQLite installation store)]
+    FS[(Disk or S3-compatible files and backups)]
+    Sch[In-process scheduler]
+    Upd[Updater container]
+  end
+  UI --> Store --> API
   Calc --> Store
-  Files --> W
-  W --> DO
-  W --> R2
-  W --> D1
-  Jobs --> DO
-  Jobs --> R2
-  Jobs --> B
-  Jobs --> D1
+  Files --> API
+  API --> Auth --> Room
+  API --> Admin
+  Room --> Jobs
+  Core --> CF
+  Core --> Node
+  GH[(GitHub: public releases, signed images)] -.-> Admin
+  GH -.-> Upd
+  GH -.-> Deploy
 ```
 
-## 5. Decisions
+## 5. Hosting and portability
 
-Each decision gives the choice, the reason and what was set aside. Kevin confirmed all of them on 2026-11-18.
+### AD-1 — Two supported hosts: Cloudflare, and Linux with Docker (Cloudflare confirmed; self-hosting proposed)
 
-### AD-1 — Host on Cloudflare (decided)
+- **Cloudflare.** One Worker serves the built application and the API. The Workers Paid plan is required (confirmed, K1).
+- **Self-hosted.** One Docker image runs a Node.js server that serves the same application and API. It is started with Docker Compose alongside an updater container (AD-21) and, optionally, a web server that provides HTTPS. A virtual machine and a physical server are the same case: a Linux machine with Docker. Supporting only this form keeps the number of combinations to test small.
 
-One Worker serves the built React application as static assets and handles everything under `/api`. HTTPS comes with the platform. A `workers.dev` address is enough for the demo; a custom domain is optional.
+Not supported at first: running without Docker, Windows Server as the host, and Kubernetes. A competent operator can do these, but they are not tested or documented.
 
-The Workers Paid plan is required. Deployment uses Wrangler, with a local mode that runs the Worker, Durable Objects, D1 and R2 on the developer's machine.
+### AD-16 — A portable core behind five small interfaces (proposed)
 
-### AD-2 — One Durable Object per property project holds its records
+All behaviour lives in the core, written in TypeScript against these interfaces. Each host implements them.
 
-Each project gets one Durable Object, called the project room here, with its own SQLite database. All reads and writes of that project's records go through it.
+| Interface | Purpose | Cloudflare | Self-hosted |
+| --- | --- | --- | --- |
+| Project store | Open one project's database with single-writer access; run SQL in a transaction | Durable Object SQLite | A SQLite file with one writer at a time per project |
+| Installation store | Users, sessions, memberships, settings, reviewer-link index, activity log, project and backup catalogue | D1 | A SQLite file |
+| File store | Put in parts, get as a stream, check existence, list, delete; one live area and one backup area | Two R2 buckets | Two folders, or two S3-compatible buckets |
+| Jobs and schedule | Run a long job in resumable steps; run something daily | Workflows and Cron Triggers | A job table and an in-process scheduler |
+| Update | Report how updates are installed here; start one; report progress | Deployment trigger | Updater container |
 
-Why this fits:
+Rules that keep it portable:
 
-- A Durable Object handles one request at a time against its own storage, so "check the versions and the dependencies, then apply every change or none" (FR-42) is ordinary code in one place. No distributed locking is needed.
-- It gives a natural home for the project's change sequence, which drives the change feed, action history, retry safety and guarded undo.
-- Projects are isolated from one another by construction, which supports NFR-5.
-- Storage is durable when a write is acknowledged, which is the PRD's meaning of Saved (NFR-2).
-- The limit of 10 GB per object comfortably holds the records and history, estimated at about 300 MiB for the large fixture. Files are kept elsewhere.
+- The core uses only web-standard interfaces (Request, Response, streams, Web Crypto) and SQL that SQLite accepts. Both hosts provide these.
+- One HTTP routing layer runs on both hosts.
+- The same test suite runs against both sets of adapters in continuous integration. A feature is not done until it passes on both.
+- The portable backup (AD-14) is the same format on both, which is what lets a project move between hosts (NFR-7).
 
-Set aside: one shared D1 database for all projects. It would work, but D1 has no interactive transactions, so the validate-then-write logic would have to be expressed as conditional SQL batches, and all projects would share one 10 GB ceiling.
+Set aside: running Cloudflare's open-source runtime on the server so that only one set of adapters exists. It might remove the second adapter, but it has not been checked and Cloudflare does not present it as a hardened production server. See experiment R8.
 
-### AD-3 — Files live in R2, named by their content hash
+## 6. Records, files and saving
 
-Every stored file (original drawing, original photo, preview, spreadsheet source, snapshot, PDF volume, manifest) is an R2 object whose name includes its SHA-256 hash, under a prefix for its project.
+These decisions are unchanged in substance from version 1.0 and were confirmed there. They are restated in host-neutral terms.
 
-- A file is never modified once stored. That is what makes issued designs, closeout records and packages fixed (FR-34).
-- One source PDF used for several sheets is stored once (FR-6).
-- Integrity can be checked at any time by re-hashing.
-- The project room keeps the list of which records reference which files, and the running total against the 8 GiB budget.
+### AD-2 — One store per project, with a single writer (confirmed)
 
-A photo is reported as Saved only when both steps have succeeded: the object is complete in R2, and the project room has committed the entry that references it (FR-31).
+Each project has its own SQLite database, reached only through the project room, which handles one write at a time. That makes "check the versions and dependencies, then apply every change or none" (FR-42) ordinary code in one place. On Cloudflare the single writer is the Durable Object; self-hosted, it is a per-project queue in the server process.
 
-### AD-4 — Large files upload in parts through the Worker
+### AD-3 — Files are named by their content hash and never overwritten (confirmed)
 
-Cloudflare rejects request bodies over 100 MB on Free and Pro domains. The PRD allows a 100 MiB plan PDF, which is slightly larger, and a 10 GiB portable backup, which is far larger.
+Originals, previews, spreadsheet sources, snapshots, PDF volumes and manifests are stored under their SHA-256 hash within the project's area. This makes fixed records fixed, stores a shared PDF once, and allows integrity checks. A photo is Saved only when the file is complete and the entry that references it is committed (FR-31).
 
-So every upload above a few megabytes is sent in parts of about 8 MiB. The Worker checks the link on each part and forwards it to an R2 multipart upload. This gives visible progress, retry of a single failed part, and no need to expose storage credentials to the browser. Downloads stream from R2 through the Worker with the same access check.
+### AD-4 — Large files upload in parts (confirmed)
 
-Set aside: presigned direct-to-R2 uploads. They avoid the Worker but need storage credentials, cross-origin rules and a second access model.
+Uploads above a few megabytes go in parts of about 8 MiB through the API, which checks access on each part. Cloudflare requires this because it limits a request body to 100 MB; using it on both hosts keeps one upload path with progress and per-part retry.
 
-### AD-5 — Saves are small operations with an identifier; conflicts are detected per item
+### AD-5 — Saves are small operations with an identifier; conflicts are per item (confirmed)
 
-The browser sends an operation: a client-chosen identifier, the session identifier, the display name, and a list of changes, each naming the item and the version it was based on.
+An operation carries a client-chosen identifier, the session, and changes that each name an item and the version they were based on. The project room returns the stored result for a repeated identifier, checks access and versions, checks the rules that span items, then applies everything and appends one change-log entry. Evidence is append-only and never conflicts.
 
-The project room then, as one unit:
+Changed by amendment 1.2: the actor recorded is the signed-in account and its name at that time (FR-69), supplied by the access check and never by the browser.
 
-1. Returns the stored result if it has already seen that operation identifier. A retry after a timeout therefore cannot duplicate anything (FR-21).
-2. Checks that the project is not archived and that the link allows the change.
-3. Checks each item's version. If any item changed since it was loaded, the whole operation is rejected with the latest saved values, who saved them and when. The browser keeps the pending edit and shows the comparison screen from the UX specification (FR-42).
-4. Checks the domain rules that span items: the device state model, deletion eligibility, port claims, floor and building dependencies, scope and issued-design designation.
-5. Applies all changes, increases each item's version, and appends one entry to the change log with before and after values.
+### AD-6 — Polling for other people's changes (confirmed)
 
-Evidence (notes, photos, measurements, test attempts, comments, decisions, service visits, downtime entries) is append-only. Adding it carries an identifier but no base version, so two people adding to the same device both succeed (FR-31).
+Every 3 seconds while the page is visible, and on regaining focus. Incoming changes never overwrite a field being edited. A live push channel can be added later on either host.
 
-### AD-6 — Other people's changes arrive by polling
+### AD-7 — The change log is history, feed and basis for undo (confirmed)
 
-While the page is visible, the browser asks the project room every 3 seconds for changes after the last sequence number it has seen, and immediately when the tab regains focus. This meets the 5-second target with margin and is simple and dependable on mobile networks. The addendum already accepts polling as sufficient.
+Undo is a new operation restoring the before-values of one of the same user's own operations in the same session, accepted only if nothing affected has changed since.
 
-Incoming changes update the store's saved values. They never overwrite a field the user is editing or an item being dragged; the store holds them and the interface announces them, as the UX specification requires.
+### AD-8 — Fixed records are immutable snapshots (confirmed)
 
-Set aside for now: a WebSocket from the project room. The project room can add it later without changing the data model.
+Named revisions, the surveyed baseline, issued designs and closeout records are written from one consistent point and referenced by hash. The current issued design is a versioned pointer.
 
-### AD-7 — The change log is the history, the feed and the basis for undo
+### AD-9 — Analysis runs in the browser, off the main thread (confirmed)
 
-One append-only table in each project room records every accepted operation: sequence number, operation identifier, session, display name, time, kind, items touched, before and after values, and a reason where one was given.
+Results carry a fingerprint of their inputs; a mismatch shows Updating. The last final summary per floor is saved with its fingerprint.
 
-It serves four requirements with one mechanism:
+### AD-10 — File processing stays in the browser (confirmed)
 
-- The change feed for polling (AD-6).
-- The traceable record of field changes and corrections (FR-27, FR-55).
-- Retry safety (AD-5).
-- Undo and redo. Undo is a new operation that restores the before values of one of this session's own operations. The project room accepts it only if the affected items and their dependents have not changed since; otherwise it explains what changed and asks for review (FR-21).
+PDF opening and passwords, photo previews and spreadsheet parsing happen in the browser. The server enforces limits and types regardless.
 
-### AD-8 — Fixed records are immutable snapshots
+### AD-11 — PDF packages are generated in the desktop browser and retained on the server (confirmed)
 
-A named revision, surveyed baseline, issued design or closeout record is created inside the project room: it reads the complete record set at one sequence number, writes it as one snapshot file to R2, and stores a row that points to the file. Because the room handles one request at a time, the snapshot cannot be a mixture of versions (FR-22, FR-32).
+From a fixed snapshot, uploaded volume by volume, registered only when complete and verified. Subject to experiment R1.
 
-Snapshots reference photos and drawings by hash, so they cost little space. Restoring a revision reads the snapshot and applies design content only, as an ordinary guarded operation (FR-22). The current issued design is a pointer held as a versioned item, so two people cannot silently designate different revisions (FR-61).
+## 7. Accounts and access
 
-### AD-9 — Analysis runs in the browser, off the main thread
+### AD-12 — Sessions for people who sign in; link tokens for reviewers (proposed; replaces the link-only model)
 
-The existing coverage, DORI and zone modules move unchanged into a Web Worker so the interface stays responsive (NFR-4). Each result carries a fingerprint of the inputs it was computed from. A result whose fingerprint no longer matches the current inputs is shown as Updating and is never presented as final (FR-13).
+**Signing in.**
 
-The last final summary for each floor and basis is saved to the project, with its fingerprint, so that the Overview, phones and packages can show it with an honest "as of" label without recomputing. A snapshot keeps the results it was taken with.
+- An account has an email address, a name, a password hash, an installation role and an active flag (FR-67, FR-68).
+- Passwords are hashed with a memory-hard or iterated method chosen so that the same code runs on both hosts (experiment R9 chooses between Argon2id compiled to WebAssembly and PBKDF2 through Web Crypto). Hashes carry their parameters so they can be strengthened later.
+- A successful sign-in creates a session: a long random token held in a cookie that scripts cannot read, sent only over HTTPS and only to this site. Only a hash of the token is stored. Sessions end after the idle period the administrator sets, on sign-out, on "sign out everywhere", on password change and on deactivation.
+- Requests that change anything must come from the application's own origin and carry a header the application adds, which blocks forged cross-site requests.
+- Failed sign-ins are slowed per account and per address, and the reply never reveals whether an email exists.
+- Two-step verification uses time-based codes from an authenticator app, with single-use recovery codes stored as hashes.
+- Invitations and password resets are single-use, expiring tokens. They are delivered by email when an email service is configured, and can always be copied by an administrator.
 
-Set aside: computing on the server. Workers have a 128 MB memory ceiling and the calculation code is already browser JavaScript.
+**Checking access.** Every request passes one gate in the core before it reaches a project room or a file:
 
-### AD-10 — File processing stays in the browser
+1. Identify the caller: a session, a reviewer link token, or neither.
+2. For a session: load the account, confirm it is active, and find its role and its membership of the project named in the request.
+3. Decide: an administrator may do anything; an Editor may read and change their project; a Viewer may read and download; a reviewer link may read one fixed revision, comment and decide (FR-24).
+4. Pass the decision and the actor to the project room. The project room trusts only this gate.
 
-- **PDF import.** The PDF is opened and its password used only in the browser, as today. The browser uploads the original file and a preview image of the chosen page. The password is never sent (FR-6).
-- **Photos.** The browser makes a preview and uploads it with the original (FR-20).
-- **Spreadsheets.** CSV and .xlsx files are parsed in the browser, reading values only and never running formulas or macros. The preview groups are computed there against the loaded records. Applying the import is one operation under AD-5, so the project room rechecks every version and rule (FR-58, FR-62). The source file is stored for provenance.
+Membership is held in the installation store, so removing a member or deactivating an account takes effect on the next request (FR-68).
 
-The Worker enforces the size limits, file types and the project budget regardless of what the browser claims.
+**Reviewer links** work as in version 1.0: a long random token sent as a header, stored as a hash, scoped to one fixed revision, revocable. An index of active links in the installation store lets an administrator list and revoke them (FR-70).
 
-### AD-11 — PDF packages are generated in the desktop browser and retained on the server
+**First administrator.** An installation with no users accepts one set-up request that creates the first administrator, protected by a one-time set-up code printed in the server log or deployment output. This replaces version 1.0's permanent administrator key.
 
-A package is generated from a fixed snapshot, never from live records. The browser renders the volumes with the existing exporter, extended for the new contents, and uploads each volume and the manifest. The project room registers the edition only when every listed file is present with the right hash. A failed or partial job is recorded as failed and can be retried; nothing partial is ever listed as complete (FR-33, FR-34, NFR-6).
+### AD-17 — The installation store (proposed)
 
-This reuses working code and avoids running a headless browser on the server. Its cost is that a package cannot be produced from a phone and the tab must stay open while it runs. This is the largest unproven point in the design; see risk R1.
+One small database per installation holds: users, password and recovery-code hashes, sessions, invitations and resets, project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table, and the activity log (FR-71). Secrets entered in settings, such as an email password or a map key, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 
-Set aside for now: rendering on the server with Cloudflare's browser service. It remains the fallback if R1 fails.
+The activity log is append-only. Entries never contain a password, token or code.
 
-### AD-12 — Access is by link tokens, checked in the Worker
+### AD-18 — Email is optional (proposed)
 
-- A link carries a long random token. The browser keeps it out of server logs by sending it as a request header, as the prototype's review links already do. Only a hash of the token is stored.
-- An edit link is scoped to one project. A reviewer link is scoped to one fixed revision and allows reading it, commenting and recording a decision (FR-24).
-- Revoking or replacing a link takes effect on the next request. Earlier decisions stay on record.
-- Display names are attribution only. A separate random session identifier, never the name, decides whose edits an undo may reverse.
-- Creating a project, restoring a backup and reissuing a lost edit link need an administrator key that only Kevin holds, set as a Worker secret. Without it, anyone who found the address could create projects and consume storage.
-- Link tokens, the administrator key and any passwords are excluded from snapshots, portable backups and restores (NFR-5).
+The core has an email interface with three implementations: none, SMTP (self-hosted), and an HTTP email service (either host). With none, every invitation and reset is a link the administrator copies. No feature requires email.
 
-### AD-13 — Backups go to a separate bucket every day; restore is scripted and isolated
+## 8. Backups and moving projects
 
-A scheduled trigger starts one backup job per project each day. The job asks the project room for a complete export at one sequence number, copies any files not yet in the backup bucket, and writes a manifest listing every record file and file hash. The catalogue in D1 records the generation, its time, size and outcome. Seven successful daily generations are kept, plus one before any migration (FR-34). A file is deleted from the backup bucket only when no retained generation lists it.
+### AD-13 — Daily backups to separate storage; scripted, isolated restore (confirmed, extended)
 
-Restore creates a new, separate project room and file prefix from a chosen generation, then checks counts, relationships, file hashes, snapshots, package files and the issued-design history. Only after those checks pass, and only on a deliberate administrator action, does the project's address switch to the restored copy. A failed restore leaves the working project untouched. Old links are not restored; new ones are issued.
+As in version 1.0: each day a job exports every project at one consistent point, copies files not already in the backup area, and writes a manifest; seven successful generations are kept plus one before any update or data conversion. Restore builds a separate copy, verifies it, and switches only on a deliberate administrator action.
 
-Durable Objects also keep 30 days of point-in-time recovery. That is extra protection, not the mechanism the acceptance test relies on.
+Extended by amendment 1.2:
 
-### AD-14 — The portable backup is a ZIP container built as a server job
+- The installation store is backed up in the same run, so accounts, memberships, settings and the activity log can be recovered (FR-34 as amended, FR-71).
+- Recovering an installation ends every session and leaves revoked reviewer links revoked.
+- Self-hosted, the backup area must be a different disk or a different machine from the live data to count as independent. The installer asks for it and the interface warns when it is the same disk.
+- On Cloudflare the backup area is a second bucket in the same account (confirmed, K5).
 
-A portable backup is a ZIP file, stored without compression, containing a manifest, the project's records and snapshots, and every referenced file under its hash. A job assembles it into R2 and the user downloads it afterwards, so creation time and transfer time are measured separately as the PRD requires. Importing one uploads it in parts (AD-4), then a job validates it and restores it into a new project.
+### AD-14 — The portable backup is one ZIP format on both hosts (confirmed, extended)
 
-The prototype's existing portable JSON files (versions 1 and 2) are imported in the browser through the existing migration code and then saved as a new project.
+It holds one project's records, snapshots, files and packages, a manifest, and the version of the data format. It holds no accounts, sessions or links. Import creates a new project in the receiving installation, where an administrator sets its members. An installation refuses a backup made by a newer version than itself.
 
-### AD-15 — Keep React and Vite; write new server and shared code in TypeScript (decided)
+## 9. Releases and updates
 
-No framework change. The existing React application and its calculation modules stay in JavaScript and are not migrated. New code in `worker/` and `shared/` is written in TypeScript, because Cloudflare's tooling generates types for the storage bindings and this is the code that enforces the data-integrity rules. The existing JavaScript imports the shared module as usual.
+### AD-19 — One public repository; signed releases built by GitHub Actions (proposed)
 
-Testing uses two runners. The existing tests keep Node's test runner. The Worker and the project room are tested with Vitest and Cloudflare's test integration, which runs them inside the same runtime Cloudflare uses; a Durable Object cannot be tested properly outside it. The shared rules are plain functions and can be run by either.
+- The source stays in the public GitHub repository under its MIT licence.
+- A version tag (for example `v1.3.0`) starts a workflow that runs the full test suite against both hosts, builds the Docker image for the common processor types, builds the Cloudflare deployment bundle, signs both, and publishes a GitHub Release with the release notes.
+- The image is published to GitHub's container registry. Signing uses keyless signing tied to this repository's workflow, so an installation can verify that an image was built by this repository's release workflow and by nothing else.
+- Version numbers follow the usual three-part scheme. Each release states the data-format version it needs.
 
-Three additions to the application:
+### AD-20 — Data conversions are ordered, forward-only and run by the core (proposed)
 
-- **A shared module** of pure functions used by both the browser and the project room: record shapes and validation, the device state model, deletion and cancellation eligibility, port-claim rules and the retest trigger table. Sharing it means the browser can explain a rule before saving and the server enforces the same rule.
-- **A sync store** in the browser that holds, per item, the saved value and version, any pending edit and its save state. This is what feeds the four save states and the conflict screen.
-- **Routes and code splitting.** The eight areas, the field shell and the reviewer view become routes loaded on demand. This also addresses the prototype's bundle-size warning and keeps the phone download small.
+- Every project store and the installation store record their data-format version.
+- The core carries every conversion step since the first release, so an installation can go from any earlier supported version to the latest in one update (FR-72).
+- Conversions run per project, each inside a transaction, after the pre-update backup.
+- The server refuses to start against data newer than itself (NFR-8).
+- Going back means restoring the pre-update backup with the earlier version. No reverse conversions are written.
 
-## 6. Data model
+### AD-21 — How the Update control works on each host (proposed)
 
-### 6.1 Versioned items
+**Checking for a version.** About once a day, and when an administrator asks, the server reads the public release list from GitHub. The request contains nothing about the installation. It can be turned off (FR-72).
 
-Each has an identifier that never changes, a kind, a version number and its data. These are the conflict boundaries required by FR-42.
+**Self-hosted.** A separate updater container does the work, because the application cannot safely replace itself while running. It is the only part with permission to start and stop containers.
 
-| Kind | Notes |
-| --- | --- |
-| Project settings, building, floor | The floor holds its drawing reference, alignment, analysis boundary and target height. |
-| Device | Includes its camera views and configured streams, which are versioned with their parent. Holds lifecycle, placement, condition, provenance per field, and pan/tilt/zoom limits and positions (FR-63). |
-| Camera-model template | Placed cameras copy the values they use, so later template edits do not change them (FR-47). |
-| Door or gate, with component links | Links are part of the opening (FR-49). |
-| Obstruction, zone, annotation | One item each. |
-| Closet, port | A port is its own item so that two people cannot claim one port unnoticed (FR-51). |
-| Cable run, riser | A run holds its ordered segments and length components (FR-52). |
-| Work scope | Holds the per-device planned action, scope category and work-recorded marks for that scope, the estimate lines and the warranty (FR-45, FR-65). |
-| Checklist definition, check | A check is one applicable check on one device or site, with its expected result and flags. |
-| Issue | With its disposition per scope (FR-46). |
-| Issued-design designation | One per scope (FR-61). |
+1. An administrator presses Update. The application asks the updater, over a private connection protected by a shared secret, to install a named version.
+2. The updater accepts only versions from the configured repository and verifies the image signature.
+3. The application takes the pre-update backup and tells signed-in users an update is starting. Their unsaved edits stay in their pages, as for any lost connection.
+4. The updater stops the application, starts the new version, and the new version runs its data conversions.
+5. The updater calls a health check. On success it reports the new version. On any failure it restores the pre-update backup, starts the earlier version, and reports what happened.
+6. The outcome is written to the activity log.
 
-Deleted drafts, cancelled and corrected records are kept as items with an end state and reason. They are filtered out of working content, not removed (FR-55).
+The same steps can be run from a command line on the server, for an operator who prefers not to grant the updater its permissions.
 
-### 6.2 Append-only entries
+**On Cloudflare.** A Worker cannot sensibly replace its own code, and storing a credential that can would be a standing risk. Each organisation therefore deploys from its own copy of the repository, using a deployment workflow that the repository provides.
 
-Notes, photo attachments, measurements, test attempts, reviewer comments and decisions, service visits, reliability runs and their downtime entries, and the change log. Each has an identifier, author name, session, time and the item it belongs to. A correction is a new entry that refers to the earlier one.
-
-### 6.3 Fixed records
-
-Named revisions, the surveyed baseline, issued designs, closeout records and package editions. Each is a row pointing to immutable files in R2.
-
-### 6.4 Storage layout
-
-Records are stored as JSON in a general items table, with indexed columns for the fields that are searched or filtered (kind, floor, identifiers, names, states). This keeps the browser and server models the same, makes snapshots a straightforward export, and eases migration from the prototype's JSON. Search over 600 devices is served from the loaded summaries in the browser, within the 1-second target.
-
-## 7. Interface between browser and server
-
-All paths are under `/api`. Every request carries the link token.
-
-| Purpose | Request | Notes |
-| --- | --- | --- |
-| Open a project | Read project summary | Buildings, floors, device summaries, scope, issued reference, counts. |
-| Open a floor | Read floor records | Devices, geometry, zones, annotations, routes for one floor. |
-| Open a device | Read device detail | Checks, entries and history for one device, fetched when needed. |
-| Save | Send operation | AD-5. Returns new versions, or the conflicts. |
-| Add evidence | Send entry | Append-only. For a photo, sent after the upload completes. |
-| Learn of changes | Read changes since a sequence number | AD-6. |
-| Undo or redo | Send undo for an operation | AD-7. |
-| Upload a file | Start, send parts, complete | AD-4. Completion returns the hash. |
-| Download a file | Read by hash | Streams from R2 after the access check. |
-| Fixed records | Create revision, issue, designate, close out, restore | Each is one guarded action in the project room. |
-| Links | Create, replace, revoke | Edit-link holders manage reviewer links. |
-| Jobs | Start and read status | Packages, portable backup, restore. |
-| Administration | Create project, list backups, restore, switch | Administrator key. |
-
-Errors use a small fixed set: not allowed, not found, conflict, rule violated (with the rule and the records involved), over limit, and try again. The browser turns each into the specific message the UX specification calls for.
-
-## 8. How the main flows work
-
-**Edit and save.** The user commits an edit. The store marks the item Unsaved, then Saving, and sends the operation. On success it stores the new version and shows Saved. On a network failure it keeps the edit, shows Unsaved, and retries with the same identifier after checking for changes.
-
-**Two people, one camera.** The second save arrives with an old version. The project room rejects it and returns the saved values. The store marks the item Conflict and the interface shows the comparison. The user's choices are sent as a new operation based on the latest version.
-
-**Photo on site.** The phone makes a preview, uploads the preview and the original in parts, then sends the entry. The photo shows Uploading until the entry is committed. If the upload fails, the entry is never created and the photo shows Failed with Retry.
-
-**Record a removal.** One operation changes the device's lifecycle and sets a disposition on each affected cable end and port. The project room checks them together, so a stale tab cannot leave a port pointing at a removed device (FR-53).
-
-**Issue a design.** The browser first resolves its own pending edits. The project room then writes the snapshot, creates the issued record, and, on the separate confirmation step, moves the designation pointer and marks the previous issue superseded.
-
-**Close out.** The project room recomputes the remaining-work list at that moment, refuses Completed if anything is outstanding, writes the closeout snapshot, and sets the scope's state, all as one unit (FR-32).
-
-**Import an inventory.** The browser parses the file, shows the mapping and the four row groups, and sends the confirmed rows as one operation with the versions it previewed against. Any row whose record changed in the meantime comes back as a conflict for review instead of being applied (FR-58).
-
-## 9. How the quality requirements are met
-
-| Requirement | Approach | Still to prove |
-| --- | --- | --- |
-| Save acknowledged within 2 s | One request to the project room and one local database write. | Measure on the reference connection. |
-| Seen elsewhere within 5 s | 3-second polling. | Measure. |
-| Open within 10 s, switch plan within 5 s | Load summaries first, then one floor; previews, not originals; routes loaded on demand. | Measure with the large fixture and a 100 MiB source PDF. |
-| Analysis within 10 s at required fidelity | Web Worker, cancel and restart when inputs change, refine near targets. | Risk R2. |
-| Find among 600 devices within 1 s | In-memory search over loaded summaries. | Measure on a phone. |
-| Zero loss of acknowledged saves | Durable Object storage is durable on acknowledgement. | Restart test. |
-| Recovery point within 24 h, restore within 60 min | AD-13. | Risk R3. |
-| Access enforced on the server | AD-12; no file is served without a link check. | Tests for revoked and cross-project links. |
-| Fixed records never change | Immutable, hash-named files; no update path exists for them. | Tests that later edits leave hashes unchanged. |
-| File and project budgets | Enforced in the Worker and project room; usage shown before a limit is reached. | Boundary tests. |
+- With one-step deployment set up, Update takes the backup and then starts that workflow for the chosen release; the new version runs its conversions on first start; the application reports the new version once it sees it.
+- Without it, Update shows the exact steps to run the workflow by hand.
+- Which trigger is best (starting a GitHub Actions run, or a Cloudflare build hook) is experiment R10.
 
 ## 10. Code structure
 
 ```
 site-studio/
-  src/            React application
-    areas/        one folder per area of work, the field shell, the reviewer view
-    sync/         sync store, operation queue, polling, upload in parts
-    analysis/     Web Worker wrapper around the existing calculation modules
-    ...           existing components and calculation modules
-  shared/         record shapes, validation, state model and domain rules (TypeScript)
-  worker/         TypeScript
-    index.ts      routing, access checks, static assets
-    project-room.ts   the Durable Object
-    files.ts      upload, download, budgets
-    jobs/         backup, restore, portable backup
-    admin.ts
-  tests/          existing tests on Node's test runner
-  worker-tests/   Worker and project-room tests on Vitest in Cloudflare's runtime
-  wrangler.jsonc  bindings for the Durable Object, R2 buckets, D1 and schedules
+  src/              React application (JavaScript, existing)
+    areas/          one folder per area, the field shell, the reviewer view
+    admin/          sign-in, set-up, account, administrator screens
+    sync/           sync store, operation queue, polling, upload in parts
+    analysis/       Web Worker wrapper around the calculation modules
+  shared/           record shapes, validation, state model, roles (TypeScript)
+  core/             portable server (TypeScript)
+    api/            routes and the access gate
+    auth/           accounts, sessions, two-step verification, invitations
+    project-room/   operations, change log, snapshots
+    jobs/           backup, restore, portable backup, conversions
+    admin/          administration, activity log, version check
+    ports.ts        the five interfaces
+  hosts/
+    cloudflare/     Worker entry, Durable Object, D1, R2, Workflows adapters; wrangler.jsonc
+    node/           server entry, SQLite, file and scheduler adapters; Dockerfile
+  updater/          the updater container
+  deploy/           docker-compose.yml, Cloudflare deployment workflow, install guides
+  tests/            existing tests (Node's test runner)
+  core-tests/       core tests, run against both hosts
+.github/workflows/  test, release
 ```
 
-Rules for whoever implements this, so that separate pieces of work stay consistent:
+Rules for implementers, in addition to those in version 1.0 (random identifiers; every write through an operation or entry; each rule written once in `shared/`; UTC times; explicit Unknown; nothing overwritten in file storage; no secrets in records or logs):
 
-- Identifiers are random and never reused or derived from names. Human-readable labels such as C-04 are data.
-- Every write goes through an operation or an entry. No endpoint edits a record in place without a base version.
-- A domain rule is written once, in `shared/`, and called from both sides.
-- Times are stored as UTC timestamps and shown in local time. Lengths are stored in metres with their basis; money as integer minor units with a currency.
-- Unknown is stored as an explicit value, never as a blank, zero or missing key.
-- Nothing in R2 is overwritten. A changed file is a new object.
-- Tokens and secrets never enter the items, entries, snapshots or logs.
+- Nothing under `core/` imports from `hosts/`. Host code is reached only through `ports.ts`.
+- The actor of any action comes from the access gate, never from the request body.
+- Every new table or record shape comes with its conversion step and a test that converts data from the previous release.
+- A route that is not explicitly marked as public, reviewer-link or signed-in is refused.
 
-## 11. Risks and early proofs
+Language and tests are as confirmed (K6): existing application code stays in JavaScript; `shared/`, `core/`, `hosts/` and `updater/` are TypeScript; core tests use Vitest, run in Cloudflare's runtime for that host and in Node for the other.
 
-Each of these should be tested with a short experiment before the work that depends on it.
+## 11. How the quality requirements are met
+
+| Requirement | Approach | Still to prove |
+| --- | --- | --- |
+| Save within 2 s; seen elsewhere within 5 s | One request to the project room; 3-second polling. | Measure on both hosts. |
+| Open within 10 s; switch plan within 5 s | Summaries first, then one floor; previews; routes loaded on demand. | Measure with the large fixture. |
+| Analysis within 10 s | Web Worker; cancel and restart; refine near targets. | R2. |
+| Zero loss of acknowledged saves | Durable storage on acknowledgement; self-hosted, SQLite with synchronous writes on a persistent volume. | Restart and power-loss tests on both hosts. |
+| Recovery point 24 h; restore within 60 min | AD-13. | R3, on both hosts. |
+| Access enforced on the server | The access gate (AD-12); no file without a check. | Tests for non-members, Viewers, deactivated accounts, ended sessions, revoked and out-of-scope links. |
+| Same product on either host | AD-16; one test suite on both. | SM-6. |
+| Safe updates | AD-20, AD-21. | R11. |
+| Fixed records never change | Hash-named files; no update path. | Hash tests after later edits. |
+
+## 12. Risks and early proofs
 
 | # | Risk | Experiment | Fallback |
 | --- | --- | --- | --- |
-| R1 | Generating a complete package in the browser (up to 250 pages and 100 MiB per volume, 1 GiB per edition, within 5 minutes) may exhaust memory or time. | Generate a full-size edition from the large fixture on the reference laptop, one volume at a time. | Render on the server with Cloudflare's browser service, or lower raster resolution only if legibility holds and Kevin agrees. |
-| R2 | The sampled solver may not finish 60 cameras with all zones in 10 s at 1 m spacing or finer. | Benchmark the existing modules in a Web Worker on the busiest plan. | Incremental recomputation of only the affected cameras; several workers; a spatial index for obstructions. |
-| R3 | Copying up to 8 GiB between buckets and rebuilding a project may exceed 60 minutes. | Time a restore of a full-size generation. | Keep restore-ready copies; restore by reference to the backup bucket first and copy in the background. |
-| R4 | Large photo uploads and previews on phones (25 MiB originals, limited memory, patchy signal). | Test on a real iPhone and Android phone over a throttled connection. | Smaller parts; resume after a dropped connection; warn before very large files. |
-| R5 | Building and validating a 10 GiB ZIP inside Worker limits. | Build one from a full-size project; validate and restore it. | Split into numbered parts with a manifest. |
-| R6 | Details not confirmed from documentation: the minimum part size for R2 multipart uploads, and whether Cloudflare's browser service prints PDFs. | Check both before AD-4 and the R1 fallback are relied on. | Adjust part size; choose another fallback. |
-| R7 | Cloudflare's Vite plugin and Vitest integration have not been checked against the prototype's versions (Vite 6.4, React 19). | Make this the first task of the foundation work: run the existing app and one project-room test locally. | Run the Worker with Wrangler beside the Vite development server. |
+| R1 | Generating a full-size package in the browser within 5 minutes. | Generate a full edition from the large fixture, one volume at a time. | Server-side rendering; it would need an answer for both hosts. |
+| R2 | 60 cameras and all zones in 10 s at 1 m spacing or finer. | Benchmark the existing modules in a Web Worker. | Incremental recomputation; several workers; a spatial index. |
+| R3 | Restoring 8 GiB within 60 minutes. | Time a full-size restore on each host. | Restore by reference first, copy in the background. |
+| R4 | Large photo uploads on phones over poor connections. | Test on a real iPhone and Android phone, throttled. | Smaller parts; resume; warn before very large files. |
+| R5 | Building and validating a 10 GiB ZIP within Worker limits. | Build, validate and restore one on each host. | Numbered parts with a manifest. |
+| R6 | Unconfirmed: the minimum part size for R2 multipart uploads; whether Cloudflare's browser service prints PDFs. | Check both. | Adjust part size; choose another fallback for R1. |
+| R7 | Cloudflare's Vite plugin and Vitest integration with Vite 6.4 and React 19. | First task of the foundation work. | Run the Worker with Wrangler beside the Vite server. |
+| R8 | The second set of adapters doubles storage-layer testing. Cloudflare's open-source runtime might run the Cloudflare build on a server instead. | Read its documentation and try a Durable Object with persistent storage on a server. | Keep two adapters as designed. |
+| R9 | Password hashing must be strong and must fit the Worker's processor allowance. | Time Argon2id in WebAssembly and PBKDF2 in Web Crypto on both hosts. | Use whichever meets current guidance within the allowance. |
+| R10 | The best trigger for a Cloudflare deployment from the interface is unverified. | Compare starting a GitHub Actions run with a Cloudflare build hook, for what each needs stored. | Show manual steps only. |
+| R11 | An update that fails half-way must return cleanly. | Break an update at each step on a test server and confirm the earlier version and data return. | Block the release of the Update control until it does. |
+| R12 | SQLite files on network or slow disks can lose durability or lock. | Test on a typical virtual machine disk; document unsupported storage. | Require local disk for records; allow object storage for files only. |
 
-## 12. Confirmed decisions
+## 13. Decisions for Kevin
 
-Kevin confirmed each of these as recommended on 2026-11-18.
+Already confirmed and unchanged: K1 Workers Paid plan; K2 one store per project; K3 packages generated in the desktop browser; K5 Cloudflare backups in the same account; K6 TypeScript for new server and shared code with Vitest; K7 keep the static Sites package for now; K8 polling.
 
-| # | Question | Confirmed |
+Replaced: K4, the permanent administrator key, gives way to administrator accounts and a one-time set-up code (AD-12).
+
+New, each with a recommendation:
+
+| # | Question | Recommendation |
 | --- | --- | --- |
-| K1 | Accept the Workers Paid plan, about 5 US dollars a month plus a few cents of storage? | Yes. The Free plan's limits are too low for this design. |
-| K2 | One Durable Object per project as the place of record (AD-2)? | Yes. It makes the conflict and consistency rules simple to enforce. |
-| K3 | Generate PDF packages in the desktop browser (AD-11)? Packages could then not be produced from a phone. | Yes, subject to experiment R1. |
-| K4 | An administrator key, held by you, for creating projects, restoring backups and reissuing a lost edit link (AD-12)? | Yes. Otherwise the public address lets anyone create projects. |
-| K5 | Backups in a second bucket in the same Cloudflare account (AD-13)? A second account would protect against losing the account itself. | Same account for the proof of concept, stated as a known limit. |
-| K6 | Language and tests (AD-15). | **Decided 2026-11-18:** keep React and Vite; existing application code stays in JavaScript; new server and shared code is TypeScript; server tests use Vitest in Cloudflare's runtime. |
-| K7 | The prototype keeps a static "Sites" package (`.openai/hosting.json` and its test). Keep it working alongside the Cloudflare deployment, or retire it? | Keep it untouched for now; decide when the Cloudflare deployment is live. |
-| K8 | Polling every 3 seconds for other people's changes (AD-6), with live push left for later? | Yes. |
+| K9 | Support self-hosting only as Docker on Linux at first (AD-1)? | Yes. A virtual machine and a physical server are then the same case. |
+| K10 | Build the Cloudflare host first and the self-hosted host second, with the core portable from the first day (AD-16)? | Yes. The first demo is on Cloudflare, and the core tests run on both from the start so portability does not decay. |
+| K11 | Give the updater container permission to start and stop containers, so the button works, with a command-line alternative (AD-21)? | Yes. It is the standard way and the permission is confined to one small container. |
+| K12 | On Cloudflare, have Update start the organisation's own deployment workflow, with manual steps as the fallback (AD-21)? | Yes, subject to experiment R10. |
+| K13 | Email optional, with copyable invitation and reset links (AD-18)? | Yes. It removes a set-up obstacle for small organisations. |
+| K14 | Publish images to GitHub's container registry and sign them with keyless signing (AD-19)? | Yes. No signing key for you to guard. |
+| K15 | Make the repository public now, or when the first release is ready? This is a setting only you can change on GitHub. | When the first release is ready, after a check that nothing private is in the history. |
 
-## 13. Suggested build order
+## 14. Suggested build order
 
-This is input to the epics stage, not a plan. It follows the delivery slices already kept as [input](../../prds/prd-PhySecDesign-2026-11-16/sources/delivery-slices-input.md).
+Input to the epics stage, which needs a further pass after amendment 1.2.
 
-1. **Foundation.** Wrangler configuration, TypeScript and Vitest set-up and local development (experiment R7 first); the project room with items, operations, the change log and polling; links; the sync store; the existing design tool saving to the server. Run experiments R2 and R4 here.
-2. **Files and fixed records.** Uploads in parts, hash-named storage, snapshots, issuing, packages. Run R1 here.
-3. **Field work.** Entries, checks, the field shell, conflict handling on phones, closeout.
-4. **Existing sites and return visits.** Import, Awaiting placement, planned actions, scopes, issues, warranty and service visits.
-5. **Extended modelling.** Multi-view and pan/tilt/zoom cameras, closets and ports, inter-floor runs.
-6. **Recovery.** Daily backups, restore, portable backup. Run R3 and R5 here. This can start any time after step 2.
+1. **Foundation.** Repository layout, the five interfaces, the Cloudflare adapters, local development (R7); the project room with operations, change log and polling; the sync store; the existing design tool saving to the server. Core tests run on both hosts from here, using a minimal Node adapter. Run R2, R8 and R9.
+2. **Accounts and access.** Set-up, sign-in, sessions, roles, membership, the access gate, reviewer links, the activity log, the first administrator screens.
+3. **Files and fixed records.** Uploads in parts, snapshots, issuing, packages. Run R1 and R6.
+4. **Field work**, then **existing sites and return visits**, then **extended modelling**, as in the earlier build order.
+5. **Recovery.** Backups of projects and the installation store, restore, portable backup. Run R3 and R5.
+6. **Self-hosting.** Complete the Node adapters, the Docker image, Compose file and install guide. Run R12.
+7. **Releases and updates.** Release workflow, signing, version check, data conversions, the updater, the Cloudflare deployment workflow. Run R10 and R11. Then the cross-host acceptance of SM-6.
 
-## 14. Not decided here
+## 15. Not decided here
 
-- The exact database tables, request formats and error codes, which belong to the first implementation stories.
-- The workload manifest, reference hardware and benchmark procedure, owned by engineering and QA with Kevin.
-- Monitoring and alerting beyond Cloudflare's built-in logs and a visible backup status.
-- Anything for production use: individual accounts, tenancy, confidential client data, availability commitments.
+- Exact tables, request formats and error codes.
+- Password length, lock-out thresholds and default session length. These follow current published guidance at implementation time and are recorded then.
+- Single sign-on, which the PRD leaves for later. The access gate is the one place it would attach.
+- Monitoring beyond built-in logs, the activity log and visible backup and update status.
+- Support arrangements, security disclosure process and release cadence for organisations that host the software.
