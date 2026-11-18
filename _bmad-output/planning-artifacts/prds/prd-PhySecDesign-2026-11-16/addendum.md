@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.25](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.26](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -657,6 +657,30 @@ Service visits fill the middle of a chain the PRD already had at both ends: an i
 Kevin chose not to create a separate service track. A service call after closeout reopens the project into a work scope marked as service through one action, so the one-active-scope rule, closeout rules and history rules stay as they are. A consequence to accept: each such scope ends with its own closeout record, however small.
 
 The current prototype has no warranty fields, issue records or work scopes. This completes the three items set aside for individual discussion from the reference review.
+
+## Consistency pass on draft 0.25
+
+On 2026-11-18 an independent read of the whole PRD found 25 internal inconsistencies: 2 that could not be implemented as written, 12 ambiguities and 11 wording issues. Nearly all were in material written that day: the device state model, FR-55 to FR-59 and the delivery slices. Mechanical checks found the structure, cross-references and links sound. Kevin approved a batch of single-reading fixes and five decisions, all applied in draft 0.26.
+
+Reconciliations:
+
+- The state model’s forbidden combinations now apply when a planned action is chosen; a completed action stays on the scope as history. A replacement’s successor starts Proposed with Add new.
+- “History” is defined once in FR-55. Lifecycle stage alone is not history, so a just-placed existing-condition record is a deletable draft and does not block floor deletion under FR-56.
+- FR-54 no longer describes restoring onto a deleted floor, which FR-56 makes impossible for a floor that held an archived device; it covers retired and unresolved floors.
+- Cancelled and corrected records are excluded from the plan, totals and calculations but stay listed in the Changes view and a searchable record list.
+- The fixture has two issued designs, two closeouts and two service visits, so its second scope can be closed and FR-59 exercised.
+- Warranty status gains Not started. The Closeout record and preset name reliability runs, warranty details and service visits.
+- Overloaded words are disambiguated in the Terms section, and the parts of a reliability period are renamed stages.
+
+Decisions:
+
+1. Cancel from design covers any Proposed device with history, not only one in an issued design.
+2. Restoring a whole named revision restores design content only and never changes recorded facts.
+3. Issue records and the Current/Proposed/Changes views move to slice 3; issue carryover, scope selection and existing-site work stay in slice 4.
+4. An open reliability run is in progress and becomes an attempt when ended; a run stopped for a non-failure reason has no outcome.
+5. A phone flags a moved device or route for a plan update; repositioning is done in the design workspace.
+
+Left open by this pass: the design workspace needs 1280 px, and some supported tablets are narrower, so whether such a tablet can reposition a device is undecided.
 
 ## Source and verification boundaries
 
