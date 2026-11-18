@@ -581,7 +581,7 @@ Measure timings on the fixture with one mid-range laptop and one mid-range phone
 
 **Resolved OQ-10 (2026-11-18):** Delete floor for empty or draft-only floors, blocking with a list of required actions while active records with history remain, Retire floor with reinstatement when only history remains, removal of floor-level drawing content with a deleted floor, and a Move to another floor action distinguishing corrections from actual relocations are confirmed in FR-1/54/55/56.
 
-OQ-1 through OQ-10 are resolved and no owned open question remains. This does not make the draft final, authorize deployment or claim architecture readiness. This draft does not authorize deployment or claim architecture readiness.
+OQ-1 through OQ-10 are resolved and no owned open question remains. This does not make the draft final, authorize deployment or claim architecture readiness.
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
 
