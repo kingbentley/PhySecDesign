@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.16"
+version: "0.17"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.16 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.17 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -91,7 +91,7 @@ Requirements use stable, globally numbered IDs. Each check describes observable 
 
 **FR-2 — Shared online project.** Provide a hosted HTTPS demo with revocable, replaceable project-specific editing links. Designers and installers use the same persisted project and can switch between Design and Installation views. Enter or select a display name for action history; neither a name nor a view selection grants permissions. The same participant can perform design, field work, and closeout without separate handoff or individual accounts.
 
-**Check:** Saved changes become visible in other connected browsers within a few seconds without file exchange or overwriting unfinished local input. An edit link cannot access unrelated projects, and revoked links are rejected. FR-21/42 define saves and conflicts; exact timing and persistence implementation remain architecture/OQ-9 work.
+**Check:** Saved changes become visible in other connected browsers within a few seconds without file exchange or overwriting unfinished local input. An edit link cannot access unrelated projects, and revoked links are rejected. FR-21/42 define saves and conflicts and NFR-2 sets the timing target; persistence implementation remains architecture work.
 
 **FR-3 — Property lookup and map views.** Search by address or coordinates and use street/open-source mapping and satellite/aerial imagery; support optional configured Google mapping. Preserve geographic placement when switching map styles/providers and disclose provider availability or lookup failures.
 
@@ -269,7 +269,7 @@ Use readable Letter/A4 landscape pages, separate clean plan and coverage sheets,
 
 **FR-34 — Fixed packages and portable archive.** Generate from a consistent saved named revision or fixed closeout, resolving the initiating editor’s relevant pending/conflicting edits first. Retain the exact issued-design and closeout PDFs and their source/edition/content manifests with the property for historical download, project archival and backup/recovery. Redownload returns the retained file; regeneration or later decision information creates a new dated edition with the same fixed source and an explicit decision-history cutoff. Never overwrite the earlier package or substitute later installation edits into it.
 
-Keep PDFs, optional materials/estimate CSVs and complete editable project backups distinct. A backup preserves captured drawings, records, attachments, named revisions, issued/closeout history and packages, continuing issues, removed devices and lifecycle evidence. Preserve stable IDs/relationships and earlier supported project data during migration; exclude access credentials and live passwords. Do not claim original drawings/photos that were never retained. Package storage/container details belong to architecture and numeric limits to OQ-9. Failed generation remains visible and retryable.
+Keep PDFs, optional materials/estimate CSVs and complete editable project backups distinct. A backup preserves captured drawings, records, attachments, named revisions, issued/closeout history and packages, continuing issues, removed devices and lifecycle evidence. Preserve stable IDs/relationships and earlier supported project data during migration; exclude access credentials and live passwords. Do not claim original drawings/photos that were never retained. Package storage/container details belong to architecture; numeric limits are in the acceptance targets. Failed generation remains visible and retryable.
 
 **Check:** Later edits or approval decisions cannot change a previously downloaded package. A new edition identifies its source and cutoff. Reimporting a valid complete backup preserves captured evidence, archived records and retained package relationships; a PDF/CSV is not offered as an editable complete backup.
 
@@ -478,15 +478,15 @@ Undo restores the deleted draft and its uncontested draft relationships. It cann
 Preserve the selected [white/teal map-first direction](../../../../design-mockups/04-map-overlay-studio.png): project/floors/layers, central map and drawing, contextual properties, and direct placement tools. On smaller screens, prioritize locating a device, viewing its requirements, and recording work/photos/results. Desktop supports detailed design and comparison. These are draft quality targets, not production service commitments.
 
 - **NFR-1 — Record integrity.** Stable device/view/stream IDs and revision associations must survive save/reload, restore, export/import, archive, replacement, and reopening. Fixed issued/closeout records and prior evidence remain unchanged by later edits.
-- **NFR-2 — Shared-save clarity.** Saved means acknowledged, durably persisted shared records and associated attachments that survive browser closure and an ordinary service restart. Conflicts and failed saves remain visible; pending input survives while the page is open. Never silently overwrite another participant’s work or declare an incomplete upload saved. Distinguish pending local changes from server-saved state. Browser-close recovery of unsaved input and durable offline capture are not promised; backup/recovery targets remain OQ-9.
-- **NFR-3 — Usability and accessibility.** Support the mixed field-device workflow with readable controls, labeled inputs, keyboard access where applicable, and status indicators that do not rely on color alone. The supported browser/device and accessibility acceptance matrix remains OQ-9.
-- **NFR-4 — Honest analysis and responsiveness.** Use bounded analysis, disclose unsupported inputs, sampling and effective resolution, and keep controls usable during import/analysis/export. Confirm representative project sizes and response-time targets under OQ-9 before acceptance; no untested scale promise is implied.
+- **NFR-2 — Shared-save clarity.** Saved means acknowledged, durably persisted shared records and associated attachments that survive browser closure and an ordinary service restart. Conflicts and failed saves remain visible; pending input survives while the page is open. Never silently overwrite another participant’s work or declare an incomplete upload saved. Distinguish pending local changes from server-saved state. A saved change appears in other open browsers within 5 seconds and a save is acknowledged within 2 seconds. Back up the server automatically each night, retain backups for 7 days and demonstrate one restore during acceptance. Browser-close recovery of unsaved input, durable offline capture, uptime and recovery of changes newer than the last nightly backup after server loss are not promised.
+- **NFR-3 — Usability and accessibility.** Support the mixed field-device workflow with readable controls, labeled inputs, keyboard access where applicable, and status indicators that do not rely on color alone. Support the confirmed browser and screen-size matrix: phones are for field work only, while tablets and laptops support design and field work. Meet WCAG 2.1 AA for forms, lists, schedules and the field view; map-canvas drawing is exempt provided every device is reachable through the schedules. The matrix and checks are in the acceptance targets.
+- **NFR-4 — Honest analysis and responsiveness.** Use bounded analysis, disclose unsupported inputs, sampling and effective resolution, and keep controls usable during import/analysis/export. Meet the confirmed response-time targets on the acceptance fixture and remain functional up to the supported ceiling; no promise is implied beyond it.
 - **NFR-5 — Demo access boundary.** Enforce the confirmed project-edit and revision-review permissions on the server for records, drawings/photos, and other files. Reject revoked links and access outside their project/revision scope. Display names are unverified attribution; anyone holding a link can exercise its permissions. Use sample or sanitized nonconfidential data, keep live credentials out of notes and exports, and require a separate access/data decision for confidential client use. The HTTPS hosting vendor remains an architecture choice; individual accounts are not required.
 - **NFR-6 — Consistent deliverables.** Exports identify their source revision and units, retain readable labels/legends and evidence relationships, and report failures rather than silently presenting incomplete output as complete. Retain exact issued/closeout package files; later regeneration creates a separately identified edition under FR-34.
 
 ## POC success and acceptance
 
-The proposed acceptance exercise uses a representative property with multiple floors, cameras and other equipment, an obstruction, a required coverage zone, routes, cost/capacity assumptions, and survey evidence. It includes an existing-site survey with unknown details, retained equipment/cable, and a planned replacement that becomes documented actual work, then follows the four journeys through later work. Dataset size and detailed test fixtures remain A-2/OQ-9.
+The proposed acceptance exercise uses a representative property with multiple floors, cameras and other equipment, an obstruction, a required coverage zone, routes, cost/capacity assumptions, and survey evidence. It includes an existing-site survey with unknown details, retained equipment/cable, and a planned replacement that becomes documented actual work, then follows the four journeys through later work. The confirmed fixture, ceiling and targets follow the measures below.
 
 | Measure | Acceptance evidence |
 | --- | --- |
@@ -497,11 +497,41 @@ The proposed acceptance exercise uses a representative property with multiple fl
 
 Counter-metrics: more green indicators, a higher modeled coverage percentage, or faster closure must not hide failures, unresolved work, calculation limits, or unverified attribution. Reducing data entry must not erase device history, necessary evidence, or estimate distinctions. Acceptance covers the FRs and NFRs within the agreed fixture/limits; the draft itself is not an acceptance pass. No application tests or builds were rerun for this documentation work.
 
+### Acceptance fixture, supported ceiling and targets
+
+Confirmed 2026-11-18 (OQ-9). The fixture is the project actually exercised for acceptance; the ceiling is the largest project the POC is expected to handle without failure. Beyond the ceiling, behavior is unsupported rather than promised. None of these targets has been measured yet.
+
+| Area | Acceptance fixture | Supported ceiling |
+| --- | --- | --- |
+| Property | 2 buildings, 4 floors and 1 outdoor site plan | 10 floors |
+| Equipment | 60 devices, including 30 cameras (one four-head, one fisheye) | 300 devices; 100 cameras per floor |
+| Cabling and network | 40 cable runs (2 inter-floor), 2 closets, 3 switches | 300 cable runs |
+| Evidence and markup | 40 photos, 6 security zones, 10 annotations | 300 photos; 6 per note |
+| History | 3 named revisions, 1 issued design, 1 closeout, 2 work scopes | 50 named revisions |
+| Concurrent editors | 3 browsers | 5 browsers |
+
+The fixture also carries the conditions described above: an existing-site survey with unknown details, retained equipment and cable, an obstruction, a targeted zone, field changes, a failed test and retest, a replacement, a removal and restoration, and a reopened scope.
+
+| Area | Target |
+| --- | --- |
+| Browsers | Latest two versions of Chrome, Edge, Firefox and Safari on desktop; Safari on iPhone and iPad; Chrome on Android. |
+| Screen sizes | Design workspace from 1280 px wide. Field view from 360 px wide. Phones support field work only: locating a device, viewing its requirements and recording work, photos and results. Tablets and laptops support both design and field work. |
+| Accessibility | WCAG 2.1 AA for forms, lists, schedules and the field view, shown by an automated scan with no serious or critical findings and a manual keyboard pass. Drawing on the map canvas is exempt, provided every device is reachable and inspectable through the schedules. |
+| Shared updates | A saved change appears in other open browsers within 5 seconds; a save is acknowledged within 2 seconds. |
+| Analysis | One camera’s coverage updates within 1 second of finishing an edit. Combined floor analysis completes within 5 seconds with a progress indicator. |
+| Loading and export | The project opens within 5 seconds on broadband. A full fixture PDF package generates within 60 seconds with progress. A photo upload completes within 10 seconds on a typical mobile connection. |
+| Photos | Stored resized to 2,048 px on the longest edge. Originals are not retained. |
+| File limits | 50 MB per PDF plan import; 500 MB per project including retained packages; 100 MB per PDF package. Exceeding a limit is reported and never silently truncates content. |
+| Backup and recovery | Automatic nightly server backup retained for 7 days, with one restore demonstrated during acceptance. Acknowledged saves survive an ordinary service restart. A portable backup export and re-import preserves the complete project under FR-34. |
+| Not promised | Uptime, support hours, or recovery of changes newer than the last nightly backup after loss of the server. |
+
+Measure timings on the fixture with one mid-range laptop and one mid-range phone, at the fixture’s three concurrent browsers.
+
 ## Open questions and assumptions
 
 **Resolved OQ-1 (2026-11-17):** the shared demo access model is confirmed in FR-2/23–25 and NFR-5: revocable project editing and revision-review links, unverified display names, server-enforced scope, HTTPS hosting, and sample/sanitized data. Hosting vendor selection remains architecture work.
 
-**Resolved OQ-2 (2026-11-17):** per-item autosave/conflict checks, updates within a few seconds, preserved pending input, separate evidence entries, duplicate-safe retries, own-session guarded undo, and consistent saved snapshots are confirmed in FR-2/21/22/24/31/32/42 and NFR-2. Exact timing, transport, storage and backup/recovery design remain architecture/OQ-9 work.
+**Resolved OQ-2 (2026-11-17):** per-item autosave/conflict checks, updates within a few seconds, preserved pending input, separate evidence entries, duplicate-safe retries, own-session guarded undo, and consistent saved snapshots are confirmed in FR-2/21/22/24/31/32/42 and NFR-2. Timing and backup targets were subsequently confirmed under OQ-9; transport and storage design remain architecture work.
 
 **Resolved OQ-3 (2026-11-17):** common/device-specific editable starters, project-defined expected results, required/optional applicability, observed outcomes/evidence, independent phase progress and scoped site checks are confirmed in FR-29–31/43. Final template wording and project/manufacturer values belong to implementation/domain setup; retest behavior and broader defect disposition are now confirmed under OQ-4/OQ-5.
 
@@ -529,15 +559,17 @@ Counter-metrics: more green indicators, a higher modeled coverage percentage, or
 
 **Resolved OQ-8 (2026-11-18):** history-based Delete draft, Cancel from design and Correct record actions, removal of eligible draft-only dependents, detachment rather than cascade for retained or shared records, and guarded own-session undo are confirmed in FR-21/35/36/55. Existing-condition records with no baseline or evidence history are deletable as drafts. Deleting a floor together with its contents is not defined by this decision.
 
-OQ-9 remains open without reopening confirmed product choices. Owners are planning responsibilities; no external person has been assigned or contacted. It must be resolved before its stated acceptance milestone. This draft does not authorize deployment or claim architecture readiness.
+**Resolved OQ-9 (2026-11-18):** the acceptance fixture and supported ceiling, browser and screen-size matrix with phones as field-only, WCAG 2.1 AA with a map-canvas exemption, timing targets, resized photo storage, file limits and nightly 7-day backups are confirmed in NFR-2/3/4, A-2 and the acceptance targets. No uptime commitment is made. The targets are unmeasured until the acceptance exercise.
+
+OQ-1 through OQ-9 are resolved. One gap found during the 2026-11-18 review is recorded as a new open question; it has not been discussed and no behavior is assumed. Owners are planning responsibilities; no external person has been assigned or contacted. This draft does not authorize deployment or claim architecture readiness.
 
 | ID | Decision still needed | Owner | Revisit before |
 | --- | --- | --- | --- |
-| OQ-9 | Representative project size, browser/device matrix, accessibility checks, timing targets, storage/report limits, and backup/recovery acceptance. | Kevin + engineering | POC acceptance plan and related architecture commitments. |
+| OQ-10 | Deleting a floor together with its contents. FR-1 allows floor removal and FR-54 handles restoring onto a missing floor, but no requirement defines what happens to the equipment, routes, evidence and history on a deleted floor. FR-55 explicitly excludes it. | Kevin + architecture | Floor-management implementation. |
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
 
-**A-2 — Proposed acceptance fixture.** Existing fictional project fixtures can seed the end-to-end exercise, extended with field changes, failures/retests, a replacement, and a reopened scope. Dataset and scale have not been accepted; resolve through OQ-9.
+**Resolved A-2 — Acceptance fixture.** The fixture size and conditions are confirmed in the acceptance targets. Existing fictional project fixtures can seed it, extended with field changes, failures/retests, a replacement and a reopened scope. Building the fixture is implementation work.
 
 No PSP documentation was supplied or fully reviewed. The original wish to consult it remains a source dependency for domain-specific checklist content or compliance claims. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 

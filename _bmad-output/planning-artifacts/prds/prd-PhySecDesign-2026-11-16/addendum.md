@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.16](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.17](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -66,13 +66,13 @@ Existing cables need retained-versus-changed cost treatment, with endpoint/archi
 
 ## Confirmed shared-update and conflict model
 
-Confirmed 2026-11-17. Kevin accepted the shared-editing approach and requested its inclusion in the PRD. Product behavior is captured in FR-2/21/22/24/31/32/42 and NFR-2. Exact storage/transport choices, versioning primitives and five-second timing remain implementation suggestions or OQ-9 targets, not newly fixed commitments.
+Confirmed 2026-11-17. Kevin accepted the shared-editing approach and requested its inclusion in the PRD. Product behavior is captured in FR-2/21/22/24/31/32/42 and NFR-2. Exact storage/transport choices, and versioning primitives remain implementation suggestions; the five-second timing was subsequently confirmed as an acceptance target under OQ-9.
 
 ### Shared state and normal saves
 
-Keep one authoritative server-saved project with durable records and attachments. Acknowledged saves must survive closing a browser and an ordinary service restart. Only report an attached photo as saved once its upload and record association have succeeded; partial failures remain visible. Database/file-storage selection and backup/recovery targets belong to architecture and OQ-9.
+Keep one authoritative server-saved project with durable records and attachments. Acknowledged saves must survive closing a browser and an ordinary service restart. Only report an attached photo as saved once its upload and record association have succeeded; partial failures remain visible. Database/file-storage selection belongs to architecture; backup/recovery targets were subsequently confirmed under OQ-9.
 
-Autosave completed edits, rather than every drag intermediate. Show Saving, Saved, Unsaved and Conflict states with aggregate project status that never hides a pending item. Refresh other connected browsers within a few seconds—about five seconds is a proposed POC target, to be checked under OQ-9. Refresh on returning to the tab and provide a manual refresh. Incoming updates must not replace a form, drag or text entry with local unsaved work. Polling is a sufficient initial transport; no live cursors or character-by-character joint editing is required.
+Autosave completed edits, rather than every drag intermediate. Show Saving, Saved, Unsaved and Conflict states with aggregate project status that never hides a pending item. Refresh other connected browsers within a few seconds—five seconds is the acceptance target confirmed under OQ-9. Refresh on returning to the tab and provide a manual refresh. Incoming updates must not replace a form, drag or text entry with local unsaved work. Polling is a sufficient initial transport; no live cursors or character-by-character joint editing is required.
 
 ### Conflicts and related records
 
@@ -250,7 +250,7 @@ Default to all floors. Selected-floor exports are labeled Partial with the inclu
 
 ### Fixed packages and portable recovery
 
-Generate from a consistent saved named revision or fixed closeout, resolving the initiating editor's relevant pending/conflicting edits first. A draft preview can use an identified saved snapshot without issuing, approving or closing the project. Preserve the exact issued-design and closeout PDFs with the property, plus a manifest identifying source snapshot, work scope, package edition, export time, included sections/floors and known omissions. Keep these files available after project archival; package retention is included in backup/recovery. Numeric size/storage limits remain OQ-9.
+Generate from a consistent saved named revision or fixed closeout, resolving the initiating editor's relevant pending/conflicting edits first. A draft preview can use an identified saved snapshot without issuing, approving or closing the project. Preserve the exact issued-design and closeout PDFs with the property, plus a manifest identifying source snapshot, work scope, package edition, export time, included sections/floors and known omissions. Keep these files available after project archival; package retention is included in backup/recovery. Numeric size/storage limits were subsequently confirmed under OQ-9.
 
 Redownloading a historical package returns the retained file. Regeneration or later approval information creates a new dated package edition tied to the same fixed source and a stated decision-history cutoff; it does not overwrite the earlier PDF or claim later edits were part of it. Later corrections to installation records use the normal new-revision/closeout history. Review links still refer to their fixed records, and a static PDF does not update when decisions change.
 
@@ -297,7 +297,7 @@ The [implementation extract](sources/camera-model-template-extract.md) and [opti
 
 ## Confirmed equipment/cable scope — OQ-7 resolved
 
-Initially proposed 2026-11-17 after export-package confirmation, then refined and accepted in successive guided decisions. Camera-model templates, bounded multi-view/panoramic support, additional equipment/linked openings, site annotations, closets/ports and physical inter-floor routing are now confirmed in FR-7/47–52 and related clauses. The latest routing acceptance resolves OQ-7; OQ-8 lifecycle edges were subsequently resolved in FR-53–55; OQ-9 acceptance/limits remains open.
+Initially proposed 2026-11-17 after export-package confirmation, then refined and accepted in successive guided decisions. Camera-model templates, bounded multi-view/panoramic support, additional equipment/linked openings, site annotations, closets/ports and physical inter-floor routing are now confirmed in FR-7/47–52 and related clauses. The latest routing acceptance resolves OQ-7; OQ-8 lifecycle edges were subsequently resolved in FR-53–55; OQ-9 acceptance/limits was resolved on 2026-11-18.
 
 The accepted scope supports generic equipment and model-specific cameras, a basic controlled opening, explicit manual switch-port assignments and transparent cable estimates. It builds on the existing same-floor route baseline without treating the new requirements as implemented. Full vendor catalogs, rack/patch-panel engineering, automatic routing and detailed electrical calculations remain outside the POC extension.
 
@@ -563,6 +563,14 @@ An isolated eligible placement is removed in one action with no dialog; a previe
 Undo is the guarded own-session undo of FR-21. It restores the draft and its uncontested draft relationships, and leaves any relationship since claimed elsewhere unresolved. No action here records physical removal, releases an actual port, resolves an issue or changes a test outcome, and no approval gate is added. Deleted IDs are not reused.
 
 The current prototype deletes a device together with its routes and converts surviving survey references to floor pins, with no eligibility check, cancellation or correction action. FR-55 does not define deleting a floor together with its contents; that remains unspecified.
+
+## Confirmed acceptance targets and limits — OQ-9 resolved
+
+Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its five choices: phones are field-only; photos are stored resized, not as originals; WCAG 2.1 AA applies with a map-canvas exemption; the sizes, timings and limits stand as tabled; and backups are nightly with 7-day retention and no uptime promise. The PRD’s acceptance section holds the full fixture, ceiling and target tables, with NFR-2/3/4 and A-2 pointing to them.
+
+These are targets for the future shared application, not measurements. The current prototype differs: 40 session undo steps, 20 named revisions, a 100 MB portable project limit, a 64 MB review-snapshot bound, photo previews capped at 1,600 px and 24 MB per design, and combined analysis capped at 500 cameras. It has no server-held project, so it has no server backup. The 50 MB PDF import limit and six photos per note carry over unchanged. The five-second shared-update figure, previously a suggestion, is now the acceptance target; polling remains a sufficient transport.
+
+Because photos are stored resized, a closeout package is a record of resized evidence images, not an original-resolution archive. Hosting, database, file storage and the backup mechanism remain architecture choices that must meet these targets.
 
 ## Source and verification boundaries
 
