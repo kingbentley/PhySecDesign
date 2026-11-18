@@ -57,12 +57,43 @@ The expected-relevance column is from general knowledge of these titles, not fro
 
 Ordered by how much the answer could change the PRD. Rough notes or pasted highlights are both fine.
 
-1. **Patterson — acceptance testing.** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
+1. **Patterson — acceptance testing (partly answered; see findings).** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
 2. **Patterson — closeout.** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
 3. **Patterson — design package.** Which drawings and schedules does he expect in a design submission? Compare with the Design preset (FR-33a).
 4. **Patterson — estimating.** Which cost components does he list beyond equipment, cable and labour? Compare with FR-17/18.
 5. **Garcia — video assessment.** How does she define levels of image detail, and by what measure? Compare with the DORI convention (FR-14).
 6. **Fischer — security survey.** What does a survey record about existing conditions? Compare with FR-20/39.
+
+## Findings from the reading task
+
+Findings are paraphrased from material Kevin shared. No book text or screenshot is stored in this repository.
+
+### Question 1 — acceptance testing (partly answered, 2026-11-18)
+
+Source: one Kindle page Kevin shared as a screenshot, covering the end of a site acceptance test section and the start of a reliability testing section. Presumed to be Patterson; title, edition and chapter are to be confirmed.
+
+What the page establishes:
+
+- **Two stages in sequence.** A site acceptance test is followed by a reliability test, also called an operational availability test. The reliability test usually runs about 30 days, alternates testing and evaluation phases, and does not start until the customer confirms in writing that acceptance testing is complete.
+- **Roles.** The customer side writes the acceptance test procedures. The contractor demonstrates the system against them and against the contract requirements, then delivers a test report with results and a written statement that the system is calibrated, tested and ready for reliability testing. The report includes the approved procedures.
+- **Performance measures.** Acceptance includes measured performance, not only function: throughput at each portal, error rates, and nuisance and false alarm rates against specified limits.
+- **Acceptance items for video and related systems.** Cabling and transmission installed and tested; remote stations communicating with the monitoring centre; software and controls working; cameras aimed and focused; cameras facing sunrise or sunset aimed so they do not view the sun; night performance where vehicle headlights may degrade the picture; alarm-to-camera call-up working for the designated alarm points; pan/tilt/zoom limits, controls and home positions set and tested. Several items concern analog video equipment (switchers, synchronization, signal bandwidth) and need a modern equivalent, not adoption as written.
+
+Comparison with PRD draft 0.21:
+
+| Finding | PRD position | Assessment |
+| --- | --- | --- |
+| Reliability period after acceptance | None. Closeout follows testing directly (FR-31/32). | Gap. Candidate: an optional, project-defined reliability period between testing and closeout. |
+| Written test report and readiness statement | The Closeout package carries test attempts and evidence (FR-33a). No separate test report or readiness statement. | Partial. Possibly met by a closeout preview; to be decided. |
+| Customer-written procedures, contractor demonstration | Checklists are project-defined and technician-recorded; final acceptance is optional (FR-23–25/29). | Consistent. The PRD does not record who authored a procedure. |
+| Measured performance against specified limits | Supported generically: measured checks need a value, units and conditions against a project-defined expectation (FR-29/30). | Consistent. No change needed. |
+| Aim and focus; cabling tested | In the camera starter and common checklist (FR-29). | Covered. |
+| Sun-facing cameras | Not in the camera starter. | Gap. Candidate starter item, and possibly a design-time note for east- or west-facing cameras. |
+| Night performance with headlights | Night checks are enabled only where scoped (FR-43). | Partial. Candidate optional starter item. |
+| Alarm-to-camera call-up | Integration checks only where scoped (FR-43). | Partial. Candidate site-level starter item. |
+| Pan/tilt/zoom limits, controls, home positions | The PRD never mentions pan/tilt/zoom cameras. FR-10 and FR-47 assume a fixed aim. | Gap in the camera model, not only in checklists. |
+
+Still needed for question 1: the stages that come before the site acceptance test and after the reliability test, and what the book says happens when a reliability test fails. The section headings of that chapter would answer the first part.
 
 ## Pending decisions (proposed 2026-11-18, not confirmed)
 
