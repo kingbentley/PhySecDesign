@@ -132,7 +132,6 @@ Covers: FR-55 (reversing a mistaken Installed or Configured mark), the device st
 
 **Refusals and edge cases**
 - "Reverse installed mark" is not offered for a device that was Existing before the scope. A request for one is refused by the server and the device's lifecycle is unchanged.
-- A reversal based on a stale view of the device is returned as a conflict.
 
 **Access and restore**
 - A device whose mark was reversed or cleared is still not offered Delete draft.

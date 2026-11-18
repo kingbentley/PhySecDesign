@@ -1,37 +1,39 @@
-8.1 | A backup location on the same disk as live data is allowed, with a warning on S-34 | UX 17.4 specifies a warning, not a refusal
-8.1 | One backup job per project at a time; Back up now during a running job shows that job; a daily backup due during a manual one waits and is skipped if the manual one succeeded | Avoids two jobs writing one generation; simplest rule
-8.1 | A failed backup does not count toward the seven kept generations and removes none | PRD says seven successful generations
-8.1 | Only the most recent "before an update or data conversion" backup is kept beside the seven | AD-13 says "plus one"
-8.1 | A missing second bucket makes the Cloudflare deployment fail with a message | Safer than starting with no backup area
-8.2 | A backup of the working project is taken before the switch and kept as "before restore"; the switch does not happen if it fails | FR-34 requires a backup before destructive maintenance; makes a mistaken switch recoverable
-8.2 | At most one unswitched restored copy per project; it stays until an administrator discards or replaces it (no timed deletion) | Bounds storage without inventing a retention period
-8.2 | Saves from pages open before the switch are refused, shown as "not saved: project was restored", and not retried | Same pattern as shared decision 11 for access changes
-8.2 | Older-format backups are converted in the copy; newer-format backups are refused | Follows AD-20 and NFR-7
-8.3 | The deployment key is kept outside backups; recovery without it resets two-step verification for every account and clears stored settings secrets, logged | Secrets encrypted with the key cannot be read without it; accounts must stay usable
-8.3 | Recovery cancels outstanding invitation and password-reset links as well as sessions and reviewer links | A link used after the recovery point would otherwise work again
-8.3 | A project in the catalogue with no usable backup is listed as not recovered; a project backup with no catalogue entry is recovered with no members | Nothing is silently dropped or made reachable without an administrator's decision
-8.3 | The recovery notice stays until an administrator dismisses it | PRD requires the notice but gives no duration
-8.3 | "No live site passwords in backups" is tested as: no record shape has a field for one | Free-text notes cannot be policed; the review asked for a testable control
-8.4 | A finished portable backup file is kept for download for 24 hours, then removed, and does not count against the project budget | PRD says backup storage is separate; a short conventional holding period
-8.4 | One portable-backup job per project at a time | Same rule as 8.1
-8.4 | A standard user who imports becomes the new project's Editor | FR-68: import "follows the same rule" as project creation
-8.4 | Replacing a live project is refused when the backup's project identity differs from the live project's | Prevents replacing the wrong project; importing as new remains available
-8.5 | A warning is shown when a project reaches 90% of the 8 GiB budget, in addition to the warning before an operation that would exceed a limit | PRD says "warn before exceeding"; 90% is a conventional threshold
-8.5 | Space is reserved when an upload or job starts and released on failure | Stops two concurrent uploads jointly exceeding the budget
-8.5 | Viewers as well as Editors see project usage on Records | Usage is read-only information; a Viewer can open the project
-9.4 | A failed or malformed update check keeps the last good result and shows the failure time and reason | Avoids a false or stale update marker
-9.4 | A release is offered only if its version is higher than the installed one | Never offers a downgrade (NFR-8)
-9.5 | The signature is verified before users are warned | Avoids interrupting users for a release that will be refused; PRD order puts verification first
-9.5 | Sign-in is not offered while changes are stopped; existing sessions stay valid | PRD stops "changes of every kind"; a sign-in writes a session and a log entry that a return would lose
-9.5 | Update, Back up now and Restore are disabled while an update, backup or restore runs; a daily backup due during an update waits | One maintenance job at a time
-9.5 | After an update an open page submits its pending edits; any the new version cannot accept stay listed as not saved and the page asks for a reload without reloading by itself | Keeps unsaved input visible, as FR-21 and NFR-2 require
-9.6 | After power loss or a killed updater: accept changes again if installation had not begun, otherwise return to the earlier version and backup | Returning is the conservative choice once the image may have changed
-9.6 | Going back after an update that passed its checks is a documented command-line procedure, not an interface control | AD-20 says going back means restoring the pre-update backup with the earlier version; no new control is invented
-9.7 | 30 minutes without a result from the update run: ask GitHub to cancel it, clear the marker, accept changes again, log "no result" | The brief requires a stated limit; 30 minutes allows for a queued run and a full deploy
-9.7 | The token and the existence of the release are checked before users are warned or changes stopped | Shared decision 8
-9.7 | The workflow, not the Worker, verifies the signature | AD-21
-9.7 | For a release that changes a Durable Object class, the manual procedure is shown in place of Update now | AD-21: it "is installed by the documented manual procedure"
-10.1 | A change to the fixture after Kevin's confirmation makes a new manifest version and the affected runs are repeated | PRD forbids redefining the fixture after results
-10.2/10.3 | The Cloudflare FR-66 and FR-72 Checks are placed in 10.3; the two-user conflict runs, independent arithmetic check and full-size recovery run in 10.2 | Shared decision 10 left the split open
-8.1 | Archiving or un-archiving is refused while a backup or restore job for that project runs | Follow-up from Epic 6: an archive must not interleave with a backup or restore; matches 6.11's refusal while other jobs run
-10.1 | The small functional project has about 50 devices and is built in 10.1, not by the 2.7 script | The addendum suggests about 50 assets; 2.7 generates only the acceptance-size project
+CF-01 | 8.1a | reading | "No live site passwords in backups" is tested as: no record shape has a field for one | Scan free-text notes for likely passwords | NFR-5 keeps site credentials out of backups, and free text cannot be policed by a test
+CF-02 | 8.1b | decide | A Cloudflare deployment with no second bucket fails, naming it | Start with backups shown as Failed | AD-13 requires a separate backup area; failing early is safer than running with none
+CF-03 | 8.1b | reading | Only the most recent "before an update" backup is kept beside the seven | Keep every pre-update backup | AD-13 says seven "plus one"
+CF-04 | 8.1c | decide | One backup job per project; Back up now shows the running job; a due daily backup waits and is skipped if the manual one succeeded | Queue a second job | No source covers two jobs at once; one job avoids two writers for one generation
+CF-05 | 8.1c, 8.2a | decide | Archiving and un-archiving are refused while a backup or restore job for the project runs; a due backup waits for an archive | Let them interleave | No source covers it; a backup should hold one archive state
+CF-06 | 8.2a | decide | At most one unswitched copy per project, kept until an administrator discards or replaces it | Delete an unswitched copy after 7 days | Bounds storage without inventing a retention period
+CF-07 | 8.2b | reading | A "before restore" backup of the working project is taken before the switch | Switch with no extra backup | FR-34 requires a backup before destructive maintenance
+CF-08 | 8.2b | decide | A save from a page open before the switch is refused, shown as "not saved: project was restored", not retried | Apply it to the restored project if the base version matches | A stale save could silently mix lost work into the recovery point
+CF-09 | 8.2c | value | The full-size project is 7.5 to 8 GiB stored, made of distinct-content files | Any size the script reports as 8 GiB | Identical files are stored once, so the stored size must be measured
+CF-10 | 8.3a | reading | The operator supplies the kept deployment key to the destination, which generates none | Destination makes a new key and re-encrypts | AD-21: the key is created only when absent
+CF-11 | 8.3a | decide | Recovery also cancels invitation and password-reset links issued before it | Leave them valid until they expire | FR-34 names sessions and reviewer links only; a link revoked after the recovery point would work again
+CF-12 | 8.3a | value | The recovery notice stays until an administrator dismisses it | Hide it after 30 days | FR-34 requires the notice and gives no duration
+CF-13 | 8.3b | decide | Recovery without the key needs a stated option, resets two-step verification for all and clears stored settings secrets | Refuse recovery without the key | Secrets encrypted with the key cannot be read; accounts must stay usable
+CF-14 | 8.3b | decide | Catalogue entry with no backup: listed as not recovered; backup with no catalogue entry: recovered with no members | Stop the whole recovery on any mismatch | Nothing is dropped silently or opened to anyone without an administrator's decision
+CF-15 | 8.4a | decide | One portable-backup job per project at a time | One job per user | Same rule as backup jobs; avoids duplicate 10 GiB files
+CF-16 | 8.4a | value | A finished portable backup is kept for download for 24 hours | 7 days | No source gives a period; short holding limits unbudgeted storage
+CF-17 | 8.4b | decide | An import gives the project a new identity and records the source's | Keep the source identity | Importing twice, or beside the source, would otherwise give two projects one identity
+CF-18 | 8.4b | reading | A standard user who imports becomes the new project's Editor | Import creates a project with no members | FR-68: import "follows the same rule" as project creation
+CF-19 | 8.4c | reading | A replaced project keeps its identity and its members | Members are cleared and set again | Memberships are installation data and not in a portable backup (AD-14)
+CF-20 | 8.4c | decide | Replacement is refused unless the backup's identity is the live project's own | Allow any backup after a typed confirmation | Prevents replacing the wrong project; import as new remains available
+CF-21 | 8.5 | reading | A package generation that reaches the remaining budget fails there and its parts are discarded | Estimate the size by a dry run first | Volumes are generated one at a time (AD-11), so no size exists beforehand
+CF-22 | 8.5 | value | Usage warning at 90% of the 8 GiB budget | 80% | PRD says "warn before exceeding" and gives no threshold
+CF-23 | 8.5 | decide | Space is reserved when an upload or job starts and released on failure | Check only on completion | Stops two concurrent uploads jointly exceeding the budget
+CF-24 | 9.3b | decide | The marker records whether installation has begun; an earlier version restores only if it has | Restore whenever the marker names another version | On Cloudflare the earlier version keeps running while it waits for the run and must not restore then; AD-20 does not distinguish the two
+CF-25 | 9.4 | reading | A release is offered only if its version is higher than the installed one | Offer the newest listed release whatever is installed | NFR-8: an installation never runs a version older than its data
+CF-26 | 9.4 | decide | A failed or malformed check keeps the last good result and shows the failure time and reason | Clear the result and show "Unknown" | Avoids a false or stale update marker
+CF-27 | 9.5a | decide | Update, Back up now and Restore are disabled while any of the three runs; a due daily backup waits | Queue them | One maintenance job at a time; no source covers overlap
+CF-28 | 9.5b | decide | Sign-in is not offered while changes are stopped; existing sessions stay valid | Allow sign-in during the update | FR-72 stops "changes of every kind"; a sign-in writes a session and a log entry a return would lose
+CF-29 | 9.5b | decide | An edit the new version cannot accept stays listed as not saved, and the page asks for a reload without reloading itself | Reload automatically after the update | FR-21 and NFR-2 keep pending input visible
+CF-30 | 9.6a | decide | Going back after an update that passed its checks is a documented command-line procedure | A "Return to previous version" control on Software | AD-20 says going back means restoring the pre-update backup with the earlier version; no control is specified
+CF-31 | 9.6a | decide | After power loss or a killed updater: accept changes again if installation had not begun, otherwise return | Always restore the backup | Nothing changed before installation began, so a restore is not needed
+CF-32 | 9.7a | decide | The workflow asks the installation immediately before deploying; a withdrawn or different marker stops it | Rely on cancelling the run through GitHub | A cancel request can arrive too late; a withdrawn marker cannot be deployed against
+CF-33 | 9.7b | value | 30 minutes without a result ends the wait | 60 minutes | Allows for a queued run and a full deploy; no source gives a limit
+CF-34 | 9.7b | decide | After the limit with installation begun: the new version checks itself, or the earlier version restores the backup | Stay stopped until an administrator acts | Neither version should accept changes on unchecked data or wait indefinitely
+CF-35 | 9.7c | decide | Manual steps start with "Prepare for a manual update", which stops changes, backs up and sets the marker | Manual steps use Back up now and a hand restore, with no marker | Without the marker the earlier version cannot return to the backup by itself
+CF-36 | 10.1 | reading | A fixture change after confirmation makes a new manifest version and affected runs are repeated | Forbid any change | PRD says not to simplify the agreed workload to claim a pass
+CF-37 | 10.1 | value | The small functional project has about 50 devices | About 20 | PRD asks for a small functional project and gives no size
+CF-38 | 10.2a | reading | "Controls stay usable" is measured as the 250 ms feedback target, 19 of 20, during import, analysis and export | No main-thread task over 200 ms | PRD sets 250 ms for selection and button feedback
+CF-39 | 10.4b | reading | "Same features and rules" is checked against a named list of screens and nine refusals | Repeat every story's criteria on both hosts | NFR-7 needs an observable comparison; the full runs are already repeated on the self-hosted host

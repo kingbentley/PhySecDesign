@@ -36,3 +36,27 @@
 - 5.3 or 5.13 (D): a mark or attempt saved from a stale page onto a cancelled or corrected device is refused and kept for review.
 - 5.3 (D): carries the "Work started with no issued design" warning.
 - 6.12 (E): carries "a service scope needs no issued design".
+
+## Split map, Epics 6-7
+- 6.2 -> 6.2a choose file and sheet; 6.2b map the inventory columns
+- 6.3 -> 6.3a review and match import rows; 6.3b apply import, report result
+- 6.6 -> 6.6a planned actions on existing equipment; 6.6b Current, Proposed and Changes views
+- 6.8 -> 6.8a record removal, archive the device; 6.8b removal review and cable ends
+- 6.9 -> 6.9a restore the same archived device; 6.9b reconnect cables, link a replacement
+- 6.12 -> 6.12a warranty records and calculated status; 6.12b service visits on an issue; 6.12c Start service visit, service scope
+- 7.2 -> 7.2a stored positions and resting view; 7.2b reach on demand layer
+- 7.5 -> 7.5a closets and port schedules; 7.5b port claims, power, capacity; 7.5c ports through removal, restore, deletion
+- 7.6 -> 7.6a runs between floors, named risers; 7.6b length ledger and supply quantity
+
+## From part E (Epics 6-7)
+- RULING (coordinator): device fields serial number, IP address, MAC address and room-or-area are created in 4.2 (earlier). 6.1 must not create them again; 6.1 keeps manufacturer, source asset ID and installation date if 4.2 lacks them, and makes nothing else. Search on room works from 4.2 on.
+- RULING (coordinator): the closeout record is written on closing (5.12) and is not changed afterwards. Warranty and service visits are separate records; the Closeout package reads the fixed record plus warranty and visit records as they stand at the package cutoff, as it does for decisions. 6.12a must not say the closeout record is written after the warranty step.
+- 5.12 (D): owns the general no-active-scope rule and its label "not saved: no active scope — reopen first". E states only local cases (6.8a removal refused, 6.9a restore refused, 6.12a warranty edits allowed, 6.12b visit corrections allowed).
+- 5.7 and 5.12 (D): 6.7 redefines in-scope from then on as Work now devices plus required checks of Work now and Inspect-or-test-only devices; a planned Remove or Replace predecessor is listed "Removal not recorded" and cleared by the recorded removal in 6.8a.
+- 5.3 (D): limit "returns to Proposed" on reversing an Installed mark to add-new devices; 6.6a carries the reversal for a device Existing before the scope. 6.12c: no "Work started with no issued design" warning in a service scope.
+- 3.6 (B): later stories fill the inspector: 6.6a Work tab planned action; 7.5a port assignments and replaces the Connections placeholder; 7.6a cable runs in Connections; 7.3 Doors and gates tab in Equipment. (Also 5.3 and 5.5 must fill the desktop Work and Checks tabs: review D12.)
+- 2.5 (B): Notes list of later floor-deletion blockers should name story 7.4 (annotations) and story 7.5 (closets), with 6.8 and 7.6.
+- 5.6 (D): drop "port or power" from its flagging criterion; 7.5b carries it.
+- 5.9 (D): attention count is extended by cable ends (6.8b) and ports (7.5c) flagged Needs connection review -- stated in those stories, nothing to do in 5.9.
+- 1.9 (A): no bulk-cleanup event needed (project change log has it). Done.
+- 10.2 (F): inventory preview and import timings in 6.2a and 6.3b are development measurements; acceptance run stays in 10.2.

@@ -1,54 +1,42 @@
-2.1 | First scope name is required and at most 80 characters | The authorities give no length; a bound is needed for the frame chip and lists
-2.2 | The 2-second save acknowledgement is first measured on the locally run server (19 of 20 trials), then again on the fixture in 2.7 | The fixture does not exist before 2.7; the 19-of-20 rule is the PRD's
-2.2 | Unsaved edits are retried automatically on reconnection; leaving the page with unsaved items shows the browser's leave warning | FR-21 says pending input is kept "while the page stays open"; the warning protects that
-2.2 | Plan images stay in browser storage until 2.6 | Avoids saving large images through the small-operation route before the file store is used
-2.3 | A hidden tab does not poll | AD-6 says polling runs "while the page is visible"
-2.4 | An operation on several items is all-or-nothing when one item conflicts | AD-2 and AD-5: "apply every change or none"
-2.5 | A floor is "unused" only if it holds no device, route, obstruction, zone or note (later: plan, survey entry, revision reference, removed device, riser) | FR-60 says eligibility comes from content, not an empty visible plan
-2.5 | The last floor and the last building of a project cannot be deleted | Conservative; a project with no floor has nowhere to work and the PRD does not describe one
-2.6 | Supported plan types are PDF, PNG, JPEG and WebP | What the prototype accepts today
-2.6 | Limits are 100 MiB per PDF and 25 MiB per image | PRD file acceptance table (the prototype's 50 MB PDF limit is replaced)
-2.6 | An unfinished upload is discarded after 7 days | Matches R2's behaviour found in experiment R6, so both hosts agree
-2.6 | A completed file that no record references is removed by a daily clean-up once 24 hours old | Review edge case 20; 24 hours leaves time for a retry of the referencing save
-2.6 | Google mapping key is delivered to signed-in users only, to all projects, and Settings says it is browser-visible | Review finding 12; a Maps JavaScript key must reach the browser
-2.7 | An Editor can set Proposed or Existing by hand, as the prototype's status field does; Removed cannot be chosen | Keeps the prototype's ability to record existing equipment until 6.1; removal is 6.8
-2.7 | A device once saved as Existing keeps a "recorded as existing" mark | FR-55 judges Delete draft from origin and history, not the current flag
-2.7 | Basis rule before Epic 6: Current installation = Existing devices; Proposed design = Existing and Proposed | PRD state model, without planned actions, which arrive in 6.6
-2.7 | Fixture: 10 buildings, 25 plans, 600 devices, 150 cameras, 60 on the busiest plan, 20 targeted zones there, fixed seed, loaded through the server's own operations | PRD acceptance profile; 20 zones is the R2 experiment's workload
-2.7 | All timing targets of the PRD table except analysis are measured here on the locally run server, 19 of 20 trials | Review finding 10; they cannot sit in 2.1, 2.2 or 2.5 because the fixture arrives in 2.7
-2.8 | Target met needs the lower bound (edge cells counted as not qualifying) to reach the target; Shortfall needs the upper bound to miss it; otherwise refine once at half spacing, then show Uncertain near target with both figures | FR-15 and the addendum require "refine or flag"; bounding by edge cells is the conservative conventional method
-2.8 | Not demonstrated is shown when the target is not met and a camera in range of the zone was left out of the calculation | FR-15; the only unassessed views before story 7.1 are cameras excluded for plane, settings or disabled state
-2.8 | Time allowance for one calculation is 10 seconds | The PRD's target for the busiest plan
-2.8 | All cameras excluded gives Not assessed, not 100% unseen | FR-13 Check
-2.9 | A route with an unassigned end stays in cable totals and is listed for review | FR-55: keep cable records and mark unassigned ends; nothing silently dropped
-2.10 | Photo types JPEG, PNG and WebP; 25 MiB limit | Prototype's accepted types; PRD limit
-2.11 | Undo and redo cover the last 40 edits made in the open page; reload or sign-out clears them | 40 is the prototype's limit; FR-55 says no cross-session undo is required
-2.11 | A new edit after an undo clears the redo list | Conventional
-2.11 | Delete draft with no confirmation only for a proposed device with no survey entry, no route and never recorded as Existing; with routes, a preview and confirmation | FR-55: isolated draft immediate; connected draft previews
-2.11 | In the preview a route may be deleted with the device only if selected, has no survey entry and has no other assigned end | FR-55 "dedicated disposable draft cable only when explicitly selected and independently eligible"
-2.11 | A floor whose only devices are deleted drafts counts as unused; undo of the draft deletion is then refused | FR-55 "do not recreate deleted floors"
-2.12 | Prototype project file limit 100 MiB | The prototype's own limit for these files
-2.12 | Until 4.1 and 4.4, costs and named revisions in the file are listed as "not imported" | Cross-epic move; keeps "nothing dropped silently" true meanwhile
-2.12 | Imported notes carry "from the prototype file" and the import date, with no author | The old file holds no author; FR-69 forbids inventing one
-2.12 | Importing the same file twice makes two projects | No identity in the old file is trusted for de-duplication
-2.13 | Bundled web server gets and renews its certificate automatically for the host name, or uses operator-supplied certificate files | Architecture leaves the certificate method open; these two cover public and private servers
-2.13 | Plain HTTP is redirected by the bundled web server and refused by the application itself | FR-66 Check allows either; refusing at the application protects operators' own proxies
-2.13 | Trusted-proxy list defaults to the bundled web server only; forwarded headers from other addresses are ignored; application port not published by default | Conservative default so headers cannot be forged
-2.13 | Smoke suite in 2.13 excludes file cases; 2.14 adds them | Dependency rule: the disk file store is 2.14
-2.14 | Backup location is a separate Compose setting with no default; server refuses to start if it is the same folder as the live files or is left unset (8.1 adds the same-disk warning) | Review finding 25: backups must not land in the live folder
-2.14 | A stored file whose size or hash no longer matches is reported as damaged on request | AD-16 gives the disk store a stored hash and size; this is their use
-2.15 | 50 forced kills | Experiment R8 used 45; rounded up
-2.15 | At least 20 power cuts on the virtual-machine disk; network disk tested on NFS | R12 names the disks but no count; 20 matches the PRD's trial size
-2.15 | A second container on a volume in use refuses to start | R12 covers "durability and locking"; conservative handling
-2.15 | Storage-full notice is shown to administrators in Administration | Review edge case 23; Administration is the only administrator surface that exists by Epic 2
-3.1 | Before Epic 5 the Installation view exists as a switch that only sets the default basis | UX 5.3; recording tools do not exist yet
-3.1 | Materials and Capacity dialogs become the Costs and capacity page, Revisions and Review the Records page; Equipment is left to 3.5 | Review finding 28: one owner per conversion
-3.2 | A development-only status reference page is the place of test for values no feature uses yet | Makes "one component renders each family" observable
-3.3 | Phone-width form fields are 16 px, tested at 390 px | UX section 10 and audit finding A6, which the story's Covers line already listed
-3.4 | The analysis strip is checked at 1440 × 900 and 1280 × 720 | 1440 × 900 is the audit size; 1280 × 720 is a common smaller laptop size
-3.5 | Deleted drafts are not listed under Historical | PRD FR-8 and FR-55 (no recycle-bin view) over UX section 6, which lists "Deleted draft" there; Kevin to confirm
-3.5 | Schedule CSV holds the rows and columns shown and names project, basis and export time | Review finding 21 and NFR-6
-2.7 | The fixture script also makes the small functional project and can add plan files up to 8 GiB | Asked for by Epics 8 to 10 so that backup and limit tests have full-size data
-2.13 | Self-hosted deployment key is generated on first start into a key file in its own Compose-set folder, apart from records and files | Epic 1 encrypts with a deployment key; 8.3 keeps it outside backups; generating it avoids a weak operator-chosen key
-2.13 | Self-hosted administrator recovery is a command run on the server, with the same one-time code rules as 1.8 (once, 1 hour) | Mirrors Epic 1's Cloudflare command; the command itself is a review safeguard not in the PRD, for Kevin to confirm
-2.13 | "Two installations share no files" is shown in 2.14, users and projects in 2.13 | The disk file store does not exist until 2.14
+CB-01 | 2.1 | value | Scope name 1 to 80 characters | 120 characters | No source gives a length; the name must fit the frame chip and list rows
+CB-02 | 2.2a | reading | Capacity inputs are saved to the server and the Capacity dialog keeps working | Hide the Capacity dialog until the capacity story | The prototype saves capacity inputs with the project and FR-19 is existing capability
+CB-03 | 2.2a | decide | Cost entry, named revisions and review are not offered in a shared project until their own stories build them | Keep them working with data held only in the browser | Browser-only data in a shared project would be unsaved and unattributed, against FR-21 and FR-69
+CB-04 | 2.5 | decide | The last floor and the last building of a project cannot be deleted | Allow a project with no floor or building | The prototype refuses to remove the final floor; the PRD describes no project without one
+CB-05 | 2.5 | reading | A revision restore deletes and renames no building or floor | Restore returns names and removes floors added later | FR-22 restores a design without deleting later records
+CB-06 | 2.6c | value | Unfinished upload discarded after 7 days | 24 hours | Matches Cloudflare's own multipart behaviour seen in experiment R6, so both hosts agree
+CB-07 | 2.6c | value | Unreferenced completed file removed by a daily clean-up once 24 hours old | Remove after 7 days | 24 hours leaves time for a retried save to reference the file
+CB-08 | 2.7a | reading | An Editor sets Proposed or Existing by hand | Existing only through the existing-site survey story | The prototype's status field does this and the state model allows a surveyed device to start at Existing
+CB-09 | 2.7a | reading | A device once saved as Existing keeps a "recorded as existing" mark | Judge only the current lifecycle value | FR-55 decides Delete draft from origin and history, not a current flag
+CB-10 | 2.7a | reading | "Room or area" is an optional free-text field on every device | Location means floor and map position only | FR-7 lists location among device details and the UX field search covers room
+CB-11 | 2.7a | reading | Current installation shows Existing; Proposed design shows Existing and Proposed | Proposed design shows Proposed only | PRD state model, before planned actions exist
+CB-12 | 2.7a | decide | A device that is or has been Existing has no delete control until correction exists | Keep the prototype's free deletion for every device | FR-55 allows deletion only of drafts never surveyed as existing
+CB-13 | 2.7b | value | Fixture has 25 plans and 20 targeted zones on the busiest plan | 30 plans and 10 zones | PRD acceptance profile allows 20 to 30 plans; 20 zones is the workload of experiment R2
+CB-14 | 2.8a | reading | "Controls stay usable" means feedback within 250 ms while a calculation runs | A longest-task bound of 50 ms | 250 ms is the PRD's target for selection and direct-edit feedback
+CB-15 | 2.8b | reading | Target met and Shortfall are decided by bounding with edge cells, then one refinement at half spacing, then Uncertain near target | Flag any result within 2 points of the target | NFR-4 requires refine or flag; bounding by edge cells is the conservative method
+CB-16 | 2.8b | reading | Not demonstrated when the target is unmet and a camera in range was left out | Show Shortfall with a note | FR-15 separates an unmet target from one that was not fully assessed
+CB-17 | 2.8c | value | Time allowance for one calculation is 10 seconds | 30 seconds | Equal to the PRD target for the busiest plan
+CB-18 | 2.9 | reading | A route with an unassigned end stays in cable totals and is listed for review | Leave it out of totals until reassigned | FR-55 keeps cable records and marks unassigned ends; nothing is dropped silently
+CB-19 | 2.10a | decide | A saved survey entry cannot be edited or deleted; a correction is a new entry | Let the author edit an entry, keeping its history | NFR-1 keeps prior evidence unchanged and FR-21 protects evidence from undo
+CB-20 | 2.10a | value | Form wording "Do not enter passwords or access codes for the site's systems." | A longer explanation behind a help link | NFR-5 keeps site credentials out of notes; free text can only be guided
+CB-21 | 2.11a | value | Undo and redo cover the last 40 edits in the open page | 100 edits | 40 is the prototype's limit; FR-21 limits undo to the current session
+CB-22 | 2.11b | reading | A route is deleted with a draft device only if selected, with no survey entry and no other assigned end | Never delete a route with a device | FR-55 allows a disposable draft cable only when explicitly selected and independently eligible
+CB-23 | 2.11b | reading | A floor whose only devices are deleted drafts counts as unused, and undoing such a deletion is refused once the floor is gone | A deleted draft blocks floor deletion while its Undo is available | FR-55 says not to recreate deleted floors
+CB-24 | 2.12 | reading | Importing the same prototype file twice creates two projects | Refuse or warn on a second import | The old file carries no project identity that can be trusted
+CB-25 | 2.12 | value | Prototype project file limit 100 MiB | 250 MiB | The prototype's own limit for these files
+CB-26 | 2.13a | decide | Bundled web server gets and renews its certificate automatically, or uses operator-supplied files | Operator-supplied certificate files only | The architecture leaves the certificate method open; the two ways cover public and private servers
+CB-27 | 2.13b | reading | The application itself refuses any request that did not arrive over HTTPS | Rely on the web server's redirect alone | FR-66 allows redirect or refusal; refusing in the application also protects an operator's own proxy
+CB-28 | 2.13b | value | Trusted-proxy list defaults to the bundled web server only | Trust any private-network address | Forwarded headers cannot then be forged by another machine
+CB-29 | 2.13c | decide | Self-hosted deployment key is generated on first start into a key file in its own folder | The operator supplies the key as a setting | A generated key is never weak, and a separate folder keeps it out of backups of records and files
+CB-30 | 2.13c | decide | With records present and the key file missing, the server refuses to start | Start with stored secrets unreadable and a warning | A new key must never be generated over existing data, and a silent start would hide the loss
+CB-31 | 2.13d | value | Smoke suite is a named list of ten cases, one or more per area of Epics 1 and 2 | Run the full server test suite against the image | A named list makes "covered" checkable and keeps the run short
+CB-32 | 2.14 | reading | A stored file whose hash or size no longer matches is reported as damaged, not served | Serve it and log a warning | AD-16 gives the disk store a stored hash and size; this is their use
+CB-33 | 2.14 | decide | The server refuses to start when the backup location is unset or is the live files folder | Start and show a warning in Administration | Backups written into the live folder would be lost with it
+CB-34 | 2.15 | decide | A second application container on a records volume in use refuses to start | Allow it and rely on file locking | Experiment R12 covers durability and locking; two writers risk damage
+CB-35 | 2.15 | decide | A storage-full notice naming the volume is shown to administrators in Administration | Show the reason only on the failed save | Only an administrator can free space, and Administration is their one surface at this point
+CB-36 | 2.15 | value | 50 forced kills | 100 | Experiment R8 used 45; rounded up
+CB-37 | 2.15 | value | At least 20 power cuts on a virtual-machine disk, and NFS as the network disk | 50 cuts, and SMB as well | R12 names the kinds of disk but no count; 20 matches the PRD's trial size
+CB-38 | 3.1a | reading | Until field recording exists, the Installation view only sets the default basis | Hide the view switch until Epic 5 | UX 5.3 describes the switch as a change of emphasis, not of permission
+CB-39 | 3.2 | reading | Approval state has five values: Approved, Changes requested, Bypassed, Awaiting decision, No review | Three values, without Changes requested and No review | FR-23 to FR-25 allow a request for changes and a design with no reviewer; the UX status table lists no approval family
+CB-40 | 3.4 | value | Analysis strip checked at 1440 × 900 and 1280 × 720 | 1440 × 900 only | 1440 × 900 is the audit size; 1280 × 720 is a common smaller laptop
+CB-41 | 3.5 | value | Schedule CSV holds the rows and columns shown and names project, basis and export time | Always export every column | NFR-6 asks deliverables to state what they show
+CB-42 | 3.5 | value | "Scrolling stays responsive" means no main-thread task over 200 ms while scrolling 600 rows | 50 ms | Below the PRD's 250 ms feedback target, so a click during scrolling still meets it

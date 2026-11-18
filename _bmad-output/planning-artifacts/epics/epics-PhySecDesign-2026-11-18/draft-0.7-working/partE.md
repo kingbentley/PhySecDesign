@@ -32,7 +32,7 @@ Covers: FR-39, device state model (condition and provenance).
 - Later edits leave the baseline's stored file unchanged, checked by its hash.
 - A revision restore leaves the condition, provenance and recorded field values of an Existing device unchanged.
 
-Notes: Left to later stories: spreadsheet intake (story 6.2a, story 6.2b, story 6.3a and story 6.3b); planned work on existing devices (story 6.6a); recording a removal (story 6.8a).
+Notes: Left for later: spreadsheet intake (story 6.2a, story 6.2b, story 6.3a and story 6.3b); planned work on existing devices (story 6.6a); recording a removal (story 6.8a).
 
 ### Story 6.2a: Choose an inventory file and sheet
 
@@ -63,7 +63,7 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 - While the 600-row file is parsed, Cancel and the step controls respond within 250 ms. (CE-02)
 - The preview of the 600-row file appears within 30 seconds of choosing the file, in each of three runs, recorded as a development measurement.
 
-Notes: Left to later stories: server-side enforcement of file limits and the usage display (story 8.5); the acceptance measurement of the 30-second target (story 10.2).
+Notes: Left for later: server-side enforcement of file limits and the usage display (story 8.5); the acceptance measurement of the 30-second target (story 10.2).
 
 ### Story 6.2b: Map inventory columns
 
@@ -113,7 +113,7 @@ Covers: FR-58 (matching and preview), FR-62 (row review). Screens: S-09 step 3.
 - A row error is shown inline with Fix and Skip.
 - Nothing in the project changes at this step.
 
-Notes: Left to later stories: applying the ticked rows (story 6.3b); a row that matches a removed device (story 6.8a).
+Notes: Left for later: applying the ticked rows (story 6.3b); a row that matches a removed device (story 6.8a).
 
 ### Story 6.3b: Apply an import and re-import safely
 
@@ -146,7 +146,7 @@ Covers: FR-58 (apply, re-import, concurrent changes), FR-62 (result, source and 
 **Evidence to record**
 - The confirmed import of the 600-row fixture completes within 30 seconds in each of three runs, recorded as a development measurement.
 
-Notes: Left to later stories: searching, verifying and placing records that await placement (story 6.4); cleaning up a mistaken batch (story 6.5); the acceptance measurement of the 30-second target (story 10.2).
+Notes: Left for later: searching, verifying and placing records that await placement (story 6.4); cleaning up a mistaken batch (story 6.5); the acceptance measurement of the 30-second target (story 10.2).
 
 ### Story 6.4: Awaiting placement, and verifying on site
 
@@ -227,7 +227,7 @@ Covers: FR-40, FR-55 (reversal on equipment that was already existing), device s
 **Access and restore**
 - Planned actions and planned positions are saved in a named revision and returned by a revision restore.
 
-Notes: Left to later stories: the Changes basis and how each basis shows planned actions (story 6.6b); recording a removal (story 6.8a).
+Notes: Left for later: the Changes basis and how each basis shows planned actions (story 6.6b); recording a removal (story 6.8a).
 
 ### Story 6.6b: Current installation, Proposed design and Changes
 
@@ -279,7 +279,7 @@ Covers: FR-45. Screens: S-11.
 **Access and restore**
 - Scope categories are saved in a named revision and returned by a revision restore.
 
-Notes: Left to later stories: the recorded removal that clears a "Removal not recorded" row (story 6.8a); a second scope, created by reopening (story 6.10).
+Notes: Left for later: the recorded removal that clears a "Removal not recorded" row (story 6.8a); a second scope, created by reopening (story 6.10).
 
 ### Story 6.8a: Record a removal and archive the device
 
@@ -310,7 +310,7 @@ Covers: FR-35, FR-8 (historical records), FR-42, FR-58 (archived match), FR-60 (
 **Access and restore**
 - A revision restore leaves a removed device archived, and lists for review a removed device that the revision still holds.
 
-Notes: Left to later stories: the removal review, cable ends and what stays outstanding (story 6.8b); restoring the device (story 6.9a); port dispositions (story 7.5c); a door link on a removed component (story 7.3).
+Notes: Left for later: the removal review, cable ends and what stays outstanding (story 6.8b); restoring the device (story 6.9a); port dispositions (story 7.5c); a door link on a removed component (story 7.3).
 
 ### Story 6.8b: Review a removal and settle its cable ends
 
@@ -364,7 +364,7 @@ Covers: FR-36 (restore), FR-54, NFR-1.
 **Access and restore**
 - A revision restore leaves a restored device, its new position and its restoration record unchanged.
 
-Notes: Left to later stories: reconnecting cables and linking a replacement (story 6.9b); reconnecting to a switch port (story 7.5c).
+Notes: Left for later: reconnecting cables and linking a replacement (story 6.9b); reconnecting to a switch port (story 7.5c).
 
 ### Story 6.9b: Reconnect a restored device, or link a replacement
 
@@ -418,7 +418,7 @@ Covers: FR-38, FR-45 (one active scope), FR-46 (carryover). Screens: S-20, S-18.
 **Access and restore**
 - A revision restore changes no scope, no scope's state and no carried issue.
 
-Notes: Left to later stories: reopening an archived project (story 6.11); Start service visit, which reopens into a service scope (story 6.12c).
+Notes: Left for later: reopening an archived project (story 6.11); Start service visit, which reopens into a service scope (story 6.12c).
 
 ### Story 6.11: Archive and un-archive a project
 
@@ -453,7 +453,7 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 **Access and restore**
 - No revision restore changes the archive state or its history.
 
-Notes: Left to later stories: backup and restore jobs that also block archiving (story 8.1).
+Notes: Left for later: backup and restore jobs that also block archiving (story 8.1).
 
 ### Story 6.12a: Warranty records
 
@@ -487,7 +487,7 @@ Covers: FR-65 (warranty records and status), FR-33 (warranty details). Screens: 
 **Access and restore**
 - A revision restore leaves warranties unchanged.
 
-Notes: Left to later stories: the under-warranty suggestion on a service visit (story 6.12b).
+Notes: Left for later: the under-warranty suggestion on a service visit (story 6.12b).
 
 ### Story 6.12b: Service visits
 
@@ -516,7 +516,7 @@ Covers: FR-65 (service visits), FR-46 (visits on an issue), FR-33 (service visit
 **Access and restore**
 - A revision restore leaves service visits unchanged.
 
-Notes: Left to later stories: Start service visit, which lets a new visit be recorded when no scope is active (story 6.12c).
+Notes: Left for later: Start service visit, which lets a new visit be recorded when no scope is active (story 6.12c).
 
 ### Story 6.12c: Start a service visit when no scope is active
 
@@ -602,7 +602,7 @@ Covers: FR-63 (ranges, limits, stored positions, home, checks), FR-29 (pan/tilt/
 **Access and restore**
 - Positions, limits and the home mark are kept in a named revision. A revision restore returns them for a proposed camera and leaves those of an installed camera unchanged.
 
-Notes: Left to later stories: the reach layer (story 7.2b); package sheets that show the resting view, previews and reach (story 7.7).
+Notes: Left for later: the reach layer (story 7.2b); package sheets that show the resting view, previews and reach (story 7.7).
 
 ### Story 7.2b: Pan/tilt/zoom cameras: reach on demand
 
@@ -623,7 +623,7 @@ Covers: FR-63 (reach and achievable detail). Screens: S-06.
 - With unknown pan or tilt limits no reach is drawn, and the camera's reach is disclosed as unassessed.
 - With limits but no optical data, the reach outline is drawn with "Detail not assessed".
 
-Notes: Left to later stories: package sheets that show reach as not counted (story 7.7).
+Notes: Left for later: package sheets that show reach as not counted (story 7.7).
 
 ### Story 7.3: Doors and gates with linked components
 
@@ -703,7 +703,7 @@ Covers: FR-51 (closets, port schedule, assignments), FR-60 (closets block floor 
 - A revision restore returns proposed port assignments and reservations, and leaves current assignments and port availability unchanged.
 - A revision restore leaves closets and their grouping unchanged. (CE-36)
 
-Notes: Left to later stories: conflicting claims, power and capacity (story 7.5b); ports through removal, restoration and draft deletion (story 7.5c); cable runs in Connections (story 7.6a).
+Notes: Left for later: conflicting claims, power and capacity (story 7.5b); ports through removal, restoration and draft deletion (story 7.5c); cable runs in Connections (story 7.6a).
 
 ### Story 7.5b: Port claims, power and capacity
 
@@ -768,7 +768,7 @@ Covers: FR-9, FR-52 (runs, segments and risers), FR-60 (riser references). Scree
 **Access and restore**
 - A revision restore returns proposed runs with their segments and risers, and leaves existing runs unchanged. (CE-40)
 
-Notes: Left to later stories: transition and drop lengths, extras and supply quantities (story 7.6b); run schedules in packages (story 7.7).
+Notes: Left for later: transition and drop lengths, extras and supply quantities (story 7.6b); run schedules in packages (story 7.7).
 
 ### Story 7.6b: The length ledger
 
