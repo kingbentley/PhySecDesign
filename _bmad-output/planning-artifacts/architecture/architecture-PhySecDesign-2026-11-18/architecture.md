@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — Architecture"
-status: draft 0.1 for Kevin's review
+status: draft 0.2 for Kevin's review; hosting and language decisions confirmed
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendment 1.1; UX design specification draft 0.2; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -10,7 +10,7 @@ method: BMAD Create Architecture, followed by hand (the BMAD skills are not inst
 
 This document decides how the Site Studio proof of concept is built and hosted so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
 
-Kevin decided on 2026-11-18 that the application is hosted on Cloudflare. Everything else here is a proposal. The choices that are his to make are listed in [Decisions for Kevin](#12-decisions-for-kevin).
+Kevin decided on 2026-11-18 that the application is hosted on Cloudflare, and that new server and shared code is written in TypeScript and tested with Vitest in Cloudflare's runtime (AD-15). Everything else here is a proposal. The choices that are his to make are listed in [Decisions for Kevin](#12-decisions-for-kevin).
 
 Three kinds of statement are kept apart:
 
@@ -95,7 +95,7 @@ flowchart LR
 
 ## 5. Decisions
 
-Each decision gives the choice, the reason and what was set aside. AD-1 is decided; the rest are proposed.
+Each decision gives the choice, the reason and what was set aside. AD-1 and AD-15 are decided; the rest are proposed.
 
 ### AD-1 — Host on Cloudflare (decided)
 
@@ -222,11 +222,15 @@ A portable backup is a ZIP file, stored without compression, containing a manife
 
 The prototype's existing portable JSON files (versions 1 and 2) are imported in the browser through the existing migration code and then saved as a new project.
 
-### AD-15 — Keep React, Vite and JavaScript; add a shared rules module
+### AD-15 — Keep React and Vite; write new server and shared code in TypeScript (decided)
 
-No framework change and no TypeScript migration. Three additions:
+No framework change. The existing React application and its calculation modules stay in JavaScript and are not migrated. New code in `worker/` and `shared/` is written in TypeScript, because Cloudflare's tooling generates types for the storage bindings and this is the code that enforces the data-integrity rules. The existing JavaScript imports the shared module as usual.
 
-- **A shared module** of pure functions used by both the browser and the project room: record shapes and validation, the device state model, deletion and cancellation eligibility, port-claim rules and the retest trigger table. Sharing it means the browser can explain a rule before saving and the server enforces the same rule. It is tested with the existing Node test runner.
+Testing uses two runners. The existing tests keep Node's test runner. The Worker and the project room are tested with Vitest and Cloudflare's test integration, which runs them inside the same runtime Cloudflare uses; a Durable Object cannot be tested properly outside it. The shared rules are plain functions and can be run by either.
+
+Three additions to the application:
+
+- **A shared module** of pure functions used by both the browser and the project room: record shapes and validation, the device state model, deletion and cancellation eligibility, port-claim rules and the retest trigger table. Sharing it means the browser can explain a rule before saving and the server enforces the same rule.
 - **A sync store** in the browser that holds, per item, the saved value and version, any pending edit and its save state. This is what feeds the four save states and the conflict screen.
 - **Routes and code splitting.** The eight areas, the field shell and the reviewer view become routes loaded on demand. This also addresses the prototype's bundle-size warning and keeps the phone download small.
 
@@ -326,14 +330,15 @@ site-studio/
     sync/         sync store, operation queue, polling, upload in parts
     analysis/     Web Worker wrapper around the existing calculation modules
     ...           existing components and calculation modules
-  shared/         record shapes, validation, state model and domain rules
-  worker/
-    index.js      routing, access checks, static assets
-    project-room.js   the Durable Object
-    files.js      upload, download, budgets
+  shared/         record shapes, validation, state model and domain rules (TypeScript)
+  worker/         TypeScript
+    index.ts      routing, access checks, static assets
+    project-room.ts   the Durable Object
+    files.ts      upload, download, budgets
     jobs/         backup, restore, portable backup
-    admin.js
-  tests/          existing tests, plus shared-rule and project-room tests
+    admin.ts
+  tests/          existing tests on Node's test runner
+  worker-tests/   Worker and project-room tests on Vitest in Cloudflare's runtime
   wrangler.jsonc  bindings for the Durable Object, R2 buckets, D1 and schedules
 ```
 
@@ -359,6 +364,7 @@ Each of these should be tested with a short experiment before the work that depe
 | R4 | Large photo uploads and previews on phones (25 MiB originals, limited memory, patchy signal). | Test on a real iPhone and Android phone over a throttled connection. | Smaller parts; resume after a dropped connection; warn before very large files. |
 | R5 | Building and validating a 10 GiB ZIP inside Worker limits. | Build one from a full-size project; validate and restore it. | Split into numbered parts with a manifest. |
 | R6 | Details not confirmed from documentation: the minimum part size for R2 multipart uploads, and whether Cloudflare's browser service prints PDFs. | Check both before AD-4 and the R1 fallback are relied on. | Adjust part size; choose another fallback. |
+| R7 | Cloudflare's Vite plugin and Vitest integration have not been checked against the prototype's versions (Vite 6.4, React 19). | Make this the first task of the foundation work: run the existing app and one project-room test locally. | Run the Worker with Wrangler beside the Vite development server. |
 
 ## 12. Decisions for Kevin
 
@@ -369,7 +375,7 @@ Each of these should be tested with a short experiment before the work that depe
 | K3 | Generate PDF packages in the desktop browser (AD-11)? Packages could then not be produced from a phone. | Yes, subject to experiment R1. |
 | K4 | An administrator key, held by you, for creating projects, restoring backups and reissuing a lost edit link (AD-12)? | Yes. Otherwise the public address lets anyone create projects. |
 | K5 | Backups in a second bucket in the same Cloudflare account (AD-13)? A second account would protect against losing the account itself. | Same account for the proof of concept, stated as a known limit. |
-| K6 | Keep JavaScript, React and Vite, with no TypeScript migration (AD-15)? | Yes. |
+| K6 | Language and tests (AD-15). | **Decided 2026-11-18:** keep React and Vite; existing application code stays in JavaScript; new server and shared code is TypeScript; server tests use Vitest in Cloudflare's runtime. |
 | K7 | The prototype keeps a static "Sites" package (`.openai/hosting.json` and its test). Keep it working alongside the Cloudflare deployment, or retire it? | Keep it untouched for now; decide when the Cloudflare deployment is live. |
 | K8 | Polling every 3 seconds for other people's changes (AD-6), with live push left for later? | Yes. |
 
@@ -377,7 +383,7 @@ Each of these should be tested with a short experiment before the work that depe
 
 This is input to the epics stage, not a plan. It follows the delivery slices already kept as [input](../../prds/prd-PhySecDesign-2026-11-16/sources/delivery-slices-input.md).
 
-1. **Foundation.** Wrangler configuration and local development; the project room with items, operations, the change log and polling; links; the sync store; the existing design tool saving to the server. Run experiments R2 and R4 here.
+1. **Foundation.** Wrangler configuration, TypeScript and Vitest set-up and local development (experiment R7 first); the project room with items, operations, the change log and polling; links; the sync store; the existing design tool saving to the server. Run experiments R2 and R4 here.
 2. **Files and fixed records.** Uploads in parts, hash-named storage, snapshots, issuing, packages. Run R1 here.
 3. **Field work.** Entries, checks, the field shell, conflict handling on phones, closeout.
 4. **Existing sites and return visits.** Import, Awaiting placement, planned actions, scopes, issues, warranty and service visits.
