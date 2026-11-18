@@ -24,6 +24,18 @@ The project manager may be the installer or someone else. The chart covers one p
 | Freezing the plan | A separate “set baseline” action, not tied to issuing the design. Re-baselining is allowed, and every earlier baseline is kept and dated. |
 | Installers | See the schedule read-only. In the narrow field layout it is a short list of what is due, late and next, not a chart. |
 | Clients | Included in the Design package only if the manager opts in; off by default; labelled as planned dates, not a commitment |
+| Belongs to | A work scope. Each scope has its own schedule, which is optional and freezes with that scope’s closeout record. A scope with no dates entered has no chart. |
+| Late (red) | A row is past its planned end and not finished |
+| At risk (amber) | A row should have started and has not, or something it depends on is not finished by the row’s planned start |
+| No estimate of “percent behind” | Work does not proceed evenly across a bar, so the app does not guess how far along a row should be |
+| Slipped against the plan | A separate signal from red and amber: how far the current dates have moved from the baseline. Red and amber work from current dates at all times, with or without a baseline. |
+| Before a baseline is set | The chart works normally and is labelled as having no baseline |
+| Typed tasks: done | A tick with name and time, and an optional note. It can be un-ticked, with the change kept in history. No photos. |
+| Dependencies | One kind only: a row cannot start until another is finished. Allowed between any two rows, including typed tasks. A loop is refused when saving, with the rows named. |
+| Editing dependencies | By dragging on the chart and from a plain list on the row, so the action never depends on dragging alone |
+| Rows with no dates | Shown with an empty “not scheduled” track, and counted |
+| Closeout package | Optional and off by default. When included, it shows final dates beside the latest baseline. |
+| Typed task that repeats app work | A hint beside the entry box says typed tasks are for work outside the app. No automatic detection. |
 
 ## What it can reuse from PRD 1.1
 
@@ -51,17 +63,15 @@ The discussion rated this a substantial feature: it reuses progress and grouping
 
 ## Open questions
 
-- What exactly counts as late: past its planned end and unfinished, behind where it should be today, or both.
-- How a manager-typed task is marked done, and whether it can carry a note or photo.
-- How dependencies are drawn and edited, and what the app does when one would create a loop.
-- Whether an app-built row with no dates yet is shown, and how.
-- What the schedule looks like before any baseline is set.
-- Whether a schedule belongs to a work scope, so that a later scope at the same property starts a new one.
-- Whether the Closeout package shows the final schedule against its baseline.
-- Whether the app warns when a typed task appears to describe work the app already tracks. Free text makes this unreliable; the discussion favoured a hint beside the entry box instead.
+The eight questions first listed here were settled with Kevin on 2026-11-18 and are in the table above. Smaller points not yet discussed:
+
+- Whether a row finishes when its work is recorded, when its checks pass, or both.
+- Whether planned dates can be set on a subsystem row, on its phase rows, or on either.
+- What happens to a row’s dates and dependencies when its work is removed from scope.
+- Who may set a baseline, given that PRD 1.1 has no accounts.
 
 ## Before this can be built
 
 - Project scheduling comes off the exclusions list in a later PRD revision, with requirements and Checks written for the items above.
-- The open questions are settled.
+- The smaller points above are settled.
 - Architecture places dates, dependencies and baselines in the shared-edit and conflict rules (FR-21, FR-42).
