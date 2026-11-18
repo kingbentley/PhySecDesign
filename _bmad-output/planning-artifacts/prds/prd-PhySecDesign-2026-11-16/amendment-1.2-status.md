@@ -49,11 +49,11 @@ Asked three questions, he chose:
 - **Unverified display names for editors.** Edits carry the account. Unverified names remain only for reviewer links.
 - **"Use sample or sanitised data" as the access rule.** Each hosting organisation is now responsible for its own data. The PRD states that the software carries no security certification and that an independent security review is needed before recommending it for confidential client data.
 
-## Assumptions made while drafting, for Kevin to confirm
+## Details settled while drafting, confirmed by Kevin
 
-These details were needed to write the requirements and were not put to Kevin.
+These details were needed to write the requirements and were not among the three questions first put to Kevin. He confirmed all eleven as written on 2026-11-18.
 
-| # | Assumption | Where |
+| # | Confirmed detail | Where |
 | --- | --- | --- |
 | A1 | Accounts are created only by an administrator's invitation. There is no open registration. | FR-67 |
 | A2 | Sending email is optional. Without it, an administrator copies invitation and reset links and passes them on by hand. | FR-67 |
@@ -76,7 +76,6 @@ These details were needed to write the requirements and were not put to Kevin.
 
 ## Still to do before this amendment can be treated as final
 
-1. Kevin's confirmation of assumptions A1 to A11.
-2. The same finalization review that PRD 1.0 received, covering 1.1 and 1.2 together.
-3. Revision of the addendum's access section.
-4. Revision of the epics and stories.
+1. The same finalization review that PRD 1.0 received, covering 1.1 and 1.2 together.
+2. Revision of the addendum's access section.
+3. Revision of the epics and stories.

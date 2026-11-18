@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — Architecture"
-status: draft 2.0 for Kevin's review; replaces 1.0 after PRD amendment 1.2
+status: 2.0, decisions K1-K3 and K5-K15 confirmed by Kevin on 2026-11-18; replaces 1.0 after PRD amendment 1.2; nothing built or measured
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2; UX design specification; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -12,7 +12,7 @@ This document decides how Site Studio is built, hosted and updated so that it me
 
 **What changed from version 1.0.** Version 1.0 was written for one hosted demo on Cloudflare, opened by links. On 2026-11-18 Kevin decided that organisations can also host the software on their own servers, that people sign in with accounts, that releases are public and that an administrator can update from the interface ([amendment 1.2](../../prds/prd-PhySecDesign-2026-11-16/amendment-1.2-status.md)). Version 2.0 therefore makes the server portable between two hosts and adds accounts, administration, releases and updates. Version 1.0 is in the repository history.
 
-Decisions Kevin has already confirmed are marked **confirmed**. The new ones are **proposed** and are listed in [Decisions for Kevin](#13-decisions-for-kevin).
+Kevin confirmed every decision in this document on 2026-11-18, including the seven new ones listed in [Confirmed decisions](#13-confirmed-decisions). They stand subject to the early experiments in section 12; a failed experiment brings its decision back to him.
 
 Nothing here has been built or measured. Cloudflare limits are from Cloudflare's documentation as read on 2026-11-18 and are collected in [cloudflare-limits.md](cloudflare-limits.md).
 
@@ -106,14 +106,14 @@ flowchart TB
 
 ## 5. Hosting and portability
 
-### AD-1 — Two supported hosts: Cloudflare, and Linux with Docker (Cloudflare confirmed; self-hosting proposed)
+### AD-1 — Two supported hosts: Cloudflare, and Linux with Docker (confirmed)
 
 - **Cloudflare.** One Worker serves the built application and the API. The Workers Paid plan is required (confirmed, K1).
 - **Self-hosted.** One Docker image runs a Node.js server that serves the same application and API. It is started with Docker Compose alongside an updater container (AD-21) and, optionally, a web server that provides HTTPS. A virtual machine and a physical server are the same case: a Linux machine with Docker. Supporting only this form keeps the number of combinations to test small.
 
 Not supported at first: running without Docker, Windows Server as the host, and Kubernetes. A competent operator can do these, but they are not tested or documented.
 
-### AD-16 — A portable core behind five small interfaces (proposed)
+### AD-16 — A portable core behind five small interfaces (confirmed)
 
 All behaviour lives in the core, written in TypeScript against these interfaces. Each host implements them.
 
@@ -182,7 +182,7 @@ From a fixed snapshot, uploaded volume by volume, registered only when complete 
 
 ## 7. Accounts and access
 
-### AD-12 — Sessions for people who sign in; link tokens for reviewers (proposed; replaces the link-only model)
+### AD-12 — Sessions for people who sign in; link tokens for reviewers (confirmed; replaces the link-only model)
 
 **Signing in.**
 
@@ -207,13 +207,13 @@ Membership is held in the installation store, so removing a member or deactivati
 
 **First administrator.** An installation with no users accepts one set-up request that creates the first administrator, protected by a one-time set-up code printed in the server log or deployment output. This replaces version 1.0's permanent administrator key.
 
-### AD-17 — The installation store (proposed)
+### AD-17 — The installation store (confirmed)
 
 One small database per installation holds: users, password and recovery-code hashes, sessions, invitations and resets, project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table, and the activity log (FR-71). Secrets entered in settings, such as an email password or a map key, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 
 The activity log is append-only. Entries never contain a password, token or code.
 
-### AD-18 — Email is optional (proposed)
+### AD-18 — Email is optional (confirmed)
 
 The core has an email interface with three implementations: none, SMTP (self-hosted), and an HTTP email service (either host). With none, every invitation and reset is a link the administrator copies. No feature requires email.
 
@@ -236,14 +236,14 @@ It holds one project's records, snapshots, files and packages, a manifest, and t
 
 ## 9. Releases and updates
 
-### AD-19 — One public repository; signed releases built by GitHub Actions (proposed)
+### AD-19 — One public repository; signed releases built by GitHub Actions (confirmed)
 
 - The source stays in the public GitHub repository under its MIT licence.
 - A version tag (for example `v1.3.0`) starts a workflow that runs the full test suite against both hosts, builds the Docker image for the common processor types, builds the Cloudflare deployment bundle, signs both, and publishes a GitHub Release with the release notes.
 - The image is published to GitHub's container registry. Signing uses keyless signing tied to this repository's workflow, so an installation can verify that an image was built by this repository's release workflow and by nothing else.
 - Version numbers follow the usual three-part scheme. Each release states the data-format version it needs.
 
-### AD-20 — Data conversions are ordered, forward-only and run by the core (proposed)
+### AD-20 — Data conversions are ordered, forward-only and run by the core (confirmed)
 
 - Every project store and the installation store record their data-format version.
 - The core carries every conversion step since the first release, so an installation can go from any earlier supported version to the latest in one update (FR-72).
@@ -251,7 +251,7 @@ It holds one project's records, snapshots, files and packages, a manifest, and t
 - The server refuses to start against data newer than itself (NFR-8).
 - Going back means restoring the pre-update backup with the earlier version. No reverse conversions are written.
 
-### AD-21 — How the Update control works on each host (proposed)
+### AD-21 — How the Update control works on each host (confirmed)
 
 **Checking for a version.** About once a day, and when an administrator asks, the server reads the public release list from GitHub. The request contains nothing about the installation. It can be turned off (FR-72).
 
@@ -339,15 +339,15 @@ Language and tests are as confirmed (K6): existing application code stays in Jav
 | R11 | An update that fails half-way must return cleanly. | Break an update at each step on a test server and confirm the earlier version and data return. | Block the release of the Update control until it does. |
 | R12 | SQLite files on network or slow disks can lose durability or lock. | Test on a typical virtual machine disk; document unsupported storage. | Require local disk for records; allow object storage for files only. |
 
-## 13. Decisions for Kevin
+## 13. Confirmed decisions
 
-Already confirmed and unchanged: K1 Workers Paid plan; K2 one store per project; K3 packages generated in the desktop browser; K5 Cloudflare backups in the same account; K6 TypeScript for new server and shared code with Vitest; K7 keep the static Sites package for now; K8 polling.
+Confirmed in version 1.0 and unchanged: K1 Workers Paid plan; K2 one store per project; K3 packages generated in the desktop browser; K5 Cloudflare backups in the same account; K6 TypeScript for new server and shared code with Vitest; K7 keep the static Sites package for now; K8 polling.
 
 Replaced: K4, the permanent administrator key, gives way to administrator accounts and a one-time set-up code (AD-12).
 
-New, each with a recommendation:
+New in version 2.0, confirmed by Kevin on 2026-11-18 as recommended:
 
-| # | Question | Recommendation |
+| # | Question | Confirmed |
 | --- | --- | --- |
 | K9 | Support self-hosting only as Docker on Linux at first (AD-1)? | Yes. A virtual machine and a physical server are then the same case. |
 | K10 | Build the Cloudflare host first and the self-hosted host second, with the core portable from the first day (AD-16)? | Yes. The first demo is on Cloudflare, and the core tests run on both from the start so portability does not decay. |

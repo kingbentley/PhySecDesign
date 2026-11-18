@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — UX Design Specification"
-status: draft 0.3; D1-D9 confirmed by Kevin on 2026-11-18; section 17 added for PRD amendment 1.2, with D10-D14 awaiting review
+status: draft 0.4; design decisions D1-D14 confirmed by Kevin on 2026-11-18; section 17 covers PRD amendment 1.2
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -507,7 +507,7 @@ Every functional requirement has a home. Requirements that govern behaviour with
 
 ## 17. Accounts, administration and updates (amendment 1.2)
 
-PRD amendment 1.2 replaced edit links with accounts and added self-hosting, administrator controls and updates from the interface (FR-66–72). This section designs those screens, S-25 to S-36. It follows the choices Kevin made on 2026-11-18: email and password, accounts to edit with reviewer links kept, and the roles Administrator, Editor and Viewer. The design choices made here are proposals D10 to D14 below.
+PRD amendment 1.2 replaced edit links with accounts and added self-hosting, administrator controls and updates from the interface (FR-66–72). This section designs those screens, S-25 to S-36. It follows the choices Kevin made on 2026-11-18: email and password, accounts to edit with reviewer links kept, and the roles Administrator, Editor and Viewer. Kevin confirmed the design choices made here, D10 to D14 below, on the same day.
 
 ### 17.1 What changes in the screens already designed
 
@@ -579,9 +579,9 @@ Other signed-in users see a banner before the update starts ("An update starts i
 | Software | Up to date, Update available, Updating, Update failed | Chip beside the version; a dot on Administration in the account menu when an update is available. |
 | Backup | Succeeded with age, Failed, Never | Chip with the age always shown. |
 
-### 17.6 Design decisions proposed for Kevin
+### 17.6 Confirmed design decisions
 
-| # | Question | Recommendation |
+| # | Question | Confirmed |
 | --- | --- | --- |
 | D10 | Administration as a separate area reached from the account menu, not a ninth project tab? | Yes. It concerns the installation, not one property. |
 | D11 | A projects list as the page after signing in, skipped when a user has exactly one project? | Yes. |
