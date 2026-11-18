@@ -465,7 +465,7 @@ Covers: FR-22, FR-34 (snapshots), NFR-1, AD-8. Screens: S-20, S-21.
 - Given a saved revision, when later edits are made, then the revision's stored file is unchanged, checked by its hash.
 - Two revisions can be compared at one scale with a list of changed devices and settings.
 - Given a restore, then design content returns: proposed devices, planned positions, planned actions, scope categories, proposed routes, proposed port assignments, zones, obstructions, annotations, estimate lines and settings.
-- A restore never changes recorded positions and routes, current connections and port assignments, recorded work, checklist definitions and checks, evidence, tests, issues, cancellations, corrections or archive state. Items that cannot be restored are listed.
+- A restore never changes the recorded attributes of Existing devices, the stored positions and limits of an installed pan/tilt/zoom camera, recorded positions and routes, current connections and port assignments, recorded work, checklist definitions and checks, evidence, tests, issues, cancellations, corrections or archive state. Items that cannot be restored are listed.
 - A restore can be undone and does not delete later revisions.
 
 ### Story 4.2: More equipment types and camera fields

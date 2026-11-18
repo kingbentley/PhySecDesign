@@ -21,7 +21,7 @@ Artifacts read: [final PRD 1.2](prds/prd-PhySecDesign-2026-11-16/prd.md), the [U
 | 3 | The architecture defers database tables, request formats, error codes and password and session figures to the first implementation stories. Experiments R1, R6, R8, R9, R10, R11 and R12 can each change a story's approach. | Open by design. Each experiment is attached to the first story that depends on it. |
 | 4 | UX decisions D8, D9, D13 and D14 were implemented by stories but not cited. Screen number S-21 was used for both revision comparison and packages. | Fixed: citations added; Packages is now S-37 in the UX specification and the stories. The canvas artboard is still titled S-21. |
 | 5 | Three stories were large: approvals and reviewer links, the reliability period, and the self-hosted update. | Fixed: each split in two. The epics now hold 87 stories. |
-| 6 | The design canvas holds a "Doors" screen that this session did not create and has not read. Several screens are specified but not drawn. | Open. |
+| 6 | The design canvas held a "Doors" screen that this session did not create, and several screens were specified but not drawn. | Resolved after the gate: a second planning session had added seventeen screens, including Doors and gates, and eight screens for a planned schedule feature that is not in the PRD. They are listed in the UX workspace's `design-canvas.md`. This session has not opened them. |
 
 ## Tracking
 
