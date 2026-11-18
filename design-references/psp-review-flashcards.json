@@ -54,2141 +54,2155 @@
       "definition": "CPTED, physical barriers and site hardening, physical entry and access control, security lighting, IDS, video surveillance, security personnel, security policies and procedures"
     },
     {
-      "id": 12,
+      "id": 11,
       "term": "Determine objectives",
       "definition": "Facility characterization, threat definition, target identification"
     },
     {
-      "id": 13,
+      "id": 12,
       "term": "Design PPS",
       "definition": "Detection, delay, response"
     },
     {
-      "id": 14,
+      "id": 13,
       "term": "Detection (design PPS)",
       "definition": "exterior sensors, interior sensors, alarm assessment, alarm comm & display, entry control"
     },
     {
-      "id": 15,
+      "id": 14,
       "term": "Delay (design PPS)",
       "definition": "access delay"
     },
     {
-      "id": 16,
+      "id": 15,
       "term": "Response (design PPS)",
       "definition": "response force, response force communication"
     },
     {
-      "id": 17,
+      "id": 16,
       "term": "Analyze PPS design",
       "definition": "Analysis/evaluation (EASI)"
     },
     {
-      "id": 19,
+      "id": 17,
       "term": "Vital area identification",
       "definition": "Fault tree"
     },
     {
-      "id": 23,
+      "id": 18,
       "term": "Exterior sensors vulnerability to defeat",
       "definition": "Bypass, spoof"
     },
     {
-      "id": 24,
+      "id": 19,
       "term": "Exterior sensors classification",
       "definition": "Passive or active, covert or visible, Line of sight or terrain following, volumetric or line detection, application"
     },
     {
-      "id": 25,
+      "id": 20,
       "term": "Exterior sensor fence groups",
       "definition": "buried line, fence associated, freestanding"
     },
     {
-      "id": 26,
+      "id": 21,
       "term": "Interior sensor classification",
       "definition": "Passive or active, covert or visible, volumetric or line detection"
     },
     {
-      "id": 28,
+      "id": 22,
       "term": "2 purposes of alarm assessment",
       "definition": "Determine cause of alarm, provide additional information"
     },
     {
-      "id": 30,
+      "id": 23,
       "term": "2 critical elements of alarm communication and display",
       "definition": "transportation of data, display of data in meaningful manner"
     },
     {
-      "id": 31,
+      "id": 24,
       "term": "Objectives of entry control",
       "definition": "Permit only authorized persons to enter and exit, detect and prevent contraband, provide information to facilitate assessment and response"
     },
     {
-      "id": 33,
+      "id": 25,
       "term": "Best height for barriers",
       "definition": "30 inches"
     },
     {
-      "id": 34,
+      "id": 26,
       "term": "Placement of roof barriers",
       "definition": "10-12 inches below roof"
     },
     {
-      "id": 35,
+      "id": 27,
       "term": "5 parts of response",
       "definition": "general considerations, contingency planning, communication, interruption, neutralization"
     },
     {
-      "id": 36,
+      "id": 28,
       "term": "Types of PPS analysis",
       "definition": "Quantitative (higher consequence of loss assets), Qualitative (lower consequence of loss assets)"
     },
     {
-      "id": 37,
+      "id": 29,
       "term": "Defensible space",
       "definition": "a residential environment whose physical characteristics function to allow inhabitants to become key agents in ensuring security"
     },
     {
-      "id": 38,
+      "id": 30,
       "term": "2 basic social behaviors",
       "definition": "Territoriality, natural surveillance"
     },
     {
-      "id": 40,
+      "id": 31,
       "term": "3 types of requirements in a system (vulnerability assessment)",
       "definition": "Functional, constraint, performance"
     },
     {
-      "id": 41,
+      "id": 32,
       "term": "Risk assessments should include",
       "definition": "Risk analysis, risk identification, risk evaluation"
     },
     {
-      "id": 42,
+      "id": 33,
       "term": "2 types of protective barriers",
       "definition": "Natural, structural"
     },
     {
-      "id": 43,
+      "id": 34,
       "term": "Types of key operated locks",
       "definition": "Disc or wafer tumbler, pin tumbler, lever, warded"
     },
     {
-      "id": 44,
+      "id": 35,
       "term": "Door lock types",
       "definition": "Mortise, rim-mounted, tubular, cylindrical, unit"
     },
     {
-      "id": 45,
+      "id": 36,
       "term": "Types of lock attacks",
       "definition": "Surreptitious techniques (picking), force"
     },
     {
-      "id": 46,
+      "id": 37,
       "term": "Attacks on bolts",
       "definition": "Jimmying, punching, sawing, peeling"
     },
     {
-      "id": 47,
+      "id": 38,
       "term": "Attacks on cylinders",
       "definition": "pulling, lug pulling, twisting, drilling, punching, hammering"
     },
     {
-      "id": 48,
+      "id": 39,
       "term": "3 purposes of alarms",
       "definition": "Perimeter protection, area/space protection, spot/object protection"
     },
     {
-      "id": 49,
+      "id": 40,
       "term": "Example of perimeter alarm protection",
       "definition": "Door switches, glass break detectors, window screens"
     },
     {
-      "id": 50,
+      "id": 41,
       "term": "Example of area/space alarm protection",
       "definition": "Ultrasonic, microwave, PIR"
     },
     {
-      "id": 51,
+      "id": 42,
       "term": "Example of spot/object alarm protection",
       "definition": "proximity detectors, vibration detectors"
     },
     {
-      "id": 52,
+      "id": 43,
       "term": "Security video systems aspect ratio",
       "definition": "4:3 for legacy analog video; 16:9 for widescreen/HD"
     },
     {
-      "id": 53,
+      "id": 44,
       "term": "2 types of video scanning (analog-era terminology)",
       "definition": "Raster, digital or progressive"
     },
     {
-      "id": 54,
+      "id": 45,
       "term": "Chain link fence A-B-C-D method",
       "definition": "Aids to security, Barriers for security, Controls, Deterrents"
     },
     {
-      "id": 55,
+      "id": 46,
       "term": "4 stages of a fire",
       "definition": "Ignition, growth, fully developed, decay"
     },
     {
-      "id": 56,
+      "id": 47,
       "term": "5 network infrastructure devices",
       "definition": "Hubs (largely obsolete, replaced by switches)\nSwitches\nRouters\nFirewalls\nIntrusion detection systems"
     },
     {
-      "id": 57,
+      "id": 48,
       "term": "Network configurations",
       "definition": "Peer-to-peer, client-server"
     },
     {
-      "id": 58,
+      "id": 49,
       "term": "5 avenues to address risk",
       "definition": "Risk avoidance\nRisk transfer\nRisk spreading\nRisk reduction\nRisk acceptance"
     },
     {
-      "id": 59,
+      "id": 50,
       "term": "The 5 Ds of asset protection",
       "definition": "Deter\nDeny\nDetect\nDelay\nDestroy\n(The current PSP Body of Knowledge cites the 4 Ds: deter, detect, delay, deny.)"
     },
     {
-      "id": 61,
+      "id": 51,
       "term": "6 phases of a project life cycle",
       "definition": "planning, design & estimation, procurement, installation (operation and training), commissioning & warranty, Maintenance (evaluation & replacement)"
     },
     {
-      "id": 62,
+      "id": 52,
       "term": "Project life cycle cost",
       "definition": "purchase, operation, maintenance, service interruption, end-of-life"
     },
     {
-      "id": 63,
+      "id": 53,
       "term": "What is the single most important factor in proper lens selection?",
       "definition": "Focal length"
     },
     {
-      "id": 64,
+      "id": 54,
       "term": "A measure of a lens ability to gather light",
       "definition": "f-number (the smaller the more light is admitted)"
     },
     {
-      "id": 65,
+      "id": 55,
       "term": "The two most important parameters of a lighting system for CCTV are?",
       "definition": "Minimum intensity & evenness of illumination"
     },
     {
-      "id": 66,
+      "id": 56,
       "term": "What are the classes of lighting sources",
       "definition": "Natural & artificial"
     },
     {
-      "id": 67,
+      "id": 57,
       "term": "The most effective form of outdoor lighting",
       "definition": "High & low pressure sodium (the traditional answer; LED is now the common choice)"
     },
     {
-      "id": 68,
+      "id": 58,
       "term": "4 lighting types",
       "definition": "Continuous, standby, movable, emergency"
     },
     {
-      "id": 69,
+      "id": 59,
       "term": "___________ uses an optical path rather than an electrical path for transmission.",
       "definition": "Fiber optics"
     },
     {
-      "id": 70,
+      "id": 60,
       "term": "The ___________ is the main interface between the alarm sensor system and the alarm assessment system.",
       "definition": "Video controller"
     },
     {
-      "id": 71,
+      "id": 61,
       "term": "What are the three levels of resolution for assessment purposes?",
       "definition": "Detection, Classification, Identification"
     },
     {
-      "id": 72,
+      "id": 62,
       "term": "_______ ________ associates immediate image capture with a sensor alarm to determine the response",
       "definition": "Assessment system"
     },
     {
-      "id": 73,
+      "id": 63,
       "term": "________ ________ are those that collect video information without associated sensors.",
       "definition": "Surveillance systems"
     },
     {
-      "id": 74,
+      "id": 64,
       "term": "A resolution of ___ TV lines per foot (analog video) is suggested in order to classify a crawling human target.",
       "definition": "6"
     },
     {
-      "id": 75,
+      "id": 65,
       "term": "______ make poor detectors but are good at assessment.",
       "definition": "Humans"
     },
     {
-      "id": 76,
+      "id": 66,
       "term": "________________ is that part of the PPS that transports alarm assessment information to a central point and presents the information to a human operator.",
       "definition": "Alarm communication and display (AC&D)"
     },
     {
-      "id": 77,
+      "id": 67,
       "term": "The AC&D system must communicate the following information:",
       "definition": "Where the alarm has occurred, what or who caused the alarm, when the alarm happened."
     },
     {
-      "id": 78,
+      "id": 68,
       "term": "OSI model layers as applied to AC&D systems...",
       "definition": "Physical layer, Link layer, network layer."
     },
     {
-      "id": 79,
+      "id": 69,
       "term": "Safety vs. security",
       "definition": "safety is meant to represent the operation of systems in abnormal environments, such as flood, fire, earthquake, or accidents. security, refers to systems used to prevent or detect an attack by a malevolent human adversary."
     },
     {
-      "id": 80,
+      "id": 70,
       "term": "What does PPS stand for?",
       "definition": "Physical Protection System"
     },
     {
-      "id": 82,
+      "id": 71,
       "term": "Types of network architecture connections or wiring configurations",
       "definition": "point to point, star, loop bus, or rings."
     },
     {
-      "id": 83,
+      "id": 72,
       "term": "OSI model - error checking is an important feature of which layer?",
       "definition": "Link layer"
     },
     {
-      "id": 84,
+      "id": 73,
       "term": "__________ _________ monitor the communication link to ensure that it is operating correctly and that the data has not been altered during transmission.",
       "definition": "Supervisory systems"
     },
     {
-      "id": 85,
+      "id": 74,
       "term": "On graphic displays, no more than ___ windows should be visible at any one time.",
       "definition": "3"
     },
     {
-      "id": 86,
+      "id": 75,
       "term": "The ultimate goal of the display system is...",
       "definition": "to promote rapid evaluation of alarms"
     },
     {
-      "id": 87,
+      "id": 76,
       "term": "The alarm communication and display system...",
       "definition": "collects alarm data, presents information to a security operator, and enables the operator to control the system."
     },
     {
-      "id": 88,
+      "id": 77,
       "term": "The physical equipment used to control the movement of people or material into an area.",
       "definition": "Entry control"
     },
     {
-      "id": 89,
+      "id": 78,
       "term": "The process of managing databases or other records & determining the parameters of authorized entry.",
       "definition": "Access control"
     },
     {
-      "id": 90,
+      "id": 79,
       "term": "Types of credentials used in personnel entry control",
       "definition": "Photo ID badge, exchange badge, stored-image badge, coded credential."
     },
     {
-      "id": 91,
+      "id": 80,
       "term": "Types of biometrics used for personal identification",
       "definition": "Hand/finger geometry, handwriting, fingerprints, eye pattern, voice, face"
     },
     {
-      "id": 92,
+      "id": 81,
       "term": "Any item that is prohibited from an area",
       "definition": "Contraband"
     },
     {
-      "id": 93,
+      "id": 82,
       "term": "What two methods can be used to actively detect metal?",
       "definition": "Continuous wave & pulsed field"
     },
     {
-      "id": 94,
+      "id": 83,
       "term": "Access delay barriers may take the form of what?",
       "definition": "Passive barriers, guards, and dispensable barriers"
     },
     {
-      "id": 95,
+      "id": 84,
       "term": "Categories of attack tools:",
       "definition": "Hand tools, powered hand tools, thermal cutting tools, explosives, and vehicles"
     },
     {
-      "id": 96,
+      "id": 85,
       "term": "What forms the outermost protective layer of a PPS?",
       "definition": "Perimeter barriers"
     },
     {
-      "id": 97,
+      "id": 86,
       "term": "What is the first step in upgrading the doors of an existing facility?",
       "definition": "Eliminating all unnecessary doors"
     },
     {
-      "id": 98,
+      "id": 87,
       "term": "What are the two types of dispensable barriers?",
       "definition": "Active & passive"
     },
     {
-      "id": 99,
+      "id": 88,
       "term": "Passive dispensable barriers do not require what?",
       "definition": "Any command & control system"
     },
     {
-      "id": 100,
+      "id": 89,
       "term": "Dispensable barriers are generally deployed where?",
       "definition": "Very close to the asset being protected."
     },
     {
-      "id": 101,
+      "id": 90,
       "term": "__________ follows detection in an effective PPS.",
       "definition": "Access delay"
     },
     {
-      "id": 102,
+      "id": 91,
       "term": "The performance measure for access delay elements is ________.",
       "definition": "Time"
     },
     {
-      "id": 104,
+      "id": 92,
       "term": "Dispensable barriers must be used in combination with _______ to provide the most effective delays.",
       "definition": "passive barriers"
     },
     {
-      "id": 105,
+      "id": 93,
       "term": "Response may be broken into what two major categories?",
       "definition": "Immediate on-site response, after the fact recovery"
     },
     {
-      "id": 106,
+      "id": 94,
       "term": "What is the key to effective guard use?",
       "definition": "Training"
     },
     {
-      "id": 107,
+      "id": 95,
       "term": "The two measures of an immediate response are...",
       "definition": "The time for arrival and neutralization effectiveness."
     },
     {
-      "id": 108,
+      "id": 96,
       "term": "What refers to the arrival of response personnel at a location that will prevent the adversary from progressing in their attack?",
       "definition": "Interruption"
     },
     {
-      "id": 109,
+      "id": 97,
       "term": "What is defined as defeat of the adversary?",
       "definition": "Neutralization"
     },
     {
-      "id": 110,
+      "id": 98,
       "term": "What are the response force strategies?",
       "definition": "Containment, denial, and assault"
     },
     {
-      "id": 111,
+      "id": 99,
       "term": "The range of force tactics available to a response force is referred to as what?",
       "definition": "Force continuum"
     },
     {
-      "id": 112,
+      "id": 100,
       "term": "What is a vital part of the response function?",
       "definition": "Communication"
     },
     {
-      "id": 113,
+      "id": 101,
       "term": "What communication systems can provide a very high resistance to radio jamming?",
       "definition": "Spread-spectrum systems"
     },
     {
-      "id": 114,
+      "id": 102,
       "term": "5 Levels of Security Systems",
       "definition": "1. Minimum\n2. Low Level\n3. Medium Security\n4. High-level Security\n5. Maximum Security"
     },
     {
-      "id": 115,
+      "id": 103,
       "term": "Minimum Security",
       "definition": "Impede some unauthorized external activity.\n* Simple physical barriers\n* Simple locks"
     },
     {
-      "id": 116,
+      "id": 104,
       "term": "Low-level Security",
       "definition": "Impede and detect some unauthorized external activity.\n* Basic security physical barriers\n* High-security locks\n* Simple security lighting\n* Basic local alarm systems"
     },
     {
-      "id": 117,
+      "id": 105,
       "term": "Medium Security",
       "definition": "Impede and detect and assess most unauthorized external activities and some internal activities\n* High-security physical barriers at perimeter, guard dogs\n* Advanced remote alarm systems\n* Watchmen with basic communications"
     },
     {
-      "id": 118,
+      "id": 106,
       "term": "High-level security",
       "definition": "Impede, detect and assess most unauthorized external and internal activities.\n* Access controls\n* CCTV\n* Perimeter alarm system\n* High security lighting\n* Local law enforcement coordination\n* Highly trained armed guards w/advanced comms\n* Formal contingency Plans"
     },
     {
-      "id": 119,
+      "id": 107,
       "term": "Maximum security",
       "definition": "Impede, detect, assess and neutralize all unauthorized external and internal activities\n* Sophisticated alarm system\n* Onsite, armed response force"
     },
     {
-      "id": 120,
+      "id": 108,
       "term": "For the maximum psychological effect to be achieved...",
       "definition": "...the capabilities of the protection system must be known to the criminal, that is, they must convince the criminal that the odds of getting caught are high."
     },
     {
-      "id": 121,
+      "id": 109,
       "term": "What is a PPS",
       "definition": "A Physical Protection System (PPS) integrates people, procedures, and equipment for the protection of assets or facilities against theft, sabotage, or other malevolent human attacks"
     },
     {
-      "id": 122,
+      "id": 110,
       "term": "What are the primary functions of a PPS?",
       "definition": "1. Detection of an adversary.\n2. Delay of that adversary.\n3. Response by security personnel or guard force."
     },
     {
-      "id": 123,
+      "id": 111,
       "term": "What are the components of a PPS",
       "definition": "1. People.\n2. Procedures.\n3. Equipment."
     },
     {
-      "id": 124,
+      "id": 112,
       "term": "What are the four stages of PPS implementation?",
       "definition": "1. Determine Objectives.\n2. Design PPS.\n3. Analyze PPS Design.\n4. Re-design PPS (or components of) where necessary."
     },
     {
-      "id": 125,
+      "id": 113,
       "term": "Facility Characterization means to look at major areas such as:",
       "definition": "1. Physical conditions.\n2. Facility operations.\n3. Facility policies and procedures.\n4. Regulatory requirements.\n5. Safety Considerations.\n6. Legal Issues.\n7. Corporate goals and objectives."
     },
     {
-      "id": 126,
+      "id": 114,
       "term": "Facility Characterization\nPhysical Conditions",
       "definition": "* Identify site boundary\n* Number & location of buildings\n* Access points.\n* Existing physical protection features.\n* All infrastructure details."
     },
     {
-      "id": 127,
+      "id": 115,
       "term": "Facility Characterization\nFacility Operations",
       "definition": "* Major products of the facility\n* Processes that support these products\n* Operating conditions\n* Types and numbers of employees\n* Procurement procedures\n* Computing resources & distribution\n* Maintenance activities\n* Asset tracking\n* Operational involvement & location of senior execs\n* Work flow & shift changes\n* Employee benefits\n* Shipping & receiving\n* Accounting & any other support functions"
     },
     {
-      "id": 128,
+      "id": 116,
       "term": "Facility Characterization\nFacility Policy & Procedures",
       "definition": "* Obtain understanding of written and unwritten procedures.\n* Have a guided tour of facility.\n* Observe the ebb and flow of work.\n* Review safety & security training requirements for all workers.\n* Determine extent of documented procedures."
     },
     {
-      "id": 129,
+      "id": 117,
       "term": "Facility Characterization Regulatory Requirements",
       "definition": "* Fire department.\n* Safety & Health regulators.\n* Department of Labor.\n* Nuclear regulatory commission.\n* Local building codes.\n* UL (Underwriters Laboratories) standards."
     },
     {
-      "id": 130,
+      "id": 118,
       "term": "Facility Characterization\nSafety Considerations",
       "definition": "* Strike a balance between safety and security.\n* 15-second time delay on delayed-egress fire exits (30 seconds with approval of the authority having jurisdiction).\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\""
     },
     {
-      "id": 131,
+      "id": 119,
       "term": "Facility Characterization\nLegal Issues",
       "definition": "* Liability\n* Privacy\n* Access for the disabled\n* Labor relations\n* Employment practices\n* Proper training for guards\n* The failure to protect\n* Excessive use of force by guards"
     },
     {
-      "id": 132,
+      "id": 120,
       "term": "Facility Characterization\nCorporate Goals & Objectives",
       "definition": "* Establish support of senior management.\n* Conduct assessment of vulnerabilities.\n* Present solutions showing the value add."
     },
     {
-      "id": 133,
+      "id": 121,
       "term": "Facility Characterization\nSecurity Principle",
       "definition": "In order to design a system that will be effective, the PPS design must accommodate the safety, process and mission of the corporation and the facility."
     },
     {
-      "id": 134,
+      "id": 122,
       "term": "Eight Points of Threat Definition (1-4)",
       "definition": "1. Study the capabilities and intentions of assumed potential criminals or adversaries.\n2. Look at possible intentions, motivations and physical capabilities of likely adversaries.\n3. Availability of on-site security personnel or local law enforcement.\n4. Once adversary types are identified, determine the threat against which the facility or target will be protected."
     },
     {
-      "id": 135,
+      "id": 123,
       "term": "Eight Points of Threat Definition (5-8)",
       "definition": "5. A Threat Definition results in a detailed description of the physical threat by a malevolent adversary to the system.\n6. Threat Definition aids in determining PPS design objectives.\n7. Any facility will have records of suspicion regarding malevolent adversaries.\n8. PPS must be designed to protect against these adversaries or threats."
     },
     {
-      "id": 136,
+      "id": 124,
       "term": "The three basic parts for determining a Threat Definition are:",
       "definition": "1. List the information needed to define the threat.\n2. Collect information of the potential threat.\n3. Organize the information to make it usable."
     },
     {
-      "id": 137,
+      "id": 125,
       "term": "Four necessary points of information about adversaries:",
       "definition": "1. Motivation (Ideological, economic, personal)\n2. Potential goals based upon targets (theft, espionage, extortion, kidnapping, etc)\n3. Tactics (force, stealth, or deceit)\n4. Numbers & capabilities (use of weapons, various tools they may use, etc.)"
     },
     {
-      "id": 138,
+      "id": 126,
       "term": "Adversaries are characterized in three broad groups:",
       "definition": "1. Outsiders (terrorists, criminals, extremists or hackers).\n2. Insiders.\n3. Outsiders working in collusion with insiders."
     },
     {
-      "id": 139,
+      "id": 127,
       "term": "True or False: Insider Threats have a knowledge of operations or security and who has un-escorted access.",
       "definition": "True"
     },
     {
-      "id": 140,
+      "id": 128,
       "term": "List the three types of insider threats:",
       "definition": "1. Passive.\n2. Active non-violent.\n3. Active violent."
     },
     {
-      "id": 141,
+      "id": 129,
       "term": "True or False: Outsider threats are responsible for the majority of security breaches in both physical and computer security systems.",
       "definition": "False. Insider threats are responsible for the majority of security breaches in both physical and computer security systems."
     },
     {
-      "id": 142,
+      "id": 130,
       "term": "True or False: One study showed that guards do almost half of all stealing, and that many inside opportunities are due to procedural failures.",
       "definition": "True"
     },
     {
-      "id": 143,
+      "id": 131,
       "term": "What are three characteristics of Insider threats?",
       "definition": "1. System knowledge that can be used to their advantage.\n2. Authorized access to the facility, assets, or PPS without raising suspicions of others.\n3. Opportunity to choose the best time to commit an act."
     },
     {
-      "id": 144,
+      "id": 132,
       "term": "Three points of consideration on adversaries:",
       "definition": "1. Capability of an adversary.\n2. Adversary tactics (force, stealth or deceit).\n3. Potential actions (trying to steal something, industrial espionage, sabotage, extortion, coercion, violence against others or kidnapping)"
     },
     {
-      "id": 145,
+      "id": 133,
       "term": "List five sources for the collection of threat information:",
       "definition": "1. Intelligence sources (network with law enforcement or other related services).\n2. Crime analysis, studies.\n3. Professional organizations & services.\n4. Published literature.\n5. Government directives and legislation."
     },
     {
-      "id": 146,
+      "id": 134,
       "term": "What is the Security Principle regarding Threat Definition?",
       "definition": "A facility PPS is designed based on the maximum credible threat to the facility."
     },
     {
-      "id": 147,
+      "id": 135,
       "term": "Target Identification identifies _______ , ________ or ________ actions to be protected.",
       "definition": "areas, assets or actions"
     },
     {
-      "id": 148,
+      "id": 136,
       "term": "True or False: The ease or difficulty of protecting against a particular threat are considered BEFORE the items of Target Identification have been identified.",
       "definition": "False: The ease or difficulty of protecting against a particular threat are considered AFTER the items of Target Identification have been identified."
     },
     {
-      "id": 149,
+      "id": 137,
       "term": "List at least four Undesirable Consequences to an inadequate PPS",
       "definition": "* Loss of life\n* Theft of material or information\n* Environmental damage due to release of hazardous material by theft or sabotage\n* Interruption of critical utilities or communications\n* Degraded business operations\n* Workplace violence, extortion, blackmail\n* Building collapse\n* Damage to reputation\n* Legal Liability"
     },
     {
-      "id": 150,
+      "id": 138,
       "term": "List two techniques for Target Identification:",
       "definition": "1. Manual listing of targets.\n2. Logic Diagrams."
     },
     {
-      "id": 151,
+      "id": 139,
       "term": "Manual listing is good for....",
       "definition": "* Localized items (laptops, tools, etc)\n* Work-in-progress (items ready to be packaged)"
     },
     {
-      "id": 152,
+      "id": 140,
       "term": "Locations in a facility containing equipment to be protected against are called ______ _______",
       "definition": "vital areas"
     },
     {
-      "id": 153,
+      "id": 141,
       "term": "Because both the function and structure of a facility can be very complex, the choice of components and areas to protect as vital is...",
       "definition": "...usually not obvious."
     },
     {
-      "id": 154,
+      "id": 142,
       "term": "What tool is used for the determination of a vital area?",
       "definition": "A sabotage fault tree."
     },
     {
-      "id": 155,
+      "id": 143,
       "term": "True or False: Target Identification is used to determine what to protect.",
       "definition": "True"
     },
     {
-      "id": 156,
+      "id": 144,
       "term": "Target may be susceptible to _____ , _______ , or _______.",
       "definition": "theft, sabotage, or personal harm"
     },
     {
-      "id": 158,
+      "id": 145,
       "term": "True or False: For every crime that is committed, there is a crime prevention or loss reduction defense or procedure that, if followed, could delay or prevent a criminal from committing that act.",
       "definition": "True"
     },
     {
-      "id": 159,
+      "id": 146,
       "term": "The strongest reason for a criminal to lose desire to break-in, etc is...",
       "definition": "...the threat of getting caught."
     },
     {
-      "id": 160,
+      "id": 147,
       "term": "A PPS is designed based on...",
       "definition": "...the maximum credible threat to the facility."
     },
     {
-      "id": 161,
+      "id": 148,
       "term": "What are the two ways to prevent theft and sabotage?",
       "definition": "1. Deterring the adversary.\n2. Defeating the adversary."
     },
     {
-      "id": 162,
+      "id": 149,
       "term": "List six steps in designing a security layout:",
       "definition": "1. Eliminate all non-essential doors and windows.\n2. Specify fire-resistant material throughout the interior.\n3. Install fire, intrusion and environmental control systems.\n4. Separate shipping and receiving areas.\n5. Make provisions for the handicapped.\n6. Provide adequate lighting around the perimeter."
     },
     {
-      "id": 163,
+      "id": 150,
       "term": "Detection is the _________ of an adversary action.",
       "definition": "discovery"
     },
     {
-      "id": 164,
+      "id": 151,
       "term": "What are the three steps by which Detection is accomplished?",
       "definition": "1. A sensor reacts to a stimulus and initiates an alarm.\n2. Information from the sensor and assessment subsystems is reported and displayed.\n3. A person assesses information and judges the alarm to be valid or invalid."
     },
     {
-      "id": 165,
+      "id": 152,
       "term": "A PPS system works best if what two conditions are met?",
       "definition": "1. Detection is as far from the target as possible.\n2. Delays are in place near the target."
     },
     {
-      "id": 166,
+      "id": 153,
       "term": "______________ is the process of determining whether the source of the alarm is due to an attack or a nuisance alarm.",
       "definition": "Assessment"
     },
     {
-      "id": 167,
+      "id": 154,
       "term": "Detection without ____________ is not detection.",
       "definition": "assessment"
     },
     {
-      "id": 168,
+      "id": 155,
       "term": "True or False: Entry control is part of detection.",
       "definition": "True"
     },
     {
-      "id": 169,
+      "id": 156,
       "term": "What is a measure of entry control?",
       "definition": "Throughput (number of authorized people allowed access per unit time)"
     },
     {
-      "id": 170,
+      "id": 157,
       "term": "A False Acceptance Rate is ...",
       "definition": "...the rate at which false identities or credentials are allowed entry."
     },
     {
-      "id": 171,
+      "id": 158,
       "term": "The frequency of denying access to authorized people is the ....",
       "definition": "...false rejection rate."
     },
     {
-      "id": 172,
+      "id": 159,
       "term": "List three measures of effectiveness for PPS detection:",
       "definition": "1. Probability of sensing adversary action.\n2. Time required for reporting and assessing the alarm.\n3. Nuisance alarm rate."
     },
     {
-      "id": 173,
+      "id": 160,
       "term": "The probability of detection ____________ as the time before assessment ___________.",
       "definition": "decreases; increases"
     },
     {
-      "id": 174,
+      "id": 161,
       "term": "An effective assessment provides what two types of information with detection?",
       "definition": "1. Whether the alarm is valid or nuisance.\n2. Details such as what, who, where and how many."
     },
     {
-      "id": 175,
+      "id": 162,
       "term": "What is a NAR",
       "definition": "Nuisance Alarm Rate"
     },
     {
-      "id": 176,
+      "id": 163,
       "term": "Any alarm not caused by an intrusion is a _____ _____.",
       "definition": "nuisance alarm"
     },
     {
-      "id": 177,
+      "id": 164,
       "term": "Because not all alarms are caused by intrusion, what is necessary?",
       "definition": "Assessment."
     },
     {
-      "id": 178,
+      "id": 165,
       "term": "Animals, birds, trees, rain, lightning, blowing debris, etc are all common sources of...",
       "definition": "nuisance alarms"
     },
     {
-      "id": 179,
+      "id": 166,
       "term": "Nuisance alarms generated by the equipment itself (from poor design, inadequate maintenance or component failure) are called...",
       "definition": "False alarms"
     },
     {
-      "id": 180,
+      "id": 167,
       "term": "Delay is the _______ ________ of adversary progress.",
       "definition": "slowing down"
     },
     {
-      "id": 181,
+      "id": 168,
       "term": "List four methods for accomplishing delay:",
       "definition": "1. People.\n2. Barriers.\n3. Locks.\n4. Activated delays."
     },
     {
-      "id": 182,
+      "id": 169,
       "term": "Delay before detection is primarily a ________.",
       "definition": "deterrent"
     },
     {
-      "id": 183,
+      "id": 170,
       "term": "True or False: Delay without detection is not delay",
       "definition": "True"
     },
     {
-      "id": 184,
+      "id": 171,
       "term": "The primary purpose of placing barriers before detections is:",
       "definition": "To force adversaries to change or abandon their tactic."
     },
     {
-      "id": 185,
+      "id": 172,
       "term": "True or False: In PPS design, delay before detection is of no benefit. Why or why not",
       "definition": "True. Because it does not provide additional time for a guard force to respond."
     },
     {
-      "id": 186,
+      "id": 173,
       "term": "____________ is defined as a sufficient number of response force personnel arriving at the appropriate location to stop the adversary's progress.",
       "definition": "Interruption"
     },
     {
-      "id": 187,
+      "id": 174,
       "term": "What is the measure of response force effectiveness?",
       "definition": "The time between receipt of a communication of adversary action and the interruption of the adversary action."
     },
     {
-      "id": 188,
+      "id": 175,
       "term": "The time between receipt of a communication of adversary action and the interruption of the adversary action is called what?",
       "definition": "Response Force Time"
     },
     {
-      "id": 189,
+      "id": 176,
       "term": "PPS Performance Measures Detection:",
       "definition": "* Probability of detection.\n* Time for communication and assessment.\n* Frequency of nuisance alarms."
     },
     {
-      "id": 190,
+      "id": 177,
       "term": "PPS Performance Measures\nDelay",
       "definition": "* Time to defeat obstacles"
     },
     {
-      "id": 191,
+      "id": 178,
       "term": "PPS Performance Measures Response",
       "definition": "* Probability of accurate communication to response force.\n* Time to communicate.\n* Probability of deployment to adversary location.\n* Time to deploy.\n* Response force effectiveness."
     },
     {
-      "id": 192,
+      "id": 179,
       "term": "The use of multiple lines of detection is referred to as...",
       "definition": "...Protection in depth."
     },
     {
-      "id": 193,
+      "id": 180,
       "term": "True or False: Protection-in-depth requires an adversary to avoid or defeat a number of protective devices in sequence.",
       "definition": "True"
     },
     {
-      "id": 194,
+      "id": 181,
       "term": "List three effects of Protection-in-depth:",
       "definition": "1. Increased uncertainty about the system.\n2. More extensive preparation prior to the attack required.\n3. Additional steps where the adversary may fail or abort the mission created."
     },
     {
-      "id": 195,
+      "id": 182,
       "term": "Balanced protection means:",
       "definition": "That no matter how an adversary attempts to accomplish the goal, effective elements of the PPS will be encountered."
     },
     {
-      "id": 196,
+      "id": 183,
       "term": "For a completely balanced system, what two factors should be equal?",
       "definition": "1. The minimum time to penetrate each barrier.\n2. The minimum probability of detecting penetration of each barrier."
     },
     {
-      "id": 197,
+      "id": 184,
       "term": "The objective should be to provide adequate protection against all threats on all possible paths and to maintain a balance with other considerations such as ________ , ________ , or __________.",
       "definition": "cost, safety or structural integrity"
     },
     {
-      "id": 198,
+      "id": 185,
       "term": "What is a \"Clear Zone\"?",
       "definition": "The area within two parallel fences where the sensors are inside."
     },
     {
-      "id": 200,
+      "id": 186,
       "term": "A PPS that is well designed will exhibit the following three characteristics:",
       "definition": "1. Protection-in-depth.\n2. Minimum consequence of component failure.\n3. Balanced protection."
     },
     {
-      "id": 201,
+      "id": 187,
       "term": "A PPS where effective elements are encountered no matter how an adversary attempts to accomplish his goal is said to have...",
       "definition": "Balanced protection."
     },
     {
-      "id": 204,
+      "id": 188,
       "term": "True or false: Detection is placed before Delay",
       "definition": "True."
     },
     {
-      "id": 205,
+      "id": 189,
       "term": "Detection is most effective at the ______ and delay more effective at the _______.",
       "definition": "perimeter, target"
     },
     {
-      "id": 206,
+      "id": 190,
       "term": "True or False: Assessment is not a critical component of Detection.",
       "definition": "False"
     },
     {
-      "id": 207,
+      "id": 191,
       "term": "For protection of critical assets, the total time for detection and response must be less than...",
       "definition": "...the adversary's task time."
     },
     {
-      "id": 208,
+      "id": 192,
       "term": "True or False: Feature-based design is better than performance-based design when measuring overall system effectiveness.",
       "definition": "False"
     },
     {
-      "id": 209,
+      "id": 193,
       "term": "What is an ordered series of actions against a facility, which, if completed, results in successful theft, sabotage, or other malevolent outcome?",
       "definition": "An adversary path"
     },
     {
-      "id": 210,
+      "id": 194,
       "term": "The point where the minimum delay along the remaining portion of the path just exceeds the guard response time.",
       "definition": "The critical detection point (CDP)"
     },
     {
-      "id": 211,
+      "id": 195,
       "term": "Adversaries will try to minimize _______ before the CDP and minimize _______ after the CDP.",
       "definition": "Detection, delay"
     },
     {
-      "id": 212,
+      "id": 196,
       "term": "The effectiveness of the system is somewhat dependent on?",
       "definition": "Adversary tactics"
     },
     {
-      "id": 213,
+      "id": 197,
       "term": "What is the path with the lowest probability of interruption?",
       "definition": "The critical path"
     },
     {
-      "id": 214,
+      "id": 198,
       "term": "What is a measure of dispersion of a set of related data?",
       "definition": "Standard deviation"
     },
     {
-      "id": 215,
+      "id": 199,
       "term": "What is the output of the EASI model?",
       "definition": "An estimate of the probability a sufficient number of response force personnel will interrupt the adversary at some point before the adversary completes an act."
     },
     {
-      "id": 216,
+      "id": 200,
       "term": "The critical detection point is the point on the path where...",
       "definition": "the delay time remaining first exceeds the response force time (RFT)."
     },
     {
-      "id": 217,
+      "id": 201,
       "term": "The _______ is a graphic representation of protection system elements that is used to help evaluate the effectiveness of the PPS at a facility.",
       "definition": "Adversary sequence diagram (ASD)"
     },
     {
-      "id": 218,
+      "id": 202,
       "term": "The ASD shows...",
       "definition": "the paths that adversaries can follow to accomplish their goals."
     },
     {
-      "id": 219,
+      "id": 203,
       "term": "Risk avoidance is...",
       "definition": "accomplished by eliminating the source of the risk."
     },
     {
-      "id": 220,
+      "id": 204,
       "term": "Risk reduction is...",
       "definition": "achieved by taking some actions to lower risk to reduce the severity of the loss."
     },
     {
-      "id": 221,
+      "id": 205,
       "term": "Risk spreading is...",
       "definition": "spreading the risk among multiple locations"
     },
     {
-      "id": 222,
+      "id": 206,
       "term": "Risk transfer is...",
       "definition": "the use of insurance to cover the replacement or costs incurred as a result of the loss."
     },
     {
-      "id": 223,
+      "id": 207,
       "term": "Risk acceptance is...",
       "definition": "the recognition that there will always be some residual risk."
     },
     {
-      "id": 224,
+      "id": 208,
       "term": "PPS performance testing categories:",
       "definition": "Operability, performance, post maintenance, whole system and limited scope, evaluation"
     },
     {
-      "id": 225,
+      "id": 209,
       "term": "In order to design a system that will be effective, the PPS design must accommodate;",
       "definition": "safety, process, and mission needs"
     },
     {
-      "id": 226,
+      "id": 210,
       "term": "What is the maximum credible threat to a facility called?",
       "definition": "design basis threat (DBT)"
     },
     {
-      "id": 227,
+      "id": 211,
       "term": "The process of identifying specific locations, actions, or assets to be protected to prevent undesirable consequences.",
       "definition": "Target identification"
     },
     {
-      "id": 228,
+      "id": 212,
       "term": "A structured approach of target identification based on logic diagrams called fault trees.",
       "definition": "Vital area identification"
     },
     {
-      "id": 229,
+      "id": 213,
       "term": "Priorities of targets are based on what?",
       "definition": "The consequence of the loss and the threat"
     },
     {
-      "id": 230,
+      "id": 214,
       "term": "Exterior intrusion detection sensors have been discussed in terms of what?",
       "definition": "sensor classification and application, probability of detection, nuisance alarm rate, and vulnerability to defeat."
     },
     {
-      "id": 232,
+      "id": 215,
       "term": "What are used to reduce the load on human operators to assist their performance during malevolent events?",
       "definition": "AC&D systems"
     },
     {
-      "id": 234,
+      "id": 216,
       "term": "Explosives detection includes what two techniques?",
       "definition": "Bulk and trace"
     },
     {
-      "id": 235,
+      "id": 217,
       "term": "What is one of the tools that may be used to achieve balance and to establish protection-in-depth at a facility?",
       "definition": "Entry control"
     },
     {
-      "id": 236,
+      "id": 218,
       "term": "Entry control falls into what three classes?",
       "definition": "Something you know, something you possess, or something you are"
     },
     {
-      "id": 237,
+      "id": 219,
       "term": "What is one of the most effective ways to reduce response time and the cost of delay upgrades?",
       "definition": "Consolidating assets into a single area"
     },
     {
-      "id": 238,
+      "id": 220,
       "term": "What forms the basis for an effective response force?",
       "definition": "Contingency planning"
     },
     {
-      "id": 240,
+      "id": 221,
       "term": "The measures of response force effectiveness are...",
       "definition": "response force time for interruption & probability of communication"
     },
     {
-      "id": 241,
+      "id": 222,
       "term": "Three possible measures of PPS system effectiveness (for analysis) include:",
       "definition": "delay time, cumulative probability of detection, and timely detection"
     },
     {
-      "id": 242,
+      "id": 223,
       "term": "What are the performance measures used in a quantitative analysis?",
       "definition": "Probability of detection, delay times, and response force times."
     },
     {
-      "id": 244,
+      "id": 224,
       "term": "What is a graphic representation of the physical layers around a facility, the protective elements between layers, and paths to assets?",
       "definition": "Adversary sequence diagram (ASD)"
     },
     {
-      "id": 245,
+      "id": 225,
       "term": "System effectiveness can be used to quantify the risk a facility faces from a specific threat through the use of what?",
       "definition": "the risk equation"
     },
     {
-      "id": 246,
+      "id": 226,
       "term": "The vulnerability assessment process is divided into what three stages?",
       "definition": "Planning, conducting, and reporting"
     },
     {
-      "id": 247,
+      "id": 227,
       "term": "What is a more in-depth study, including risk management, analysis of risk factors, environmental and physical security risks, and analysis of crime patterns, fraud, and internal theft?",
       "definition": "security risk analysis"
     },
     {
-      "id": 248,
+      "id": 228,
       "term": "What are the functions of a structural or natural barrier?",
       "definition": "Define, delay, detect, deny"
     },
     {
-      "id": 249,
+      "id": 229,
       "term": "Minimum height for a security fence?",
       "definition": "7 feet"
     },
     {
-      "id": 250,
+      "id": 230,
       "term": "What are the four most important things about biometrics?",
       "definition": "Cost, overall convenience, secure application, identity assurance"
     },
     {
-      "id": 251,
+      "id": 231,
       "term": "What are the most common access control ID methods?",
       "definition": "Personal recognition, single badge, badge exchange, multiple badge"
     },
     {
-      "id": 252,
+      "id": 232,
       "term": "How do fires spread?",
       "definition": "Conduction, convection, radiation"
     },
     {
-      "id": 253,
+      "id": 233,
       "term": "What are the divisions of risk?",
       "definition": "Personal, property, liability"
     },
     {
-      "id": 254,
+      "id": 234,
       "term": "Physical access controls for protected facilities are generally intended to do what?",
       "definition": "Deter, distinguish, delay, detect, trigger, deny"
     },
     {
-      "id": 255,
+      "id": 235,
       "term": "PPSs consist of a proper mix of what elements?",
       "definition": "preventive, corrective, detective (measures)"
     },
     {
-      "id": 257,
+      "id": 236,
       "term": "What is a temporary endeavor undertaken to create a unique product, service, or result?",
       "definition": "a project"
     },
     {
-      "id": 258,
+      "id": 237,
       "term": "What is a mix of people, systems and techniques required to carry a project to successful completion?",
       "definition": "Project management"
     },
     {
-      "id": 259,
+      "id": 238,
       "term": "What are the four project stages?",
       "definition": "Feasibility, Development, Execution, Closeout"
     },
     {
-      "id": 260,
+      "id": 239,
       "term": "It is the point of what to capture all the elements of work in a project?",
       "definition": "WBS"
     },
     {
-      "id": 261,
+      "id": 240,
       "term": "When the WBS is complete, it should be converted into what?",
       "definition": "network diagram"
     },
     {
-      "id": 262,
+      "id": 241,
       "term": "For a project, whatever goes undocumented might as well have ...",
       "definition": "gone unsaid"
     },
     {
-      "id": 263,
+      "id": 242,
       "term": "Once a project moves into stage ___, any changes must be subjected to a stringent process",
       "definition": "3 (Execution)"
     },
     {
-      "id": 265,
+      "id": 243,
       "term": "The risk analysis is conducted during which project life cycle phase?",
       "definition": "Planning"
     },
     {
-      "id": 266,
+      "id": 244,
       "term": "What follows a risk assessment?",
       "definition": "Vulnerability assessment"
     },
     {
-      "id": 267,
+      "id": 245,
       "term": "What follows a vulnerability assessment?",
       "definition": "Cost-benefit analysis"
     },
     {
-      "id": 268,
+      "id": 246,
       "term": "What is a major output of the planning phase?",
       "definition": "Requirements documents"
     },
     {
-      "id": 269,
+      "id": 247,
       "term": "What are the three CPTED strategies (measures)?",
       "definition": "Mechanical, organizational, natural or architectural"
     },
     {
-      "id": 270,
+      "id": 248,
       "term": "The output of the design phase is what?",
       "definition": "procurement package or construction documents"
     },
     {
-      "id": 271,
+      "id": 249,
       "term": "What are the three common methods of procurement?",
       "definition": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)\n(The current PSP Body of Knowledge also lists request for quotation, RFQ.)"
     },
     {
-      "id": 272,
+      "id": 250,
       "term": "What forms a major part of commissioning a PPS?",
       "definition": "Tests"
     },
     {
-      "id": 273,
+      "id": 251,
       "term": "Name four types of PPS testing.",
       "definition": "Pre-delivery, site acceptance, reliability, after-implementation"
     },
     {
-      "id": 274,
+      "id": 252,
       "term": "What are the two main types of PPS maintenance?",
       "definition": "Preventive & remedial"
     },
     {
-      "id": 276,
+      "id": 253,
       "term": "What can provide management with vital information on which to base sound decisions?",
       "definition": "Risk analysis"
     },
     {
-      "id": 277,
+      "id": 254,
       "term": "______ is measurement - it is measuring \"what is\" against \"what should be.\"",
       "definition": "Fieldwork"
     },
     {
-      "id": 278,
+      "id": 255,
       "term": "The process by which an entity identifies its potential losses and then decides what is the best way to manage the potential losses.",
       "definition": "Risk management"
     },
     {
-      "id": 279,
+      "id": 256,
       "term": "Historically (1990s data), the leading cause of death for women and the second leading cause of death for men in the workplace.",
       "definition": "Workplace violence (homicide)\n(No longer true: in 2023 transportation incidents caused 36.8% of all US workplace deaths and homicides 8.7%.)"
     },
     {
-      "id": 280,
+      "id": 257,
       "term": "4 types of workplace violence",
       "definition": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - personal relationship (e.g., domestic violence)"
     },
     {
-      "id": 281,
+      "id": 258,
       "term": "What is used to determine which functions in a business are the most critical, and at what times they are critical?",
       "definition": "Business impact analysis (BIA)"
     },
     {
-      "id": 282,
+      "id": 259,
       "term": "A process that identifies the critical functions of an organization and that develops strategies to continue these functions without interruption or to minimize the effects of an outage or loss of service provided by the functions.",
       "definition": "Business continuity planning"
     },
     {
-      "id": 283,
+      "id": 260,
       "term": "Targets are...",
       "definition": "Physical assets, electronic data, people, or anything that could impact business operations."
     },
     {
-      "id": 284,
+      "id": 261,
       "term": "The first step in designing a new PPS or upgrading an existing system is to...",
       "definition": "Characterize the facility to be protected."
     },
     {
-      "id": 285,
+      "id": 262,
       "term": "What is the most subjective and least constrained aspect of designing a PPS?",
       "definition": "Characterizing a facility"
     },
     {
-      "id": 286,
+      "id": 263,
       "term": "What must be considered when determining the objectives or evaluating the effectiveness of an existing PPS?",
       "definition": "Threat definition"
     },
     {
-      "id": 287,
+      "id": 264,
       "term": "Three categories of outsiders (adversaries)",
       "definition": "Terrorists, criminals, extremists"
     },
     {
-      "id": 288,
+      "id": 265,
       "term": "Anyone with knowledge of operations or security systems and who has unescorted access to facilities or security interests.",
       "definition": "Insider"
     },
     {
-      "id": 289,
+      "id": 266,
       "term": "What is the utmost concern to the designer of a PPS?",
       "definition": "Capability of the potential adversary"
     },
     {
-      "id": 290,
+      "id": 267,
       "term": "List the three primary tactics used by adversaries.",
       "definition": "Force, stealth, and deceit"
     },
     {
-      "id": 291,
+      "id": 268,
       "term": "The two most common types of logic diagram gates...",
       "definition": "AND gate, OR gate"
     },
     {
-      "id": 292,
+      "id": 269,
       "term": "What type of gate requires only one of the inputs be prevented?",
       "definition": "AND gate"
     },
     {
-      "id": 293,
+      "id": 270,
       "term": "What type of gate requires all of the inputs to be prevented?",
       "definition": "OR gate"
     },
     {
-      "id": 294,
+      "id": 271,
       "term": "AND gate/OR gate shape?",
       "definition": "Flat bottom/curved bottom"
     },
     {
-      "id": 298,
+      "id": 272,
       "term": "A collection of components or elements designed to achieve an objective according to a plan.",
       "definition": "a system"
     },
     {
-      "id": 299,
+      "id": 273,
       "term": "Intrusion sensor performance is described by what three fundamental characteristics?",
       "definition": "Probability of detection, NAR, vulnerability to defeat"
     },
     {
-      "id": 301,
+      "id": 274,
       "term": "What type of sensor utilizes a receiver to collect energy emissions?",
       "definition": "Passive"
     },
     {
-      "id": 302,
+      "id": 275,
       "term": "What type of sensor transmits some type of energy and detects a change?",
       "definition": "Active"
     },
     {
-      "id": 303,
+      "id": 276,
       "term": "The use of what can be an effective alternative to the use of dual technology sensors",
       "definition": "complementary sensors"
     },
     {
-      "id": 304,
+      "id": 277,
       "term": "What are the two basic techniques for combining sensors?",
       "definition": "OR and AND combinations"
     },
     {
-      "id": 306,
+      "id": 278,
       "term": "What are the three application classes for interior sensors?",
       "definition": "Boundary-penetration, interior motion, proximity"
     },
     {
-      "id": 307,
+      "id": 279,
       "term": "What is the process of combining individual technology elements, procedures, and personnel into one system providing security at a facility?",
       "definition": "System integration"
     },
     {
-      "id": 308,
+      "id": 280,
       "term": "What is the means for monitoring the communication link between a sensor and the alarm control center?",
       "definition": "Line supervision"
     },
     {
-      "id": 309,
+      "id": 281,
       "term": "Sensor detection areas should...",
       "definition": "overlap"
     },
     {
-      "id": 310,
+      "id": 282,
       "term": "What collects and sends information to the operator?",
       "definition": "AC&D subsystem"
     },
     {
-      "id": 311,
+      "id": 283,
       "term": "Methods of personnel entry authorization include...",
       "definition": "credentials, personal identification numbers (PIN), and automated personal identity verification."
     },
     {
-      "id": 312,
+      "id": 284,
       "term": "As part of protection in depth, what should be implemented?",
       "definition": "delay in depth"
     },
     {
-      "id": 313,
+      "id": 285,
       "term": "Analysis of a protection system uses the concept of what?",
       "definition": "Adversary path"
     },
     {
-      "id": 314,
+      "id": 286,
       "term": "Fixed focal length lenses of one format may be used with ______ sensor formats, but never with ______ sensor sizes.",
       "definition": "smaller, larger"
     },
     {
-      "id": 315,
+      "id": 287,
       "term": "Use of lenses with larger camera sensor sizes will create what?",
       "definition": "image distortion and darkening at the edges of the field of view"
     },
     {
-      "id": 316,
+      "id": 288,
       "term": "What does a smaller f-number indicate?",
       "definition": "The more light is admitted."
     },
     {
-      "id": 317,
+      "id": 289,
       "term": "Cameras must never be angled where?",
       "definition": "To look above the horizon"
     },
     {
-      "id": 318,
+      "id": 290,
       "term": "How should solid state cameras be focused?",
       "definition": "With the iris fully open"
     },
     {
-      "id": 319,
+      "id": 291,
       "term": "What is the minimum amount of illumination required to produce a specified output signal called?",
       "definition": "CCTV sensitivity"
     },
     {
-      "id": 320,
+      "id": 292,
       "term": "Historically, most street lights were...",
       "definition": "Mercury vapor (now largely replaced by high-pressure sodium and LED)"
     },
     {
-      "id": 321,
+      "id": 293,
       "term": "Generally, the assessment area should occupy what percent of the monitor?",
       "definition": "75%"
     },
     {
-      "id": 322,
+      "id": 294,
       "term": "The most common media type of cable in use today is...",
       "definition": "Twisted pair copper cable"
     },
     {
-      "id": 323,
+      "id": 295,
       "term": "The most common broadband cables are...",
       "definition": "Coaxial cables"
     },
     {
-      "id": 324,
+      "id": 296,
       "term": "What uses radio transmitters and receivers to send data?",
       "definition": "RF links"
     },
     {
-      "id": 325,
+      "id": 297,
       "term": "What layer handles packaging data for transmission?",
       "definition": "Link layer"
     },
     {
-      "id": 326,
+      "id": 298,
       "term": "Supervisory systems can either be ______ or ______",
       "definition": "static or dynamic"
     },
     {
-      "id": 327,
+      "id": 299,
       "term": "What type of supervisory systems are more difficult to defeat?",
       "definition": "Dynamic"
     },
     {
-      "id": 328,
+      "id": 300,
       "term": "Typical supervisory systems have sensitivity ranges of ...",
       "definition": "2-30%"
     },
     {
-      "id": 329,
+      "id": 301,
       "term": "Name the types of alarm handling",
       "definition": "acknowledgment, assessment, access"
     },
     {
-      "id": 330,
+      "id": 302,
       "term": "The control and display subsystem must be designed with what in mind?",
       "definition": "The human operator"
     },
     {
-      "id": 331,
+      "id": 303,
       "term": "Name the three expected system security operating states at a facility.",
       "definition": "normal, abnormal, malevolent"
     },
     {
-      "id": 332,
+      "id": 304,
       "term": "The wire badges that were long the de facto industry standard are?",
       "definition": "Wiegand wire badges (since superseded by proximity and smart cards)"
     },
     {
-      "id": 333,
+      "id": 305,
       "term": "Biometric error rate performance indicators come in what two types?",
       "definition": "Type I false reject & type II false accept"
     },
     {
-      "id": 334,
+      "id": 306,
       "term": "The two major components in most locks are what?",
       "definition": "The fastening device (latch or bolt) & the coded mechanism (Key cylinder)"
     },
     {
-      "id": 336,
+      "id": 307,
       "term": "The technology used to restrict entry or exit at a facility",
       "definition": "Entry control"
     },
     {
-      "id": 337,
+      "id": 308,
       "term": "The databases, procedures, and rules for access that complement technology.",
       "definition": "Access control"
     },
     {
-      "id": 338,
+      "id": 309,
       "term": "What is one of the weakest links in a structure design?",
       "definition": "Doors"
     },
     {
-      "id": 339,
+      "id": 310,
       "term": "Communication to the response force must contain what?",
       "definition": "Information about adversary actions and instructions for deployment"
     },
     {
-      "id": 340,
+      "id": 311,
       "term": "The maximum range for reliable communication between two radios?",
       "definition": "1-3 miles"
     },
     {
-      "id": 341,
+      "id": 312,
       "term": "Insertion of unwanted signals into the frequency channel of a communications system for the purpose of masking desired signals.",
       "definition": "Jamming"
     },
     {
-      "id": 342,
+      "id": 313,
       "term": "What kind of systems are most vulnerable to jamming?",
       "definition": "RF systems"
     },
     {
-      "id": 343,
+      "id": 314,
       "term": "What is used to verify that response force tactical training has resulted in the desired capability and that the overall tactical plan is realistic?",
       "definition": "Field exercises"
     },
     {
-      "id": 344,
+      "id": 315,
       "term": "Response force contingency planning includes;",
       "definition": "Tactical planning, interaction with outside agencies, the facility's use of force policy, and additional duties of the guard force."
     },
     {
-      "id": 345,
+      "id": 316,
       "term": "Analysis and evaluation principles and models are based on what?",
       "definition": "The existence of adversary paths to an asset"
     },
     {
-      "id": 347,
+      "id": 317,
       "term": "An adequate protection system provides what?",
       "definition": "high probability of detection"
     },
     {
-      "id": 348,
+      "id": 318,
       "term": "A better measure of effectiveness is...",
       "definition": "Timely detection"
     },
     {
-      "id": 349,
+      "id": 319,
       "term": "The principle of timely detection states that system effectiveness is...",
       "definition": "measured by the cumulative probability of detection at the point where there is still enough time remaining for the response force to interrupt the adversary."
     },
     {
-      "id": 350,
+      "id": 320,
       "term": "A simple, easy to use method of evaluating PPS performance along a specific path and under specific conditions of threat and system operations.",
       "definition": "EASI"
     },
     {
-      "id": 351,
+      "id": 321,
       "term": "In most PPSs, the likelihood of successful communication to the response force...",
       "definition": "increases with time"
     },
     {
-      "id": 352,
+      "id": 322,
       "term": "The time data entered into EASI may be in units of...",
       "definition": "seconds or minutes but not both"
     },
     {
-      "id": 353,
+      "id": 323,
       "term": "Steps to use the EASI model",
       "definition": "select an adversary action, select physical path to asset, determine location of sensors, obtain probability of detection and communication, the mean and standard deviation of task times and response times."
     },
     {
-      "id": 354,
+      "id": 324,
       "term": "What is the best measure of a PPS effectiveness?",
       "definition": "Probability of interruption of a defined adversary along the most vulnerable path in a facility."
     },
     {
-      "id": 355,
+      "id": 325,
       "term": "The risk equation culminates in values for...",
       "definition": "C (Consequence), Pa (probability of attack), Pe (probability of system effectiveness)"
     },
     {
-      "id": 356,
+      "id": 326,
       "term": "The degree of protection desired in any installation is predicated upon an analysis of what two factors?",
       "definition": "Criticality and vulnerability"
     },
     {
-      "id": 357,
+      "id": 327,
       "term": "The process used by the security manager in establishing priorities of protection of assets is known as",
       "definition": "Vulnerability study"
     },
     {
-      "id": 358,
+      "id": 328,
       "term": "The type of fencing generally used for protection of permanent limited and exclusion areas is",
       "definition": "Chain link"
     },
     {
-      "id": 359,
+      "id": 329,
       "term": "For general security usage, excluding the top guard, chain link fence should be:",
       "definition": "9 gauge wire and at least 7 feet high"
     },
     {
-      "id": 360,
+      "id": 330,
       "term": "In a barbed wire fence, the distance between the strands should not exceed:",
       "definition": "6 inches"
     },
     {
-      "id": 361,
+      "id": 331,
       "term": "Standard barbed wire is twisted double strand:",
       "definition": "13.5 gauge with 4-point barbs"
     },
     {
-      "id": 362,
+      "id": 332,
       "term": "Top guard supporting arms should be permanently affixed to the top of the fence posts to increase the overall height at least",
       "definition": "1 foot"
     },
     {
-      "id": 363,
+      "id": 333,
       "term": "The intrusion detection system in which a pattern of radio waves is transmitted and partially reflected back to the antenna is known as",
       "definition": "Microwave system"
     },
     {
-      "id": 364,
+      "id": 334,
       "term": "The type of lock generally used on automobiles, desks and cabinets is",
       "definition": "Wafer"
     },
     {
-      "id": 365,
+      "id": 335,
       "term": "Inventories of keys should be conducted at least",
       "definition": "annually"
     },
     {
-      "id": 366,
+      "id": 336,
       "term": "UL classified safes must be anchored to the floor or weigh at least",
       "definition": "750 lbs"
     },
     {
-      "id": 367,
+      "id": 337,
       "term": "The temperature at which paper may be destroyed is",
       "definition": "350°F"
     },
     {
-      "id": 368,
+      "id": 338,
       "term": "A system using inaudible sound waves to detect the presence of an intruder or other disturbance is known as",
       "definition": "Ultrasonic motion detection"
     },
     {
-      "id": 369,
+      "id": 339,
       "term": "What is considered the most resistant to blast from explosion",
       "definition": "Thick reinforced concrete walls"
     },
     {
-      "id": 370,
+      "id": 340,
       "term": "The mechanical lock longest in use which has practically no security value",
       "definition": "The warded lock"
     },
     {
-      "id": 371,
+      "id": 341,
       "term": "The most widely used lock for building doors and rooms",
       "definition": "Pin tumbler lock"
     },
     {
-      "id": 372,
+      "id": 342,
       "term": "The sensor used when light air turbulence, vibration and motion outside the room are present",
       "definition": "Acoustic"
     },
     {
-      "id": 373,
+      "id": 343,
       "term": "Foil used as a detector on a glass window to signal a surreptitious or forcible penetration is",
       "definition": "Electromechanical sensor"
     },
     {
-      "id": 374,
+      "id": 344,
       "term": "A sound wave sensor is generally referred to as",
       "definition": "Ultrasonic detector"
     },
     {
-      "id": 375,
+      "id": 345,
       "term": "Security services in which the security force is hired and controlled directly by the protected organization are called",
       "definition": "proprietary"
     },
     {
-      "id": 376,
+      "id": 346,
       "term": "A hybrid system is a combination of what?",
       "definition": "proprietary and contract security"
     },
     {
-      "id": 377,
+      "id": 347,
       "term": "What is lost by using a contract security service",
       "definition": "Control"
     },
     {
-      "id": 378,
+      "id": 348,
       "term": "What is lost by using proprietary officers?",
       "definition": "Impartiality"
     },
     {
-      "id": 379,
+      "id": 349,
       "term": "A person who already knows and understands the basics of loss prevention and security is known as:",
       "definition": "engaged liaison"
     },
     {
-      "id": 380,
+      "id": 350,
       "term": "The most common perimeter barriers are",
       "definition": "Fencing and walls"
     },
     {
-      "id": 381,
+      "id": 351,
       "term": "What is designed to control pedestrian traffic and minimize tailgating (piggybacking)?",
       "definition": "Turnstiles"
     },
     {
-      "id": 382,
+      "id": 352,
       "term": "Key factors in hardening a facility include:",
       "definition": "Stand off distance, structural integrity, Prevention of progressive collapse, redundancy of operating systems"
     },
     {
-      "id": 383,
+      "id": 353,
       "term": "An adversary may use what type of attacks to defeat an access control point:",
       "definition": "Deceit, direct physical attack, technical attack"
     },
     {
-      "id": 384,
+      "id": 354,
       "term": "Camera functional requirement considerations",
       "definition": "Target, activity, purpose"
     },
     {
-      "id": 385,
+      "id": 355,
       "term": "The major types of video surveillance cameras:",
       "definition": "Analog, IP, Infrared, thermal"
     },
     {
-      "id": 386,
+      "id": 356,
       "term": "A general statement of a principle according to which an organization performs business functions",
       "definition": "A policy"
     },
     {
-      "id": 387,
+      "id": 357,
       "term": "Detailed implementation instructions for staff to carry out security policies.",
       "definition": "procedures"
     },
     {
-      "id": 388,
+      "id": 358,
       "term": "Presidential directive establishes a policy for a common identification standard for federal employees and contractors.",
       "definition": "HSPD-12"
     },
     {
-      "id": 389,
+      "id": 359,
       "term": "Sources of law",
       "definition": "Common law, case law, statutory law"
     },
     {
-      "id": 390,
+      "id": 360,
       "term": "A civil action based on the principle that one individual can expect certain behavior from another individual",
       "definition": "tort"
     },
     {
-      "id": 391,
+      "id": 361,
       "term": "Tort law may be invoked for either",
       "definition": "an intentional or negligent act"
     },
     {
-      "id": 392,
+      "id": 362,
       "term": "Types of intentional torts",
       "definition": "assault, battery, false arrest, defamation, invasion of privacy"
     },
     {
-      "id": 393,
+      "id": 363,
       "term": "Three parts of the fire triangle",
       "definition": "Oxygen, heat, fuel"
     },
     {
-      "id": 394,
+      "id": 364,
       "term": "Theft occurs when what three elements are present:",
       "definition": "motive, desire, opportunity"
     },
     {
-      "id": 395,
+      "id": 365,
       "term": "A barrier is normally considered penetrated when an adversary reaches:",
       "definition": "3 feet beyond the barrier"
     },
     {
-      "id": 396,
+      "id": 366,
       "term": "For a VA response strategies include",
       "definition": "Deterrence"
     },
     {
-      "id": 397,
+      "id": 367,
       "term": "A business impact analysis is conducted during which BCP step?",
       "definition": "Readiness"
     },
     {
-      "id": 398,
+      "id": 368,
       "term": "Classification of security survey recommendations",
       "definition": "Maximum, medium, minimum"
     },
     {
-      "id": 399,
+      "id": 369,
       "term": "The first step in conducting a security survey",
       "definition": "Interview the person to whom you will turn in the report"
     },
     {
-      "id": 400,
+      "id": 370,
       "term": "A systematic evaluation in which quantitative or qualitative techniques are used to predict PPS component performance and overall system effectiveness by identifying exploitable weaknesses in asset protection for a defined threat.",
       "definition": "Vulnerability assessment"
     },
     {
-      "id": 401,
+      "id": 371,
       "term": "A facility attack can be broken into three distinct phases:",
       "definition": "Pre-attack, attack, post-attack"
     },
     {
-      "id": 402,
+      "id": 372,
       "term": "An estimate of predicted outcomes of identical trials stated with a confidence level.",
       "definition": "probability"
     },
     {
-      "id": 403,
+      "id": 373,
       "term": "What is one of the required inputs for a VA?",
       "definition": "Knowing the threat"
     },
     {
-      "id": 404,
+      "id": 374,
       "term": "Third target identification technique for VAs",
       "definition": "consequence analysis"
     },
     {
-      "id": 405,
+      "id": 375,
       "term": "A VA is conducted in the requirements stage of systems engineering, producing what",
       "definition": "requirements for an upgraded system design"
     },
     {
-      "id": 406,
+      "id": 376,
       "term": "A characteristic that identifies the levels needed to achieve specific objectives under a given set of conditions",
       "definition": "A requirement"
     },
     {
-      "id": 407,
+      "id": 377,
       "term": "Requirements are generally stated as ____ and goals are stated as _____.",
       "definition": "Shall, should"
     },
     {
-      "id": 408,
+      "id": 378,
       "term": "In analog video, signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
       "definition": "frame, fields"
     },
     {
-      "id": 409,
+      "id": 379,
       "term": "Criteria for good reporting",
       "definition": "Accuracy, clarity, conciseness, timeliness, slant"
     },
     {
-      "id": 411,
+      "id": 380,
       "term": "A successful security design integrates three primary elements:",
       "definition": "Architectural aspects, security systems, and operational factors"
     },
     {
-      "id": 412,
+      "id": 381,
       "term": "The deliverables of the design phase",
       "definition": "PPS specifications & the statement of work"
     },
     {
-      "id": 413,
+      "id": 382,
       "term": "International Organization for standardization (ISO) are...",
       "definition": "voluntary but widely adopted"
     },
     {
-      "id": 414,
+      "id": 383,
       "term": "Binding under law and can be enforced by formal authorities",
       "definition": "statutory and regulatory standards"
     },
     {
-      "id": 415,
+      "id": 384,
       "term": "The job of managing involves five basic functions:",
       "definition": "Planning, organizing, directing, coordinating, controlling"
     },
     {
-      "id": 416,
+      "id": 385,
       "term": "A structure that extends higher than the maximum reach of available fire fighting equipment.",
       "definition": "High-rise"
     },
     {
-      "id": 417,
+      "id": 386,
       "term": "High rise building operating modes",
       "definition": "Open, closed, hybrid"
     }
   ],
   "contentCorrections": [
     {
-      "id": 12,
+      "id": 11,
       "field": "definition",
       "original": "Facility characterization, threat detection, target identification",
       "corrected": "Facility characterization, threat definition, target identification",
-      "reason": "The first PPS design step is threat definition, as cards 134-136 and 286 say."
+      "reason": "The first PPS design step is threat definition, as cards 122-124 and 263 say.",
+      "pdfNumber": 12
     },
     {
-      "id": 43,
+      "id": 34,
       "field": "definition",
       "original": "Disc or wafer tumbler, pin tumbler, lever",
       "corrected": "Disc or wafer tumbler, pin tumbler, lever, warded",
-      "reason": "The warded lock (card 370) was missing from the list."
+      "reason": "The warded lock (card 340) was missing from the list.",
+      "pdfNumber": 43
     },
     {
-      "id": 97,
+      "id": 86,
       "field": "term",
       "original": "What is the first step in upgrading existing facilities?",
       "corrected": "What is the first step in upgrading the doors of an existing facility?",
-      "reason": "Eliminating unnecessary doors is the first step in upgrading doors; the first step in upgrading a facility is characterizing it (card 284)."
+      "reason": "Eliminating unnecessary doors is the first step in upgrading doors; the first step in upgrading a facility is characterizing it (card 261).",
+      "pdfNumber": 97
     },
     {
-      "id": 129,
+      "id": 117,
       "field": "definition",
       "original": "* Fire department.\n* Safety & Health regulators.\n* Department of Labor.\n* Nuclear regulatory commission.\n* Local building codes.\n* ULC (Underwriter Laboratories) standards.",
       "corrected": "* Fire department.\n* Safety & Health regulators.\n* Department of Labor.\n* Nuclear regulatory commission.\n* Local building codes.\n* UL (Underwriters Laboratories) standards.",
-      "reason": "ULC is Underwriters Laboratories of Canada; the name is Underwriters Laboratories."
+      "reason": "ULC is Underwriters Laboratories of Canada; the name is Underwriters Laboratories.",
+      "pdfNumber": 129
     },
     {
-      "id": 130,
+      "id": 118,
       "field": "definition",
       "original": "* Strike a balance between safety and security.\n* 1-15 second time delay on fire exits.\n* Dispatch a guard to protect an area.\n* UL 2000 \"safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
       "corrected": "* Strike a balance between safety and security.\n* 1-15 second time delay on fire exits.\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
-      "reason": "The quote is a safety/security design principle, not a UL standard; the spurious \"UL 2000\" label was removed."
+      "reason": "The quote is a safety/security design principle, not a UL standard; the spurious \"UL 2000\" label was removed.",
+      "pdfNumber": 130
     },
     {
-      "id": 192,
+      "id": 179,
       "field": "term",
       "original": "The use of multiple lines of detection (e.g. the use of two or more types of sensors to detect the same event) is referred to as...",
       "corrected": "The use of multiple lines of detection is referred to as...",
-      "reason": "The example described complementary sensors, not protection in depth."
+      "reason": "The example described complementary sensors, not protection in depth.",
+      "pdfNumber": 192
     },
     {
-      "id": 196,
+      "id": 183,
       "field": "term",
       "original": "For a complementary balanced system, what two factors should be equal?",
       "corrected": "For a completely balanced system, what two factors should be equal?",
-      "reason": "The concept is a completely balanced system."
+      "reason": "The concept is a completely balanced system.",
+      "pdfNumber": 196
     },
     {
-      "id": 196,
+      "id": 183,
       "field": "definition",
       "original": "1. The minimum time to penetrate each barrier and.. 2. The minimum time to detect penetration of the barrier.",
       "corrected": "1. The minimum time to penetrate each barrier.\n2. The minimum probability of detecting penetration of each barrier.",
-      "reason": "The second factor is the probability of detecting penetration, not a time."
+      "reason": "The second factor is the probability of detecting penetration, not a time.",
+      "pdfNumber": 196
     },
     {
-      "id": 207,
+      "id": 191,
       "field": "term",
       "original": "For protection of critical assets, the total time for detection, delay, and response must be less than...",
       "corrected": "For protection of critical assets, the total time for detection and response must be less than...",
-      "reason": "Delay is part of the adversary task time; detection plus response must be shorter than it."
+      "reason": "Delay is part of the adversary task time; detection plus response must be shorter than it.",
+      "pdfNumber": 207
     },
     {
-      "id": 247,
+      "id": 227,
       "field": "term",
       "original": "What is a more in-depth study, including risk management, analysis of risk factors, environmental and physiological security risks, and analysis of crime patterns, fraud, and internal theft?",
       "corrected": "What is a more in-depth study, including risk management, analysis of risk factors, environmental and physical security risks, and analysis of crime patterns, fraud, and internal theft?",
-      "reason": "Security risk analysis covers environmental and physical security risks."
+      "reason": "Security risk analysis covers environmental and physical security risks.",
+      "pdfNumber": 247
     },
     {
-      "id": 257,
+      "id": 236,
       "field": "term",
       "original": "What is a temporary endeavor undertaken to accomplish a unique process?",
       "corrected": "What is a temporary endeavor undertaken to create a unique product, service, or result?",
-      "reason": "A project produces a unique product, service, or result, not a \"unique process\"."
+      "reason": "A project produces a unique product, service, or result, not a \"unique process\".",
+      "pdfNumber": 257
     },
     {
-      "id": 287,
+      "id": 264,
       "field": "definition",
       "original": "Ideological, economical, personal",
       "corrected": "Terrorists, criminals, extremists",
-      "reason": "The original answer listed adversary motivations (card 137), not outsider categories (card 138)."
+      "reason": "The original answer listed adversary motivations (card 125), not outsider categories (card 126).",
+      "pdfNumber": 287
     },
     {
-      "id": 359,
+      "id": 329,
       "field": "definition",
       "original": "9 gauge wire and at least 6 feet high",
       "corrected": "9 gauge wire and at least 7 feet high",
-      "reason": "Standard is 7 feet excluding the top guard, matching card 249."
+      "reason": "Standard is 7 feet excluding the top guard, matching card 229.",
+      "pdfNumber": 359
     },
     {
-      "id": 376,
+      "id": 346,
       "field": "term",
       "original": "A hybrid system is a combination of Proprietary & contract security",
       "corrected": "A hybrid system is a combination of what?",
-      "reason": "The original term contained its own answer."
+      "reason": "The original term contained its own answer.",
+      "pdfNumber": 376
     }
   ],
   "removedDuplicates": [
     {
-      "id": 11,
       "term": "Designing PPS",
-      "duplicateOf": 124
+      "duplicateOf": 112,
+      "pdfNumber": 11
     },
     {
-      "id": 18,
       "term": "Target identification techniques",
-      "duplicateOf": 150
+      "duplicateOf": 138,
+      "pdfNumber": 18
     },
     {
-      "id": 20,
       "term": "Detection performance measures",
-      "duplicateOf": 189
+      "duplicateOf": 176,
+      "pdfNumber": 20
     },
     {
-      "id": 21,
       "term": "Delay performance measure",
-      "duplicateOf": 190
+      "duplicateOf": 177,
+      "pdfNumber": 21
     },
     {
-      "id": 22,
       "term": "Response performance measure",
-      "duplicateOf": 191
+      "duplicateOf": 178,
+      "pdfNumber": 22
     },
     {
-      "id": 27,
       "term": "Interior sensor application",
-      "duplicateOf": 306
+      "duplicateOf": 278,
+      "pdfNumber": 27
     },
     {
-      "id": 29,
       "term": "3 levels of alarm resolution",
-      "duplicateOf": 71
+      "duplicateOf": 61,
+      "pdfNumber": 29
     },
     {
-      "id": 32,
       "term": "Types of barriers",
-      "duplicateOf": 94
+      "duplicateOf": 83,
+      "pdfNumber": 32
     },
     {
-      "id": 39,
       "term": "3 phases of vulnerability assessment",
-      "duplicateOf": 246
+      "duplicateOf": 226,
+      "pdfNumber": 39
     },
     {
-      "id": 60,
       "term": "4 stages of a project",
-      "duplicateOf": 259
+      "duplicateOf": 238,
+      "pdfNumber": 60
     },
     {
-      "id": 81,
       "term": "What is the definition of PPS",
-      "duplicateOf": 121
+      "duplicateOf": 109,
+      "pdfNumber": 81
     },
     {
-      "id": 103,
       "term": "Delay elements include:",
-      "duplicateOf": 94
+      "duplicateOf": 83,
+      "pdfNumber": 103
     },
     {
-      "id": 157,
       "term": "Priorities of targets are based on...",
-      "duplicateOf": 229
+      "duplicateOf": 213,
+      "pdfNumber": 157
     },
     {
-      "id": 199,
       "term": "A PPS is best measured by the concept of probability of __________ of a defined ________ along the most _________ path in the facility.",
-      "duplicateOf": 354
+      "duplicateOf": 324,
+      "pdfNumber": 199
     },
     {
-      "id": 202,
       "term": "What are the three functions of a PPS?",
-      "duplicateOf": 122
+      "duplicateOf": 110,
+      "pdfNumber": 202
     },
     {
-      "id": 203,
       "term": "What three things do the functions of a PPS integrate?",
-      "duplicateOf": 123
+      "duplicateOf": 111,
+      "pdfNumber": 203
     },
     {
-      "id": 231,
       "term": "The performance measures for sensors are?",
-      "duplicateOf": 299
+      "duplicateOf": 273,
+      "pdfNumber": 231
     },
     {
-      "id": 233,
       "term": "What are the methods of personnel entry authorization?",
-      "duplicateOf": 311
+      "duplicateOf": 283,
+      "pdfNumber": 233
     },
     {
-      "id": 239,
       "term": "Response force strategies include what?",
-      "duplicateOf": 110
+      "duplicateOf": 98,
+      "pdfNumber": 239
     },
     {
-      "id": 243,
       "term": "What is the point in a path when the remaining delay time exceeds the response time?",
-      "duplicateOf": 210
+      "duplicateOf": 194,
+      "pdfNumber": 243
     },
     {
-      "id": 256,
       "term": "What are the three types of procurement actions?",
-      "duplicateOf": 271
+      "duplicateOf": 249,
+      "pdfNumber": 256
     },
     {
-      "id": 264,
       "term": "What are the 6 life cycle phases of a project",
-      "duplicateOf": 61
+      "duplicateOf": 51,
+      "pdfNumber": 264
     },
     {
-      "id": 275,
       "term": "The divisions of risk are limited to three common categories:",
-      "duplicateOf": 253
+      "duplicateOf": 233,
+      "pdfNumber": 275
     },
     {
-      "id": 295,
       "term": "What is the process identifying specific locations, actions, or assets to be protected to prevent undesirable consequences?",
-      "duplicateOf": 227
+      "duplicateOf": 211,
+      "pdfNumber": 295
     },
     {
-      "id": 296,
       "term": "A structured approach of target identification based on logic diagrams called fault trees.",
-      "duplicateOf": 228
+      "duplicateOf": 212,
+      "pdfNumber": 296
     },
     {
-      "id": 297,
       "term": "Priorities of targets are based on the analysis of the consequence of what?",
-      "duplicateOf": 229
+      "duplicateOf": 213,
+      "pdfNumber": 297
     },
     {
-      "id": 300,
       "term": "Classification of exterior sensors",
-      "duplicateOf": 24
+      "duplicateOf": 19,
+      "pdfNumber": 300
     },
     {
-      "id": 305,
       "term": "The use of multiple, continuous lines of detection provide for what?",
-      "duplicateOf": 192
+      "duplicateOf": 179,
+      "pdfNumber": 305
     },
     {
-      "id": 335,
       "term": "Methods of personnel entry authorization include:",
-      "duplicateOf": 311
+      "duplicateOf": 283,
+      "pdfNumber": 335
     },
     {
-      "id": 346,
       "term": "An ordered series of actions against a facility, which, if completed, results in successful theft, sabotage, or other malevolent outcome.",
-      "duplicateOf": 209
+      "duplicateOf": 193,
+      "pdfNumber": 346
     },
     {
-      "id": 410,
       "term": "Risk analysis is conducted during which PPS life cycle phase?",
-      "duplicateOf": 265
+      "duplicateOf": 243,
+      "pdfNumber": 410
     }
   ],
   "currencyReview": {
@@ -2227,216 +2241,240 @@
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 4
       },
       {
         "id": 5,
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 5
       },
       {
         "id": 6,
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 6
       },
       {
         "id": 7,
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 7
       },
       {
         "id": 8,
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 8
       },
       {
-        "id": 52,
+        "id": 43,
         "status": "updated",
         "field": "definition",
         "original": "4x3 (16x9 wide screen)",
         "corrected": "4:3 for legacy analog video; 16:9 for widescreen/HD",
         "reason": "Clarifies which ratio applies to which generation of video.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 52
       },
       {
-        "id": 53,
+        "id": 44,
         "status": "updated",
         "field": "term",
         "original": "2 types of video scanning",
         "corrected": "2 types of video scanning (analog-era terminology)",
         "reason": "Raster/interlaced scanning belongs to analog video; current IP cameras use progressive scan.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 53
       },
       {
-        "id": 56,
+        "id": 47,
         "status": "updated",
         "field": "definition",
         "original": "Hubs\nSwitches\nRouters\nFirewalls\nIntrusion detection systems",
         "corrected": "Hubs (largely obsolete, replaced by switches)\nSwitches\nRouters\nFirewalls\nIntrusion detection systems",
         "reason": "Hubs are no longer used in new networks.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 56
       },
       {
-        "id": 59,
+        "id": 50,
         "status": "updated",
         "field": "definition",
         "original": "Deter\nDeny\nDetect\nDelay\nDestroy",
         "corrected": "Deter\nDeny\nDetect\nDelay\nDestroy\n(The current PSP Body of Knowledge cites the 4 Ds: deter, detect, delay, deny.)",
         "reason": "The 2022 Body of Knowledge names four Ds, not five.",
         "source": "https://www.asisonline.org/globalassets/certification/documents/physical-security-professional----bok.pdf",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 59
       },
       {
-        "id": 67,
+        "id": 57,
         "status": "updated",
         "field": "definition",
         "original": "High & low pressure sodium",
         "corrected": "High & low pressure sodium (the traditional answer; LED is now the common choice)",
         "reason": "LED has overtaken sodium for new outdoor lighting.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 67
       },
       {
-        "id": 74,
+        "id": 64,
         "status": "updated",
         "field": "term",
         "original": "A resolution of ___ lines per foot is suggested in order to classify a crawling human target.",
         "corrected": "A resolution of ___ TV lines per foot (analog video) is suggested in order to classify a crawling human target.",
         "reason": "TV lines is an analog measure; IP video uses pixels per foot.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 74
       },
       {
-        "id": 130,
+        "id": 118,
         "status": "updated",
         "field": "definition",
         "original": "* Strike a balance between safety and security.\n* 1-15 second time delay on fire exits.\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
         "corrected": "* Strike a balance between safety and security.\n* 15-second time delay on delayed-egress fire exits (30 seconds with approval of the authority having jurisdiction).\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
         "reason": "NFPA 101 delayed-egress locks release after 15 seconds, or 30 with approval; \"1-15\" was wrong.",
         "source": "https://www.csemag.com/door-locking-requirements-in-nfpa-101/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 130
       },
       {
-        "id": 142,
+        "id": 130,
         "status": "kept",
         "reason": "Old single-study claim; left as the reference answer, not checked.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 142
       },
       {
-        "id": 271,
+        "id": 249,
         "status": "updated",
         "field": "definition",
         "original": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)",
         "corrected": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)\n(The current PSP Body of Knowledge also lists request for quotation, RFQ.)",
         "reason": "The 2022 Body of Knowledge lists RFP, RFQ, IFB and sole source as bid package types.",
         "source": "https://www.asisonline.org/globalassets/certification/documents/physical-security-professional----bok.pdf",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 271
       },
       {
-        "id": 279,
+        "id": 256,
         "status": "updated",
         "field": "term",
         "original": "The leading cause of death for women and the second leading cause of death for men in the workplace.",
         "corrected": "Historically (1990s data), the leading cause of death for women and the second leading cause of death for men in the workplace.",
         "reason": "Homicide led workplace deaths for women in 1993-94 BLS data but no longer does.",
         "source": "https://www.bls.gov/news.release/archives/cfoi_12192024.htm",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 279
       },
       {
-        "id": 279,
+        "id": 256,
         "status": "updated",
         "field": "definition",
         "original": "Workplace violence",
         "corrected": "Workplace violence (homicide)\n(No longer true: in 2023 transportation incidents caused 36.8% of all US workplace deaths and homicides 8.7%.)",
         "reason": "BLS Census of Fatal Occupational Injuries, 2023.",
         "source": "https://www.bls.gov/news.release/archives/cfoi_12192024.htm",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 279
       },
       {
-        "id": 280,
+        "id": 257,
         "status": "updated",
         "field": "definition",
         "original": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - domestic violence",
         "corrected": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - personal relationship (e.g., domestic violence)",
         "reason": "The NIOSH typology calls Type IV \"personal relationship\".",
         "source": "https://www.cdc.gov/niosh/learning/safetyculturehc/module-2/10.html",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 280
       },
       {
-        "id": 320,
+        "id": 292,
         "status": "updated",
         "field": "term",
         "original": "Most street lights are...",
         "corrected": "Historically, most street lights were...",
         "reason": "Mercury vapor has largely been replaced by high-pressure sodium and LED.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 320
       },
       {
-        "id": 320,
+        "id": 292,
         "status": "updated",
         "field": "definition",
         "original": "Mercury vapor",
         "corrected": "Mercury vapor (now largely replaced by high-pressure sodium and LED)",
         "reason": "Same as above.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 320
       },
       {
-        "id": 332,
+        "id": 304,
         "status": "updated",
         "field": "term",
         "original": "The de facto badges which have become industry standard are?",
         "corrected": "The wire badges that were long the de facto industry standard are?",
         "reason": "Wiegand wire cards have been superseded by proximity and smart cards.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 332
       },
       {
-        "id": 332,
+        "id": 304,
         "status": "updated",
         "field": "definition",
         "original": "Wiegand wire badges",
         "corrected": "Wiegand wire badges (since superseded by proximity and smart cards)",
         "reason": "Same as above.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 332
       },
       {
-        "id": 340,
+        "id": 311,
         "status": "kept",
         "reason": "The 1-3 mile radio range is an old rule of thumb; left as the reference answer, not checked.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 340
       },
       {
-        "id": 397,
+        "id": 367,
         "status": "kept",
         "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
         "source": "https://www.asisonline.org/bundles/psp-bundle/",
-        "lookedUp": true
+        "lookedUp": true,
+        "pdfNumber": 397
       },
       {
-        "id": 408,
+        "id": 378,
         "status": "updated",
         "field": "term",
         "original": "Signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
         "corrected": "In analog video, signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
         "reason": "Frames made of two fields describe interlaced analog video.",
         "source": null,
-        "lookedUp": false
+        "lookedUp": false,
+        "pdfNumber": 408
       }
     ],
     "topicsInExamOutlineNotCoveredByDeck": [
@@ -2453,5 +2491,6 @@
       "Security awareness training for non-security personnel",
       "Warranty types and service agreements"
     ]
-  }
+  },
+  "numbering": "Cards are numbered 1-386. pdfNumber in the audit sections is the card number in the original 417-card PDF."
 }
