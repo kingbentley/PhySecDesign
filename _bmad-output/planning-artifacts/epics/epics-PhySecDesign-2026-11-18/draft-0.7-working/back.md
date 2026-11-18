@@ -38,7 +38,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 {{T_READING}}
 
-## Story numbers changed from draft 0.6
+## Numbering changes from draft 0.6
 
 Stories that were split, added or moved down by a split. A story not listed kept its number.
 

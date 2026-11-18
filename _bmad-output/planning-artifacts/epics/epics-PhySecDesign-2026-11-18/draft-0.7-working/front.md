@@ -17,7 +17,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
 - **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations, they remain listed in that review, and adding them all would grow the document again.
-- Stories were split and renumbered in this draft. [Story numbers changed from draft 0.6](#story-numbers-changed-from-draft-06) maps old numbers to new.
+- Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
 
@@ -66,7 +66,7 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 
 Each epic's own section states what it depends on.
 
-## How to read a story
+## How to read it
 
 - A story's criteria can be tested using only the stories before it.
 - Each story has a user-story sentence, a **Covers** line naming the requirements, architecture decisions and experiments it delivers, and **acceptance criteria** grouped under up to five labels, always in the same order. Each criterion is one observable result.
@@ -78,15 +78,15 @@ Each epic's own section states what it depends on.
 ### Standing rules
 
 1. Every change is saved through a versioned operation or an append-only entry (AD-5). No story adds a way to edit a record without a base version.
-2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.6: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified.
+2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.6b: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified.
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
 6. Rules that span the browser and the server are written once in the shared module, in TypeScript, with tests (architecture section 10, decision K6).
-7. The server is one build for both hosts. Host-specific code lives only behind the file-store and update interfaces, and no platform feature outside the list in AD-16 is used. Server tests run in Cloudflare's runtime, and the self-hosted smoke suite is extended for each new area once story 2.13 has built it.
+7. The server is one build for both hosts. Host-specific code lives only behind the file-store and update interfaces, and no platform feature outside the list in AD-16 is used. Server tests run in Cloudflare's runtime, and the self-hosted smoke suite is extended for each new area once story 2.13d has built it.
 8. From the first published release onward, a changed record shape comes with its data conversion (AD-20). Before that release there is no earlier data to convert.
 9. A story that adds a kind of record states, under Access and restore, whether a revision restore replaces it or leaves it unchanged.
-10. Performance criteria are measured against the acceptance-size test project that story 2.7 generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
+10. Performance criteria are measured against the acceptance-size test project that story 2.7b generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
 11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording.
 
 ### Definition of done

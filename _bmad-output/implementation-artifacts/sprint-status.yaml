@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-18-2026 17:30
-last_updated: 11-18-2026 19:50
+last_updated: 11-18-2026 20:26
 project: PhySecDesign
 project_key: NOKEY
 tracking_system: file-system
@@ -38,118 +38,194 @@ development_status:
   epic-1: backlog
   1-1-run-the-app-on-cloudflare-with-a-portable-server-core: backlog
   1-2-set-up-a-new-installation: backlog
-  1-3-invite-a-person-and-sign-in: backlog
-  1-4-two-step-verification: backlog
-  1-5-my-account-and-sessions: backlog
-  1-6-projects-list-and-creating-a-project: backlog
-  1-7-roles-membership-and-the-access-gate: backlog
-  1-8-administration-users-and-project-members: backlog
-  1-9-activity-log: backlog
-  1-10-settings-and-optional-email: backlog
+  1-3-sign-in-and-sign-out: backlog
+  1-4-invite-a-person: backlog
+  1-5-two-step-verification: backlog
+  1-6-my-account-and-sessions: backlog
+  1-7-projects-list-and-creating-a-project: backlog
+  1-8-project-membership-and-the-access-gate: backlog
+  1-9-installation-roles-deactivation-and-the-last-administrator: backlog
+  1-10-administration-users: backlog
+  1-11-administration-reset-links-and-two-step-control: backlog
+  1-12-administration-projects-and-members: backlog
+  1-13-recovery-when-the-only-administrator-is-locked-out: backlog
+  1-14-activity-log: backlog
+  1-15-settings-installation-sign-in-and-maps: backlog
+  1-16-require-two-step-verification-for-everyone: backlog
+  1-17-optional-email-and-forgotten-passwords: backlog
+  1-18-experiment-r13-email-by-smtp-on-both-hosts: backlog
   epic-1-retrospective: optional
 
   epic-2: backlog
   2-1-open-a-project-as-a-member-and-work-in-it-together: backlog
   2-2-save-edits-to-the-shared-project-and-show-the-save-state: backlog
-  2-3-see-other-people-s-changes-within-seconds: backlog
-  2-4-resolve-a-conflict-without-losing-either-edit: backlog
-  2-5-buildings-and-floors-on-the-server-with-guarded-deletion: backlog
-  2-6-property-lookup-and-plans-stored-with-their-originals: backlog
-  2-7-equipment-as-individual-records-findable-across-the-property: backlog
-  2-8-coverage-dori-and-zones-computed-off-the-main-thread-with-an: backlog
-  2-9-cable-routes-on-one-floor: backlog
-  2-10-survey-notes-and-photos-as-separate-entries: backlog
-  2-11-undo-my-own-recent-edits-and-delete-an-accidental-draft: backlog
-  2-12-bring-in-a-project-saved-by-the-prototype: backlog
-  2-13-run-site-studio-on-your-own-server: backlog
-  2-14-files-on-the-server-s-own-disk: backlog
-  2-15-records-survive-crashes-and-power-loss: backlog
+  2-3-keep-unsaved-edits-through-a-lost-connection-lost-access-or: backlog
+  2-4-see-other-people-s-changes-within-seconds: backlog
+  2-5-resolve-a-conflict-without-losing-either-edit: backlog
+  2-6-buildings-and-floors-on-the-server-with-guarded-deletion: backlog
+  2-7-property-lookup-and-map-views: backlog
+  2-8-import-align-and-lock-a-plan: backlog
+  2-9-plans-stored-on-the-server-with-their-originals: backlog
+  2-10-equipment-as-individual-records-findable-across-the-property: backlog
+  2-11-acceptance-size-test-project-and-first-timings: backlog
+  2-12-coverage-computed-off-the-main-thread-with-an-honest-status: backlog
+  2-13-dori-and-zone-targets-with-uncertain-results-flagged: backlog
+  2-14-sampling-no-coarser-than-1-m-a-time-allowance-and-saved-summ: backlog
+  2-15-cable-routes-on-one-floor: backlog
+  2-16-survey-notes-and-measurements-as-separate-entries: backlog
+  2-17-survey-photos-kept-with-their-originals: backlog
+  2-18-undo-and-redo-my-own-recent-edits: backlog
+  2-19-delete-an-accidental-draft-device: backlog
+  2-20-bring-in-a-project-saved-by-the-prototype: backlog
+  2-21-run-site-studio-on-your-own-server-over-https: backlog
+  2-22-run-behind-your-own-https-proxy: backlog
+  2-23-deployment-key-and-administrator-recovery-on-your-own-server: backlog
+  2-24-self-hosted-smoke-suite-for-accounts-and-the-shared-project: backlog
+  2-25-files-on-the-server-s-own-disk: backlog
+  2-26-records-survive-crashes-and-power-loss: backlog
   epic-2-retrospective: optional
 
   epic-3: backlog
-  3-1-project-frame-and-eight-areas: backlog
-  3-2-status-language-components: backlog
-  3-3-readable-text-contrast-targets-and-focus: backlog
-  3-4-plan-workspace-regrouped: backlog
-  3-5-equipment-as-a-full-page: backlog
-  3-6-device-inspector-with-tabs: backlog
+  3-1-project-frame: backlog
+  3-2-eight-areas-each-with-its-own-address: backlog
+  3-3-status-language-components: backlog
+  3-4-readable-text-contrast-targets-and-focus: backlog
+  3-5-plan-workspace-regrouped: backlog
+  3-6-equipment-as-a-full-page: backlog
+  3-7-device-inspector-with-tabs: backlog
   epic-3-retrospective: optional
 
   epic-4: backlog
-  4-1-named-revisions-as-fixed-snapshots-with-compare-and-restore: backlog
-  4-2-more-equipment-types-and-camera-fields: backlog
-  4-3-camera-model-templates: backlog
-  4-4-estimate-with-labour-percentage-lines-and-subsystems: backlog
-  4-5-capacity-estimates: backlog
-  4-6-approval-assignments-and-decisions-by-account: backlog
-  4-7-reviewer-links-for-people-without-accounts: backlog
-  4-8-issue-a-design-and-designate-the-current-reference: backlog
-  4-9-cancel-a-proposal-and-correct-a-record: backlog
-  4-10-design-package-generated-once-and-kept-exactly: backlog
+  4-1-save-named-revisions-and-list-them-in-the-records-timeline: backlog
+  4-2-compare-revisions-and-restore-one-into-the-working-design: backlog
+  4-3-more-equipment-types-and-device-fields: backlog
+  4-4-camera-model-templates: backlog
+  4-5-estimate-with-labour-percentage-lines-and-subsystems: backlog
+  4-6-capacity-estimates: backlog
+  4-7-approval-assignments: backlog
+  4-8-request-a-review-comment-and-decide-by-account: backlog
+  4-9-bypass-a-review-and-the-review-state-of-a-revision: backlog
+  4-10-reviewer-links-open-one-revision-comment-and-decide: backlog
+  4-11-reviewer-links-replace-revoke-expire-and-oversee: backlog
+  4-12-issue-a-design-as-the-current-reference: backlog
+  4-13-supersede-an-issued-design-and-compare-it-with-the-working-p: backlog
+  4-14-cancel-a-proposal-and-correct-a-record: backlog
+  4-15-design-package-contents-drawn-from-a-saved-revision: backlog
+  4-16-design-package-page-layout-and-options: backlog
+  4-17-design-package-volumes-upload-and-verification: backlog
+  4-18-design-package-editions-kept-exactly: backlog
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-field-shell-on-phones-and-tablets: backlog
-  5-2-installation-view-current-installation-and-the-issued-refere: backlog
-  5-3-record-work-done-and-changes-found-on-site: backlog
-  5-4-checklists-and-starters: backlog
-  5-5-record-outcomes-attempts-and-evidence: backlog
-  5-6-changes-flag-the-checks-they-affect: backlog
-  5-7-phase-progress-remaining-work-and-the-contradiction-warning: backlog
-  5-8-site-checks: backlog
-  5-9-issues: backlog
-  5-10-define-and-run-a-reliability-period: backlog
-  5-11-downtime-log-and-availability: backlog
-  5-12-close-out-with-a-closeout-package: backlog
-  5-13-lost-connection-and-conflicts-on-a-phone: backlog
+  5-1-field-shell-and-the-issued-design-chip: backlog
+  5-2-find-a-device-in-the-field: backlog
+  5-3-the-device-sheet-and-the-issued-reference: backlog
+  5-4-mark-work-installed-and-configured: backlog
+  5-5-reverse-a-mistaken-mark: backlog
+  5-6-report-a-change-found-on-site: backlog
+  5-7-checklists-and-starters: backlog
+  5-8-checklist-expectations-in-revisions-and-the-design-package: backlog
+  5-9-record-a-check-s-outcome: backlog
+  5-10-attempts-retests-and-corrections: backlog
+  5-11-photos-and-notes-as-evidence-for-a-check: backlog
+  5-12-large-photos-over-a-poor-connection: backlog
+  5-13-a-change-on-site-flags-the-checks-it-affects: backlog
+  5-14-definition-changes-added-checks-and-clearing-a-flag: backlog
+  5-15-phase-progress-remaining-work-and-the-contradiction-warning: backlog
+  5-16-site-checks: backlog
+  5-17-raise-and-track-issues: backlog
+  5-18-issues-in-remaining-work-counts-and-the-design-package: backlog
+  5-19-define-a-reliability-period: backlog
+  5-20-start-end-and-stop-a-run: backlog
+  5-21-downtime-log-and-availability: backlog
+  5-22-the-outcome-of-a-run: backlog
+  5-23-choose-completed-or-closed-with-outstanding-items: backlog
+  5-24-close-the-scope-and-write-the-closeout-record: backlog
+  5-25-a-closed-scope-and-a-project-with-no-active-scope: backlog
+  5-26-final-acceptance-of-the-closeout-record: backlog
+  5-27-closeout-package: backlog
+  5-28-lost-connection-and-conflicts-on-a-phone: backlog
   epic-5-retrospective: optional
 
   epic-6: backlog
   6-1-existing-equipment-condition-provenance-and-the-surveyed-bas: backlog
-  6-2-import-a-csv-or-excel-inventory-with-column-mapping: backlog
-  6-3-review-rows-apply-and-re-import-safely: backlog
-  6-4-awaiting-placement-and-verifying-on-site: backlog
-  6-5-bulk-cleanup-of-mistaken-records: backlog
-  6-6-planned-actions-and-current-proposed-and-changes: backlog
-  6-7-work-scope-categories: backlog
-  6-8-record-a-removal-archive-the-device-and-settle-its-connectio: backlog
-  6-9-restore-the-same-device-or-link-a-replacement: backlog
-  6-10-reopen-for-later-work-carrying-issues-forward: backlog
-  6-11-archive-and-un-archive-a-project: backlog
-  6-12-warranty-and-service-visits: backlog
+  6-2-choose-an-inventory-file-and-sheet: backlog
+  6-3-map-inventory-columns: backlog
+  6-4-review-import-rows-and-match-them-to-devices: backlog
+  6-5-apply-an-import-and-re-import-safely: backlog
+  6-6-awaiting-placement-and-verifying-on-site: backlog
+  6-7-bulk-cleanup-of-mistaken-records: backlog
+  6-8-planned-actions-on-existing-equipment: backlog
+  6-9-current-installation-proposed-design-and-changes: backlog
+  6-10-work-scope-categories: backlog
+  6-11-record-a-removal-and-archive-the-device: backlog
+  6-12-review-a-removal-and-settle-its-cable-ends: backlog
+  6-13-restore-the-same-device: backlog
+  6-14-reconnect-a-restored-device-or-link-a-replacement: backlog
+  6-15-reopen-for-later-work-carrying-issues-forward: backlog
+  6-16-archive-and-un-archive-a-project: backlog
+  6-17-warranty-records: backlog
+  6-18-service-visits: backlog
+  6-19-start-a-service-visit-when-no-scope-is-active: backlog
   epic-6-retrospective: optional
 
   epic-7: backlog
   7-1-cameras-with-several-views-and-streams: backlog
-  7-2-pan-tilt-zoom-cameras: backlog
-  7-3-doors-and-gates-with-linked-components: backlog
-  7-4-site-annotations: backlog
-  7-5-closets-and-port-schedules: backlog
-  7-6-cable-runs-between-floors-and-the-length-ledger: backlog
-  7-7-package-sheets-for-the-extended-model: backlog
+  7-2-pan-tilt-zoom-cameras-stored-positions-and-the-resting-view: backlog
+  7-3-pan-tilt-zoom-cameras-reach-on-demand: backlog
+  7-4-doors-and-gates-with-linked-components: backlog
+  7-5-site-annotations: backlog
+  7-6-closets-and-port-schedules: backlog
+  7-7-port-claims-power-and-capacity: backlog
+  7-8-ports-through-removal-restoration-and-draft-deletion: backlog
+  7-9-cable-runs-between-floors-through-named-risers: backlog
+  7-10-the-length-ledger: backlog
+  7-11-package-sheets-for-the-extended-model: backlog
   epic-7-retrospective: optional
 
   epic-8: backlog
-  8-1-daily-backups-of-projects-and-of-the-installation-s-data: backlog
-  8-2-restore-one-project-into-an-isolated-copy-then-switch: backlog
-  8-3-recover-a-whole-installation: backlog
-  8-4-portable-backup-out-and-back-in: backlog
-  8-5-limits-and-usage: backlog
+  8-1-daily-backup-of-each-project-and-of-the-installation-s-data: backlog
+  8-2-backup-area-kept-generations-and-rotation: backlog
+  8-3-backups-screen-and-backup-status: backlog
+  8-4-restore-a-project-into-a-separate-copy-and-check-it: backlog
+  8-5-make-the-checked-copy-current: backlog
+  8-6-experiment-r3-time-a-full-size-project-restore-on-both-hosts: backlog
+  8-7-recover-a-whole-installation: backlog
+  8-8-recovery-without-the-key-and-backups-that-do-not-match: backlog
+  8-9-time-a-whole-installation-recovery-on-both-hosts: backlog
+  8-10-create-and-download-a-portable-backup: backlog
+  8-11-import-a-portable-backup-as-a-new-project: backlog
+  8-12-replace-a-live-project-from-a-portable-backup: backlog
+  8-13-experiment-r5-and-moving-a-project-between-hosts: backlog
+  8-14-limits-and-usage: backlog
   epic-8-retrospective: optional
 
   epic-9: backlog
   9-1-published-installation-instructions: backlog
   9-2-signed-public-releases: backlog
   9-3-data-conversions-between-versions: backlog
-  9-4-installed-version-and-update-check: backlog
-  9-5-update-a-self-hosted-installation-from-the-interface: backlog
-  9-6-when-a-self-hosted-update-fails: backlog
-  9-7-update-a-cloudflare-installation-from-the-interface: backlog
+  9-4-the-pending-update-marker-and-the-way-back-to-backed-up-data: backlog
+  9-5-experiment-r14-a-new-runtime-reads-the-previous-release-s-da: backlog
+  9-6-installed-version-and-update-check: backlog
+  9-7-update-a-self-hosted-installation-with-one-action: backlog
+  9-8-what-people-see-while-an-update-runs: backlog
+  9-9-self-hosted-update-from-the-command-line-and-the-update-inst: backlog
+  9-10-when-a-self-hosted-update-fails: backlog
+  9-11-experiment-r11-self-hosted-break-an-update-at-every-step: backlog
+  9-12-the-cloudflare-update-workflow: backlog
+  9-13-update-a-cloudflare-installation-with-one-action: backlog
+  9-14-updating-on-cloudflare-by-hand-and-the-update-instructions: backlog
+  9-15-experiment-r11-cloudflare-break-an-update-at-every-step: backlog
   epic-9-retrospective: optional
 
   epic-10: backlog
   10-1-acceptance-fixtures-and-the-workload-manifest: backlog
-  10-2-measure-performance-and-accuracy-on-cloudflare: backlog
-  10-3-walk-the-journeys-on-real-devices: backlog
-  10-4-repeat-on-a-self-hosted-installation-and-show-both-hosts-are: backlog
+  10-2-measure-the-timed-operations-on-cloudflare-with-one-user-and: backlog
+  10-3-check-accuracy-and-arithmetic-against-the-reference-values: backlog
+  10-4-measure-the-long-jobs-and-a-full-size-recovery-on-cloudflare: backlog
+  10-5-walk-the-journeys-and-show-history-and-outcomes-are-kept-hon: backlog
+  10-6-show-the-tasks-on-real-devices-and-browsers: backlog
+  10-7-show-installing-and-updating-on-cloudflare: backlog
+  10-8-repeat-the-acceptance-run-on-a-self-hosted-installation: backlog
+  10-9-show-both-hosts-are-one-product: backlog
   epic-10-retrospective: optional

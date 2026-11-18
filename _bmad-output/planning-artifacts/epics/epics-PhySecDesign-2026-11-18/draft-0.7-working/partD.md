@@ -617,7 +617,7 @@ Covers: FR-32, FR-42 (stale saves), FR-24 (reviewer links after closing), FR-45 
 - With no active scope an Editor can defer, resolve, reopen and correct an issue. Include now is unavailable and says why. (CD-30)
 - With no active scope, a design edit, an Installed or Configured mark, a test result and a new revision are each refused with "not saved: no active scope — reopen first".
 - Design edits here are changes to buildings, floors, plans, devices, routes, zones, obstructions, analysis settings, checklist and site-check definitions, the reliability definition and the estimate. (CD-31)
-- With no active scope, a field change, a survey or field note or photo, a run start, a revision restore, issuing or designating a design, and cancelling or correcting a device are refused in the same way. (CD-32)
+- With no active scope, a field change, a survey or field note or photo, a run start, a revision restore, issuing or designating a design, and cancelling a proposal or correcting a record under story 4.9 are refused in the same way. (CD-32)
 - With no active scope, reading, exporting, generating a package from an already saved revision and recording a review decision on a saved revision remain available.
 
 **Refusals and edge cases**

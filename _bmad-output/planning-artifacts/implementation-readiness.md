@@ -61,3 +61,5 @@ Still open:
 ## After the second run
 
 An independent review of the stories was run on 2026-11-18 (concern A) and is recorded in [review-epics-draft-0.5.md](epics/epics-PhySecDesign-2026-11-18/review-epics-draft-0.5.md). It found that draft 0.5 still had criteria needing later stories, parts of requirements in no story, and many unhandled cases, so the "Pass" this report gave on story dependencies was wrong. Epics draft 0.6 was written in response and now has 89 stories; the tracking file was regenerated. Draft 0.6 is not finished (see its Status section), and the gate has not been rerun on it.
+
+A second independent review, of draft 0.6, is recorded in [review-epics-draft-0.6.md](epics/epics-PhySecDesign-2026-11-18/review-epics-draft-0.6.md). Epics draft 0.7 answers it and Kevin's twelve decisions of 2026-11-18: 165 stories after splitting, renumbered, with the tracking file regenerated. The gate has not been rerun on draft 0.7.
