@@ -25,6 +25,11 @@ All of these were confirmed by Kevin in the parallel session. None has been thro
 | Trade-term equivalents table | Terms and lifecycle rules | Terms |
 | Added exclusions | Users and POC scope | Users and POC scope |
 | PSP reference statement and after-POC candidates | Decision status and downstream work | Open questions and assumptions |
+| Reversing a mistaken installed or configured mark | FR-55 | FR-55 |
+| Whole-revision restore changes design content only | FR-22 | FR-22 |
+| Un-archiving as distinct from reopening | Terms, FR-37, FR-65 | Terms, FR-37 |
+| Cancelled and corrected records stay listed | FR-8, FR-41 | FR-8, FR-41 |
+| Device state model, adapted, with its contradiction warning | Terms and lifecycle rules; FR-30 | Terms; FR-30 |
 
 Also carried over unchanged: the [PSP reference digest](sources/psp-reference-reading.md) and a one-line application fix in `site-studio/src/RevisionPanel.jsx`.
 
@@ -39,7 +44,19 @@ On 2026-11-18 an independent reader compared every decision of the parallel sess
 | Different from PRD 1.0 | 32 | Not applied, except the PSP reference statement, which is a statement of fact. Listed below. |
 | Explicitly excluded by PRD 1.0 | 1 | Not applied. Listed below. |
 
-PRD 1.0 stands on every point below unless Kevin chooses otherwise. Suggested handling is a recommendation, not a decision.
+## Decisions taken on 2026-11-18
+
+Kevin reviewed the differences and decided:
+
+1. **PRD 1.0 stands** on every point in groups A to D where the two simply disagree: deletion and floor rules, screens and browsers, the acceptance profile and timings, and storage, files and recovery.
+2. **Four clarifications are adopted** because they fill silences in PRD 1.0: A9 (reversing a mistaken installed mark), E1 (what a whole-revision restore may change), E2 (un-archiving versus reopening) and E3 (cancelled and corrected records stay listed).
+3. **The device state model is ported**, adapted to PRD 1.0 (group F).
+4. **Delivery slices stay out of the PRD.** They are kept as [input for the epics stage](sources/delivery-slices-input.md) (group G).
+5. **FR-33 is not split** (E4).
+
+Not adopted and not requested: A10 (move to another floor), A12 (deleting a multi-view camera draft), C9 (single-camera coverage within 1 second) and E5 (notes on words used in more than one sense).
+
+The tables below record each item as compared. “Suggested handling” lines are the recommendations made before these decisions.
 
 ### A. Deletion and floors
 
@@ -114,7 +131,7 @@ Suggested handling: E1 to E3 fill silences in PRD 1.0 and are worth adopting; E4
 | E5 | Notes on words used in more than one sense | Five short notes: views, retire, archive, reopen, phase | Not present |
 | E6 | PSP reference statement | Material read; dependency closed | **Applied in 1.1**, because it is a statement of what was read; no compliance claim is added |
 
-### F. Device state model — not ported
+### F. Device state model — ported in adapted form
 
 Suggested handling: port as a consolidation adapted to PRD 1.0 if wanted. It names values that 1.0 leaves unnamed, and it would need the Awaiting placement list and import provenance added.
 
@@ -126,7 +143,7 @@ Suggested handling: port as a consolidation adapted to PRD 1.0 if wanted. It nam
 | F4 | Combinations that cannot be chosen | Listed | Not present |
 | F5 | Contradiction warning | Non-blocking warning when recorded work and check results disagree | Not present |
 
-### G. Delivery slices — not ported
+### G. Delivery slices — kept as input for the epics stage
 
 Suggested handling: port as a build order only, renumbered and extended to FR-56–62, or leave slicing to the epics stage named in the handoff.
 
@@ -141,7 +158,10 @@ The parallel slices do not place FR-56 to FR-62 of this PRD (inventory import, A
 ## Adaptations made while porting
 
 - FR-65 gained one sentence that the parallel draft did not have: a service scope starts with no current issued design under FR-61.
-- FR-65 uses PRD 1.0’s wording for leaving the archive, pending item E2.
+- The device state model names its middle lifecycle stage Existing, where the parallel draft said Installed. PRD 1.0 says an import must not establish actual installation (FR-56), so calling an imported record Installed would contradict it.
+- The device state model gained a Placement axis for the Awaiting placement list of FR-57, states that provenance is not a device state, and describes the three record-ending actions as PRD 1.0’s FR-55 and FR-59 define them, not as the parallel draft did.
+- The reversal of a mistaken installed mark is limited to proposed devices and does not make a record eligible for Delete draft, in keeping with FR-55.
+- The whole-revision restore rule does not bring back deleted floors, which the parallel draft allowed and FR-55 and FR-60 do not.
 - FR-64 calls the parts of a reliability period “stages”, while the Terms section of PRD 1.0 also uses “stages” for points in the workflow.
 - “Return to service” is used in two senses in both documents; neither settles it.
 

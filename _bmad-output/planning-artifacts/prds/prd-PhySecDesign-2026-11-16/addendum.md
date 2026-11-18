@@ -818,6 +818,19 @@ Two warranty levels are kept because their clocks differ: the installer’s runs
 
 The optional camera checks in FR-29 include two that verify the model in the field: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
 
+### Clarifications adopted from the parallel session
+
+Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, and adopted four clarifications where 1.0 was silent.
+
+- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can be returned to not installed with a reason. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
+- **Whole-revision restore (FR-22).** A restore changes design content only. Recorded actual positions, recorded work, evidence, issues and archive state are facts and are never rolled back. Deleted floors are not brought back.
+- **Un-archiving versus reopening (FR-37).** Leaving the archive is its own explicit action and starts no work scope; reopening for later work remains FR-38.
+- **Cancelled and corrected records (FR-8/41).** They stay listed and searchable with their reason, and the Changes view lists them against the current issued design.
+
+### Device state model
+
+The model in the PRD’s Terms section consolidates states that the requirements already use, for the architecture stage that the handoff asks to decide lifecycle identities. It was adapted to PRD 1.0: the middle lifecycle stage is named Existing, not Installed, because an import must not establish actual installation; a Placement axis covers the Awaiting placement list; and provenance is stated not to be a device state. The prototype stores a single existing/proposed flag and has none of the other axes.
+
 ## Downstream responsibilities and evidence boundaries
 
 The [readiness extraction](sources/finalization-readiness-after-acceptance.md) distinguishes completed product decisions from downstream delivery responsibilities.
