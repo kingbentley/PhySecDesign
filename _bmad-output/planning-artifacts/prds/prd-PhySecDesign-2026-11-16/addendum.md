@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17; a section on proposed amendment 1.1 was added on 2026-11-18. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
+Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17; a section on proposed amendment 1.1 was added on 2026-11-18, and the access section was rewritten and a section on proposed amendment 1.2 added on the same day. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
 
 - [Implementation baseline and migration context](#implementation-baseline-and-migration-context)
 - [Property context, work scope and issued design](#property-context-work-scope-and-issued-design)
@@ -29,7 +29,7 @@ The existing Site Studio application is a React/Vite map editor with browser-loc
 | Hosting | Vite development/preview serves the local review API; the separate static Sites package does not. | Implement the confirmed access model, select hosting in architecture, and implement the confirmed shared-save/conflict model before claiming online workflow acceptance. |
 | Field/lifecycle | Survey notes, existing/proposed devices, revisions and review are present. | Installation/configuration/tests, issued-design history, device archives, fixed closeout and reopened work are new capabilities. |
 
-Recorded demo participant names do not authenticate people. Owner/reviewer bearer credentials and private review files are not project-export content. No production access model is selected by this POC.
+In the prototype, recorded participant names do not authenticate people, and owner/reviewer bearer credentials and private review files are not project-export content. Under amendment 1.2 the product gains accounts and roles (FR-66–72); the prototype has none.
 
 ### Maps, plan import and original assets
 
@@ -117,11 +117,11 @@ Changing the reference must not roll back or overwrite field placements, notes/p
 
 ## Access, shared editing and record integrity
 
-### Demo access
+### Access (rewritten for amendment 1.2)
 
-Use one hosted HTTPS demo with a revocable project edit link shared by trusted designers/installers and separate revocable links for designated reviewers of fixed design/closeout versions (FR-2/23–25, NFR-5). Design and Installation are work views, not permissions. Editors can manage reviewer links and use self-approval/bypass. Display names are unverified demo attribution: anyone holding a link can exercise its permissions.
+Each organisation runs its own installation over HTTPS, on its own server or on its own Cloudflare account (FR-66). People who edit sign in with individual accounts created by an administrator's invitation (FR-67) and reach a project only as its Editor or Viewer; administrators manage users, projects, settings, backups and updates and can open every project (FR-68, FR-70). Separate revocable links remain for designated reviewers of fixed design/closeout versions who have no account (FR-23–25). Design and Installation are work views, not permissions. Project Editors manage a project's reviewer links and use self-approval/bypass; administrators can see and revoke every reviewer link. Actions by signed-in people are attributed to their account; a name entered through a reviewer link is unverified and is labelled so (FR-69). The earlier model of one hosted demo with a shared project edit link and unverified display names for editors is withdrawn; its text is preserved in [sources/pre-amendment-1.2](sources/pre-amendment-1.2/addendum.md.txt).
 
-Enforce project/revision scope on the server for records and stored drawings/photos. Keep access credentials out of portable projects. Use sample or sanitized nonconfidential data; confidential client use needs a separate access/data decision. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the two-link model is a Site Studio product decision. Hosting vendor and shared-update implementation choices belong to architecture.
+Enforce accounts, roles, membership and reviewer-link scope on the server for records and stored drawings/photos (NFR-5). Keep passwords, session tokens, recovery codes and link tokens out of records, logs, exports and portable projects. Each hosting organisation is responsible for the data it stores; the software carries no security certification, and an independent security review is required before it is recommended for confidential client data. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the account-plus-reviewer-link model is a Site Studio product decision. Sign-in mechanics, session handling and the two hosting implementations belong to architecture.
 
 ### Shared editing and common safeguards
 
@@ -147,7 +147,7 @@ Add new notes, photo attachments, test attempts and reviewer decisions as separa
 
 If connectivity fails, show the unsaved state and retain pending input while the page is open; pause server-dependent work and retry/revalidate on reconnection. Do not promise durable offline capture, background offline work or recovery after closing the page. A timeout can occur after a successful server save, so retries must determine whether that action already succeeded.
 
-Undo applies to the current browser session's recent working edits, using an internal session identifier rather than trusting the display name. It creates a new recorded reversal and checks affected versions. If another edit has changed the relevant item or dependencies, explain why direct undo cannot proceed and offer review. It must not roll back another person's work, erase evidence, or modify fixed revisions. Redo uses the same guards.
+Undo applies to the current browser session's recent working edits, identified by the signed-in account and its session. It creates a new recorded reversal and checks affected versions. If another edit has changed the relevant item or dependencies, explain why direct undo cannot proceed and offer review. It must not roll back another person's work, erase evidence, or modify fixed revisions. Redo uses the same guards.
 
 Named snapshots, issuing, restoration and closeout use a consistent server-saved version and revalidate project state. Resolve the initiating user's relevant pending/conflicting edits before taking the snapshot. Other clients' unsaved edits are not included or represented as saved. Closeout rechecks current outstanding work. A full revision restore is a deliberate guarded project action, separate from ordinary undo.
 
@@ -787,7 +787,7 @@ Create at least daily automatic complete recovery backups, retaining at least se
 
 Keep zero loss of acknowledged records/attachments for ordinary browser closure or service restart, as already confirmed in NFR-2. For catastrophic store loss, use a recovery point no older than 24 hours and restoration to a usable project within 60 minutes after recovery begins in the documented prepared recovery environment. The 60-minute exercise includes automated backup retrieval, validation and restoring records/assets/access configuration; it cannot depend on a multi-hour user upload over a 5 Mbps connection. Display the restored recovery-point timestamp and the potential loss window; do not fabricate records after that point or imply that its issued-design designation reflects later lost changes. Record environment/preparation assumptions and total elapsed time; this is a POC recovery target, not a production availability guarantee. If the latest valid backup is older or recovery misses the target, show that failure rather than claim compliance.
 
-Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Re-establish authorized access under the existing demo model. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
+Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Under amendment 1.2, recovering an installation restores its accounts, roles and memberships, ends every session and leaves revoked reviewer links revoked; a portable backup of one project carries no accounts, and its members are set again in the installation that receives it. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
 
 ## Proposed amendment 1.1 — reference-based additions
 
@@ -831,6 +831,31 @@ Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, 
 ### Device state model
 
 The model in the PRD’s Terms section consolidates states that the requirements already use, for the architecture stage that the handoff asks to decide lifecycle identities. It was adapted to PRD 1.0: the middle lifecycle stage is named Existing, not Installed, because an import must not establish actual installation; a Placement axis covers the Awaiting placement list; and provenance is stated not to be a device state. The prototype stores a single existing/proposed flag and has none of the other axes.
+
+## Proposed amendment 1.2 — hosting, accounts, administration and updates
+
+Added 2026-11-18. These notes support FR-66–72, NFR-7, NFR-8, SM-6 and UJ-5. Kevin confirmed the amendment's content, including the details listed in the [amendment 1.2 status](amendment-1.2-status.md). The prototype implements none of it.
+
+### What the prototype has and lacks
+
+| Area | Prototype | Required by 1.2 |
+| --- | --- | --- |
+| Hosting | A local development server, and a static package with no server-side storage. | An installation an organisation can run on its own server or its own Cloudflare account, behaving the same on both (FR-66, NFR-7). |
+| People | No accounts. A typed name on review comments. | Accounts by invitation, email-and-password sign-in, optional two-step verification, sessions, deactivation (FR-67). |
+| Permissions | Whoever opens the page can edit. Reviewer links are scoped to one revision. | Administrator or standard user; Editor or Viewer per project; reviewer links kept (FR-68). |
+| Attribution | Unverified names. | The signed-in account, with reviewer-link names labelled unverified (FR-69). |
+| Administration | None. | Users, projects, reviewer links, settings, backups, software and activity (FR-70, FR-71). |
+| Updates | Rebuild and redeploy by hand. | Installed version shown, public signed releases, and an administrator-only update with backup, check and return (FR-72, NFR-8). |
+
+### Boundaries worth keeping in view
+
+- An installation serves one organisation. Several organisations in one installation, single sign-on, directory synchronisation, licensing and billing are outside the amendment.
+- Email is optional. Every invitation and password reset can be delivered as a link an administrator copies.
+- A Viewer reads, searches, exports and downloads, and adds nothing, including evidence.
+- An update is never installed without an administrator's action. How it is installed differs by host and is stated in the interface; the outcome required is the same.
+- The acceptance profile's one usual user and two simultaneous users per project are unchanged. The amendment adds SM-6 and extends the device matrix of NFR-3 to the sign-in and administrator screens; it sets no new timing targets.
+- Password rules, lock-out thresholds and session length are left to architecture and the administrator's settings; the PRD sets no figures.
+
 
 ## Downstream responsibilities and evidence boundaries
 
