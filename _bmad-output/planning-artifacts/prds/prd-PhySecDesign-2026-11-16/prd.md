@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.19"
+version: "0.20"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.19 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.20 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -252,20 +252,36 @@ Detailed examples are in the addendum. Apply the common checklist and project-de
 
 **Check:** An unfinished installation, applicable failed/unperformed required test, required pending retest, or documented unresolved property issue prevents Completed but permits explicit Closed with outstanding items. Finishing the selected scope does not hide a deferred or out-of-scope fault. Missing approval alone does not prevent closure, and approval bypass cannot satisfy a required test/retest.
 
-**FR-33 — Design and closeout PDF packages.** Provide two presets over the saved project record:
+**FR-33 — Design and closeout PDF packages.** FR-33 is specified in six lettered parts, each with its own check; a reference to FR-33 means all of them. The confirmed manifest and layout details are in the addendum.
+
+**FR-33a — Presets and contents.** Provide two presets over the saved project record:
 
 | Preset | Contents |
 | --- | --- |
 | Design | Proposed labeled floor plans, retained context/planned actions, equipment and cable schedules, installation notes, survey evidence and scoped checklist expectations. |
 | Closeout | Recorded installation plans/status, changes from the issued design, known settings/identifiers, removed/replaced equipment references, phase summaries, detailed current-scope test attempts and relevant earlier correction/retest evidence, notes/photos, outstanding property issues and version-specific approval/bypass records. |
 
-Include quantities and capacity estimates by default; prices/labor costs are optional and off by default. Offer separate coverage/DORI sheets with zone targets/results/shortfalls and explicit analysis basis, assumptions and limits. Property-wide capacity includes applicable retained demand. Recorded configuration and modeled coverage/capacity do not prove a field-test Pass. Keep outcomes, N/A reasons and required review/retest flags distinct; preserve unknown or unrecorded values and distinguish measured from estimated quantities.
+**Check:** A design package links planned device IDs to schedules and installation checks. A closeout package preserves actual conditions, failures/retests and all unresolved property issues even when a subset of floors is exported.
 
-Identify property, work scope, named source revision, package edition, issue/export dates, units, included floors/sections, approval/decision cutoff and Draft/Issued or closeout status. Default to all floors. Mark selected-floor output Partial while retaining the property-wide closeout outcome and outstanding-issue summary. A pre-closeout preview remains Draft/In progress; export neither approves nor closes work and requires no approval.
+**FR-33b — Identification and status.** Identify property, work scope, named source revision, package edition, issue/export dates, units, included floors/sections, approval/decision cutoff and Draft/Issued or closeout status. Default to all floors. Mark selected-floor output Partial while retaining the property-wide closeout outcome and outstanding-issue summary. A pre-closeout preview remains Draft/In progress; export neither approves nor closes work and requires no approval.
 
-Use readable Letter/A4 landscape pages, separate clean plan and coverage sheets, continued tables/notes with headings, and captioned photos initially two per page with stable device/note references. Include relevant attached photos by default; optional photos can be omitted. Excluding required photo evidence makes the output an explicitly evidence-limited summary. Identify omitted backgrounds/sections; report unavailable required files and generation failures without silently truncating evidence or declaring an incomplete package complete. Include closet equipment and port/connection schedules with current/proposed basis, reservations, known power assumptions and unresolved warnings. Include retained/disconnected, reassigned, removed and unresolved connection context under FR-53, keeping historical endpoints distinct from current assignments. Show floor-to-floor cable continuations and FR-52 length/allowance breakdowns; count each physical run once in property-wide schedules and totals even when it appears on several floor sheets. Include selected plan annotations by default, with readable labels/styles and concise legends; identify optional markup omissions without hiding property-wide outstanding issues. Identify assessed camera views, unsupported panoramic outputs and illustrative footprints in analysis sheets. Live basemap/satellite tiles are outside the default raster PDF export. The confirmed manifest and layout details are in the addendum.
+**Check:** Every package states its property, work scope, source revision, edition, dates, units and included floors/sections. A selected-floor export is marked Partial and still carries the property-wide closeout outcome and outstanding-issue summary. A preview before closeout is labeled Draft/In progress, and exporting changes no approval or closure state.
 
-**Check:** A design package links planned device IDs to schedules and installation checks. A closeout package preserves actual conditions, failures/retests and all unresolved property issues even when a subset of floors is exported. Optional cost/photo choices do not alter saved records, outcomes or permissions, and an incomplete package is visibly identified.
+**FR-33c — Defaults and honest evidence.** Include quantities and capacity estimates by default; prices/labor costs are optional and off by default. Offer separate coverage/DORI sheets with zone targets/results/shortfalls and explicit analysis basis, assumptions and limits. Property-wide capacity includes applicable retained demand. Recorded configuration and modeled coverage/capacity do not prove a field-test Pass. Keep outcomes, N/A reasons and required review/retest flags distinct; preserve unknown or unrecorded values and distinguish measured from estimated quantities.
+
+**Check:** Optional cost/photo choices do not alter saved records, outcomes or permissions, and an incomplete package is visibly identified.
+
+**FR-33d — Layout, photos and omissions.** Use readable Letter/A4 landscape pages, separate clean plan and coverage sheets, continued tables/notes with headings, and captioned photos initially two per page with stable device/note references. Include relevant attached photos by default; optional photos can be omitted. Excluding required photo evidence makes the output an explicitly evidence-limited summary. Identify omitted backgrounds/sections; report unavailable required files and generation failures without silently truncating evidence or declaring an incomplete package complete. Live basemap/satellite tiles are outside the default raster PDF export.
+
+**Check:** Tables and notes continue across pages with headings, and photos carry captions with their device/note references. Excluding a required photo labels the output an evidence-limited summary. An omitted background or section is identified, and an unavailable required file or failed generation is reported rather than yielding a package presented as complete.
+
+**FR-33e — Lifecycle and connection context.** Include retained/disconnected, reassigned, removed and unresolved connection context under FR-53, keeping historical endpoints distinct from current assignments.
+
+**Check:** A closeout package for a scope in which a device was removed shows its retained cable as disconnected, reassigned or unresolved, with the historical endpoint distinct from any current assignment.
+
+**FR-33f — Extended-modelling content.** Include closet equipment and port/connection schedules with current/proposed basis, reservations, known power assumptions and unresolved warnings. Show floor-to-floor cable continuations and FR-52 length/allowance breakdowns; count each physical run once in property-wide schedules and totals even when it appears on several floor sheets. Include selected plan annotations by default, with readable labels/styles and concise legends; identify optional markup omissions without hiding property-wide outstanding issues. Identify assessed camera views, unsupported panoramic outputs and illustrative footprints in analysis sheets.
+
+**Check:** A run crossing two floors shows a continuation on each floor sheet with its length/allowance breakdown and counts once in property-wide totals. Closet and port schedules state their current/proposed basis, reservations and unresolved warnings. An omitted optional annotation layer is identified. A fisheye footprint is marked illustrative and an unsupported panoramic output is identified as such.
 
 **FR-34 — Fixed packages and portable archive.** Generate from a consistent saved named revision or fixed closeout, resolving the initiating editor’s relevant pending/conflicting edits first. Retain the exact issued-design and closeout PDFs and their source/edition/content manifests with the property for historical download, project archival and backup/recovery. Redownload returns the retained file; regeneration or later decision information creates a new dated edition with the same fixed source and an explicit decision-history cutoff. Never overwrite the earlier package or substitute later installation edits into it.
 
@@ -552,19 +568,19 @@ Confirmed 2026-11-18. The slices set the build order and the acceptance cut line
 | Slice | Demonstrable outcome | Requirements |
 | --- | --- | --- |
 | 1. Shared foundation | The existing design tool running as one shared online project | FR-1–6, FR-8, FR-10–16, FR-20–22, FR-42; base parts of FR-7 and FR-9 |
-| 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-34, FR-47, FR-55; parts of FR-7 and FR-33 |
-| 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44; part of FR-33; the phone field view under NFR-3 |
-| 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56; part of FR-33 |
-| 5. Extended modelling | Richer design detail | FR-48–52; extension parts of FR-9, FR-19 and FR-33 |
+| 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-33b–d, FR-34, FR-47, FR-55; the Design preset of FR-33a; part of FR-7 |
+| 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44; the Closeout preset of FR-33a; the phone field view under NFR-3 |
+| 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-33e, FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56 |
+| 5. Extended modelling | Richer design detail | FR-33f, FR-48–52; extension parts of FR-9 and FR-19 |
 
-Four requirements are delivered in parts:
+Three requirements are delivered in parts, and FR-33 is delivered by its lettered parts:
 
 | Requirement | Earlier part | Later part |
 | --- | --- | --- |
 | FR-7 | Slice 1: the current catalog, identity and existing/proposed distinction | Slice 2: the added equipment types and camera-model selection. Linked openings, annotations and closets arrive with FR-49–51 in slice 5. |
 | FR-9 | Slice 1: same-floor routes with stable run IDs | Slice 5: inter-floor segments, risers and the FR-52 length model |
 | FR-19 | Slice 2: storage, bandwidth, and port/PoE estimates from recorded connections | Slice 5: explicit port assignments under FR-51 and multi-head hardware/stream accounting under FR-48 |
-| FR-33 | Slice 2: Design preset. Slice 3: Closeout preset. | Slice 4: removed/replaced equipment and FR-53 connection context. Slice 5: closet/port schedules, inter-floor continuations, annotations and panoramic disclosures. |
+| FR-33 | Slice 2: FR-33b–d and the Design preset of FR-33a. Slice 3: the Closeout preset of FR-33a, with the field-outcome rules of FR-33c applied to it. | Slice 4: FR-33e and the Closeout preset’s removed/replaced equipment references. Slice 5: FR-33f. |
 
 Slice 1 is largely a port: these capabilities exist in the prototype against local browser storage and must be rebuilt on shared server-saved records. Slices 2 and 3 use one implicit work scope; scope selection and issue carryover (FR-45/46) arrive in slice 4, when a second scope first exists. A clause that refers to a record type from a later slice takes effect when that slice is delivered. NFR-1, NFR-2 and NFR-4 to NFR-6 apply from slice 1.
 
