@@ -334,7 +334,8 @@ A reviewer link opens a reduced frame: the fixed revision, its floors, comment p
 
 **Proposed.** Below the desktop layout width the frame changes to a field shell. A tablet in landscape may use either; the choice is offered, not forced (see decision D3).
 
-- **Top bar, one row:** floor switcher, save status, and an account menu holding property, scope, issued reference, the user's name and role, My account and Sign out.
+- **Top bar, one row:** floor switcher, save status, and an account menu holding property, the user's name and role, My account and Sign out.
+- **Issued design strip, directly under the top bar:** the current issued revision's identifier and name, its issue date and the work scope, always visible, as one tappable strip that opens the issued reference (FR-61). When nothing is issued it reads "Not issued". Changed on 2026-11-18 after review: these were inside the account menu, which FR-61 does not allow.
 - **Bottom navigation, four items:** Plan, Equipment, Work, Issues. A fifth, More, holds Records and review.
 - **No drafting tools.** No plan alignment, walls, zones, routes, estimate editing or template editing. Coverage is viewable as a layer.
 - All controls are at least 44 px high. Form text is 16 px or larger (A5, A6).
