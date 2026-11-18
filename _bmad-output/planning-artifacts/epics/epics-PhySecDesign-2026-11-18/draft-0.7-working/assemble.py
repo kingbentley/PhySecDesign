@@ -50,7 +50,7 @@ for bad in re.findall(r'[Ss]tories \d+\.\d+[^.\n]{0,40}', body + front + back):
     problems.append('plural story reference (write "story N.M" each time): ' + bad)
 
 head_map = lambda t: re.sub(r'(?m)^(### Story )(' + SID + r')(:)', lambda m: m.group(1) + remap[m.group(2)] + m.group(3), t)
-body_new = renumber(head_map(body).replace('### Story ', '### St\0ry '), 'stories').replace('St\0ry', 'Story')
+body_new = ''.join(renumber(head_map(parts[g]).replace('### Story ', '### St\0ry '), 'part' + g).replace('St\0ry', 'Story') for g in 'ABCDEF')
 # headings were protected from the reference pass by the temporary marker
 front_new, back_new = renumber(front, 'front'), renumber(back, 'back')
 
@@ -118,11 +118,11 @@ for g in 'ABCDEF':
         f = [x.strip() for x in line.split('|')]
         if len(f) != 6 or not re.fullmatch(r'C[A-F]-\d+', f[0]) or f[2] not in ('decide', 'value', 'reading'):
             problems.append(f'choices{g}.md line {ln}: not "ID | story | class | choice | alternative | why": {line[:70]}'); continue
-        old = f[1]
+        old = re.split(r'[,; ]+', f[1])[0]
         new = remap.get(old) or (remap[base[old][0]] if len(base.get(old, [])) == 1 else None)
         if not new: problems.append(f'choices{g}.md {f[0]}: story {old} unknown or split; name the piece')
         n_in = len(re.findall(r'\(' + f[0] + r'\)', body_new))
-        if n_in != 1: problems.append(f'{f[0]}: appears {n_in} times in the stories (want 1)')
+        if n_in < 1: problems.append(f'{f[0]}: is on no criterion')
         choices.append(dict(id=f[0], story=new or old, cls=f[2], choice=f[3], alt=f[4], why=f[5]))
 for cid in set(re.findall(r'\((C[A-F]-\d+)\)', body_new)) - {c['id'] for c in choices}:
     problems.append(f'{cid} is on a criterion but not in a choices file')

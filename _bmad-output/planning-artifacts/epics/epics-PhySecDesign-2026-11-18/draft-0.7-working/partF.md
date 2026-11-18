@@ -122,7 +122,8 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 **Core behaviour**
 - "Make this copy current" is offered once every check of story 8.2a has passed.
 - Before confirmation it states that this project's reviewer links are cancelled and must be issued again, and that nobody is signed out.
-- Before the switch a backup of the working project as it then stands is taken and kept as "before restore". (CF-07)
+- When the administrator confirms, writes to the working project stop, and they stay stopped through the switch, so that no save falls between the backup and the switch.
+- With writes stopped, a backup of the working project is taken and kept as "before restore". (CF-07)
 - After the switch members open the restored project in place of the earlier one.
 - After the switch every reviewer link of that project is refused.
 - The switch ends no session.
@@ -133,7 +134,7 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 
 **Refusals and edge cases**
 - "Make this copy current" is not offered for a copy with a failed check or an interrupted restore.
-- If the "before restore" backup fails, the switch does not happen and the working project is unchanged.
+- If the "before restore" backup fails or the administrator cancels the switch, the switch does not happen, the working project is unchanged and writes to it resume.
 - A save sent from a page that was open before the switch is refused and changes nothing in the restored project. (CF-08)
 - That save stays visible on its page as "not saved: project was restored" and is not retried. (CF-08)
 
@@ -514,6 +515,7 @@ Covers: FR-72, NFR-8, FR-71, AD-21. Screens: S-35.
 - The updater refuses a version that is not from the configured repository.
 - A release with a bad signature is refused before users are warned, nothing is installed, and the refusal is shown and logged.
 - If the backup fails, nothing is installed, changes are accepted again, and the failure is shown and logged.
+- The marker is written only after the complete backup has succeeded and before installation changes anything: a failure before that point leaves no marker, and a restart then works normally.
 - While an update runs, a second administrator's request to update is refused by the server.
 - While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason. (CF-27)
 - A daily backup that falls due during an update does not start until the update has finished. (CF-27)
@@ -582,7 +584,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-21. Screens: S-35.
 - If the return itself fails, S-35 and the sign-in page show a prominent warning that never reads as success.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
-- After the server loses power or the updater is killed before installation had begun, on restart the marker is withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
+- After the server loses power or the updater is killed before installation had begun, on restart any marker is withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
 - After the server loses power or the updater is killed once installation had begun, on restart the installation returns to the earlier version and the backup. (CF-31)
 - The installation is never left refusing changes with no update running.
 
@@ -623,13 +625,15 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 **Refusals and edge cases**
 - With a bad signature the workflow deploys nothing and reports the refusal; the installation withdraws the marker, accepts changes again, and shows and logs the refusal.
 - If the installation answers that the marker has been withdrawn or names another release, the workflow deploys nothing and ends. (CF-32)
+- If the run deploys the new version and then stops before its health check, the new version on starting finds the marker naming its own version, completes the conversions and runs the health check itself, and clears the marker on success.
+- If that conversion or health check fails, the new version stays stopped for changes and shows the warning of story 9.6a with the manual return steps, because only the workflow can roll a Cloudflare deployment back.
 - If the rollback or the restore cannot be completed, the installation shows the warning of story 9.6a with Cloudflare deployment steps to recover by hand, and never reports success.
 
 **Evidence to record**
 - On a deployed Cloudflare test installation, after an update a user with two-step verification signs in with a current code and a settings secret saved before the update still works.
 - All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the marker set by a test function.
 
-Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. Left to later stories: starting the run from the interface (story 9.7b); manual steps and releases that change a Durable Object class (story 9.7c).
+Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. Left to later stories: starting the run from the interface (story 9.7b); manual steps and releases that change a Durable Object class (story 9.7c). Experiment R11 in story 9.7d covers the run that stops after deploying and the cases after the time limit.
 
 ### Story 9.7b: Update a Cloudflare installation with one action
 
@@ -644,18 +648,18 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 - A recovery without the deployment key (story 8.3b) clears the token with the other stored secrets.
 - With a newer release and a stored token, S-35 shows what the update will do in order, how long users will be interrupted, and Update now.
 - Before anything is stopped, Update checks that the token can start the update workflow in the organisation's copy and that the named release exists in the public release list.
-- After those checks the control warns signed-in users as in story 9.5b, stops accepting changes of every kind, takes the complete "before an update" backup, sets the pending-update marker, and starts a run of the workflow of story 9.7a through GitHub, naming the release.
+- After those checks the control warns signed-in users as in story 9.5b, stops accepting changes of every kind, takes the complete "before an update" backup, sets the pending-update marker once that backup has succeeded, and starts a run of the workflow of story 9.7a through GitHub, naming the release.
 - The release's signature is therefore verified after users are warned, changes stopped and the backup taken; S-35 lists the steps in that order and states that this differs from a self-hosted update, which verifies first.
 - Every attempt and its outcome is recorded in the activity log with the administrator who started it.
 
 **Refusals and edge cases**
 - If either check before stopping fails, the reason is shown, no user is warned and changes continue to be accepted.
-- If the backup fails or the run cannot be started, nothing is deployed, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged.
+- If the backup fails, no marker is written, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
+- If the run cannot be started, nothing is deployed, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
-- When the time limit passes with no result and installation not begun, the installation withdraws the marker so that the run can no longer deploy, asks GitHub to cancel the run, accepts changes again, and shows and logs the attempt as "no result". (CF-33)
-- When the time limit passes with no result, installation begun and the new version running, the new version runs the conversion of story 9.3a and the health check itself; if they pass it clears the marker and logs the update as completed without a result from the run. (CF-34)
-- If that conversion or health check fails, changes stay stopped and the warning of story 9.6a is shown with the Cloudflare steps to recover by hand. (CF-34)
-- When the time limit passes with no result, installation begun and the earlier version running, the earlier version restores the pre-update backup as in story 9.3b, accepts changes again and logs the failed attempt. (CF-34)
+- When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
+- Once the run is confirmed cancelled, or confirmed to have deployed nothing, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged as "no result".
+- If neither can be confirmed, the installation stays stopped for changes and shows the warning of story 9.6a with the Cloudflare steps to recover by hand.
 
 **Limits and values**
 - The time limit for a result from the run is 30 minutes from starting it. (CF-33)
@@ -673,13 +677,13 @@ Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
 
 **Core behaviour**
 - Without a stored token, S-35 shows numbered steps to run the workflow by hand in place of Update now, including the backup first and the way back.
-- The first manual step is "Prepare for a manual update" on S-35, which warns users, stops changes, takes the backup and sets the marker exactly as Update now does. (CF-35)
+- The first manual step is "Prepare for a manual update" on S-35, which warns users, stops changes, takes the backup and sets the marker exactly as Update now does. (CF-34)
 - For a release marked as changing a Durable Object class, S-35 says before starting that an automatic return is not available and shows the manual procedure in place of Update now.
 - With update checks turned off, S-35 shows the manual steps with a place to name the release.
 - Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
 
 **Refusals and edge cases**
-- A manual update prepared and not followed by a run within the time limit of story 9.7b ends as that story's "no result" case, and changes are accepted again.
+- A manual update prepared and not followed by a run can be cancelled by the administrator, which withdraws the marker and accepts changes again.
 
 **Evidence to record**
 - A person follows the manual steps on a test Cloudflare account, and both an update and a return work.
@@ -692,7 +696,7 @@ As Kevin, I want a Cloudflare update broken at each step and the outcome recorde
 Covers: FR-72 (return), NFR-8, experiment R11.
 
 **Core behaviour**
-- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result before installation begins, a result lost after the new version is deployed, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
+- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result with the run confirmed cancelled, no result with nothing confirmed, a run that deploys the new version and stops before its health check with the conversions then passing and then failing, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.7a and story 9.7b.
@@ -726,11 +730,11 @@ Covers: acceptance profile, SM-5, NFR-4 (reference calculations).
 - Kevin confirms in writing that the larger fixture is representative, and the manifest is fixed at that point, before any acceptance run.
 
 **Refusals and edge cases**
-- A change to a fixture after the confirmation is recorded as a new manifest version, and the affected runs are repeated. (CF-36)
+- A change to a fixture after the confirmation is recorded as a new manifest version, and the affected runs are repeated. (CF-35)
 - Timings recorded by earlier stories against the fixture are development measurements and are not quoted as acceptance evidence.
 
 **Limits and values**
-- The small functional project has about 50 devices. (CF-37)
+- The small functional project has about 50 devices. (CF-36)
 
 **Evidence to record**
 - The reference cases, the method and the values are recorded with the manifest.
@@ -762,7 +766,7 @@ Covers: NFR-4, SM-5.
 - Initial project open: within 10 seconds.
 - Switch to another saved plan in an open project: within 5 seconds.
 - Busiest-plan analysis after a committed edit: within 10 seconds.
-- While an import, an analysis or an export runs, selection and button feedback still meets its 250 ms target in at least 19 of 20 trials. (CF-38)
+- While an import, an analysis or an export runs, selection and button feedback still meets its 250 ms target in at least 19 of 20 trials. (CF-37)
 
 **Evidence to record**
 - All results, conditions and outliers are kept.
@@ -898,7 +902,6 @@ Covers: NFR-7, SM-1 to SM-5 (self-hosted run), FR-66 and FR-72 (self-hosted part
 - FR-72: a release with a bad signature is refused.
 - FR-72: an update made to fail part-way leaves the earlier version running with its data and reports the failure, and the failed attempt is in the activity log after the return.
 - FR-72: a return made to fail is reported as failed, never as success.
-- Self-hosting is not described as supported in the repository or the instructions until this story and story 10.4b pass.
 
 **Evidence to record**
 - The server's hardware and disk are recorded with the results.
@@ -919,7 +922,10 @@ Covers: NFR-7, SM-6.
 - Each difference that hosting makes unavoidable is stated in the interface and in the instructions: how an update is triggered, when the signature is verified, where the set-up code and the deployment key appear, and where backups are kept.
 - On each host an administrator reviews the activity log and confirms that backups are succeeding.
 
+**Refusals and edge cases**
+- Self-hosting is not described as supported in the repository or the instructions until story 10.4a and this story pass.
+
 **Limits and values**
-- The comparison list is: every area of the project frame and every Administration screen opens; and each of these is refused: a Viewer's save, a non-member opening a project, a request on an ended session, a sign-in by a deactivated account, a revoked reviewer link, an expired reviewer link, an upload over its size limit, a portable backup from a newer version, and Update by a standard user. (CF-39)
+- The comparison list is: every area of the project frame and every Administration screen opens; and each of these is refused: a Viewer's save, a non-member opening a project, a request on an ended session, a sign-in by a deactivated account, a revoked reviewer link, an expired reviewer link, an upload over its size limit, a portable backup from a newer version, and Update by a standard user. (CF-38)
 
 Notes: SM-6 needs both hosts and is complete only when this story passes.

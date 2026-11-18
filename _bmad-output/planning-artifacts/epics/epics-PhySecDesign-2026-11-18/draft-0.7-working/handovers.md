@@ -105,3 +105,30 @@
 - 4.6/4.7 (C): 5.12d records a final-acceptance bypass on the closeout record itself and relies on 4.7's link rules.
 - 2.5 (B): two more floor-deletion blockers exist: a floor-level site check with an attempt (5.8) and a floor held in a closeout record (5.12b); 2.5 Notes should name them.
 - 6.8 (E): label "not saved: device removed"; 5.13 uses "not saved: device cancelled or corrected".
+
+## Split map, Epics 8-10
+- 8.1 -> 8.1a daily backup job and content; 8.1b backup area, generations, rotation; 8.1c Backups screen and status
+- 8.2 -> 8.2a restore into checked copy; 8.2b make checked copy current; 8.2c experiment R3 on both hosts
+- 8.3 -> 8.3a whole-installation recovery with key; 8.3b no key, mismatched backups; 8.3c timed recovery on both hosts
+- 8.4 -> 8.4a create and download portable backup; 8.4b import as new project; 8.4c administrator replaces live project; 8.4d experiment R5 and cross-host import
+- 9.3 -> 9.3a conversions between data versions; 9.3b pending-update marker, restore, health check; 9.3c experiment R14 in release workflow
+- 9.5 -> 9.5a self-hosted updater and sequence; 9.5b what users see during an update; 9.5c command line and update instructions
+- 9.6 -> 9.6a failed self-hosted update returns; 9.6b experiment R11 self-hosted part
+- 9.7 -> 9.7a Cloudflare update workflow; 9.7b token, Update control, time limit, R16; 9.7c manual steps, class change, instructions; 9.7d experiment R11 Cloudflare part
+- 10.2 -> 10.2a timed operations, one and two users; 10.2b accuracy against reference values; 10.2c long jobs and full-size recovery
+- 10.3 -> 10.3a journeys, preserved history, honest outcomes; 10.3b real devices, browsers, accessibility; 10.3c FR-66 and FR-72 on Cloudflare
+- 10.4 -> 10.4a repeat run on self-hosted; 10.4b both hosts are one product
+- 8.5, 9.1, 9.2, 9.4, 10.1 unchanged
+
+## RULING (coordinator) on the fixtures — parts B and F each handed this to the other
+- 2.7b: the script generates the acceptance-size project only (buildings, plans, devices, obstructions, zones, routes) and is built so later stories can extend it.
+- 10.1 (F): builds the small functional project (about 50 devices) by extending the 2.7b script, fixes both manifests with Kevin, and produces the reference calculations.
+- 8.2c (F): extends the script to add files with distinct content until the measured stored size is 7.5 to 8 GiB; R3 and R5 use that project.
+
+## From part F (Epics 8-10)
+- 1.2/1.4 (A): Cloudflare deploy creates the deployment key and set-up code only when absent and shows the key once (A reports this is done).
+- 1.4 / 2.13c (A, B): a destination must accept an operator-supplied deployment key instead of generating one (needed for recovery "with the key" in 8.3a). Add one criterion: 1.4 for Cloudflare, 2.13c for self-hosted.
+- 1.10a (A): must not claim the Limits group in Settings; 8.5 adds it read-only.
+- 2.6 (B): "PDF password absent from every backup" is tested in 8.1a (B already removed it from 2.6).
+- NFR-5 guidance to keep site-system credentials out of free-text notes: 2.10a carries the on-form warning (B reports done); 5.5 reuses it. Nothing for F.
+- Architecture (coordinator): CF-24 marker records "installation begun"; CF-32 workflow asks the installation immediately before deploying; CF-34 "Prepare for a manual update" step.
