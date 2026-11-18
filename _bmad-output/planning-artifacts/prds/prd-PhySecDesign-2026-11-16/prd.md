@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.21"
+version: "0.22"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.21 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.22 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -34,7 +34,7 @@ The primary user is a security professional designing and managing a property. A
 
 The current prototype provides a local design workspace and a limited revision-review service. Shared project editing, the explicit existing-site survey/change workflow, field commissioning, preserved issued designs, lifecycle archives, and continuing-property work are new requirements. Related existing controls do not establish that these workflows are already implemented.
 
-The POC does not require offline capture/synchronization, production identity or enterprise access controls, simultaneous independent jobs within one property, automated hardware configuration or testing, vendor-certified catalogs or pricing, native CAD/BIM editing, full 3D/lighting simulation, or certified engineering calculations. Production availability, tenancy, and security commitments require later definition.
+The POC does not require offline capture/synchronization, production identity or enterprise access controls, simultaneous independent jobs within one property, automated hardware configuration or testing, vendor-certified catalogs or pricing, native CAD/BIM editing, full 3D/lighting simulation, or certified engineering calculations. It also excludes risk-assessment records, specifications and bid documents, procurement, personnel management, project scheduling, elevation and detail drawings, service levels and spares, and backup-power design. Production availability, tenancy, and security commitments require later definition.
 
 ## End-to-end journeys
 
@@ -66,6 +66,16 @@ These journeys organize the workflow Kevin described; they are not additional cu
 | Archive | Retained history excluded from normal active work. Archiving a device and archiving a project are separate actions. |
 | DORI | Estimated image-detail levels: Detect, Observe, Recognize, and Identify. These are planning estimates, not field-test results. |
 | Security zone | Named floor area with a zone type and an optional coverage target, expressed as a DORI level and qualifying-area percentage. |
+
+Trade terms and their closest equivalents here, for recognition only:
+
+| Trade term | Equivalent in this document |
+| --- | --- |
+| Punch list | The remaining-work list of outstanding items. |
+| As-built drawings | The recorded installation plans in the Closeout package. |
+| Site or system acceptance testing | Testing-phase device checks together with site-level checks (FR-29–31/43). |
+| Field test | A check a technician performs on site and records as an observation. |
+| Commissioning | The installation, configuration and testing phases through closeout. |
 
 The workflow is planning → installation → configuration → testing → closeout. Work on different devices may be at different stages. Design approval and final acceptance are optional checkpoints; installation, test outcome, approval, closeout, and archive state must remain distinct.
 
@@ -157,7 +167,7 @@ Requirements use stable, globally numbered IDs. Each check describes observable 
 
 ### Equipment and cable routes
 
-**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states, as set out in the device state model. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
+**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. For cameras, also record enclosure type and any alarm interface where known, and show them in schedules; neither creates a connection or an integration. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states, as set out in the device state model. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
 
 **Check:** Two similar devices remain individually identifiable in the plan, schedules, evidence, and revision history. Existing door-contact data remains a contact, and creating a door/gate or custom record does not invent installed components, cable connections or known specifications.
 
@@ -209,13 +219,17 @@ Distinguish installed route length from cable to supply for the planned work. Re
 
 **FR-18 — Accessories and optional labor.** Add manual accessory lines and optional installation labor with quantities, units, rates, inclusion controls, and subtotals alongside equipment/cable costs. Export the estimate to CSV.
 
-**Check:** Excluding labor changes the included total without deleting entered rates or quantities.
+Add percentage lines such as contingency, tax, markup or bonding. Each states its percentage and the base it applies to: chosen categories of included direct costs, and earlier percentage lines only when explicitly selected. Show the base and the result, apply each line once, and give it the same inclusion control as other lines. No percentage is prescribed. A base containing unpriced items makes the result incomplete, not zero.
+
+Offer subtotals by subsystem, such as video, access control, intrusion, communications, network and power, and cabling. Assign each line to one subsystem by default from its equipment type, and allow the assignment to be changed. Subsystem grouping is a presentation of the same lines and never changes the total.
+
+**Check:** Excluding labor changes the included total without deleting entered rates or quantities. A 10% contingency on equipment and cable shows its base and amount and changes when that base changes; excluding it restores the prior total. Subsystem subtotals sum to the same total as the ungrouped estimate, and a shared item appears under one subsystem only.
 
 **FR-19 — Capacity planning.** Estimate recording storage from the streams actually recorded, their bitrates, recording percentage/schedule assumptions and retention. Estimate simultaneous stream bandwidth from the streams actually transmitted, independent of the percentage of time recorded. Do not duplicate demand for display-only dewarped views; separate transported/recorded streams do contribute demand. Estimate property-wide switch-port and PoE requirements for the explicitly selected current/proposed basis using endpoint demand, connections, uplinks, switch budgets, and per-port limits. Count actual physical interfaces/power requirements independently of optical-head count; a multi-head camera is one asset with its documented hardware demands. Include applicable retained equipment regardless of purchase cost. Use explicit supported network/port assignments, including logical links across floors and copper/fiber uplinks, instead of treating same-floor Cat6 proximity as the only association. Show unassigned demand, ambiguous assignments, and unknown specifications; missing information must not silently become zero demand. Per-port and total PoE checks use compatible entered power bases and known budgets under FR-51.
 
 **Check:** Retention/bitrate changes update storage. Changing recording percentage changes storage without reducing simultaneous stream bandwidth. A four-head camera does not automatically require four ports or four copies of device power, and four displayed crops do not automatically become four recorded streams. A missing or ambiguous switch connection cannot silently remove its demand or produce a reassuring capacity result. Report units and overhead assumptions.
 
-**FR-20 — Survey notes and photos.** Attach notes, measurements, installation constraints, and photos to a device or floor location. Annotations can reference these records without creating a second evidence store. Preserve their context through moves and archival; retain the last recorded location when a device is no longer on the active plan.
+**FR-20 — Survey notes and photos.** Attach notes, measurements, installation constraints, and photos to a device or floor location. Offer optional prompts for lighting, shadows, uneven terrain and mount rigidity; the answers are observations and do not feed coverage analysis. Annotations can reference these records without creating a second evidence store. Preserve their context through moves and archival; retain the last recorded location when a device is no longer on the active plan.
 
 **Check:** The user locates evidence from either the plan or device record; device removal does not erase its notes/photos or silently attach them to a replacement.
 
@@ -279,6 +293,8 @@ Each check states its task, method/conditions and expected result, including a p
 | Switch | Intended connections operate; observed/reported power demand meets specified equipment limits under the selected test load. |
 | Cabinet / light | Applicable mounting, enclosure/lock or lighting-control behavior meets project criteria; required measurements use specified conditions. |
 | Generic equipment | Define its intended function, test method, observation point and acceptable result. |
+
+Offer these optional camera checks, off by default and enabled where the scene warrants them: a camera facing sunrise or sunset is not degraded by direct sun; the night image stays usable where vehicle headlights or other bright sources occur; a person at the far end of the intended view is discernible to the level the project specifies; and a person behind a named obstruction or in its shadow is visible or hidden as the design assumes. A far-end or obstruction check can reference the zone, range or modeled obstruction it verifies. Its outcome is field evidence shown beside the modeled estimate; it neither changes the modeled result nor is implied by it.
 
 Detailed examples are in the addendum. Apply the common checklist and project-defined generic starter to added equipment where a dedicated starter is not defined. An opening or component association does not pass a related device or prove the complete sequence works. These starters do not establish a complete PSP/manufacturer/compliance library, universal wiring/fail-state criteria or automated hardware testing.
 
@@ -384,7 +400,7 @@ Validate connected changes together, including devices/routes, floor contents, a
 
 ### Site-level commissioning checks
 
-**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
+**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Optional starters cover alarm-to-camera call-up, including whether the view or recording is available quickly enough for the project’s purpose, and handover of manuals, training, as-built records and the programming list. A handover check records that an item was delivered; it does not store the item or judge its adequacy. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
 
 **Check:** A sampled site check does not mark untested devices passed, a configured retention setting does not prove available recording history, and device pass totals do not automatically satisfy an unperformed required end-to-end check. Optional approval and explicit outstanding-items closeout remain independent.
 
@@ -681,7 +697,11 @@ OQ-1 through OQ-10 are resolved and no owned open question remains. The build or
 
 **Resolved A-2 — Acceptance fixture.** The fixture size and conditions are confirmed in the acceptance targets. Existing fictional project fixtures can seed it, extended with field changes, failures/retests, a replacement and a reopened scope. Building the fixture is implementation work.
 
-No PSP documentation was supplied or fully reviewed. The original wish to consult it remains a source dependency for domain-specific checklist content or compliance claims. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**PSP references (reviewed 2026-11-18).** The public ASIS PSP examination outline was read and mapped to this draft; it lists topics, not requirements. Kevin shared pages from Patterson, *Implementing Physical Protection Systems* (2nd edition), and a public Department of Energy assessment guide was read in part. Their findings informed optional checklist items, two camera fields, survey prompts and estimate lines in FR-7/18/20/29/43. Checklist content remains project-defined, and no PSP or other compliance claim is made. The [reference digest](sources/psp-reference-reading.md) holds the mapping and paraphrased findings.
+
+**After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets.
+
+**Under discussion (nothing assumed).** Pan/tilt/zoom cameras, which the camera model does not yet cover; an optional reliability period with a downtime log; and a warranty record with service-visit fields. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 ## Supporting records
 

@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.21](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.22](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -602,6 +602,29 @@ Confirmed 2026-11-18 when Kevin accepted the consolidated model and its five cho
 Most states in the requirements are not device states. Test outcomes and follow-up flags belong to checks, connection review belongs to cable ends and port assignments, and Not assessed belongs to camera views; a device only shows their roll-up. The current prototype stores a single existing/proposed flag on each device and has none of the other axes; migrating that flag to the lifecycle stage is architecture work.
 
 One suggestion from the review is not confirmed and is recorded only for UX work: on small screens, present one primary status badge and one attention count per device, with the detail one step away.
+
+## Confirmed reference-based amendments and PSP coverage
+
+Confirmed 2026-11-18 when Kevin accepted the sort of candidates gathered from the reference review. The [reference digest](sources/psp-reference-reading.md) holds the sources, paraphrased findings and comparisons.
+
+| PSP examination domain | Share | Coverage by the PRD |
+| --- | --- | --- |
+| Physical security assessment | 34% | Almost none: no asset, threat or risk records. |
+| Application, design and integration | 35% | Strong on electronic systems, storage, network, cabling, drawings, calculations and cost. No backup power, wireless links, control rooms, specifications or scheduling. |
+| Implementation | 31% | Strong on installation, commissioning, acceptance testing, as-built records and replacement. No bidding, procurement, personnel or warranty. |
+
+Amendments written into draft 0.22, all optional or presentational and none changing a confirmed rule:
+
+- FR-29: four optional camera checks (sun-facing, night with bright sources, far-end view, obstruction and shadow). The far-end and obstruction checks can reference what they verify and sit beside the modeled estimate without altering it.
+- FR-43: optional site checks for alarm-to-camera call-up and for handover of manuals, training, as-built records and the programming list.
+- FR-7: camera enclosure type and alarm interface fields.
+- FR-20: optional survey prompts for lighting, shadows, terrain and mount rigidity.
+- FR-18: percentage estimate lines with a stated base, and subsystem subtotals.
+- Terms: five trade-term equivalents.
+
+Sources and their limits: the outline is a topic list; the Patterson findings come only from pages Kevin shared; the government guide is assessment guidance for high-security nuclear sites, read in part and partly analog-era. None is adopted as a standard. Kevin kept the DORI convention without consulting Garcia, and found nothing relevant in Fischer.
+
+Three larger candidates are to be discussed individually: pan/tilt/zoom cameras, an optional reliability period with a downtime log, and a warranty record with service-visit fields. The after-POC candidates and the added exclusions are listed in the PRD.
 
 ## Source and verification boundaries
 

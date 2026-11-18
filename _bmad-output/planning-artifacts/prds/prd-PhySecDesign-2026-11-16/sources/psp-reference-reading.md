@@ -1,6 +1,6 @@
 # PSP reference coverage and reading task
 
-Prepared 2026-11-18 during review of PRD draft 0.21. This digest records one public source that was read, three licensed references Kevin holds that have not been consulted, and the questions to take to them. It changes no requirement. Five related proposals are pending Kevin's decision and are listed at the end.
+Prepared 2026-11-18 during review of PRD draft 0.21. This digest records one public source that was read, three licensed references Kevin holds that have not been consulted, and the questions to take to them. It began as a record that changed no requirement. On 2026-11-18 Kevin accepted the sort of candidates below, and group A was written into PRD draft 0.22.
 
 ## Source read
 
@@ -43,7 +43,7 @@ Covered means the PRD has requirements for the subject. Partial means it touches
 | Personnel requirements | Not covered | Outside scope. |
 | Monitor and evaluate through the life cycle | Partial | Service, replacement and return visits (FR-35–41/45/46). No preventive-maintenance schedule, service agreement or warranty record. |
 
-## Licensed references Kevin holds (Kindle), not yet consulted
+## Licensed references Kevin holds (Kindle)
 
 | Title | Edition | Expected relevance |
 | --- | --- | --- |
@@ -177,9 +177,9 @@ Source: Patterson, 2nd edition, the design chapter (its sample estimate is Figur
 
 Question 5: Kevin decided to keep the DORI convention; Garcia’s treatment of image detail was not consulted and is not needed. Question 6: Kevin found nothing relevant in Fischer; closed unanswered. The site-tour observations in the government guide below partly serve the same purpose. The reading task is complete.
 
-## Candidate changes collected (not decided)
+## Candidate changes collected (sort confirmed 2026-11-18)
 
-Proposed sort, pending Kevin’s decision:
+Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is to be discussed one item at a time, starting with pan/tilt/zoom cameras.
 
 | Group | Candidates |
 | --- | --- |
@@ -226,12 +226,6 @@ Comparison with PRD draft 0.21:
 
 The guide mentions an analog-era criterion for the smallest usable image of a person, expressed in scan lines. It is recorded as outdated and is not adopted; reading question 5 (Garcia) and the PRD’s DORI convention cover the same subject.
 
-## Pending decisions (proposed 2026-11-18, not confirmed)
+## Earlier proposals (resolved 2026-11-18)
 
-1. Reclassify the PSP dependency in the PRD: public outline read and mapped; licensed references held but not consulted; no PSP compliance claim.
-2. Add a summary of the coverage map to the addendum.
-3. Keep every gap out of POC scope and list the gaps in the PRD's exclusions: risk-assessment records, bidding and procurement, personnel, training records, project scheduling, warranty tracking and backup power.
-4. Note two candidates for after the POC: a reason field on a zone target, and device warranty details.
-5. Add trade-term aliases to the Terms table: punch list, as-built drawings, system acceptance testing.
-
-Decisions 3 and 4 are best held until the reading task is answered, because those answers could promote a gap into a requirement.
+The five housekeeping proposals first tabled with the outline mapping are resolved by the confirmed sort: the PSP dependency is reclassified in the PRD, a coverage summary is in the addendum, the gaps kept out of scope are listed in the PRD’s exclusions, the after-POC candidates are listed in the PRD, and the trade-term equivalents are in its Terms section.
