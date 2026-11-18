@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
+Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17; a section on proposed amendment 1.1 was added on 2026-11-18. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
 
 - [Implementation baseline and migration context](#implementation-baseline-and-migration-context)
 - [Property context, work scope and issued design](#property-context-work-scope-and-issued-design)
@@ -787,6 +787,36 @@ Create at least daily automatic complete recovery backups, retaining at least se
 Keep zero loss of acknowledged records/attachments for ordinary browser closure or service restart, as already confirmed in NFR-2. For catastrophic store loss, use a recovery point no older than 24 hours and restoration to a usable project within 60 minutes after recovery begins in the documented prepared recovery environment. The 60-minute exercise includes automated backup retrieval, validation and restoring records/assets/access configuration; it cannot depend on a multi-hour user upload over a 5 Mbps connection. Display the restored recovery-point timestamp and the potential loss window; do not fabricate records after that point or imply that its issued-design designation reflects later lost changes. Record environment/preparation assumptions and total elapsed time; this is a POC recovery target, not a production availability guarantee. If the latest valid backup is older or recovery misses the target, show that failure rather than claim compliance.
 
 Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Re-establish authorized access under the existing demo model. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
+
+## Proposed amendment 1.1 — reference-based additions
+
+Added 2026-11-18. These notes support FR-63–65 and the small additions proposed in the PRD. They were confirmed by Kevin in a parallel session and have not been through the finalization review. The [amendment status](amendment-1.1-status.md) records what was ported and what was not; the [reference digest](sources/psp-reference-reading.md) holds the sources.
+
+### What the references are, and their limits
+
+| Source | Use | Limit |
+| --- | --- | --- |
+| ASIS PSP examination outline (public, updated 2022) | Topic-level map of what the requirements cover | A topic list with no requirements, criteria or test values |
+| Patterson, *Implementing Physical Protection Systems*, 2nd edition | Test stages, the reliability test, warranty, repair logs, design-package contents and estimating | Only pages Kevin shared were read; findings are paraphrased and no book text is stored |
+| Department of Energy *Physical Security Systems Assessment Guide* (December 2016) | Camera field tests and the maintenance chain | Assessment guidance for high-security nuclear sites, read in part, partly analog-era |
+
+None is adopted as a standard and no compliance claim is made. Against the outline, the requirements are strong on electronic-system design, installation, commissioning, as-built records and replacement, and nearly silent on risk assessment, bidding and procurement, and personnel.
+
+### Pan/tilt/zoom cameras (FR-63)
+
+Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer showing the best detail achievable at the narrowest field of view, and it earns no credit. Reach reuses the existing visibility calculation swept across the pan limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
+
+### Optional reliability period (FR-64)
+
+The idea is Patterson’s reliability or operational availability test. The requirement reuses the confirmed check, attempt, issue and retest rules; its one new element is a downtime log from which availability is computed. It differs from the source deliberately: nothing is prescribed, where he describes about 30 days in two phases; it warns and records but never blocks, where he requires all deficiencies corrected first and no repairs without written permission; and availability is defined as time not down divided by total elapsed time, where his printed formula can be read two ways. People enter every start, end and outage, so a recorded availability is only as complete as the log.
+
+### Warranty and service visits (FR-65)
+
+Two warranty levels are kept because their clocks differ: the installer’s runs from a scope’s closeout, while a manufacturer’s belongs to an individual device, including a later replacement. Status is calculated and informational, and equipment with no warranty recorded is Unknown. Service visits fill the middle of a chain the requirements already had at both ends: an issue records the fault, and resolution requires a closing check. A service call after closeout reopens the project into a work scope marked as service through one action, so no separate service track exists; each such scope ends with its own closeout record. A service scope starts with no current issued design under FR-61.
+
+### Small additions
+
+The optional camera checks in FR-29 include two that verify the model in the field: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
 
 ## Downstream responsibilities and evidence boundaries
 

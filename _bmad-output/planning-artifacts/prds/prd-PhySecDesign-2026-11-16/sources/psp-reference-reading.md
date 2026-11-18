@@ -1,5 +1,7 @@
 # PSP reference coverage and reading task
 
+> **Numbering note (2026-11-18).** This digest was written in a parallel session against its own draft, not against the final PRD 1.0. Requirement numbers up to FR-54 match PRD 1.0, and FR-33a means FR-33. The three requirements that came out of this review are FR-63, FR-64 and FR-65 of proposed amendment 1.1. PRD 1.0 also retains original photos and adds inventory import, which the coverage tables below do not reflect. See the [amendment status](../amendment-1.1-status.md).
+
 Prepared 2026-11-18 during review of PRD draft 0.21. This digest records one public source that was read, three licensed references Kevin holds that have not been consulted, and the questions to take to them. It began as a record that changed no requirement. On 2026-11-18 Kevin accepted the sort of candidates below, and group A was written into PRD draft 0.22.
 
 ## Source read
@@ -179,7 +181,7 @@ Question 5: Kevin decided to keep the DORI convention; Garcia’s treatment of i
 
 ## Candidate changes collected (sort confirmed 2026-11-18)
 
-Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is discussed one item at a time. Pan/tilt/zoom cameras were confirmed as FR-57 in draft 0.23, the optional reliability period as FR-58 in draft 0.24, and warranty and service-visit records as FR-59 in draft 0.25. Group B is complete.
+Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is discussed one item at a time. Pan/tilt/zoom cameras, the optional reliability period, and warranty and service-visit records were confirmed in the parallel drafts and are FR-63, FR-64 and FR-65 in proposed amendment 1.1 to PRD 1.0. Group B is complete.
 
 | Group | Candidates |
 | --- | --- |

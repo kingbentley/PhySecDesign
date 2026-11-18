@@ -660,13 +660,17 @@ Counter-metrics: more green indicators, a higher modeled coverage percentage, or
 
 No known product question remains open. The resolved OQ-1–10 and subsequent refinements are represented in these requirements; the [decision log](.memlog.md) and [conversation context](sources/conversation-context.md) retain their chronology. Product decisions do not establish implementation or acceptance evidence.
 
+**Proposed amendment 1.1 (2026-11-18).** A parallel session, working from an earlier draft without knowledge of this baseline, produced additions that Kevin confirmed there. Those with no counterpart here are proposed as FR-63 (pan/tilt/zoom cameras), FR-64 (optional reliability period) and FR-65 (warranty and service-visit records), with additions to FR-7/18/20/29/43, pointer sentences in FR-10/32/38/46/47/48, a trade-term table and added exclusions. Where that session decided something this baseline also decides, this baseline stands; the differences are listed for Kevin’s choice in the [amendment status](amendment-1.1-status.md) and are not applied. The amendment has not been through the finalization review.
+
 Architecture, UX, detailed test manifests and domain-template wording remain downstream work with planning owners identified in the [addendum](addendum.md). Owners are planning roles, not assignments to external people. Hosting, transport, storage and recovery mechanisms remain architecture choices within the confirmed product and acceptance boundaries.
 
 **A-1 — Package presentation, resolved.** FR-33/34 define the presets, evidence/detail choices, photo pagination and cost/capacity defaults. Detailed visual styling remains UX work; output must preserve actual conditions and outstanding work.
 
 **A-2 — Acceptance scale and fixture approach, resolved.** The [acceptance profile](#acceptance-profile), NFR-3/4 and SM-4/5 govern the two fixtures and declared workload. Physical-camera counts are distinct from views/streams. The current acceptance targets supersede earlier candidate values without claiming tested support.
 
-No PSP documentation was supplied or fully reviewed. The original wish to consult it remains a source dependency for domain-specific checklist content or compliance claims. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**PSP references (reviewed 2026-11-18, proposed 1.1).** The public ASIS PSP examination outline was read and mapped to the requirements; it lists topics, not requirements. Kevin shared pages from Patterson, *Implementing Physical Protection Systems* (2nd edition), and a public Department of Energy assessment guide was read in part. Their findings informed FR-63–65 and the optional checklist items, camera fields, survey prompts and estimate lines added to FR-7/18/20/29/43. Checklist content remains project-defined, and no PSP or other compliance claim is made. The [reference digest](sources/psp-reference-reading.md) holds the mapping and paraphrased findings.
+
+**After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 ## Supporting records
 
