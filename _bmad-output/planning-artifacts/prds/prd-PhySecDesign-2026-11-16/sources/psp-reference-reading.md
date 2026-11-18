@@ -47,7 +47,7 @@ Covered means the PRD has requirements for the subject. Partial means it touches
 
 | Title | Edition | Expected relevance |
 | --- | --- | --- |
-| *Implementing Physical Protection Systems: A Practical Guide* (Patterson) | To be confirmed | Highest: design, estimating, procurement, installation, testing, training, warranty and maintenance. |
+| *Implementing Physical Protection Systems: A Practical Guide* (Patterson) | 2nd, confirmed by Kevin | Highest: design, estimating, procurement, installation, testing, training, warranty and maintenance. |
 | *The Design and Evaluation of Physical Protection Systems* (Garcia) | 2nd, confirmed by Kevin | Medium: detect, delay and respond with performance measures; video assessment. |
 | *Introduction to Security* (Fischer and co-authors) | To be confirmed | Lowest: broad management text; survey contents. |
 
@@ -57,7 +57,7 @@ The expected-relevance column is from general knowledge of these titles, not fro
 
 Ordered by how much the answer could change the PRD. Rough notes or pasted highlights are both fine.
 
-1. **Patterson — acceptance testing (partly answered; see findings).** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
+1. **Patterson — acceptance testing (answered; see findings).** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
 2. **Patterson — closeout.** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
 3. **Patterson — design package.** Which drawings and schedules does he expect in a design submission? Compare with the Design preset (FR-33a).
 4. **Patterson — estimating.** Which cost components does he list beyond equipment, cable and labour? Compare with FR-17/18.
@@ -68,9 +68,9 @@ Ordered by how much the answer could change the PRD. Rough notes or pasted highl
 
 Findings are paraphrased from material Kevin shared. No book text or screenshot is stored in this repository.
 
-### Question 1 — acceptance testing (partly answered, 2026-11-18)
+### Question 1 — acceptance testing (answered, 2026-11-18)
 
-Source: one Kindle page Kevin shared as a screenshot, covering the end of a site acceptance test section and the start of a reliability testing section. Presumed to be Patterson; title, edition and chapter are to be confirmed.
+Source: Patterson, *Implementing Physical Protection Systems: A Practical Guide*, 2nd edition, confirmed by Kevin; chapter not recorded. Kevin shared three Kindle screenshots covering the list of test stages, the site acceptance test and the reliability test.
 
 What the page establishes:
 
@@ -93,7 +93,30 @@ Comparison with PRD draft 0.21:
 | Alarm-to-camera call-up | Integration checks only where scoped (FR-43). | Partial. Candidate site-level starter item. |
 | Pan/tilt/zoom limits, controls, home positions | The PRD never mentions pan/tilt/zoom cameras. FR-10 and FR-47 assume a fixed aim. | Gap in the camera model, not only in checklists. |
 
-Still needed for question 1: the stages that come before the site acceptance test and after the reliability test, and what the book says happens when a reliability test fails. The section headings of that chapter would answer the first part.
+Further findings from the later screenshots:
+
+- **Four stages.** Pre-delivery or factory acceptance testing, site acceptance testing, reliability or operational availability testing, and after-implementation testing. Only the heading of the last was shared.
+- **Entry conditions for the reliability test.** Acceptance testing complete, any specified training complete and all outstanding deficiencies corrected, confirmed by the customer in writing.
+- **Structure.** Two phases of 15 consecutive days each, running around the clock. The contractor makes no repairs during a phase without the customer’s written authorization, and the customer stops the test when the system fails to perform as specified.
+- **Assessment after each phase.** The contractor identifies each failure and its cause, repairs it, and reports in writing the failure, the corrective action, the test results and a recommended restart. About a week later the parties meet on site and the contractor demonstrates each correction by repeating the relevant parts of the tests. The customer then sets a restart date or requires the phase to be repeated, and the next phase needs written permission. The cycle repeats until the target availability is reached or the project team decides to accept the system or change the design.
+- **Availability measure.** Availability is the share of the test duration during which the system was not down: test duration divided by test duration plus downtime, as a percentage. The book mentions 99.99 percent as an ideal, not as a requirement.
+- **Contract advice.** Put the test program in the contract documents and tie milestone payments to test completion. This is outside Site Studio’s scope.
+
+Further comparison with PRD draft 0.21:
+
+| Finding | PRD position | Assessment |
+| --- | --- | --- |
+| Factory or pre-delivery test stage | None. Phases are Installation, Configuration and Testing (FR-29–31). | Gap, low priority. A project could record it as scoped checks; no stage exists for it. |
+| Failure, written cause and correction, then repeating the relevant tests | Matches targeted retest and issue records closely (FR-44/46): history is kept, a correction is recorded, and only affected checks are repeated. | Consistent. The reliability cycle could reuse this model. |
+| Restart date or repeat of the phase | A repeated test adds an attempt and keeps the earlier one (FR-31). | Consistent. A repeated phase would be a further attempt. |
+| No repairs during a phase without authorization | Field changes are recorded directly with a reason and flag affected checks (FR-27/28). No notion of a test in progress. | Partial. A change during a reliability period would need to be visible against that period. |
+| Availability from logged downtime against a target | Measured checks take a value, units and conditions against a project-defined expectation (FR-29/30). No duration-based check with a downtime log. | Gap. The calculation is simple; the downtime log is new. |
+| Entry requires all deficiencies corrected | Closeout permits explicit Closed with outstanding items (FR-32). | Difference to respect: an optional reliability period should not force this rule on projects that close honestly with open items. |
+| After-implementation testing | Not covered. | Unknown: only the heading was shared. |
+
+Shape of a possible requirement, not proposed or decided: an optional, project-defined reliability period recorded as a site-level check whose attempt has a start, a planned duration, a downtime log and a computed availability compared with a project-defined target, reusing the existing outcome, issue and retest rules.
+
+Question 1 is answered. Optional follow-up: what the after-implementation testing section covers.
 
 ## Pending decisions (proposed 2026-11-18, not confirmed)
 
