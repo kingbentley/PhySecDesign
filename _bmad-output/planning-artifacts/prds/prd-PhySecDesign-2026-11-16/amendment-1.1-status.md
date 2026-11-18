@@ -29,6 +29,7 @@ All of these were confirmed by Kevin in the parallel session. None has been thro
 | Whole-revision restore changes design content only | FR-22 | FR-22 |
 | Un-archiving as distinct from reopening | Terms, FR-37, FR-65 | Terms, FR-37 |
 | Cancelled and corrected records stay listed | FR-8, FR-41 | FR-8, FR-41 |
+| Narrow cancellation exception for an unissued proposal not eligible for Delete draft | FR-55 | Not in the snapshot |
 | Device state model, adapted, with its contradiction warning | Terms and lifecycle rules; FR-30 | Terms; FR-30 |
 
 Also carried over unchanged: the [PSP reference digest](sources/psp-reference-reading.md) and a one-line application fix in `site-studio/src/RevisionPanel.jsx`.
