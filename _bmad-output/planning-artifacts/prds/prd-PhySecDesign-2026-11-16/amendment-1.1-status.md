@@ -164,6 +164,7 @@ The parallel slices do not place FR-56 to FR-62 of this PRD (inventory import, A
 - The whole-revision restore rule does not bring back deleted floors, which the parallel draft allowed and FR-55 and FR-60 do not.
 - FR-64 calls the parts of a reliability period “stages”, while the Terms section of PRD 1.0 also uses “stages” for points in the workflow.
 - “Return to service” is used in two senses in both documents; neither settles it.
+- After automated review of the pull request, FR-63 was corrected so that reach detail uses the narrowest field of view that can still include each location within the camera’s limits, instead of assuming full zoom everywhere. Kevin had confirmed “best achievable detail at full zoom”; near a pan or tilt limit full zoom cannot always include the location.
 
 ## Not carried over
 

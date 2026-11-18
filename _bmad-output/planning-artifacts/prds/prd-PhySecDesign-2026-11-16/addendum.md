@@ -804,7 +804,7 @@ None is adopted as a standard and no compliance claim is made. Against the outli
 
 ### Pan/tilt/zoom cameras (FR-63)
 
-Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer showing the best detail achievable at the narrowest field of view, and it earns no credit. Reach reuses the existing visibility calculation swept across the pan limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
+Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and earns no credit. For each location it shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit only a wider view may include it. Reach reuses the existing visibility calculation swept across the pan and tilt limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
 
 ### Optional reliability period (FR-64)
 

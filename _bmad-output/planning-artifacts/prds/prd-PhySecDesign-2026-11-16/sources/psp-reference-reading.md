@@ -101,7 +101,7 @@ Further findings from the later screenshots:
 - **Entry conditions for the reliability test.** Acceptance testing complete, any specified training complete and all outstanding deficiencies corrected, confirmed by the customer in writing.
 - **Structure.** Two phases of 15 consecutive days each, running around the clock. The contractor makes no repairs during a phase without the customer’s written authorization, and the customer stops the test when the system fails to perform as specified.
 - **Assessment after each phase.** The contractor identifies each failure and its cause, repairs it, and reports in writing the failure, the corrective action, the test results and a recommended restart. About a week later the parties meet on site and the contractor demonstrates each correction by repeating the relevant parts of the tests. The customer then sets a restart date or requires the phase to be repeated, and the next phase needs written permission. The cycle repeats until the target availability is reached or the project team decides to accept the system or change the design.
-- **Availability measure.** Availability is the share of the test duration during which the system was not down: test duration divided by test duration plus downtime, as a percentage. The book mentions 99.99 percent as an ideal, not as a requirement.
+- **Availability measure.** The book gives availability as test duration divided by the sum of test duration and downtime, as a percentage. Read with test duration as the time in operation, that equals time not down over total elapsed time, which is the definition FR-64 uses: a 30-day run with one day down gives 29/30. Read with test duration as the whole elapsed period, it gives a slightly higher 30/31. FR-64 states its own definition so the ambiguity does not carry over. The book mentions 99.99 percent as an ideal, not as a requirement.
 - **Contract advice.** Put the test program in the contract documents and tie milestone payments to test completion. This is outside Site Studio’s scope.
 
 Further comparison with PRD draft 0.21:
@@ -214,7 +214,7 @@ Comparison with PRD draft 0.21:
 
 | Finding | PRD position | Assessment |
 | --- | --- | --- |
-| Field-of-view test at the far end | The camera starter checks framing and focus at specified scene points (FR-29). Modeled DORI is explicitly not a field pass (FR-30). | Strong fit. This is the field test that verifies the modeled far-range detail. Candidate starter item linked to the zone or range it verifies. |
+| Field-of-view test at the far end | The camera starter checks framing and focus at specified scene points (FR-29). Modeled DORI is explicitly not a field pass (FR-30). | Strong fit. This is a complementary field check on the modeled far-range detail. A person being discernible does not by itself verify a DORI level, so a pass sits beside the modeled estimate and does not confirm it. Candidate starter item linked to the zone or range it verifies. |
 | Obstruction and shadow test | Obstructions are modeled for visibility (FR-11). No field check verifies a modeled shadow. | Gap. Candidate starter item. |
 | Day, night and sunrise or sunset conditions | Each check states its conditions; night checks only where scoped (FR-29/43). | Partial. Candidate optional conditions on camera checks. |
 | Speed of response to an alarm | Integration checks only where scoped (FR-43). | Partial. Same candidate as alarm-to-camera call-up. |
