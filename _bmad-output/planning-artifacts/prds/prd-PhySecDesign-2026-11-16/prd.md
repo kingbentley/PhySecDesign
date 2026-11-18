@@ -512,7 +512,7 @@ OQ-8 and OQ-9 remain open without reopening confirmed product choices. Owners ar
 
 | ID | Decision still needed | Owner | Revisit before |
 | --- | --- | --- | --- |
-| OQ-8 | Deleting accidental draft placements, including dependency/history safeguards (pending recommendation in the addendum). Cable lifecycle and changed/deleted-floor restoration are confirmed in FR-53/54. | Kevin + architecture | Archive/restore implementation. |
+| OQ-8 | Deleting accidental draft placements, including dependency/history safeguards (no recommendation recorded yet). Cable lifecycle and changed/deleted-floor restoration are confirmed in FR-53/54. | Kevin + architecture | Archive/restore implementation. |
 | OQ-9 | Representative project size, browser/device matrix, accessibility checks, timing targets, storage/report limits, and backup/recovery acceptance. | Kevin + engineering | POC acceptance plan and related architecture commitments. |
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
