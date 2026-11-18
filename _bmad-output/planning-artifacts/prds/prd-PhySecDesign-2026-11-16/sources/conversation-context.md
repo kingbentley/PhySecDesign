@@ -248,3 +248,7 @@ On 2026-11-18 Kevin settled the point left open by the consistency pass: window 
 ## Second consistency pass and draft0.28
 
 On 2026-11-18 a second independent read of draft0.27 found the earlier contradictions closed, one new contradiction about cable runs, and smaller items. Kevin approved the batch and accepted three suggestions: an installed mark recorded in error can be reversed with a reason; a whole-revision restore never changes recorded actual positions; the field view also supports raising issues, logging outages, service visits and reviewer approval. Draft0.28 applies them. The missing VideoCamera import in the revision comparison was also reproduced and fixed that day. Stopping whole-document reads was recommended but not explicitly confirmed by Kevin; the suggested next stages are architecture and UX.
+
+## Assumptions confirmed
+
+On 2026-11-18 Kevin was shown one consolidated list of the 31 drafting details he had not individually confirmed, with item 3 (work on existing equipment waits for slice 4) pointed out as the most consequential, and answered “all fine”. Draft0.28 is unchanged by this; the details were already in its text. The “return to service” wording item remains unaddressed.
