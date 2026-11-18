@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.24](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.25](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -645,6 +645,18 @@ The requirement reuses the confirmed check, attempt, issue and retest rules. Its
 - Availability is defined as time not down divided by total elapsed time. His printed formula can be read as test time over test time plus downtime; the two agree only when test time means time in operation.
 
 People enter every start, end and outage. The POC has no monitoring of the installed system, so a recorded availability is only as complete as the log. The work is in slice 3, and the core acceptance fixture runs a deliberately short period. The current prototype has no site-level checks at all.
+
+## Confirmed warranty and service-visit records
+
+Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its six choices. FR-59 and pointers in FR-38/46 capture the behavior. The fields follow Patterson’s warranty and repair-log pages and the maintenance chain in the government assessment guide; the [reference digest](sources/psp-reference-reading.md) holds the paraphrased sources.
+
+Two warranty levels are kept because their clocks differ: the installer’s warranty runs from a scope’s closeout, while a manufacturer’s warranty belongs to an individual device, including one fitted later as a replacement. Status is calculated and informational. Equipment with no warranty recorded is Unknown, in keeping with the rule that unknowns are never turned into definite values.
+
+Service visits fill the middle of a chain the PRD already had at both ends: an issue records the fault, and resolution requires a closing check. A visit adds when the fault was reported, when it was attended, what was found and done, the parts and the time. It never resolves the issue.
+
+Kevin chose not to create a separate service track. A service call after closeout reopens the project into a work scope marked as service through one action, so the one-active-scope rule, closeout rules and history rules stay as they are. A consequence to accept: each such scope ends with its own closeout record, however small.
+
+The current prototype has no warranty fields, issue records or work scopes. This completes the three items set aside for individual discussion from the reference review.
 
 ## Source and verification boundaries
 

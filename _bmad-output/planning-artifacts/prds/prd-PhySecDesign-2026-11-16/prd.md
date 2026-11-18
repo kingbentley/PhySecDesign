@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.24"
+version: "0.25"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.24 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.25 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -77,6 +77,7 @@ Trade terms and their closest equivalents here, for recognition only:
 | Field test | A check a technician performs on site and records as an observation. |
 | Commissioning | The installation, configuration and testing phases through closeout. |
 | Reliability or operational availability test | The optional reliability period (FR-58). |
+| Repair log | The service visits recorded on an issue (FR-59). |
 
 The workflow is planning → installation → configuration → testing → closeout. Work on different devices may be at different stages. Design approval and final acceptance are optional checkpoints; installation, test outcome, approval, closeout, and archive state must remain distinct.
 
@@ -364,7 +365,7 @@ Keep PDFs, optional materials/estimate CSVs and complete editable project backup
 
 **Check:** Reading or exporting an archived project cannot change its records; reopening is explicit.
 
-**FR-38 — Later work at the same property.** Reopen the same project from its latest installation into a new active named work scope and working revision with In progress status. Multiple design revisions within this scope do not create separate work cycles or duplicate costs. Retain project/device IDs and fixed prior closeouts. Create a fresh scope-specific estimate and checks; retained installed assets are not charged again merely for remaining on the plan. Keep unresolved items visible and record their later disposition. Issue and close the new work with new records; assignments can be reused or changed.
+**FR-38 — Later work at the same property.** Reopen the same project from its latest installation into a new active named work scope and working revision with In progress status. Multiple design revisions within this scope do not create separate work cycles or duplicate costs. Retain project/device IDs and fixed prior closeouts. Create a fresh scope-specific estimate and checks; retained installed assets are not charged again merely for remaining on the plan. Keep unresolved items visible and record their later disposition. Issue and close the new work with new records; assignments can be reused or changed. A service visit can open such a scope in one step under FR-59.
 
 **Check:** Reopening does not restore removed devices, resolve old issues, inherit old approvals/passes, or alter previous closeout packages. New/changed work receives its own evidence. Scope selection and issue carryover follow FR-45/46.
 
@@ -423,7 +424,7 @@ Reference-only assets retain applicable site coverage/capacity without automatic
 
 **Check:** A lobby upgrade can include changed cameras, an inspection-only retained camera and reference equipment. Saving a second layout preserves the same scope and estimate. Moving an affected dependency to Reference only leaves its required retest/issue visible.
 
-**FR-46 — Property issue carryover.** Keep stable issue IDs linked to relevant devices, checks, scopes and attempts. Carry unresolved issues into later work without duplicating them or rewriting prior closeout snapshots. Support Include now (select work/checks/costs), Defer (retain an open item with a brief reason and optional owner/due date), and Resolve (record corrective work and appropriate current evidence/retest). Preserve the original failure and link the resolution/new attempt.
+**FR-46 — Property issue carryover.** Keep stable issue IDs linked to relevant devices, checks, scopes and attempts. Carry unresolved issues into later work without duplicating them or rewriting prior closeout snapshots. Support Include now (select work/checks/costs), Defer (retain an open item with a brief reason and optional owner/due date), and Resolve (record corrective work and appropriate current evidence/retest). Preserve the original failure and link the resolution/new attempt. Service visits recorded on an issue follow FR-59.
 
 Allow explained corrections of mistaken/duplicate issue records with actor/time and a canonical issue link where applicable. Corrections, archive, replacement or scope edits must not silently resolve genuine defects or turn prior outcomes into Pass. When removal/replacement addresses a requirement, record the actual corrective work and necessary checks. Keep deferred/out-of-scope faults visible in remaining-work lists and closeout exports; a finished scope with such issues uses Closed with outstanding items.
 
@@ -604,6 +605,22 @@ Treat the period as required or optional like any other check. FR-32 is unchange
 
 **Check:** A project enables a one-hour, single-phase period with a 99% target. A technician starts it, logs a three-minute counted camera outage linked to an issue, and ends it: availability shows 95%, the attempt is Fail and the issue stays open. After the correction, a restarted run with no downtime passes, and both attempts appear in the Closeout package. An uncounted entry stays visible without changing availability. Moving a covered camera during a run flags the attempt for review without stopping it. A period with no target shows Needs definition and cannot pass. While the required period is unpassed, the scope can close only with outstanding items.
 
+### Warranty records and service visits
+
+**FR-59 — Warranty and service-visit records.** Record an installation warranty on a work scope: its term, start date, provider and a note. The start date defaults to that scope’s closeout date and can be changed; before closeout the warranty has not started. By default it covers equipment and cable newly installed in that scope, and the covered items can be adjusted. Optionally record a manufacturer warranty on an individual device with its own term, start date and provider. A device covered by more than one warranty shows each separately.
+
+Calculate each warranty’s end date and its status as of a stated date: In warranty, Expired or Unknown. Equipment with no warranty recorded is Unknown, never Expired; this includes surveyed existing equipment. Changes to a warranty record are history entries with actor and time. Show warranty details on the device record, as an optional schedule column and in the Closeout package, and show the status for information when an issue is raised on a device. Warranty status is a recorded calculation, not a contractual determination.
+
+Record service visits as separate entries on an issue under FR-46. Each visit holds when and how the fault was reported, when the visit took place, the fault found, the work done, the parts used, the time spent, who attended and whether the visit was under warranty: Yes, No or Unknown. Suggest that last value from the warranty records as of the visit date and allow it to be changed. An issue can hold several visits; concurrent additions coexist and corrections preserve earlier entries.
+
+A visit does not resolve its issue. Resolution still requires the recorded corrective work and appropriate current evidence or retest under FR-46. Actual changes made during a visit are recorded and flagged under FR-27/28, and a part that is itself a replaced device follows FR-36 and FR-53. Parts used and time spent are records only: they change no estimate and produce no invoice.
+
+During an open work scope, record visits in that scope. When no scope is active, a single Start service visit action reopens the project under FR-38 into a new work scope marked as service, with a default name and the issue included. The mark is a label; the one-active-scope rule, the scope’s closeout under FR-32 and all history rules are unchanged, and an estimate for the scope is optional. An archived project is reopened under FR-37 first. Earlier closeout records and their warranty details stay fixed.
+
+Expiry reminders, response-time or service-level tracking, spares stock and contract management are outside the POC.
+
+**Check:** A scope closes with a 12-month installation warranty, and its new cameras show In warranty from the closeout date with the calculated end date. A surveyed existing camera with no warranty recorded shows Unknown. Months later a fault is reported with no scope active: Start service visit reopens the project into a service scope with the issue included. The technician records the reported and visit times, the fault found, a replaced power supply, the time spent and a suggested under-warranty value of Yes. The issue stays open until a current check passes. The estimate is unchanged. A second visit on the same issue is kept beside the first, the original closeout record is unchanged, and the service scope’s closeout shows both visits.
+
 ## Experience and cross-cutting quality
 
 Preserve the selected [white/teal map-first direction](../../../../design-mockups/04-map-overlay-studio.png): project/floors/layers, central map and drawing, contextual properties, and direct placement tools. On smaller screens, prioritize locating a device, viewing its requirements, and recording work/photos/results. Desktop supports detailed design and comparison. These are draft quality targets, not production service commitments.
@@ -641,7 +658,7 @@ Confirmed 2026-11-18 (OQ-9). The fixture is the project actually exercised for a
 | History | 3 named revisions, 1 issued design, 1 closeout, 2 work scopes | 50 named revisions |
 | Concurrent editors | 3 browsers | 5 browsers |
 
-The fixture also carries the conditions described above: an existing-site survey with unknown details, retained equipment and cable, an obstruction, a targeted zone, field changes, a failed test and retest, a replacement, a removal and restoration, a reopened scope, and a deliberately short reliability period with one logged outage and one restart.
+The fixture also carries the conditions described above: an existing-site survey with unknown details, retained equipment and cable, an obstruction, a targeted zone, field changes, a failed test and retest, a replacement, a removal and restoration, a reopened scope, a deliberately short reliability period with one logged outage and one restart, and a warranty record on the first scope with one service visit in the reopened scope.
 
 | Area | Target |
 | --- | --- |
@@ -667,7 +684,7 @@ Confirmed 2026-11-18. The slices set the build order and the acceptance cut line
 | 1. Shared foundation | The existing design tool running as one shared online project | FR-1–6, FR-8, FR-10–16, FR-20–22, FR-42; base parts of FR-7 and FR-9 |
 | 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-33b–d, FR-34, FR-47, FR-55; the Design preset of FR-33a; part of FR-7 |
 | 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44, FR-58; the Closeout preset of FR-33a; the phone field view under NFR-3 |
-| 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-33e, FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56 |
+| 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-33e, FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56, FR-59 |
 | 5. Extended modelling | Richer design detail | FR-33f, FR-48–52, FR-57; extension parts of FR-9 and FR-19 |
 
 Three requirements are delivered in parts, and FR-33 is delivered by its lettered parts:
@@ -736,7 +753,7 @@ OQ-1 through OQ-10 are resolved and no owned open question remains. The build or
 
 **After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets.
 
-**Under discussion (nothing assumed).** A warranty record with service-visit fields. Pan/tilt/zoom cameras and the optional reliability period were confirmed in FR-57 and FR-58 on 2026-11-18. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**Resolved from the reference review (2026-11-18).** Pan/tilt/zoom cameras, the optional reliability period, and warranty and service-visit records were discussed individually and confirmed in FR-57, FR-58 and FR-59. Nothing from that review remains under discussion. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 ## Supporting records
 

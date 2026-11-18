@@ -179,7 +179,7 @@ Question 5: Kevin decided to keep the DORI convention; Garcia’s treatment of i
 
 ## Candidate changes collected (sort confirmed 2026-11-18)
 
-Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is discussed one item at a time. Pan/tilt/zoom cameras were confirmed as FR-57 in draft 0.23 and the optional reliability period as FR-58 in draft 0.24; the warranty record remains.
+Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is discussed one item at a time. Pan/tilt/zoom cameras were confirmed as FR-57 in draft 0.23, the optional reliability period as FR-58 in draft 0.24, and warranty and service-visit records as FR-59 in draft 0.25. Group B is complete.
 
 | Group | Candidates |
 | --- | --- |
