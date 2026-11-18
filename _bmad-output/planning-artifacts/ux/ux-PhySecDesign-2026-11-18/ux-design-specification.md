@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — UX Design Specification"
-status: draft 0.4; design decisions D1-D14 confirmed by Kevin on 2026-11-18; section 17 covers PRD amendment 1.2
+status: draft 0.5, aligned with final PRD 1.2 after its review on 2026-11-18; design decisions D1-D14 confirmed by Kevin
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -8,7 +8,7 @@ method: BMAD Create UX, followed by hand (the BMAD skills are not installed in t
 
 # Site Studio — UX Design Specification
 
-This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62, the proposed FR-63–65 and, in section 17, FR-66–72 from proposed amendment 1.2. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all nine on 2026-11-18.
+This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62, the proposed FR-63–65 and, in section 17, FR-66–72 from proposed amendment 1.2. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
 
 Three kinds of statement are kept apart throughout:
 
@@ -16,7 +16,7 @@ Three kinds of statement are kept apart throughout:
 - **Required** — what the PRD asks for, cited by FR or NFR number.
 - **Proposed** — the design this document sets out to meet the requirement. The nine choices in section 12 are confirmed; the rest of the design detail is open to review on the canvas.
 
-Screens are numbered S-01 to S-24 so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
+Screens are numbered S-01 to S-36, and S-F1 to S-F7 for the field, so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
 
 ## 1. Summary
 
@@ -102,7 +102,7 @@ Not yet present in any form, and designed in this document: the shared project a
 | View switch | Design or Installation. A view preference only; it grants nothing. | FR-2 |
 | Save status | Saving, Saved, Unsaved or Conflict, with a count. Opens the list of pending and conflicting items. | FR-21, NFR-2 |
 | Account menu | Amended for 1.2. The signed-in user's name and their role in this project, with My account and Sign out. Administrators also see Administration. A Viewer sees a "View only" chip. | FR-67–69 |
-| Members and reviewer links | Amended for 1.2. Who belongs to this project and in which role (managed by administrators), and reviewer links: create, copy, replace, revoke. | FR-24, FR-68 |
+| Members and reviewer links | Amended for 1.2. Who belongs to this project and in which role (managed by administrators), and reviewer links, which Editors create, copy, replace and revoke. | FR-24, FR-68 |
 | Archived banner | When the project is archived: "Archived — view, search and export only", with Un-archive. | FR-37 |
 
 ### 5.2 Areas of work
@@ -334,7 +334,7 @@ A reviewer link opens a reduced frame: the fixed revision, its floors, comment p
 
 **Proposed.** Below the desktop layout width the frame changes to a field shell. A tablet in landscape may use either; the choice is offered, not forced (see decision D3).
 
-- **Top bar, one row:** floor switcher, save status, and a menu for property, scope, issued reference and display name.
+- **Top bar, one row:** floor switcher, save status, and an account menu holding property, scope, issued reference, the user's name and role, My account and Sign out.
 - **Bottom navigation, four items:** Plan, Equipment, Work, Issues. A fifth, More, holds Records and review.
 - **No drafting tools.** No plan alignment, walls, zones, routes, estimate editing or template editing. Coverage is viewable as a layer.
 - All controls are at least 44 px high. Form text is 16 px or larger (A5, A6).
@@ -431,7 +431,7 @@ New or changed components that the build will need. Existing prototype component
 
 | Component | Purpose |
 | --- | --- |
-| Project frame | Property, scope, issued reference, view, save status, name, share. |
+| Project frame | Property, scope, issued reference, view, save status, account menu, members and reviewer links. |
 | Basis control | Current installation, Proposed design, Changes. Used on the map and on every schedule and result. |
 | Status chip set | One component with the families in section 6. |
 | Device marker | Type icon, lifecycle outline, condition glyph, action glyph, attention mark; 32 px desktop, 44 px field. |
@@ -475,7 +475,7 @@ Every functional requirement has a home. Requirements that govern behaviour with
 
 | Screens | Requirements |
 | --- | --- |
-| S-01 Frame, sharing, save status | FR-2, FR-21, FR-37, FR-42, FR-61, NFR-2, NFR-5 |
+| S-01 Frame, account menu, members and reviewer links, save status | FR-2, FR-21, FR-37, FR-42, FR-61, FR-68, NFR-2, NFR-5 |
 | S-03 Plan workspace | FR-1, FR-3–6, FR-9, FR-11, FR-50, FR-60 |
 | S-04 Device inspector | FR-7, FR-10, FR-20, FR-27, FR-35, FR-36, FR-40, FR-49, FR-54, FR-55 |
 | S-05–S-06 Coverage, zones, pan/tilt/zoom | FR-10–16, FR-47, FR-48, FR-63 |
@@ -515,9 +515,11 @@ PRD amendment 1.2 replaced edit links with accounts and added self-hosting, admi
 | --- | --- |
 | Project frame (S-01) | The unverified display name is replaced by an account menu: the user's name, their role in this project, My account, and Sign out. Administrators also see Administration. Share becomes "Members and reviewer links". |
 | Every record of who did something | Shows the account's name. Only a reviewer-link name carries the label "name not verified". |
-| Viewer in a project | Editing controls are removed, not greyed out, and a persistent "View only" chip sits in the frame. The device sheet shows results and evidence without the recording controls. |
+| Viewer in a project | Editing controls are removed, not greyed out, and a persistent "View only" chip sits in the frame. The device sheet shows results and evidence without the recording controls. A Viewer can search, download packages and files that already exist, and export schedules and estimates; Create package and Download backup are absent. A Viewer who is the assigned reviewer of a fixed revision sees the comment and decision controls on that revision only. |
+| Approval assignments (S-22, S-23) | An assignee is chosen from the project's members and administrators, or entered as a named person who will get a reviewer link. If an assigned account is deactivated or removed, the assignment shows "Unavailable" with Reassign and Continue without approval. |
+| Archive and portable backup | Editors and administrators see Archive, Un-archive and Download backup on Records (S-20). Importing a backup is offered wherever Create project is. |
 | Reviewer view (S-24) | Unchanged. It still asks for a name and labels it not verified. A signed-in member reviewing the same revision sees their account name instead. |
-| Field shell (S-F1) | Opens at sign-in when there is no session. The session lasts long enough for a working day, within the administrator's setting. |
+| Field shell (S-F1) | Opens at sign-in when there is no session. If the session ends while a device sheet is open, the sheet asks the user to sign in again and keeps what they had entered. |
 | Records (S-20) | Decisions show whether they were made by an account or through a link. |
 
 ### 17.2 Getting in
@@ -549,7 +551,7 @@ Administration is its own area with a left-hand list: Users, Projects, Reviewer 
 
 **Settings (S-33).** Grouped as Installation (name), Sign-in (session length, require two-step verification, who may create projects), Email (off, or server details with Send a test message), Maps (optional provider keys) and Limits (the storage limits, read-only where the host fixes them). A saved secret shows only its last characters. Each group saves on its own and says what changed.
 
-**Backups (S-34).** Each project and the installation's own records, with latest backup, age and outcome. A warning appears when the backup location is the same disk as the live data on a self-hosted installation. Back up now starts one. Restore opens a three-step flow: choose a backup and see its date and the loss window; build and check a separate copy, with each check listed; then, only if every check passes, "Make this copy current", which states that everyone will be signed out and reviewer links stay revoked.
+**Backups (S-34).** Each project and the installation's own records, with latest backup, age and outcome. A warning appears when the backup location is the same disk as the live data on a self-hosted installation. Back up now starts one. Restoring one project opens a three-step flow: choose a backup and see its date and the loss window; build and check a separate copy, with each check listed; then, only if every check passes, "Make this copy current", which states that this project's reviewer links are cancelled and must be issued again, and that nobody is signed out. Recovering the whole installation after a loss is a separate action. Afterwards everyone is signed out, every reviewer link is cancelled, and a notice names the recovery point and asks the administrator to review users and members changed since then.
 
 **Software (S-35, FR-72).** The most consequential screen, so it is laid out as a sequence the administrator can follow.
 
@@ -562,7 +564,7 @@ Administration is its own area with a left-hand list: Users, Projects, Reviewer 
 | Updating | A full-page progress list: signature checked, backup taken, new version installed, data converted, checked. Each step shows done, in progress or waiting. No other control is available. |
 | Done | The new version and a link to the release notes. |
 | Failed and returned | Which step failed, a plain statement that the earlier version and its data are running again, and the log entry. |
-| Failed and not returned | A prominent warning, what state the installation is in, and the command-line recovery steps. |
+| Failed and not returned | A prominent warning that never reads as success, what state the installation is in, and the steps to recover by hand: command-line steps when self-hosted, deployment steps on Cloudflare. |
 
 Other signed-in users see a banner before the update starts ("An update starts in 2 minutes. Your unsaved work will be kept on this page.") and a full-page "Updating" notice while it runs, which clears by itself.
 
@@ -594,6 +596,9 @@ Other signed-in users see a banner before the update starts ("An update starts i
 | Screens | Requirements |
 | --- | --- |
 | S-25 First-run set-up | FR-66 |
+| S-22, S-23 approval assignments; S-24 | FR-23, FR-24 as amended |
+| S-34 Backups, S-20 Records | FR-34 as amended, NFR-7 |
+| Every screen, enforced on the server | NFR-5 |
 | S-26 Sign in, S-27 Invitation and reset, S-29 My account | FR-67 |
 | S-28 Projects, S-31 Administration: Projects, S-01 account menu and View only | FR-68 |
 | S-01, S-04 History, S-20, S-24, packages | FR-69 |

@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — Architecture"
-status: 2.0, decisions K1-K3 and K5-K15 confirmed by Kevin on 2026-11-18; replaces 1.0 after PRD amendment 1.2; nothing built or measured
+status: 2.1, aligned with final PRD 1.2 after its review on 2026-11-18; decisions K1-K3 and K5-K15 confirmed by Kevin; nothing built or measured
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2; UX design specification; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -109,7 +109,7 @@ flowchart TB
 ### AD-1 — Two supported hosts: Cloudflare, and Linux with Docker (confirmed)
 
 - **Cloudflare.** One Worker serves the built application and the API. The Workers Paid plan is required (confirmed, K1).
-- **Self-hosted.** One Docker image runs a Node.js server that serves the same application and API. It is started with Docker Compose alongside an updater container (AD-21) and, optionally, a web server that provides HTTPS. A virtual machine and a physical server are the same case: a Linux machine with Docker. Supporting only this form keeps the number of combinations to test small.
+- **Self-hosted.** One Docker image runs a Node.js server that serves the same application and API. It is started with Docker Compose alongside an updater container (AD-21) and a web server that provides HTTPS. HTTPS is required (FR-66); the bundled web server is optional for an operator who already has one. A virtual machine and a physical server are the same case: a Linux machine with Docker. Supporting only this form keeps the number of combinations to test small.
 
 Not supported at first: running without Docker, Windows Server as the host, and Kubernetes. A competent operator can do these, but they are not tested or documented.
 
@@ -198,12 +198,14 @@ From a fixed snapshot, uploaded volume by volume, registered only when complete 
 
 1. Identify the caller: a session, a reviewer link token, or neither.
 2. For a session: load the account, confirm it is active, and find its role and its membership of the project named in the request.
-3. Decide: an administrator may do anything; an Editor may read and change their project; a Viewer may read and download; a reviewer link may read one fixed revision, comment and decide (FR-24).
+3. Decide: an administrator may do anything; an Editor may read and change their project, including archiving it and downloading its portable backup; a Viewer may read, search, download existing packages and files and export schedules and estimates, and may create nothing, with one exception: a Viewer who is the approval assignee for a fixed revision may comment and decide on it (FR-23, FR-68); a reviewer link may read one fixed revision, comment and decide (FR-24). Only administrators change a project's members.
 4. Pass the decision and the actor to the project room. The project room trusts only this gate.
 
 Membership is held in the installation store, so removing a member or deactivating an account takes effect on the next request (FR-68).
 
 **Reviewer links** work as in version 1.0: a long random token sent as a header, stored as a hash, scoped to one fixed revision, revocable. An index of active links in the installation store lets an administrator list and revoke them (FR-70).
+
+**Rules the store enforces.** The last administrator cannot be demoted or deactivated. When two-step verification is required, an account without it can do nothing but set it up. An approval assignment whose account is deactivated or removed is marked unavailable. Ending a session never discards input pending in an open page; the page asks the user to sign in again and then resumes.
 
 **First administrator.** An installation with no users accepts one set-up request that creates the first administrator, protected by a one-time set-up code printed in the server log or deployment output. This replaces version 1.0's permanent administrator key.
 
@@ -211,7 +213,7 @@ Membership is held in the installation store, so removing a member or deactivati
 
 One small database per installation holds: users, password and recovery-code hashes, sessions, invitations and resets, project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table, and the activity log (FR-71). Secrets entered in settings, such as an email password or a map key, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 
-The activity log is append-only. Entries never contain a password, token or code.
+The activity log is append-only and is kept for the life of the installation; administrators can filter and export it. Entries never contain a password, token or code.
 
 ### AD-18 — Email is optional (confirmed)
 
@@ -226,7 +228,8 @@ As in version 1.0: each day a job exports every project at one consistent point,
 Extended by amendment 1.2:
 
 - The installation store is backed up in the same run, so accounts, memberships, settings and the activity log can be recovered (FR-34 as amended, FR-71).
-- Recovering an installation ends every session and leaves revoked reviewer links revoked.
+- Recovering an installation returns accounts, roles and memberships to the recovery point, ends every session and cancels every reviewer link, so that a link revoked after the recovery point cannot come back; Editors issue new links. Administrators are shown the recovery point and asked to review users and members changed since.
+- Restoring one project cancels that project's reviewer links and ends no sessions.
 - Self-hosted, the backup area must be a different disk or a different machine from the live data to count as independent. The installer asks for it and the interface warns when it is the same disk.
 - On Cloudflare the backup area is a second bucket in the same account (confirmed, K5).
 
@@ -238,7 +241,7 @@ It holds one project's records, snapshots, files and packages, a manifest, and t
 
 ### AD-19 — One public repository; signed releases built by GitHub Actions (confirmed)
 
-- The source stays in the public GitHub repository under its MIT licence.
+- The source is published in the GitHub repository under its MIT licence. Kevin makes the repository public when the first release is ready (K15); releases are public from then on.
 - A version tag (for example `v1.3.0`) starts a workflow that runs the full test suite against both hosts, builds the Docker image for the common processor types, builds the Cloudflare deployment bundle, signs both, and publishes a GitHub Release with the release notes.
 - The image is published to GitHub's container registry. Signing uses keyless signing tied to this repository's workflow, so an installation can verify that an image was built by this repository's release workflow and by nothing else.
 - Version numbers follow the usual three-part scheme. Each release states the data-format version it needs.
@@ -259,17 +262,19 @@ It holds one project's records, snapshots, files and packages, a manifest, and t
 
 1. An administrator presses Update. The application asks the updater, over a private connection protected by a shared secret, to install a named version.
 2. The updater accepts only versions from the configured repository and verifies the image signature.
-3. The application takes the pre-update backup and tells signed-in users an update is starting. Their unsaved edits stay in their pages, as for any lost connection.
+3. The application tells signed-in users an update is starting, then stops accepting saves, and only then takes the pre-update backup, so that nothing is acknowledged after it. Unsaved edits stay in users' pages, as for any lost connection.
 4. The updater stops the application, starts the new version, and the new version runs its data conversions.
-5. The updater calls a health check. On success it reports the new version. On any failure it restores the pre-update backup, starts the earlier version, and reports what happened.
-6. The outcome is written to the activity log.
+5. The updater calls a health check: the sign-in page is served, a project opens and a test save is acknowledged. On success it reports the new version. On any failure it restores the pre-update backup, starts the earlier version, and reports what happened.
+6. The outcome is written to the activity log after any return, so the record of a failed attempt survives it. If the return itself cannot be completed, the updater says so and shows the manual recovery steps; it never reports success.
 
 The same steps can be run from a command line on the server, for an operator who prefers not to grant the updater its permissions.
 
 **On Cloudflare.** A Worker cannot sensibly replace its own code, and storing a credential that can would be a standing risk. Each organisation therefore deploys from its own copy of the repository, using a deployment workflow that the repository provides.
 
-- With one-step deployment set up, Update takes the backup and then starts that workflow for the chosen release; the new version runs its conversions on first start; the application reports the new version once it sees it.
-- Without it, Update shows the exact steps to run the workflow by hand.
+- With one-step deployment set up, Update warns users, stops accepting saves, takes the backup and then starts that workflow for the chosen release. The workflow verifies the release's signature before deploying it. The new version runs its conversions on first start and then runs the same health check.
+- If the conversion or the health check fails, the workflow redeploys the earlier version, the earlier version restores the pre-update backup, and the failure is recorded afterwards. Cloudflare keeps earlier versions of a Worker, which is what the return relies on; this is part of experiment R11.
+- Without one-step deployment, Update shows the exact steps to run the workflow by hand, including the backup and the way back.
+- The same requirements therefore hold on both hosts (FR-72, NFR-8, SM-6).
 - Which trigger is best (starting a GitHub Actions run, or a Cloudflare build hook) is experiment R10.
 
 ## 10. Code structure
@@ -318,7 +323,7 @@ Language and tests are as confirmed (K6): existing application code stays in Jav
 | Zero loss of acknowledged saves | Durable storage on acknowledgement; self-hosted, SQLite with synchronous writes on a persistent volume. | Restart and power-loss tests on both hosts. |
 | Recovery point 24 h; restore within 60 min | AD-13. | R3, on both hosts. |
 | Access enforced on the server | The access gate (AD-12); no file without a check. | Tests for non-members, Viewers, deactivated accounts, ended sessions, revoked and out-of-scope links. |
-| Same product on either host | AD-16; one test suite on both. | SM-6. |
+| Same product on either host | AD-16; one test suite on both. The full acceptance run is on Cloudflare first; self-hosting is not called supported until the same run passes there. | SM-6. |
 | Safe updates | AD-20, AD-21. | R11. |
 | Fixed records never change | Hash-named files; no update path. | Hash tests after later edits. |
 
@@ -336,7 +341,7 @@ Language and tests are as confirmed (K6): existing application code stays in Jav
 | R8 | The second set of adapters doubles storage-layer testing. Cloudflare's open-source runtime might run the Cloudflare build on a server instead. | Read its documentation and try a Durable Object with persistent storage on a server. | Keep two adapters as designed. |
 | R9 | Password hashing must be strong and must fit the Worker's processor allowance. | Time Argon2id in WebAssembly and PBKDF2 in Web Crypto on both hosts. | Use whichever meets current guidance within the allowance. |
 | R10 | The best trigger for a Cloudflare deployment from the interface is unverified. | Compare starting a GitHub Actions run with a Cloudflare build hook, for what each needs stored. | Show manual steps only. |
-| R11 | An update that fails half-way must return cleanly. | Break an update at each step on a test server and confirm the earlier version and data return. | Block the release of the Update control until it does. |
+| R11 | An update that fails half-way must return cleanly on both hosts. | Break an update at each step on a test server and on a test Cloudflare account, and confirm the earlier version and data return and the failure is logged. | Block the release of the Update control until it does. |
 | R12 | SQLite files on network or slow disks can lose durability or lock. | Test on a typical virtual machine disk; document unsupported storage. | Require local disk for records; allow object storage for files only. |
 
 ## 13. Confirmed decisions

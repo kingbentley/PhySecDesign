@@ -1,6 +1,6 @@
-# Site Studio — proposed amendment 1.2: status
+# Site Studio — amendment 1.2: status
 
-Prepared 2026-11-18. The [final PRD 1.0](prd.md) remains the reviewed baseline. Amendment 1.2 is proposed on top of it and of proposed amendment 1.1. It has not been through the finalization review.
+Prepared 2026-11-18. Amendment 1.2 was reviewed together with amendment 1.1 on the same day and is part of the [final PRD 1.2](prd.md). The [amendment review](review-finalization-amendments.md) records the findings, the eight further decisions Kevin made during it, and the changes that followed; where this note and the PRD differ, the PRD governs.
 
 The PRD and addendum as they stood before this amendment are preserved unedited in [sources/pre-amendment-1.2](sources/pre-amendment-1.2/prd.md.txt).
 
@@ -36,17 +36,19 @@ Asked three questions, he chose:
 | Added SM-6 | Installation, roles, update, failed update and cross-host restore demonstrated from published instructions alone. |
 | Added UJ-5 | Set up and look after an installation. |
 | Amended FR-2 | Accounts and membership replace project edit links. The Check now covers non-members, Viewers and deactivated accounts. |
-| Amended FR-23 | An approval assignee is a user account or a named reviewer-link holder. |
+| Amended FR-23 | An approval assignee is a user account or a named reviewer-link holder. The phrase "without requiring individual accounts" is removed. |
 | Amended FR-24 | Reviewer links are for people without accounts; signed-in members can also decide; the two kinds of decision are labelled differently; administrators can see and revoke every link. |
-| Amended FR-34 | Recovering an installation restores accounts, roles and memberships, ends all sessions and keeps revoked links revoked. A portable project backup carries no accounts. |
+| Amended FR-34 | Recovering an installation restores accounts, roles and memberships, ends all sessions and keeps revoked links revoked. A portable project backup carries no accounts. The sentence about re-establishing access "under the existing model" is removed. |
 | Amended NFR-3 | The device matrix also covers sign-in, two-step verification, invitations and password change, and the administrator screens on desktop. |
 | Amended NFR-5 | From "demo access boundary" to an access boundary based on accounts, roles, membership and link scope, with password and secret handling. |
+| Front matter, opening paragraphs, Users paragraph, decision-status paragraphs | Status and summaries updated; one sentence added on administrators. |
 | Scope table, exclusions, terms | The Access row is rewritten; "production identity or enterprise access controls" is replaced in the exclusions by single sign-on, directory synchronisation, several organisations in one installation, and licensing or billing; three terms are added. |
 
 ## What is withdrawn
 
 - **Project edit links.** Anyone who edits now signs in.
 - **Unverified display names for editors.** Edits carry the account. Unverified names remain only for reviewer links.
+- **Not withdrawn:** the PRD 1.0 rule that live credentials for the site's own systems, such as camera or recorder passwords, stay out of notes and exports. The first draft of this amendment dropped it from NFR-5 by mistake; the review restored it.
 - **"Use sample or sanitised data" as the access rule.** Each hosting organisation is now responsible for its own data. The PRD states that the software carries no security certification and that an independent security review is needed before recommending it for confidential client data.
 
 ## Details settled while drafting, confirmed by Kevin
@@ -71,11 +73,11 @@ These details were needed to write the requirements and were not among the three
 
 - **FR-1–65 otherwise keep their text.** Wherever they say "participant with project editing access" or "display name", read "Editor" and "account" under FR-68 and FR-69.
 - **The acceptance profile** still assumes one usual user and two simultaneous users per project.
-- **The addendum** has not been revised for 1.2. Its "Demo access" section describes the withdrawn link model and is superseded by FR-66–72 and NFR-5 as amended.
+- **The addendum** was revised on 2026-11-18: its access section is rewritten and a section on amendment 1.2 is added. Its earlier text is preserved in the pre-amendment snapshot.
+- **The role structure.** Kevin chose Administrator, Editor and Viewer. The PRD expresses this as an installation role (Administrator or standard user) and a per-project role (Editor or Viewer). "Standard user" is a drafting term for an account that is not an administrator.
+- **Details resting on the general mandate.** Kevin asked for administrator login and controls, user accounts and anything else needed, then confirmed the amendment's content. Details not individually put to him rest on that: published installation instructions and naming the installation; single-use expiring invitations; authenticator codes with recovery codes; seeing and ending sessions; last-administrator protection; attribution by the name at the time; the administrator controls for stored size, map keys and restore; the activity-log event list with filter and export; signed releases, the daily check and direct upgrade from any earlier release; the device-matrix extension; salted password hashes and the security-review statement; cross-host restore; never running a version older than the data; and SM-6.
 - **The UX specification, architecture and epics** were written before this amendment. The UX specification and the architecture are revised alongside it; the epics are not, and need a further pass.
 
-## Still to do before this amendment can be treated as final
+## Still to do
 
-1. The same finalization review that PRD 1.0 received, covering 1.1 and 1.2 together.
-2. Revision of the addendum's access section.
-3. Revision of the epics and stories.
+The finalization review and the addendum revision are done. Remaining: revision of the epics and stories, which Kevin deferred.

@@ -1,6 +1,6 @@
 # Site Studio — proposed amendment 1.1: status
 
-Prepared 2026-11-18. The [final PRD 1.0](prd.md) remains the requirements baseline. This note tracks what a parallel session added on top of it, what is still to be ported, and where that session's decisions differ from 1.0 and have **not** been applied.
+Prepared 2026-11-18. Amendment 1.1 was reviewed together with amendment 1.2 on the same day and is part of the [final PRD 1.2](prd.md); see the [amendment review](review-finalization-amendments.md). This note tracks what a parallel session added on top of PRD 1.0 and where that session's decisions differ from 1.0. Those differences are not applied, except as listed under Decisions taken on 2026-11-18.
 
 ## How this arose
 
@@ -10,7 +10,7 @@ The parallel draft, its addendum and its decision-log entries are preserved uned
 
 ## Ported into the PRD as proposed amendment 1.1
 
-All of these were confirmed by Kevin in the parallel session. None has been through the finalization review.
+All of these were confirmed by Kevin in the parallel session and were reviewed on 2026-11-18. The table also includes the items adopted later under the decisions below.
 
 | Addition | Where in the PRD | Number in the snapshot |
 | --- | --- | --- |
@@ -30,6 +30,7 @@ All of these were confirmed by Kevin in the parallel session. None has been thro
 | Un-archiving as distinct from reopening | Terms, FR-37, FR-65 | Terms, FR-37 |
 | Cancelled and corrected records stay listed | FR-8, FR-41 | FR-8, FR-41 |
 | Device state model, adapted, with its contradiction warning | Terms and lifecycle rules; FR-30 | Terms; FR-30 |
+| Cancelling an unissued proposal that is not eligible for Delete draft (decision 6) | FR-55; state model | Not in the snapshot in this form |
 
 Also carried over unchanged: the [PSP reference digest](sources/psp-reference-reading.md) and a one-line application fix in `site-studio/src/RevisionPanel.jsx`.
 
