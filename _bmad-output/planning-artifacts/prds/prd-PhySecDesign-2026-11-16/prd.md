@@ -1,9 +1,9 @@
 ---
 title: "Site Studio — Product Requirements"
-status: final
-version: "1.0"
+status: final 1.0 with proposed amendment 1.1
+version: "1.1-proposed"
 created: 2026-11-16
-updated: 2026-11-17
+updated: 2026-11-18
 phase: finalized
 working_mode: guided
 entry_point: vision-and-features
@@ -14,6 +14,8 @@ entry_point: vision-and-features
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
 **This is the finalized PRD 1.0 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. Finalization establishes the requirements baseline; implementation, software acceptance and compliance are separate. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+
+**Proposed amendment 1.1 (2026-11-18).** FR-63 to FR-65 and the additions listed under [decision status](#decision-status-and-downstream-work) were confirmed by Kevin in a separate session on 2026-11-18 and are proposed additions to this baseline. They have not been through the finalization review. FR-1–62, NFR-1–6 and SM-1–5 keep their IDs and meaning.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions; the [addendum](addendum.md) preserves technical context and limits. Read the [thematic requirements](#functional-requirements), [acceptance criteria](#poc-success-and-acceptance), and [decision status](#decision-status-and-downstream-work) for the confirmed scope and remaining downstream work.
 
@@ -34,7 +36,7 @@ The primary user is a security professional designing and managing a property. A
 
 The current prototype provides a local design workspace and a limited revision-review service. Shared project editing, the explicit existing-site survey/change workflow, field commissioning, preserved issued designs, lifecycle archives, and continuing-property work are new requirements. Related existing controls do not establish that these workflows are already implemented.
 
-The POC does not require offline capture/synchronization, production identity or enterprise access controls, simultaneous independent jobs within one property, automated hardware configuration or testing, vendor-certified catalogs or pricing, native CAD/BIM editing, full 3D/lighting simulation, or certified engineering calculations. Production availability, tenancy, and security commitments require later definition.
+The POC does not require offline capture/synchronization, production identity or enterprise access controls, simultaneous independent jobs within one property, automated hardware configuration or testing, vendor-certified catalogs or pricing, native CAD/BIM editing, full 3D/lighting simulation, or certified engineering calculations. It also excludes risk-assessment records, specifications and bid documents, procurement, personnel management, project scheduling, elevation and detail drawings, service levels and spares, and backup-power design. Production availability, tenancy, and security commitments require later definition.
 
 ## End-to-end journeys
 
@@ -66,6 +68,18 @@ These journeys organize the workflow Kevin described; they are not additional cu
 | Archive | Retained history excluded from normal active work. Archiving a device and archiving a project are separate actions. |
 | DORI | Estimated image-detail levels: Detect, Observe, Recognize, and Identify. These are planning estimates, not field-test results. |
 | Security zone | Named floor area with a zone type and an optional coverage target, expressed as a DORI level and qualifying-area percentage. |
+
+Trade terms and their closest equivalents here, for recognition only:
+
+| Trade term | Equivalent in this document |
+| --- | --- |
+| Punch list | The remaining-work list of outstanding items. |
+| As-built drawings | The recorded installation plans in the Closeout package. |
+| Site or system acceptance testing | Testing-phase device checks together with site-level checks (FR-29–31/43). |
+| Field test | A check a technician performs on site and records as an observation. |
+| Commissioning | The installation, configuration and testing phases through closeout. |
+| Reliability or operational availability test | The optional reliability period (FR-64). |
+| Repair log | The service visits recorded on an issue (FR-65). |
 
 The workflow is planning → installation → configuration → testing → closeout. Work on different devices may be at different stages. Design approval and final acceptance are optional checkpoints; installation, test outcome, approval, closeout, and archive state must remain distinct.
 
@@ -147,7 +161,7 @@ Validate connected changes together, including devices/routes, floor contents, a
 
 ### Inventory, surveys and equipment
 
-**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
+**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. For cameras, also record enclosure type and any alarm interface where known, and show them in schedules; neither creates a connection or an integration. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
 
 **Check:** Two similar devices remain individually identifiable in the plan, schedules, evidence, and revision history. Existing door-contact data remains a contact, and creating a door/gate or custom record does not invent installed components, cable connections or known specifications.
 
@@ -155,7 +169,7 @@ Validate connected changes together, including devices/routes, floor contents, a
 
 **Check:** Selecting a placed device opens the correct floor/location; an unplaced imported device opens its Awaiting placement entry. A removed device is labeled historical rather than counted as active.
 
-**FR-20 — Survey notes and photos.** Attach notes, measurements, installation constraints, and photos to a device or floor location. Annotations can reference these records without creating a second evidence store. Preserve their context through moves and archival; retain the last recorded location when a device is no longer on the active plan. Retain new original photos alongside usable previews under FR-34; preserve available processed images without fabricating originals missing from older records.
+**FR-20 — Survey notes and photos.** Attach notes, measurements, installation constraints, and photos to a device or floor location. Offer optional prompts for lighting, shadows, uneven terrain and mount rigidity; the answers are observations and do not feed coverage analysis. Annotations can reference these records without creating a second evidence store. Preserve their context through moves and archival; retain the last recorded location when a device is no longer on the active plan. Retain new original photos alongside usable previews under FR-34; preserve available processed images without fabricating originals missing from older records.
 
 **Check:** The user locates evidence from either the plan or device record; device removal does not erase its notes/photos or silently attach them to a replacement.
 
@@ -226,7 +240,7 @@ Provide a downloadable sample template and remember the project's last confirmed
 
 ### Camera models and coverage
 
-**FR-10 — Camera controls and visibility.** Adjust bearing, lens/field of view, active sensor dimensions, aspect ratio, image resolution, mounting height, tilt, and analysis range. Apply the selected camera-model/profile limits and maintain a coherent optical basis: sourced field-of-view angles or compatible sensor/focal-length geometry. Keep derived values consistent without silently overwriting manufacturer specifications. Show each supported camera view's visible coverage, obstruction shadows, and near blind area using the selected target height and documented geometry assumptions. Distinguish illustrative panoramic previews under FR-48.
+**FR-10 — Camera controls and visibility.** Adjust bearing, lens/field of view, active sensor dimensions, aspect ratio, image resolution, mounting height, tilt, and analysis range. Apply the selected camera-model/profile limits and maintain a coherent optical basis: sourced field-of-view angles or compatible sensor/focal-length geometry. Keep derived values consistent without silently overwriting manufacturer specifications. Show each supported camera view's visible coverage, obstruction shadows, and near blind area using the selected target height and documented geometry assumptions. Distinguish illustrative panoramic previews under FR-48. Pan/tilt/zoom cameras follow FR-63.
 
 **Check:** Changing aim or optical geometry updates the footprint and affected metrics; changing resolution updates image-detail results without necessarily changing the footprint. Linked optical values stay consistent, and a single-camera percentage identifies its own analysis area.
 
@@ -254,7 +268,7 @@ Provide a downloadable sample template and remember the project's last confirmed
 
 **Check:** Improving contour appearance does not change numeric results or imply continuous, exact visibility calculations.
 
-**FR-47 — Camera-model templates.** Let users create, edit, duplicate and search reusable camera definitions by manufacturer, model number and lens/variant, then select a definition when placing a camera. Retain the generic camera option and represent physical assets, their optical views and configured streams under FR-48. Record image resolution as width × height in pixels for the selected capture/stream mode, fixed or adjustable/varifocal lens type, focal length or supported focal-length range, and horizontal/vertical field of view in degrees with their applicable mode/focal setting. Store active imaging dimensions in millimeters when known, and distinguish them from nominal sensor-format labels. Preserve specification source and unknown values; incomplete templates must not silently become verified generic specifications.
+**FR-47 — Camera-model templates.** Let users create, edit, duplicate and search reusable camera definitions by manufacturer, model number and lens/variant, then select a definition when placing a camera. Retain the generic camera option and represent physical assets, their optical views and configured streams under FR-48. Pan/tilt/zoom ranges follow FR-63. Record image resolution as width × height in pixels for the selected capture/stream mode, fixed or adjustable/varifocal lens type, focal length or supported focal-length range, and horizontal/vertical field of view in degrees with their applicable mode/focal setting. Store active imaging dimensions in millimeters when known, and distinguish them from nominal sensor-format labels. Preserve specification source and unknown values; incomplete templates must not silently become verified generic specifications.
 
 A fixed-lens profile uses its defined focal length. A varifocal profile supplies supported limits and a selected focal setting for each placed camera; changing it updates the supported coverage/DORI calculations. Require sufficient consistent optical data for the evaluated setting, disclose approximations and flag unsupported/missing input. Selecting a lower-resolution/cropped mode uses that mode’s pixels and framing, not automatically the model maximum. Model FoV angles are distinct from physical scene width/height, which are calculated at a stated distance/plane.
 
@@ -262,7 +276,7 @@ Keep location, mounting height, aim/tilt, selected operating mode/focal setting 
 
 **Check:** An engineer searches a known model number and places two uniquely identified cameras using its specifications. A fixed-lens instance cannot masquerade as a continuously adjustable lens; two varifocal instances can use different supported focal settings and produce their respective coverage/DORI results. A resolution/mode change uses the correct pixels/framing. Missing optical inputs stay visible, physical FoV dimensions identify their distance, and a later template edit leaves fixed historical designs and evidence unchanged.
 
-**FR-48 — Physical cameras, views and streams.** Keep one physical asset with stable child view IDs and associated configured streams. Preserve device cost, mounting/history and actual hardware demand independently of view/stream count. Supported heads retain individual resolution/mode, lens limits/setting, bearing, tilt and condition; a shared mounting point for a compact body is a disclosed approximation. Model templates can preset these views without multiplying purchased bodies.
+**FR-48 — Physical cameras, views and streams.** Keep one physical asset with stable child view IDs and associated configured streams. A pan/tilt/zoom camera is a single-view camera under FR-63, not a multi-view arrangement. Preserve device cost, mounting/history and actual hardware demand independently of view/stream count. Supported heads retain individual resolution/mode, lens limits/setting, bearing, tilt and condition; a shared mounting point for a compact body is a disclosed approximation. Model templates can preset these views without multiplying purchased bodies.
 
 | Arrangement | POC support |
 | --- | --- |
@@ -275,6 +289,20 @@ Detailed calibrated fisheye/stitched DORI is follow-on scope, requiring a suppor
 Preserve parent/view/stream identities, selected profiles and source distinctions. Apply targeted retesting to per-head/shared-hardware changes and retain failed/unknown head conditions for the selected analysis basis. Device lifecycle follows FR-35/36/53–55.
 
 **Check:** A four-head template creates one physical camera with four independently inspectable views, using each head’s own resolution and optical settings. It does not lose heads through duplicate analysis IDs or inflate body cost/PoE. A fisheye preview remains visually distinct from assessed DORI, receives no target credit and does not cause unsupported exclusions to be reported as proof of blindness. Historical issued views/results remain unchanged after later edits.
+
+**FR-63 — Pan/tilt/zoom cameras: resting view, stored positions and reach.** Represent a pan/tilt/zoom camera as one physical asset with one view and its configured streams; it is not a multi-view camera under FR-48. Its model template under FR-47 adds the pan range, the tilt range and the zoom range, given as the widest and narrowest field of view or the equivalent focal-length range. Each placed camera can carry its own pan and tilt limits within the model’s range. Unknown ranges and limits stay unknown.
+
+Let each placed camera hold named stored positions, each with pan, tilt and zoom, and mark one as home. The home position is the resting view. Analyze it under FR-10 as a varifocal camera at the home settings; it is the only view of this camera counted in combined coverage, DORI and zone results under FR-12–15. Until a home position is defined, the camera contributes no assessed coverage and is disclosed as unassessed under FR-13. Any other stored position can be previewed with its own coverage and DORI. A preview is labeled as such and changes no counted result.
+
+Show the camera’s reach as a separate layer labeled reachable on demand: the area it could view within its limits, analysis range and modeled obstructions at the selected target height. Reach is never counted as covered or as overlap. Where an area within reach is otherwise uncovered, identify it as reachable on demand instead of as having no camera view. Within reach, show the best detail achievable at the narrowest field of view, labeled as achievable in one place at a time. This is not a DORI coverage result. Without sufficient optical data, show the reach outline alone with detail Not assessed.
+
+A zone shows its counted result as today and, separately, which cameras can reach it on demand, how much of it and at what achievable detail. Judge the zone’s target on the counted result only.
+
+Provide a pan/tilt/zoom starter under FR-29: limits stop where intended; pan, tilt and zoom controls operate; each stored position shows its intended scene; the camera returns to home where that is configured; and limits or positions keep it from facing bright light sources. An alarm-driven position is checked only where scoped under FR-43. Changing a stored position or limit on the installed camera is a meaningful change under FR-27/28 and flags the checks for that position; a proposed edit updates the design without flagging field checks. Changing the home position also changes counted coverage and the zone results that depend on it.
+
+Count one device, its documented power demand and its configured streams under FR-19; stored positions multiply nothing. Preserve positions, limits and the home designation through revisions, evidence, exports and backups, and identify the resting view, previews and reach distinctly in analysis sheets under FR-33. Guard tours, auto-tracking, time-share coverage figures and live control of a camera are outside the POC.
+
+**Check:** A roof camera with its home position on the car-park entrance contributes only that view to combined coverage and to the entrance zone. The loading-dock zone, within reach but outside every counted view, keeps its counted shortfall and separately shows that the camera can reach it on demand with its achievable detail; that line does not meet the target. Previewing a second stored position changes no totals. Narrowing a pan limit shrinks the reach. Changing the home position changes counted coverage and flags that position’s checks. The camera remains one device with one power demand.
 
 ### Connections and routes
 
@@ -328,7 +356,11 @@ Distinguish installed route length from cable to supply for the planned work. Re
 
 **FR-18 — Accessories and optional labor.** Add manual accessory lines and optional installation labor with quantities, units, rates, inclusion controls, and subtotals alongside equipment/cable costs. Export the estimate to CSV.
 
-**Check:** Excluding labor changes the included total without deleting entered rates or quantities.
+Add percentage lines such as contingency, tax, markup or bonding. Each states its percentage and the base it applies to: chosen categories of included direct costs, and earlier percentage lines only when explicitly selected. Show the base and the result, apply each line once, and give it the same inclusion control as other lines. No percentage is prescribed. A base containing unpriced items makes the result incomplete, not zero.
+
+Offer subtotals by subsystem, such as video, access control, intrusion, communications, network and power, and cabling. Assign each line to one subsystem by default from its equipment type, and allow the assignment to be changed. Subsystem grouping is a presentation of the same lines and never changes the total.
+
+**Check:** Excluding labor changes the included total without deleting entered rates or quantities. A 10% contingency on equipment and cable shows its base and amount and changes when that base changes; excluding it restores the prior total. Subsystem subtotals sum to the same total as the ungrouped estimate, and a shared item appears under one subsystem only.
 
 **FR-19 — Capacity planning.** Estimate recording storage from the streams actually recorded, their bitrates, recording percentage/schedule assumptions and retention. Estimate simultaneous stream bandwidth from the streams actually transmitted, independent of the percentage of time recorded. Do not duplicate demand for display-only dewarped views; separate transported/recorded streams do contribute demand. Estimate property-wide switch-port and PoE requirements for the explicitly selected current/proposed basis using endpoint demand, connections, uplinks, switch budgets, and per-port limits. Count actual physical interfaces/power requirements independently of optical-head count; a multi-head camera is one asset with its documented hardware demands. Include applicable retained equipment regardless of purchase cost. Use explicit supported network/port assignments, including logical links across floors and copper/fiber uplinks, instead of treating same-floor Cat6 proximity as the only association. Show unassigned demand, ambiguous assignments, and unknown specifications; missing information must not silently become zero demand. Per-port and total PoE checks use compatible entered power bases and known budgets under FR-51.
 
@@ -340,7 +372,7 @@ Reference-only assets retain applicable site coverage/capacity without automatic
 
 **Check:** A lobby upgrade can include changed cameras, an inspection-only retained camera and reference equipment. Saving a second layout preserves the same scope and estimate. Moving an affected dependency to Reference only leaves its required retest/issue visible.
 
-**FR-46 — Property issue carryover.** Keep stable issue IDs linked to relevant devices, checks, scopes and attempts. Carry unresolved issues into later work without duplicating them or rewriting prior closeout snapshots. Support Include now (select work/checks/costs), Defer (retain an open item with a brief reason and optional owner/due date), and Resolve (record corrective work and appropriate current evidence/retest). Preserve the original failure and link the resolution/new attempt.
+**FR-46 — Property issue carryover.** Keep stable issue IDs linked to relevant devices, checks, scopes and attempts. Carry unresolved issues into later work without duplicating them or rewriting prior closeout snapshots. Support Include now (select work/checks/costs), Defer (retain an open item with a brief reason and optional owner/due date), and Resolve (record corrective work and appropriate current evidence/retest). Preserve the original failure and link the resolution/new attempt. Service visits recorded on an issue follow FR-65.
 
 Allow explained corrections of mistaken/duplicate issue records with actor/time and a canonical issue link where applicable. Corrections, archive, replacement or scope edits must not silently resolve genuine defects or turn prior outcomes into Pass. When removal/replacement addresses a requirement, record the actual corrective work and necessary checks. Keep deferred/out-of-scope faults visible in remaining-work lists and closeout exports; a finished scope with such issues uses Closed with outstanding items.
 
@@ -409,6 +441,8 @@ Each check states its task, method/conditions and expected result, including a p
 | Cabinet / light | Applicable mounting, enclosure/lock or lighting-control behavior meets project criteria; required measurements use specified conditions. |
 | Generic equipment | Define its intended function, test method, observation point and acceptable result. |
 
+Offer these optional camera checks, off by default and enabled where the scene warrants them: a camera facing sunrise or sunset is not degraded by direct sun; the night image stays usable where vehicle headlights or other bright sources occur; a person at the far end of the intended view is discernible to the level the project specifies; and a person behind a named obstruction or in its shadow is visible or hidden as the design assumes. A far-end or obstruction check can reference the zone, range or modeled obstruction it verifies. Its outcome is field evidence shown beside the modeled estimate; it neither changes the modeled result nor is implied by it. A pan/tilt/zoom starter follows FR-63.
+
 Detailed examples are in the addendum. Apply the common checklist and project-defined generic starter to added equipment where a dedicated starter is not defined. An opening or component association does not pass a related device or prove the complete sequence works. These starters do not establish a complete PSP/manufacturer/compliance library, universal wiring/fail-state criteria or automated hardware testing.
 
 **Check:** A project can tailor its starter to the scoped work and preserve all past attempts. An undefined expected result is flagged Needs definition and cannot produce a new Pass; this is readiness information, not a fifth test outcome. Unknown legacy details remain unknown unless the scoped check specifically requires them.
@@ -421,7 +455,7 @@ Detailed examples are in the addendum. Apply the common checklist and project-de
 
 **Check:** A passing retest retains the preceding failure and its evidence. Unperformed required checks, unresolved failures, and required follow-ups remain visible to closeout. An empty or all-inapplicable phase is not displayed as 100% passed. Making a failed check optional or changing its expectation does not silently rewrite the result or resolve its issue.
 
-**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
+**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Optional starters cover alarm-to-camera call-up, including whether the view or recording is available quickly enough for the project’s purpose, and handover of manuals, training, as-built records and the programming list. A handover check records that an item was delivered; it does not store the item or judge its adequacy. An optional reliability period follows FR-64. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
 
 **Check:** A sampled site check does not mark untested devices passed, a configured retention setting does not prove available recording history, and device pass totals do not automatically satisfy an unperformed required end-to-end check. Optional approval and explicit outstanding-items closeout remain independent.
 
@@ -433,9 +467,25 @@ Record the condition and criteria actually tested with each new attempt. Clear r
 
 **Check:** A camera’s dated Pass remains inspectable after its aim changes, while required image checks stay outstanding for the new aim. A valid current retest can satisfy those checks without erasing history. A further change after testing keeps the new follow-up open, and a supported record-only correction can be documented as unaffected without dismissing an unrelated failure.
 
+**FR-64 — Reliability period and downtime log.** Offer an optional site-level check, off by default, for a period of observed operation after testing. A period is one or more stages. The project defines what the period covers, the number of stages, what counts as downtime, and each stage’s planned duration and availability target. Prescribe none of these. Each stage is a site-level check with its own attempts under FR-31 and FR-43. It is required or optional on its own and counts in project-level Testing progress, not in any device’s.
+
+A person records the start and the end of each run. A run in progress has no outcome and is not yet an attempt; it becomes one attempt when its end is recorded, unless it was stopped for a reason other than failure as described below. The POC observes nothing itself: it has no automatic monitoring, alerts or connection to the installed system.
+
+Log each outage during a run as a separate entry with what was affected, its start and end time, a description and a linked issue under FR-46. Each entry states whether it counts toward availability under the project’s definition, with a short reason when it does not. Every entry stays visible in the run and in exports. An outage with no recorded end counts as continuing. Entries added by different participants coexist.
+
+Compute availability as the time not down divided by the total elapsed time of the run, as a percentage, from the counted entries; overlapping entries are not counted twice. Show it beside the target with the counted and uncounted downtime totals, and mark it provisional while the run is open. Availability is never entered by hand.
+
+Apply the outcomes of FR-30. A Pass requires a recorded start and end, the full planned duration and the target met. A full run that misses the target is Fail. A run stopped because the system failed to perform is Fail with an explanation. A run stopped for another reason is kept with its log and the reason. It has no outcome and is not an attempt, and the check’s outcome is unchanged. A stage with no duration or target defined shows Needs definition and cannot pass. Repeating or restarting creates a new attempt and keeps earlier attempts and their logs. Changing the definition or target afterwards does not rewrite a recorded outcome.
+
+Allow a run to start while work is outstanding, with a warning listing the outstanding required checks, retests and open issues in the covered scope. Show an actual change to covered equipment recorded during a run on that run, and flag the check Needs review under FR-44, linked to that run; a participant records whether the run continues or restarts, with a reason. Neither case is blocked and no approval is added.
+
+Treat each stage as required or optional like any other check. FR-32 is unchanged: a required stage that is running, failed or not started prevents Completed and permits Closed with outstanding items. The Closeout package shows each run’s dates, planned and actual duration, downtime log, availability, target and outcome under FR-33.
+
+**Check:** A project enables a one-hour, single-stage period with a 99% target. A technician starts it, logs a three-minute counted camera outage linked to an issue, and ends it: availability shows 95%, the attempt is Fail and the issue stays open. After the correction, a restarted run with no downtime passes, and both attempts appear in the Closeout package. An uncounted entry stays visible without changing availability. Moving a covered camera during a run flags the check for review without stopping the run. A run stopped early for scheduling reasons is kept with its reason and leaves the check’s outcome as it was. A stage with no target shows Needs definition and cannot pass. While a required stage is unpassed, the scope can close only with outstanding items.
+
 ### Closeout and lifecycle records
 
-**FR-32 — Explicit closeout.** Support In progress, Completed, and Closed with outstanding items as defined above. Require a brief project-level note for the last state and retain the remaining-work list; follow-up owner/due date are optional. Preserve a fixed named closeout record, including drawings, schedules, estimates, evidence, changes, approvals/bypasses, and outstanding items. Recheck current outstanding work and capture a consistent server-saved version; concurrent changes must not produce a mixed or stale closeout.
+**FR-32 — Explicit closeout.** Support In progress, Completed, and Closed with outstanding items as defined above. Require a brief project-level note for the last state and retain the remaining-work list; follow-up owner/due date are optional. Preserve a fixed named closeout record, including drawings, schedules, estimates, evidence, changes, approvals/bypasses, and outstanding items. It also carries reliability runs under FR-64 and warranty records and service visits under FR-65. Recheck current outstanding work and capture a consistent server-saved version; concurrent changes must not produce a mixed or stale closeout.
 
 **Check:** An unfinished installation, applicable failed/unperformed required test, required pending retest, or documented unresolved property issue prevents Completed but permits explicit Closed with outstanding items. Finishing the selected scope does not hide a deferred or out-of-scope fault. Missing approval alone does not prevent closure, and approval bypass cannot satisfy a required test/retest.
 
@@ -451,9 +501,23 @@ Record the condition and criteria actually tested with each new attempt. Clear r
 
 **Check:** Reading and exporting an archived project leave its design, installation, evidence, decisions and prior packages unchanged. Redownload returns the retained bytes. Export may append a separately identified retained edition under FR-34 without reopening work; changing business records or starting later work requires explicit reopening.
 
-**FR-38 — Later work at the same property.** Reopen the same project from its latest installation into a new active named work scope and working revision with In progress status. Multiple design revisions within this scope do not create separate work cycles or duplicate costs. Retain project/device IDs and fixed prior closeouts. Create a fresh scope-specific estimate and checks; retained installed assets are not charged again merely for remaining on the plan. Keep unresolved items visible and record their later disposition. Issue and close the new work with new records; assignments can be reused or changed.
+**FR-38 — Later work at the same property.** Reopen the same project from its latest installation into a new active named work scope and working revision with In progress status. Multiple design revisions within this scope do not create separate work cycles or duplicate costs. Retain project/device IDs and fixed prior closeouts. Create a fresh scope-specific estimate and checks; retained installed assets are not charged again merely for remaining on the plan. Keep unresolved items visible and record their later disposition. Issue and close the new work with new records; assignments can be reused or changed. A service visit can open such a scope in one step under FR-65, where the estimate is optional.
 
 **Check:** Reopening does not restore removed devices, resolve old issues, inherit old approvals/passes, or alter previous closeout packages. New/changed work receives its own evidence. Scope selection and issue carryover follow FR-45/46.
+
+**FR-65 — Warranty and service-visit records.** Record an installation warranty on a work scope: its term, start date, provider and a note. The start date defaults to that scope’s closeout date and can be set to another date. Until its start date, a recorded warranty is Not started. By default it covers equipment and cable newly installed in that scope, and the covered items can be adjusted. Optionally record a manufacturer warranty on an individual device with its own term, start date and provider. A device covered by more than one warranty shows each separately.
+
+Calculate each warranty’s end date and its status as of a stated date: Not started, In warranty, Expired or Unknown. Equipment with no warranty recorded is Unknown, never Expired; this includes surveyed existing equipment. Changes to a warranty record are history entries with actor and time. Show warranty details on the device record, as an optional schedule column and in the Closeout package, and show the status for information when an issue is raised on a device. Warranty status is a recorded calculation, not a contractual determination.
+
+Record service visits as separate entries on an issue under FR-46. Each visit holds when and how the fault was reported, when the visit took place, the fault found, the work done, the parts used, the time spent, who attended and whether the visit was under warranty: Yes, No or Unknown. Suggest that last value from the warranty records as of the visit date and allow it to be changed. An issue can hold several visits; concurrent additions coexist and corrections preserve earlier entries.
+
+A visit does not resolve its issue. Resolution still requires the recorded corrective work and appropriate current evidence or retest under FR-46. Actual changes made during a visit are recorded and flagged under FR-27/28, and a part that is itself a replaced device follows FR-36 and FR-53. Parts used and time spent are records only: they change no estimate and produce no invoice.
+
+During an open work scope, record visits in that scope. When no scope is active, a single Start service visit action reopens the project under FR-38 into a new work scope marked as service, with a default name and the issue included. The mark is a label; the one-active-scope rule, the scope’s closeout under FR-32 and all history rules are unchanged, and an estimate for the scope is optional. An archived project is un-archived under FR-37 first. A service scope starts with no current issued design under FR-61. Earlier closeout records and their warranty details stay fixed.
+
+Expiry reminders, response-time or service-level tracking, spares stock and contract management are outside the POC.
+
+**Check:** A scope closes with a 12-month installation warranty, and its new cameras show In warranty from the closeout date with the calculated end date. A surveyed existing camera with no warranty recorded shows Unknown. Months later a fault is reported with no scope active: Start service visit reopens the project into a service scope with the issue included. The technician records the reported and visit times, the fault found, a replaced power supply, the time spent and a suggested under-warranty value of Yes. The issue stays open until a current check passes. The estimate is unchanged. A second visit on the same issue is kept beside the first, the original closeout record is unchanged, and the service scope’s closeout shows both visits.
 
 **FR-54 — Confirmed destination and preserved location history.** Restore an individual archived device with its existing ID/history, separately from whole-project revision restoration. Require a valid current floor in the same property and an explicitly confirmed position before completing active restoration. Match the original floor by stable identity, not name. On an unchanged or merely renamed floor, preview the former position for confirmation. On a replaced drawing or changed scale, alignment or layout, require placement review/repositioning; uncertain old coordinates must not become an invented current position.
 
