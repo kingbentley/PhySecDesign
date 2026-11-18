@@ -1,0 +1,14 @@
+{
+  "name": "r7-vite-plugin",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "latest",
+    "@cloudflare/vitest-plugin": "^1.8.4",
+    "@cloudflare/vitest-pool-workers": "latest",
+    "@vitejs/plugin-react": "5.0.4",
+    "vite": "6.4.2",
+    "vitest": "latest",
+    "wrangler": "latest"
+  }
+}
