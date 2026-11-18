@@ -11,4 +11,5 @@
 - Shared configuration is in `_bmad/config.toml`, with personal settings in `_bmad/config.user.toml`. Use the installed configuration resolver to merge these settings.
 - Planning artifacts belong in `_bmad-output/planning-artifacts/`. The existing prototype documents provide the starting context for planning.
 - The current guided PRD workspace is `_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/`. Before continuing PRD work, read its `source-index.md` and `.memlog.md`, then check the cited source files for changes since the inventory snapshot. Keep existing capabilities, verified evidence, and future requirements distinct.
+- The UX workspace is `_bmad-output/planning-artifacts/ux/ux-PhySecDesign-2026-11-18/`. Its `ux-design-specification.md` is a draft awaiting Kevin's review of the decisions in its section 12; `design-canvas.md` links the Claude Design canvas of key screens. Read both before architecture or UI work.
 - On this Windows workstation, uv is installed at `C:\Users\Kevin\.local\bin\uv.exe`. If an existing shell has a stale PATH, invoke that executable by its full path for BMAD's `uv run` commands.
