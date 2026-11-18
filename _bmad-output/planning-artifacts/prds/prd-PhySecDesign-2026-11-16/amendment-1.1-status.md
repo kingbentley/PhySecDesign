@@ -54,6 +54,8 @@ Kevin reviewed the differences and decided:
 4. **Delivery slices stay out of the PRD.** They are kept as [input for the epics stage](sources/delivery-slices-input.md) (group G).
 5. **FR-33 is not split** (E4).
 
+6. **A narrow exception to A3 is adopted**, after automated review found that a proposed device with evidence that was never issued had no removal path: an unissued proposal that is not eligible for Delete draft can be cancelled with a reason. The wider parallel rule, cancelling any proposed device with history, is still not adopted.
+
 Not adopted and not requested: A10 (move to another floor), A12 (deleting a multi-view camera draft), C9 (single-camera coverage within 1 second) and E5 (notes on words used in more than one sense).
 
 The tables below record each item as compared. “Suggested handling” lines are the recommendations made before these decisions.
