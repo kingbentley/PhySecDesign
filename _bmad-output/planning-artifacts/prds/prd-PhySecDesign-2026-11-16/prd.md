@@ -513,7 +513,7 @@ Record service visits as separate entries on an issue under FR-46. Each visit ho
 
 A visit does not resolve its issue. Resolution still requires the recorded corrective work and appropriate current evidence or retest under FR-46. Actual changes made during a visit are recorded and flagged under FR-27/28, and a part that is itself a replaced device follows FR-36 and FR-53. Parts used and time spent are records only: they change no estimate and produce no invoice.
 
-During an open work scope, record visits in that scope. When no scope is active, a single Start service visit action reopens the project under FR-38 into a new work scope marked as service, with a default name and the issue included. The mark is a label; the one-active-scope rule, the scope’s closeout under FR-32 and all history rules are unchanged, and an estimate for the scope is optional. An archived project is un-archived under FR-37 first. A service scope starts with no current issued design under FR-61. Earlier closeout records and their warranty details stay fixed.
+During an open work scope, record visits in that scope. When no scope is active, a single Start service visit action reopens the project under FR-38 into a new work scope marked as service, with a default name and the issue included. The mark is a label; the one-active-scope rule, the scope’s closeout under FR-32 and all history rules are unchanged, and an estimate for the scope is optional. An archived project is first reopened from the archive under FR-37. A service scope starts with no current issued design under FR-61. Earlier closeout records and their warranty details stay fixed.
 
 Expiry reminders, response-time or service-level tracking, spares stock and contract management are outside the POC.
 
