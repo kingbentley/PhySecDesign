@@ -1,8 +1,8 @@
 ---
 title: "Site Studio — Epics and Stories"
-status: draft 0.3 for Kevin's review; passed the sprint-planning readiness gate with concerns on 2026-11-18
+status: draft 0.4 for Kevin's review; revised for architecture 3.0 on 2026-11-18
 created: 2026-11-18
-inputs: "final PRD 1.2; UX design specification 0.5; architecture 2.1"
+inputs: "final PRD 1.2; UX design specification 0.5; architecture 3.0"
 method: BMAD Create Epics and Stories, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
@@ -15,6 +15,8 @@ It is a draft. The epic order, the story boundaries and the acceptance criteria 
 **What changed from draft 0.1.** Draft 0.1 covered FR-1–65 for a Cloudflare-only server opened by links. It is kept beside this file as `epics-draft-0.1-pre-amendment-1.2.md.txt`. This draft adds an epic for accounts and administration and an epic for self-hosting and updates, splits recovery from acceptance, renumbers the rest, and updates the stories that the PRD review changed: reviewer assignments and Viewer rights, revision restore, the reliability period, archiving, service visits, backups and recovery. Story numbers therefore differ from draft 0.1.
 
 **Draft 0.3** applies the readiness check of 2026-11-18: criteria that depended on later epics moved out of Epic 1, three large stories split, four UX decisions cited, and the Packages screen renumbered S-37. Headings use the form the BMAD sprint-planning script reads.
+
+**Draft 0.4** follows architecture 3.0 and the experiments run on 2026-11-18: one server build for both hosts (stories 1.1, 9.1, 9.3, 9.4), the coverage sampling fix (2.8), smaller package pages and resumable upload (4.10), and Cloudflare updates through a GitHub Actions run (9.8). Experiments R1, R2, R6, R7, R8 and R10 are done; R13 to R16 are new.
 
 ## How to read it
 
@@ -31,8 +33,8 @@ It is a draft. The epic order, the story boundaries and the acceptance criteria 
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
 6. Rules that span the browser and the server are written once in the shared module, in TypeScript, with tests (AD-15).
-7. Server code is written in the portable core against the host interfaces, and its tests pass on both hosts (AD-16). A new record shape comes with its data conversion (AD-20).
-8. A story is done when its criteria pass in a browser against the locally run server, its automated tests pass on both hosts, and the existing tests still pass.
+7. The server is one build for both hosts. Host-specific code lives only behind the file-store and update interfaces, and no platform feature outside the list in AD-16 is used. Server tests run in Cloudflare's runtime, and the self-hosted smoke suite is extended for each new area. A new record shape comes with its data conversion (AD-20).
+8. A story is done when its criteria pass in a browser against the locally run server, its automated tests and the self-hosted smoke suite pass, and the existing tests still pass.
 
 ## Requirement coverage
 
@@ -108,6 +110,10 @@ Every functional requirement appears in at least one story. This table is genera
 | R10 | 9.8 |
 | R11 | 9.7, 9.8 |
 | R12 | 9.1 |
+| R13 | 1.10 |
+| R14 | 9.4 |
+| R15 | 4.10 |
+| R16 | 9.8 |
 
 ## Epic 1: Install, sign in and manage people
 
@@ -117,16 +123,17 @@ Every functional requirement appears in at least one story. This table is genera
 
 ### Story 1.1: Run the app on Cloudflare with a portable server core
 
-As the developer, I want the existing app served by a Cloudflare Worker, with the server written against the five host interfaces, so that everything later runs on either host.
+As the developer, I want the existing app served by one Worker build that also starts under the self-hosted runtime, so that everything later runs on either host.
 
-Covers: AD-1, AD-15, AD-16, experiments R7 and R8.
+Covers: AD-1, AD-15, AD-16, AD-17, experiments R7 and R8 (both run early; see the experiments record).
 
-- Given the repository, when the local development command runs, then the existing app loads from the locally run Worker with no change in behaviour, and the existing tests still pass.
-- The server code is split into a portable core and host adapters. Nothing in the core imports from a host.
-- A minimal Node adapter exists from this story on, so the core test suite runs against both hosts in continuous integration. One trivial project-store test passes on both.
+- Given the repository, when the local development command runs, then the existing app loads from the locally run Worker through Cloudflare's Vite plugin with no change in behaviour, and the existing tests still pass.
+- The Worker has the two Durable Object classes the architecture fixes: a project room and the installation object, each with SQLite storage. No other class is added later without Kevin's decision.
+- One server test runs inside Cloudflare's runtime using `@cloudflare/vitest-plugin`.
+- A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
+- Host-specific code exists only behind the file-store and update interfaces. No D1, Workflows, Queues, scheduled triggers or KV are used.
 - Given a Cloudflare account on the Workers Paid plan, when the deploy command runs, then the app is reachable over HTTPS at a `workers.dev` address.
-- Experiment R7 (Cloudflare's Vite plugin and Vitest integration with Vite 6.4 and React 19) is run first and its result recorded; the fallback is used if it fails.
-- Experiment R8 (whether Cloudflare's open-source runtime could host the Cloudflare build on a server) is tried and its result recorded. Two adapters remain the plan unless Kevin decides otherwise.
+- Dependency versions are pinned; the install problem met in experiment R7 is avoided or documented.
 - The static "Sites" package and its test are left working (K7).
 
 ### Story 1.2: Set up a new installation
@@ -151,7 +158,7 @@ Covers: FR-67 (invitation, sign-in), NFR-5, AD-12, experiment R9. Screens: S-26,
 - The invitation works once and expires after the period the administrator has set; a used or expired link says so.
 - The invited person sets a name and password, with the password rules shown as they are met, and is signed in.
 - A wrong email or password gives one message that does not reveal whether the email has an account; repeated failures are slowed.
-- Passwords are stored only as salted hashes. Experiment R9 chooses the method that meets current guidance within the Worker's processor allowance, and the choice is recorded.
+- Passwords are stored only as salted PBKDF2-SHA256 hashes made through Web Crypto, with the parameters stored beside each hash. Experiment R9 confirms on a deployed Worker that the chosen iteration count is accepted and fast enough; if not, the fallback is taken and recorded.
 - The session is held in a cookie that scripts cannot read, sent only over HTTPS; only a hash of it is stored.
 - Requests that change anything are refused unless they come from the app's own origin.
 
@@ -231,12 +238,13 @@ Covers: FR-71. Screens: S-36.
 
 As an administrator, I want to set how the installation behaves, so that it fits my organisation.
 
-Covers: FR-70 (Settings), FR-67 (reset by email), AD-17, AD-18. Screens: S-33.
+Covers: FR-70 (Settings), FR-67 (reset by email), AD-17, AD-18, experiment R13. Screens: S-33.
 
 - Settings cover the installation's name; the period without use after which a session ends; how long an invitation lasts; whether standard users may create projects; whether two-step verification is required; optional email sending; and optional map-provider keys.
 - Each change takes effect and is recorded in the activity log.
 - A saved secret, such as an email password or a map key, is stored encrypted and shown only masked.
-- With email configured, a test message can be sent, invitations can be emailed and a user can reset a forgotten password by email. Without it, every invitation and reset is a link the administrator copies, and nothing else stops working.
+- With an HTTP email service configured, a test message can be sent, invitations can be emailed and a user can reset a forgotten password by email. Without it, every invitation and reset is a link the administrator copies, and nothing else stops working.
+- Experiment R13 tries SMTP through the runtime's outbound sockets on both hosts. SMTP is offered only if it passes.
 
 ## Epic 2: One shared project online
 
@@ -332,14 +340,16 @@ Covers: FR-7 (base), FR-8 (base). Screens: S-03, S-08.
 
 As a designer, I want coverage analysis to keep the interface responsive and to say when a result is current, so that I never read a stale number as final.
 
-Covers: FR-10–16, NFR-4, AD-9, experiment R2. Screens: S-05.
+Covers: FR-10–16, NFR-4, AD-9, experiment R2 (run early). Screens: S-05.
 
 - Camera controls, obstructions, combined coverage, analysis boundary, common target height, DORI and zones give the same results as the prototype for the same inputs.
 - Given a changed input, then affected results show Updating until the calculation for the current inputs completes, and controls stay usable.
 - Given hidden layers, then totals do not change.
 - Excluded and unsupported views are listed with the reason.
 - The last final summary per floor is saved with a fingerprint of its inputs.
-- Experiment R2 is run on the busiest-plan fixture and its timing recorded. A miss is reported with the fallback chosen; it is not hidden by lowering fidelity.
+- The prototype's fixed work budget and cell cap are removed. Experiment R2 found that they coarsen sampling to 6 to 12 m on the acceptance workload, and that without them 60 cameras and 20 zones finish in under half a second at 0.5 m.
+- Sampling is 1 m or finer on every plan. If a calculation would exceed its time allowance, the result is shown as incomplete with the reason; sampling is never coarsened silently.
+- The busiest-plan fixture is timed again in a Web Worker in a browser and the result recorded.
 
 ### Story 2.9: Cable routes on one floor
 
@@ -552,14 +562,17 @@ Covers: FR-55 (cancellation, correction, mark reversal), UX decision D8. Screens
 
 ### Story 4.10: Design package, generated once and kept exactly
 
-Covers: FR-33 (Design preset), FR-34 (fixed packages), NFR-6, AD-11, experiments R1 and R6. Screens: S-37.
+Covers: FR-33 (Design preset), FR-34 (fixed packages), NFR-6, AD-11, experiments R1 and R6 (both run early) and R15. Screens: S-37.
 
 - A package is generated from a saved revision, never from live records.
 - It identifies property, scope, revision, edition, dates, units, floors included and Draft or Issued status.
 - Prices are off by default; a partial floor selection is labelled Partial on every page.
 - Each volume and the manifest are uploaded and the edition is listed only when all are stored and verified; a failure is shown and can be retried.
 - Downloading again returns the same bytes. Regenerating creates a new edition with its own cutoff.
-- Experiment R1 is run at full size and recorded. If it fails, the server-side fallback is brought to Kevin before this story is called done.
+- Schedule and table pages are written as real text, not as images of text. Plan and photo pages are images at the quality chosen in experiment R15, a legibility check on paper at JPEG quality 0.94, 0.85 and 0.75.
+- A volume is split at 250 pages or 100 MiB, whichever comes first. Experiment R1 found the prototype's pages at 570 to 710 KiB each, which reaches 100 MiB at about 150 pages.
+- Each volume uploads in equal parts with progress and time remaining, resumes after a dropped connection, and is released from memory before the next is generated. The screen says the tab must stay open.
+- Generation time and upload time are reported separately.
 - A Viewer can download an existing package and cannot create one.
 
 ## Epic 5: Install, test and close out in the field
@@ -950,7 +963,7 @@ Covers: acceptance table for files and project content; FR-70 (limits shown).
 
 **Outcome.** An organisation can run Site Studio on its own server, and an administrator on either host can install a new signed release with one action and get the earlier version back if it fails.
 
-Story 9.1 can start any time after Epic 2, since the core has run on both hosts since story 1.1. Stories 9.4 to 9.8 need Epic 8, because an update takes a backup first.
+Story 9.1 can start any time after Epic 2, since the same build has started under the self-hosted runtime since story 1.1. Stories 9.4 to 9.8 need Epic 8, because an update takes a backup first.
 
 ### Story 9.1: Run Site Studio on your own server
 
@@ -958,12 +971,14 @@ As an organisation's administrator, I want to run Site Studio on a Linux server 
 
 Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, experiment R12.
 
-- The Node adapters for the project store, installation store, file store and jobs are complete, and the whole core test suite passes on both hosts.
-- One Docker image and a Compose file start the application, the updater and an optional web server providing HTTPS. HTTPS is required.
-- Records are kept on a persistent volume and survive a restart and an abrupt power loss with no acknowledged save lost.
+- One Docker image holds Cloudflare's open-source runtime at a pinned version, the same Worker bundle that is deployed to Cloudflare, and its configuration. It is built for x64 and arm64 on a glibc base.
+- A Compose file starts the application, the updater and an optional web server providing HTTPS. HTTPS is required.
+- Files are stored through the runtime's disk service in a live folder, with each file's hash and size kept in the records. Upload in parts, streaming download and range reads behave as on Cloudflare.
+- Records are kept on a persistent volume and survive a restart and a forced kill with no acknowledged save lost.
 - The installer asks for a backup location and the interface warns when it is the same disk as the live data.
 - First-run set-up (story 1.2) works with the set-up code printed in the server output.
-- Experiment R12 (SQLite durability and locking on a typical virtual-machine disk) is run and unsupported storage is documented.
+- The self-hosted smoke suite from story 1.1 is extended to every area built so far and passes against the image.
+- Experiment R12 tests durability on a typical virtual-machine disk, including power loss, and on a network disk; unsupported storage is documented.
 
 ### Story 9.2: Published installation instructions
 
@@ -981,20 +996,22 @@ As Kevin, I want a release produced the same way every time, so that installatio
 
 Covers: FR-72 (publication), AD-19.
 
-- Tagging a version starts a workflow that runs the full test suite against both hosts, builds the Docker image and the Cloudflare bundle, signs both and publishes a release with its version number and notes.
+- Tagging a version starts a workflow that runs the test suite, builds the one Worker bundle, builds the Docker image from that bundle and the pinned runtime, runs the self-hosted smoke suite against the image, signs both and publishes a release with its version number and notes.
 - The signature ties the build to this repository's release workflow; a build made any other way does not verify.
-- Each release states the data-format version it needs.
+- Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class.
 - Making the repository public is Kevin's action on GitHub and is done when the first release is ready (K15), after a check that nothing private is in the history.
 
 ### Story 9.4: Data conversions between versions
 
-Covers: NFR-8, AD-20.
+Covers: NFR-8, AD-20, experiment R14.
 
-- Every project store and the installation store record their data-format version.
+- The project room and the installation object each record their data-format version.
 - The server carries every conversion since the first release, so an installation two or more releases behind converts directly to the latest.
 - Conversions run per project inside a transaction, after the pre-update backup.
 - The server refuses to start against data newer than itself, with an explanation.
 - Each new record shape arrives with its conversion and a test that converts data from the previous release.
+- Schema changes are made inside SQLite. No Durable Object class is added, renamed or removed.
+- Experiment R14: the release workflow starts the new image, with its pinned runtime, against a data folder written by the previous release and confirms it reads and converts correctly. A runtime upgrade that fails this is not released.
 
 ### Story 9.5: Installed version and update check
 
@@ -1027,13 +1044,15 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-21, experiment R11. Screens: S-35.
 
 ### Story 9.8: Update a Cloudflare installation from the interface
 
-Covers: FR-72, NFR-8, AD-21, experiments R10 and R11. Screens: S-35.
+Covers: FR-72, NFR-8, AD-21, experiments R10 (run early), R11 and R16. Screens: S-35.
 
-- With one-step deployment set up, the Update control verifies the signature, warns users, stops accepting changes, takes the backup and starts the organisation's own deployment of the release, which converts data and runs the same check.
+- An administrator stores a GitHub token for the organisation's copy of the repository in settings; it is kept encrypted and shown masked.
+- The Update control verifies the signature, warns users, stops accepting changes, takes the backup and starts a run of the repository's update workflow through GitHub, naming the release to install.
+- The workflow deploys that release, waits for the health check, and on failure redeploys the previous version with Cloudflare's rollback command; the earlier version then restores the backup and records the failure.
 - A bad signature is refused and nothing is deployed.
-- If the deployment, the conversion or the check fails, the earlier version is redeployed, the backed-up data returns and the failure is recorded afterwards.
-- Without one-step deployment, the screen shows the exact steps to do it by hand, including the backup and the way back, and they work.
-- Experiment R10 chooses the trigger and records what it needs stored. Experiment R11 is repeated on a test Cloudflare account, including whether redeploying an earlier version is dependable.
+- For a release marked as changing a Durable Object class, the control says before starting that an automatic return is not available and points to the manual procedure.
+- Without a token, the screen shows the exact steps to run the workflow by hand, including the backup and the way back, and they work.
+- Experiment R11 is repeated on a test Cloudflare account, including whether the rollback command behaves as documented. Experiment R16 finds the narrowest token permission that works.
 
 ## Epic 10: Acceptance
 
@@ -1080,7 +1099,7 @@ Covers: NFR-7, SM-6.
 ## Open points for Kevin
 
 1. **Accounts before the shared project.** The architecture's suggested order builds the project foundation first and accounts second. This draft puts accounts first (Epic 1), so the shared project is built on real sign-in from the start. Say if you would rather keep the architecture's order.
-2. **Where self-hosting sits.** Epic 9 is late, but the server runs on both hosts in tests from story 1.1, and story 9.1 can be pulled forward to any point after Epic 2 if you want a self-hosted demo early.
+2. **Where self-hosting sits.** Epic 9 is late, but the same build starts under the self-hosted runtime from story 1.1, and story 9.1 is now much smaller. It can be pulled forward to any point after Epic 2 if you want a self-hosted demo early.
 3. **Epic 7 (extended modelling)** still comes after return visits. Say if you want pan/tilt/zoom cameras or closets and ports earlier.
-4. **Experiments.** Each of R1 to R12 is attached to the first story that depends on it. A failed experiment brings its decision back to you before that story is called done.
+4. **Experiments.** R1, R2, R6, R7, R8 and R10 were run early. Each of the rest, R3 to R5, R9 and R11 to R16, is attached to the first story that depends on it. A failed experiment brings its decision back to you before that story is called done.
 5. **No estimates are given.** Sizing belongs to sprint planning, the BMAD step after an implementation-readiness check of the PRD, UX, architecture and these epics together.

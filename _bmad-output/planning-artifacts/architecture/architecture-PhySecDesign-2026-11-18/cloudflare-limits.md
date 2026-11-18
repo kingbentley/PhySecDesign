@@ -1,5 +1,7 @@
 # Cloudflare limits used by the architecture
 
+**Note for architecture 3.0.** D1, Workflows, Queues and scheduled triggers are no longer used: all records are in Durable Objects and jobs are driven by Durable Object alarms, so that the same build runs under Cloudflare's open-source runtime. Their rows below are kept for reference only. Experiment R6 has since confirmed the R2 multipart part size (at least 5 MiB, equal parts) and that Cloudflare's browser service renders PDFs; see [experiments/README.md](../../../../experiments/README.md).
+
 Read from Cloudflare's documentation on 2026-11-18; the pages showed last-updated dates between 14 October and 13 November 2026. The figures were transcribed from the pages, not copied verbatim, and Cloudflare changes them over time. Check the source page before relying on any figure for a commitment.
 
 | Product | Figure | Why it matters here |
