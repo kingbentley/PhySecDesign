@@ -55,6 +55,6 @@ for (const [name, spec] of cases) {
     const coarsest = Math.max(...f.zoneList.map(z => computeCombinedCoverage(f.cams, f.barriers, { area: z.points, targetHeight: 0, cellSize: Math.min(cellSize, 0.75), maxCells, dori: true }).stats.cellSize ?? 0));
     console.log(`requested ${cellSize} m (cap ${maxCells} cells): ` + (r.invalid ? `FAILED: ${r.error ?? r.message ?? JSON.stringify(r.warnings).slice(0, 120)}` :
       `used ${r.stats.cellSize.toFixed(2)} m, ${r.stats.sampledCells} cells, floor ${floor.ms.toFixed(0)} ms (max ${floor.max.toFixed(0)}), covered ${r.stats.coveredPercent.toFixed(1)}%`) +
-      `; 20 zones ${zones.ms.toFixed(0)} ms at <= ${coarsest.toFixed(2)} m; total ${(floor.ms + zones.ms).toFixed(0)} ms`);
+      `; 20 zones ${zones.ms.toFixed(0)} ms at <= ${coarsest.toFixed(2)} m; sum of the two medians ${(floor.ms + zones.ms).toFixed(0)} ms`);
   }
 }

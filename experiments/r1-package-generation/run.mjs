@@ -10,7 +10,7 @@ for (const [name, mix] of [
 ]) {
   const r = await p.evaluate(m => window.runVolume(m), mix);
   console.log('\n## ' + name);
-  console.log(`pages ${r.pages} at ${r.pixel} px; total ${(r.totalMs / 1000).toFixed(1)} s (pack ${r.packMs.toFixed(0)} ms, hash ${r.hashMs.toFixed(0)} ms); PDF ${mib(r.pdfBytes)}; peak JS heap ${r.peakHeapMB.toFixed(0)} MB`);
+  console.log(`pages ${r.pages} at ${r.pixel} px; total ${(r.totalMs / 1000).toFixed(1)} s (pack ${r.packMs.toFixed(0)} ms, hash ${r.hashMs.toFixed(0)} ms); PDF ${mib(r.pdfBytes)}; peak JS heap during page generation ${r.peakHeapMB.toFixed(0)} MB`);
   for (const [k, s] of Object.entries(r.stats)) if (s.n) console.log(`  ${k}: ${s.n} pages, ${(s.ms / s.n).toFixed(0)} ms/page, ${(s.bytes / s.n / 1024).toFixed(0)} KiB/page`);
 }
 await b.close();

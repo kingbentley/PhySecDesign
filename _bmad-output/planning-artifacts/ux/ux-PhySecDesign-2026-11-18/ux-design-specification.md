@@ -201,7 +201,7 @@ The header shows what the device is and its state in one glance: ID and legacy l
 
 | Situation | Action offered | Behaviour |
 | --- | --- | --- |
-| Accidental proposed placement, never issued, no evidence | Delete draft | Immediate, with an Undo notice. No confirmation dialog. |
+| Accidental proposed placement, never issued, no evidence, never marked installed | Delete draft | Immediate, with an Undo notice. No confirmation dialog. |
 | Proposed, issued or approved, or carrying evidence | Cancel proposal | Asks for a short reason. Record stays listed. |
 | Proposed, marked installed by mistake | Reverse installed mark | Asks for a reason. Evidence stays, flagged Needs review. |
 | Existing on site, being taken out | Record removal | Shows affected cables and ports first (FR-53). Archives the device. |

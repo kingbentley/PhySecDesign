@@ -39,7 +39,7 @@ async function photoPage(n, photos) {
 
 window.runVolume = async ({ plans, tables, photoPages }) => {
   const plan = await load('/site-studio/public/assets/ground-floor.png');
-  const photos = await Promise.all(['p1048', 'p1067', 'p122', 'p164'].map(p => load('/experiments/r1-package-generation/photos/' + p + '.jpg')));
+  const photos = photoPages ? await Promise.all(['p1048', 'p1067', 'p122', 'p164'].map(p => load('/experiments/r1-package-generation/photos/' + p + '.jpg'))) : [];
   const pages = [], stats = { plan: { n: 0, ms: 0, bytes: 0 }, table: { n: 0, ms: 0, bytes: 0 }, photo: { n: 0, ms: 0, bytes: 0 } };
   const t0 = performance.now(); let peak = 0, n = 0;
   const add = async (kind, make) => {

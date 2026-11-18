@@ -134,8 +134,8 @@ the `-wal`/`-shm` files were gone. The file name is the 64-hex object id
 
 ### 2c. `kill -9` right after an acknowledged write
 
-Loop 1 (as specified, 25 iterations): start workerd, `POST /o/crash/put?k=row-$i`, wait for the
-`{"ok":true}` body, `kill -9`, repeat with a new key.
+Loop 1 (as specified, 25 iterations): start workerd, `POST /o/crash/put?k=row-$i&v=…`, wait for the
+`{"ok":true}` body, `kill -9`, repeat with a new key. (The handler requires a `v` value; the value used in the run was not recorded.)
 
 ```
 acked=25

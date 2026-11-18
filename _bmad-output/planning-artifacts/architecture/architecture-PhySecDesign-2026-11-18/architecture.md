@@ -241,7 +241,7 @@ One Durable Object per installation, addressed by a fixed name, holds: users, pa
 
 - Secrets entered in settings, such as an email service key, a map key or the GitHub token used for Cloudflare updates, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 - The activity log is append-only and is kept for the life of the installation; administrators can filter and export it. Entries never contain a password, token or code.
-- Every request consults this one object. Experiment R8 measured about 1,800 small operations a second on a single object, far above the acceptance profile of one or two users. The gate may hold a session's lookup for a few seconds to reduce load; a removal or deactivation must still take effect within that time.
+- Every request consults this one object. Experiment R8 measured about 1,800 small operations a second on a single object, far above the acceptance profile of one or two users. The gate may hold a session's lookup briefly to reduce load, but a held lookup is discarded the moment membership, role, account state or the session changes, so a removal or deactivation takes effect on that person's next request, as FR-68 requires.
 
 ### AD-18 — Email is optional (confirmed; narrowed)
 
@@ -264,7 +264,7 @@ SMTP, which self-hosting organisations often prefer, depends on the runtime's ou
 
 It holds one project's records, snapshots, files and packages, a manifest, and the version of the data format. It holds no accounts, sessions or links; actors' names travel as text. It is built as a job in resumable steps and downloaded afterwards. Import creates a new project in the receiving installation, where an administrator sets its members. An installation refuses a backup made by a newer version than itself.
 
-Because it is made of the application's own records and not of database files, the portable backup is also the way out if the open-source runtime's storage format ever changes incompatibly (AD-20).
+Because it is made of the application's own records and not of database files, the portable backup is also the way out for projects if the open-source runtime's storage format ever changes incompatibly (AD-20). Accounts, settings and the activity log are not in it; they leave the same way through the installation backup of AD-13, which is also made of records and not of database files.
 
 ## 9. Releases and updates
 
@@ -281,7 +281,7 @@ Because it is made of the application's own records and not of database files, t
 - The server carries every conversion since the first release, so an installation can go from any earlier released version to the latest in one update (FR-72).
 - Conversions run per project inside a transaction, after the pre-update backup. The server refuses to start against data newer than itself (NFR-8). Going back means restoring the pre-update backup with the earlier version.
 - **Schema changes happen inside SQLite, through conversions. Durable Object classes are fixed from the first release**: one class for project rooms and one for the installation object. Experiment R10 found that Cloudflare blocks rollback across a release that adds, renames or removes a class. Holding the classes fixed keeps rollback available.
-- **The open-source runtime's on-disk storage format is labelled experimental.** Each release therefore pins the runtime version, and the release workflow starts the new image against a data folder written by the previous release and checks that it reads and converts correctly (experiment R14). A runtime upgrade that fails that check is not released. The portable backup remains a format-independent way out.
+- **The open-source runtime's on-disk storage format is labelled experimental.** Each release therefore pins the runtime version, and the release workflow starts the new image against a data folder written by the previous release and checks that it reads and converts correctly (experiment R14). A runtime upgrade that fails that check is not released. The portable backup for projects, with the installation backup of AD-13 for accounts, settings and the activity log, remains a format-independent way out.
 
 ### AD-21 — How the Update control works on each host (confirmed; revised by K18)
 

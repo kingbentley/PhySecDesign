@@ -30,7 +30,7 @@ It is a draft. The epic order, the story boundaries and the acceptance criteria 
 ### Rules that apply throughout
 
 1. Every change is saved through a versioned operation or an append-only entry (AD-5). No story adds a way to edit a record without a base version.
-2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. The actor recorded is always the signed-in account.
+2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. The one exception is story 4.6: a Viewer who is the approval assignee can comment and decide, and those tests accept the assigned Viewer and refuse any other. The actor recorded is always the signed-in account.
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
@@ -352,6 +352,7 @@ Covers: FR-10–16, NFR-4, AD-9, experiment R2 (run early). Screens: S-05.
 - Excluded and unsupported views are listed with the reason.
 - The last final summary per floor is saved with a fingerprint of its inputs.
 - The prototype's fixed work budget and cell cap are removed. Experiment R2 found that they coarsen sampling to 6 to 12 m on the acceptance workload, and that without them 60 cameras and 20 zones finish in under half a second at 0.5 m.
+- With the cell cap removed, the contour mesh is given its own limit and falls back to the sampled overlay above it. The polygon clipping step uses one boundary for its inside test and its intersection. Both were raised in review of the R2 experiment copies and are prototype behaviour.
 - Sampling is 1 m or finer on every plan. If a calculation would exceed its time allowance, the result is shown as incomplete with the reason; sampling is never coarsened silently.
 - The busiest-plan fixture is timed again in a Web Worker in a browser and the result recorded.
 
@@ -521,7 +522,7 @@ Covers: FR-17, FR-18. Screens: S-14.
 
 - Excluding labour changes the included total and keeps the entered rates.
 - A 10% contingency on chosen categories shows its base and amount and follows the base.
-- Subsystem subtotals add up to the ungrouped total, and each line sits in one subsystem.
+- Each equipment, cable, accessory and labour line sits in one subsystem. Percentage lines sit in their own section outside the subsystems. The subsystem subtotals plus the percentage lines add up to the ungrouped total.
 - An unpriced line reads Unpriced and makes the total, and any percentage on it, Incomplete.
 - The estimate exports to CSV.
 - Retained equipment is not purchased again; that rule is completed in story 6.6.

@@ -62,11 +62,15 @@ Conclusion: the 10-second target has more than twenty times headroom on this mac
 
 Not shown: accuracy against an independent reference, real building geometry, or a phone.
 
+Two notes on the R2 scripts. The "total" they once printed was the sum of two separately measured medians (floor, then all zones), not one timed run; the scripts now label it so, and the headroom conclusion does not depend on the difference. The files in `patched/` are copies of the prototype's code with only the work budget and cell cap lifted, so they carry the prototype's behaviour elsewhere, including two points raised in review that story 2.8 now names: the contour mesh has no limit of its own once the cell cap is lifted, and the polygon clipping step tests against a small tolerance but intersects at zero.
+
 ## R1 — Generating a full-size package in the browser
+
+To run it again: put four JPEG photographs named `p1048.jpg`, `p1067.jpg`, `p122.jpg` and `p164.jpg` in `r1-package-generation/photos/` (the folder is ignored by git, and every mix the runners use has photo pages). The R1 and R7 browser scripts import Playwright from a global installation, as the cloud session provided; elsewhere, install `playwright` and its Chromium first. Memory was sampled as pages were generated, not during packing and hashing, so the figures below can understate the peak of the whole operation.
 
 Folder: [r1-package-generation](r1-package-generation). The harness uses the prototype's own page and PDF code (`reportPaper.js`, `rasterPdf.js`) in headless Chromium. Pages are Letter landscape at 216 dpi (2376 × 1836 pixels), JPEG quality 0.94, as the prototype produces them. Photo pages hold two real photographs each (four test photographs fetched from a public photo service, not kept in the repository).
 
-| Volume of 250 pages | Time | PDF size | Peak memory |
+| Volume of 250 pages | Time | PDF size | Peak memory while pages were generated |
 | --- | --- | --- | --- |
 | 30 plans, 120 schedule pages, 100 photo pages | 12.1 s | 155.7 MiB | 157 MB |
 | 250 photo pages (500 photos) | 13.1 s | 173.1 MiB | 175 MB |
