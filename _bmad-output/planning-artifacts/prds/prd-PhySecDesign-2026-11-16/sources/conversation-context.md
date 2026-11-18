@@ -191,4 +191,8 @@ The next pending recommendation is a guided per-device restore using stable floo
 
 ## Confirmed floor restoration and next draft-deletion discussion
 
-Kevin accepted the floor-restoration approach and asked for a recommendation on deleting accidental draft placements; he reconfirmed the acceptance on 2026-11-18 during a PRD review. Draft0.15 adds FR-54 and linked FR-1/36/42 clauses without changing earlier IDs. The acceptance does not establish a general floor-deletion policy. Accidental draft deletion is the remaining OQ-8 decision, with no recommendation recorded yet; acceptance/limits remains OQ-9.
+Kevin accepted the floor-restoration approach and asked for a recommendation on deleting accidental draft placements; he reconfirmed the acceptance on 2026-11-18 during a PRD review. Draft0.15 adds FR-54 and linked FR-1/36/42 clauses without changing earlier IDs. The acceptance does not establish a general floor-deletion policy. Accidental draft deletion was then the remaining OQ-8 decision.
+
+## Confirmed draft deletion — OQ-8 resolved
+
+On 2026-11-18, after a multi-perspective review of draft0.15, Kevin accepted the draft-deletion proposal and all three of its choices. Choose the action from a record’s history: Delete draft when it has no evidence, attempts or issues and was never in an issued design, surveyed baseline or closeout; Cancel from design, with a reason, when issued but never installed; Correct record, with a reason, when entered in error but already in a baseline or carrying evidence; archive only for actual removal. A just-placed existing-condition record is deletable as a draft. Eligible draft-only routes and reservations are removed with the device; retained or shared records are detached for review. Undo is the guarded own-session undo. Draft0.16 adds FR-55 and linked FR-21/35/36 clauses without changing earlier IDs. Floor deletion with contents is not defined; OQ-9 acceptance/limits remains open.

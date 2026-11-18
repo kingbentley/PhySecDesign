@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.15](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.16](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -40,7 +40,7 @@ Storage estimates use bitrate, recording percentage and retention with decimal s
 
 Materials include equipment/cable allowances, manual accessories, and optional labor. Later-work costing must retain historical estimates and distinguish retained assets from chargeable additions/changes. OQ-5 now confirms work categories and cost treatment below; detailed control layout belongs to UX.
 
-Survey images are resized previews, currently limited to six photos per note and 24 MB encoded photos per design; they are not an original-resolution evidence archive. Current device deletion removes routes and converts surviving survey references to floor pins. The newly required archive behavior must deliberately preserve device/connection/evidence history instead; its current-route behavior is now confirmed in FR-53, and changed-floor restoration in FR-54; accidental draft deletion remains under OQ-8.
+Survey images are resized previews, currently limited to six photos per note and 24 MB encoded photos per design; they are not an original-resolution evidence archive. Current device deletion removes routes and converts surviving survey references to floor pins. The newly required archive behavior must deliberately preserve device/connection/evidence history instead; its current-route behavior is now confirmed in FR-53, changed-floor restoration in FR-54 and draft deletion, cancellation and correction in FR-55.
 
 ## Revisions and deliverables
 
@@ -351,7 +351,7 @@ Preserve property-wide demand regardless of the chosen closet/switch/floor filte
 
 #### Editing, outputs and limits
 
-Apply the existing conflict/dependency rules when a port is assigned or moved so two editors cannot silently claim the same physical connection. Retain the user's pending edit on conflict. Equipment/port changes must not quietly erase dependent assignments or earlier evidence; show affected connections for resolution, under confirmed FR-53; changed/deleted-floor restoration follows confirmed FR-54, while accidental draft deletion remains under OQ-8.
+Apply the existing conflict/dependency rules when a port is assigned or moved so two editors cannot silently claim the same physical connection. Retain the user's pending edit on conflict. Equipment/port changes must not quietly erase dependent assignments or earlier evidence; show affected connections for resolution, under confirmed FR-53; changed/deleted-floor restoration follows confirmed FR-54, and draft deletion follows confirmed FR-55.
 
 Add a closet equipment list and port/connection schedule to the relevant design/closeout exports. Show stable device/port/cable references, current/proposed basis, recorded or pending status, power assumptions, reservations and unresolved warnings. Preserve these records through named revisions and backup. Group/port edits do not imply that actual field work or a test occurred.
 
@@ -402,7 +402,7 @@ Keep measured installed length as a separate value with its source/context. Do n
 
 Maintain Current installation and Proposed design context under the existing rules. Preserve cable, segment and riser references in revisions, undo/shared edits, backup and exports. Changes affecting shared references/dependencies require the existing conflict checks. A changed physical path/termination can trigger appropriate retesting; a record-only correction follows the existing correction rule. Drawing, estimating or measuring a cable does not mark it installed or passed.
 
-Flag missing segments/landings, unknown scale/lengths, endpoint/assignment mismatches and known type/length-limit violations. Compare a specified limit only against a matching stated basis (for example a fixed run versus a complete channel); do not invent one length limit for every cable family. Keep unresolved values visible in schedules rather than interpreting them as zero. Device/archive/replacement endpoint behavior follows the confirmed FR-53 model; changed-floor restoration follows confirmed FR-54, while accidental deletion remains OQ-8.
+Flag missing segments/landings, unknown scale/lengths, endpoint/assignment mismatches and known type/length-limit violations. Compare a specified limit only against a matching stated basis (for example a fixed run versus a complete channel); do not invent one length limit for every cable family. Keep unresolved values visible in schedules rather than interpreting them as zero. Device/archive/replacement endpoint behavior follows the confirmed FR-53 model; changed-floor restoration follows confirmed FR-54, and draft deletion follows confirmed FR-55.
 
 Show per-floor continuation labels and a property-wide schedule with run ID, endpoints/ports, floors/riser, horizontal/vertical/drop breakdown, fixed loops, percentage/base, suggested supply quantity, selected purchasing quantity and measured length where recorded. Aggregate each run once by cable type and work scope even when it appears on several plan sheets. Keep uncertainty and selected/partial-floor context visible in the confirmed export packages.
 
@@ -473,7 +473,7 @@ Attach each mark to its selected plan/floor, including an outdoor site plan. Ret
 
 A calculated dimension uses a known map/plan scale, shows its units and is labeled as a plan-derived estimate. If the scale is unavailable or unverified, identify that limitation rather than inventing a precise physical length. A technician’s field measurement remains a distinct recorded observation with its note/source; it does not silently become the calculated value. Do not equate a straight-line dimension with a routed cable or its supply quantity.
 
-Reuse device/floor survey notes and photos instead of creating a second attachment store. A callout or entrance mark can reference an existing note/device/opening; deleting the mark does not delete the underlying record, issue or evidence. Stable references and earlier fixed revisions remain preserved. Device/cable archive/restore dependencies follow FR-53; changed-floor restoration follows FR-54, while accidental deletion remains under OQ-8.
+Reuse device/floor survey notes and photos instead of creating a second attachment store. A callout or entrance mark can reference an existing note/device/opening; deleting the mark does not delete the underlying record, issue or evidence. Stable references and earlier fixed revisions remain preserved. Device/cable archive/restore dependencies follow FR-53; changed-floor restoration follows FR-54, and draft deletion follows FR-55.
 
 ### Keep drawing intent distinct from calculations
 
@@ -491,7 +491,7 @@ The [official reference digest](sources/site-annotation-reference.md) records co
 
 ## Confirmed cable connection lifecycle — OQ-8 refinement
 
-Confirmed 2026-11-17 when Kevin accepted the cable lifecycle approach, requested its addition to the PRD and asked about restoration after floor changes/deletion next. Keep cable runs independent of device lifecycle, preserving historical associations while explicitly reconciling current connections. FR-35/36/53 and linked clauses capture the accepted behavior; the [focused extraction](sources/confirmed-cable-lifecycle-extract.md) distinguishes it from current prototype deletion. Changed/deleted-floor restoration was subsequently confirmed in FR-54; accidental draft deletion remains open under OQ-8.
+Confirmed 2026-11-17 when Kevin accepted the cable lifecycle approach, requested its addition to the PRD and asked about restoration after floor changes/deletion next. Keep cable runs independent of device lifecycle, preserving historical associations while explicitly reconciling current connections. FR-35/36/53 and linked clauses capture the accepted behavior; the [focused extraction](sources/confirmed-cable-lifecycle-extract.md) distinguishes it from current prototype deletion. Changed/deleted-floor restoration was subsequently confirmed in FR-54; draft deletion was subsequently confirmed in FR-55.
 
 ### Removing a device
 
@@ -507,7 +507,7 @@ Keep physical termination references separate from logical network associations:
 
 ### Restoring the same physical device
 
-Restore the same asset ID and history, showing earlier connections as historical choices rather than live assignments. Reconnect explicitly after checking the selected location, active cable/termination, port availability, compatible references and any active replacement. Do not reclaim a reassigned port, overwrite a replacement, resurrect a removed cable or silently restore an old relationship. Unresolved connections remain visible and unassigned for follow-up. The changed/deleted-floor destination follows confirmed FR-54; accidental-draft-deletion behavior remains a separate OQ-8 decision.
+Restore the same asset ID and history, showing earlier connections as historical choices rather than live assignments. Reconnect explicitly after checking the selected location, active cable/termination, port availability, compatible references and any active replacement. Do not reclaim a reassigned port, overwrite a replacement, resurrect a removed cable or silently restore an old relationship. Unresolved connections remain visible and unassigned for follow-up. The changed/deleted-floor destination follows confirmed FR-54; draft deletion follows confirmed FR-55.
 
 ### Port occupancy, evidence and dependent devices
 
@@ -544,7 +544,25 @@ Recalculate supported current/proposed analysis only using the selected location
 
 Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Reopen an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
 
-Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. Detailed floor-deletion policy and accidental draft-placement deletion are not resolved by this confirmed model; no accidental-deletion recommendation is recorded yet. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
+Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. Detailed floor-deletion policy and accidental draft-placement deletion are not resolved by this model. Draft deletion was subsequently confirmed in FR-55; a general floor-deletion policy remains unspecified. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
+
+## Confirmed draft deletion, cancellation and correction — OQ-8 resolved
+
+Confirmed 2026-11-18 when Kevin accepted the reviewed proposal and its three choices. FR-55 and linked FR-21/35/36 clauses capture the behavior. The [draft-deletion reference](sources/draft-deletion-reference.md) holds the earlier five-point proposal; the confirmed model differs from it in two places, noted below.
+
+### Choose the action from the record’s history
+
+Eligibility for Delete draft depends on what the record carries, not on its existing/proposed flag: no notes/photos, test attempts or linked issues, and no inclusion in an issued design, surveyed baseline or closeout. Inclusion in an ordinary named revision does not block deletion, and that revision keeps its copy. The earlier proposal excluded every record representing an existing asset; Kevin instead confirmed that a just-placed existing-condition record with no such history is deletable, because mis-clicks during survey are routine.
+
+Issued-but-never-installed equipment uses Cancel from design with a short reason. It is not archived, because archive records an actual physical removal. A record entered in error that is already in a surveyed baseline or carries evidence uses Correct record, marked mistaken or duplicate with a reason, like the issue correction in FR-46. Physically removed equipment continues to use the FR-35 archive.
+
+### Dependents, undo and limits
+
+An isolated eligible placement is removed in one action with no dialog; a preview appears only when dependencies exist. The earlier proposal preserved every dependent as detached. Kevin confirmed that dependent routes, reservations/assignments and associations that are themselves eligible drafts are removed with the record. Retained or installed cables, occupied ports, shared equipment, linked components, evidence and issues are never cascaded; they are detached and marked for connection review under FR-53.
+
+Undo is the guarded own-session undo of FR-21. It restores the draft and its uncontested draft relationships, and leaves any relationship since claimed elsewhere unresolved. No action here records physical removal, releases an actual port, resolves an issue or changes a test outcome, and no approval gate is added. Deleted IDs are not reused.
+
+The current prototype deletes a device together with its routes and converts surviving survey references to floor pins, with no eligibility check, cancellation or correction action. FR-55 does not define deleting a floor together with its contents; that remains unspecified.
 
 ## Source and verification boundaries
 

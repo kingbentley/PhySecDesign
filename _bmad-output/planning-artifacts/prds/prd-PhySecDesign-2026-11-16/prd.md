@@ -1,9 +1,9 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.15"
+version: "0.16"
 created: 2026-11-16
-updated: 2026-11-17
+updated: 2026-11-18
 phase: guided-refinement
 working_mode: guided
 entry_point: vision-and-features
@@ -13,9 +13,9 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.15 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.16 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
-The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes. Open choices are identified below rather than silently resolved.
+The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
 ## Users and POC scope
 
@@ -175,7 +175,7 @@ Distinguish installed route length from cable to supply for the planned work. Re
 
 ### Recovery, revisions, and review
 
-**FR-21 — Save and recover edits.** Automatically save completed working edits and display Saving, Saved, Unsaved and Conflict status without hiding pending items. On connection failure, retain pending input while the page stays open and recheck current state before retrying. Support portable backup recovery and undo/redo of the current session’s own recent working edits. Record a reversal as new history and check the affected items: if later edits or dependencies make reversal unsafe, explain the conflict and require review. Do not erase another person’s work, protected evidence, or fixed historical records. Durable offline capture remains outside scope.
+**FR-21 — Save and recover edits.** Automatically save completed working edits and display Saving, Saved, Unsaved and Conflict status without hiding pending items. On connection failure, retain pending input while the page stays open and recheck current state before retrying. Support portable backup recovery and undo/redo of the current session’s own recent working edits, including draft deletion under FR-55. Record a reversal as new history and check the affected items: if later edits or dependencies make reversal unsafe, explain the conflict and require review. Do not erase another person’s work, protected evidence, or fixed historical records. Durable offline capture remains outside scope.
 
 **Check:** A supported edit autosaves and its true save state is visible. A failed request retains unsaved input while the page is open. Undo/redo cannot silently reverse another participant’s later change, and the user can review why a reversal needs attention. Retrying a save does not duplicate an action that already succeeded.
 
@@ -273,11 +273,11 @@ Keep PDFs, optional materials/estimate CSVs and complete editable project backup
 
 **Check:** Later edits or approval decisions cannot change a previously downloaded package. A new edition identifies its source and cutoff. Reimporting a valid complete backup preserves captured evidence, archived records and retained package relationships; a PDF/CSV is not offered as an editable complete backup.
 
-**FR-35 — Removed-device archive.** Archive after actual removal is documented; a planned Remove/Replace action alone must not archive the current installation record. Reversibly archive removed equipment with its captured identity/model/settings, last location, connections, installation/configuration records, tests/retests, notes/photos, and history. Record removal actor/date, optional reason, and replacement link. Exclude it from the normal active plan/schedule, coverage, equipment totals, and capacity/PoE demand while preserving previous revision/report values. Preserve and reconcile affected cable/port records under FR-53; device removal does not automatically remove cables or release ports.
+**FR-35 — Removed-device archive.** Archive after actual removal is documented; a planned Remove/Replace action alone must not archive the current installation record. Never-installed or mistakenly recorded items follow FR-55 instead. Reversibly archive removed equipment with its captured identity/model/settings, last location, connections, installation/configuration records, tests/retests, notes/photos, and history. Record removal actor/date, optional reason, and replacement link. Exclude it from the normal active plan/schedule, coverage, equipment totals, and capacity/PoE demand while preserving previous revision/report values. Preserve and reconcile affected cable/port records under FR-53; device removal does not automatically remove cables or release ports.
 
 **Check:** A searchable archive and optional historical plan view expose the labeled removed record; archiving never requires metadata that was not captured or deletes its evidence.
 
-**FR-36 — Restore or replace.** Restore an archived device with the same ID/history and a recorded restoration. Give a different physical replacement a new linked ID. Do not overwrite an active replacement or automatically treat old tests as evidence of the restored installation. Cable reuse and reconnection follow FR-53. Placement on a changed/deleted floor follows FR-54; accidental-draft-deletion details remain OQ-8.
+**FR-36 — Restore or replace.** Restore an archived device with the same ID/history and a recorded restoration. Give a different physical replacement a new linked ID. Do not overwrite an active replacement or automatically treat old tests as evidence of the restored installation. Cable reuse and reconnection follow FR-53. Placement on a changed/deleted floor follows FR-54; draft deletion, design cancellation and record correction follow FR-55.
 
 **Check:** The user can follow predecessor/replacement history without mixing their identities, results, or active counts.
 
@@ -372,7 +372,7 @@ Keep location, mounting height, aim/tilt, selected operating mode/focal setting 
 
 Detailed calibrated fisheye/stitched DORI is follow-on scope, requiring a supported projection and effective-sampling profile. Do not substitute 360 degrees into rectilinear optics, distribute total megapixels among invented sectors, or infer extra captured detail from dewarping/upscaling. Manufacturer distances remain conditional references, not automatic full-floor contours. Not assessed is an analysis status, not a fifth commissioning outcome.
 
-Preserve parent/view/stream identities, selected profiles and source distinctions through revisions, evidence, exports and backup. Per-head or shared-hardware changes follow existing targeted retest rules. Keep failed/unknown head conditions visible for the chosen analysis basis; actual device archive/replacement and cable-lifecycle rules in FR-35/36/53 apply; changed-floor placement follows FR-54, while accidental-deletion details remain OQ-8.
+Preserve parent/view/stream identities, selected profiles and source distinctions through revisions, evidence, exports and backup. Per-head or shared-hardware changes follow existing targeted retest rules. Keep failed/unknown head conditions visible for the chosen analysis basis; actual device archive/replacement and cable-lifecycle rules in FR-35/36/53 apply; changed-floor placement follows FR-54; draft deletion and correction follow FR-55.
 
 **Check:** A four-head template creates one physical camera with four independently inspectable views, using each head’s own resolution and optical settings. It does not lose heads through duplicate analysis IDs or inflate body cost/PoE. A fisheye preview remains visually distinct from assessed DORI, receives no target credit and does not cause unsupported exclusions to be reported as proof of blindness. Historical issued views/results remain unchanged after later edits.
 
@@ -384,7 +384,7 @@ Find the associated records from the opening and identify their relationships in
 
 Unknown specifications stay unknown or explicitly estimated. Use documented device/connection traits for applicable capacity inputs; a linked reader/contact/lock is not automatically an IP/PoE endpoint. Cataloging a controller, PSU or NVR does not add a wiring simulator, electrical-load calculation or guaranteed recorder-performance model. Explicit closet/port planning follows FR-51.
 
-Editing a link does not remove/archive its component, transfer its evidence or imply installation/test completion. Preserve relationships in revisions and recorded evidence; meaningful changes follow existing history/retest rules. Gate/door operating checks use project-defined expected behavior. Apply current device lifecycle and FR-53 connection/dependency rules individually; changed-floor restoration follows FR-54, while accidental-deletion details remain OQ-8.
+Editing a link does not remove/archive its component, transfer its evidence or imply installation/test completion. Preserve relationships in revisions and recorded evidence; meaningful changes follow existing history/retest rules. Gate/door operating checks use project-defined expected behavior. Apply current device lifecycle and FR-53 connection/dependency rules individually; changed-floor restoration follows FR-54; draft deletion and correction follow FR-55.
 
 **Check:** Door D-01 links to its reader, contact, lock and controller, with separate records and costs. Linking the same controller to Door D-02 does not create a second controller purchase or device demand. A retained door can receive a proposed new reader without becoming a new door purchase or a passing installation. Removing an association preserves the component and its prior evidence; no physical cable or port is fabricated.
 
@@ -410,7 +410,7 @@ Permit planned assignments across floors before routes exist, with missing physi
 
 Record separate total-switch PoE budgets, per-port limits/allocations and load assumptions with source/basis. Compare compatible values; distinguish rated/maximum planning demand, allocation and observed/typical consumption. Show known subtotals, reservations and unknown demand without inventing conversions or treating missing input as zero. A named planned device contributes once; an unnamed reservation can have an explicit allowance or unknown demand. Separate current load from proposed reservations. Known headroom with unresolved loads is an incomplete assessment, not a guaranteed capacity pass. Preserve property-wide demand while filtering locations and retain separate hardware/view/stream counting rules.
 
-Apply shared conflict/dependency safeguards to assignments so concurrent editors cannot silently claim the same direct port connection. Changes must not erase dependent assignments or prior evidence; retain pending edits and show affected connections for resolution. Preserve closet/port/assignment identities and context in revisions, exports and backups, including source basis, reservations and warnings. Port edits follow meaningful-change/retest rules; they do not record installation or a field-test Pass. Cable/port archive, replacement and reconnection behavior follows FR-53; changed-floor restoration follows FR-54, while accidental-deletion details remain OQ-8. Live discovery/configuration, automatic assignment, full rack/patch graphs and detailed electrical/traffic calculations are outside this POC extension.
+Apply shared conflict/dependency safeguards to assignments so concurrent editors cannot silently claim the same direct port connection. Changes must not erase dependent assignments or prior evidence; retain pending edits and show affected connections for resolution. Preserve closet/port/assignment identities and context in revisions, exports and backups, including source basis, reservations and warnings. Port edits follow meaningful-change/retest rules; they do not record installation or a field-test Pass. Cable/port archive, replacement and reconnection behavior follows FR-53; changed-floor restoration follows FR-54; draft deletion and correction follow FR-55. Live discovery/configuration, automatic assignment, full rack/patch graphs and detailed electrical/traffic calculations are outside this POC extension.
 
 **Check:** IDF-2 groups its actual equipment without duplicate purchases. SW-02 port 05 can be planned for a camera on another floor while its route remains missing; port 06 can be reserved with unknown power. Conflicting claims are surfaced, a faulty connected port retains its record, and unknown loads prevent a reassuring complete capacity result. A controller terminal reference does not fabricate an Ethernet port or PoE source. Export and restored revisions preserve these distinctions.
 
@@ -453,6 +453,25 @@ Preserve the former floor identity/label, location, captured plan/revision conte
 Apply FR-53 to connections: review affected endpoints, drops and riser references without deleting retained runs, moving unrelated segments, inventing inter-floor paths/lengths or reconnecting automatically. Recalculate supported analysis using the selected context and known inputs, disclosing unresolved assumptions. Actual return to service/relocation receives appropriate checks under FR-28/44; a supported drawing-only correction does not establish a physical move. Validate the current floor/drawing/device/dependencies at save; preserve pending choices for review if they changed or the destination was deleted. Reopen an archived project under its existing policy before editing it.
 
 **Check:** Restoring CAM-01 after its Floor 2 drawing is replaced requires placement confirmation on the current drawing while preserving the old location/photo/test context. A renamed floor retains its identity; a new Floor 2 cannot silently substitute for a deleted one. Cancellation leaves CAM-01 archived, and a concurrent destination change prevents a stale restore. Previous cables/ports and test passes are not automatically reinstated.
+
+### Deleting, cancelling and correcting draft records
+
+**FR-55 — Draft deletion, design cancellation and record correction.** Offer the removal action that matches a placed record’s history, not its existing/proposed label. This applies to equipment, openings, closets and cable runs; annotation deletion follows FR-50.
+
+| Record history | Action | Treatment |
+| --- | --- | --- |
+| No notes/photos, test attempts or linked issues, and never included in an issued design, surveyed baseline or closeout record | Delete draft | Remove from the working design without a required reason. Guarded own-session undo under FR-21. |
+| Included in an issued design but never recorded as installed | Cancel from design | Remove from the working design with a short reason, actor and time. The fixed issued design is unchanged and the cancellation appears as a change from it. |
+| Recorded in error, but included in a surveyed baseline or carrying evidence | Correct record | Mark as mistaken or duplicate with a reason, actor, time and a canonical-record link where applicable. Retain its evidence and prior fixed context. |
+| Actually installed and then physically removed | Archive | FR-35 applies unchanged. |
+
+A just-placed existing-condition record with no such history is deletable like any other draft. Appearing only in an ordinary named revision does not block deletion; that revision keeps its copy. An isolated eligible placement is removed directly, without a confirmation dialog. When dependencies exist, preview them before committing.
+
+Remove dependent routes, port reservations/assignments and associations with the record only when they are themselves eligible drafts. Never cascade into retained or installed cables, occupied ports, shared equipment, linked components, survey evidence or issues; detach these and mark them Needs connection review under FR-53. Deleting a multi-view camera removes its own draft views and streams, not other assets. Do not reuse a deleted record’s ID.
+
+Undo restores the deleted draft and its uncontested draft relationships. It cannot reclaim a port or relationship since assigned elsewhere, overwrite later edits or assert a physical connection; such relationships stay unresolved for review. None of these actions records a physical removal, archives an asset, releases an actual port, resolves a property issue or changes a test outcome. Cancellation and correction are history entries, not approval gates. Recompute the current proposed estimate, capacity and checks; fixed revisions, issued designs and closeouts keep their values. Validate the record and its dependencies at save under FR-42; a stale client cannot recreate a deleted record. This requirement does not define deletion of a floor together with its contents.
+
+**Check:** A camera placed by mistake is deleted in one action and returns with undo. Deleting a draft camera with a draft-only route and port reservation previews and removes all three, while a retained cable attached to another draft is detached for review rather than deleted. A proposed reader in the issued design offers Cancel from design, not Delete draft, and the issued package is unchanged. A duplicate surveyed camera with a photo is corrected with a reason and keeps the photo. Undo after another editor has taken the port restores the device without that assignment.
 
 ## Experience and cross-cutting quality
 
@@ -504,15 +523,16 @@ Counter-metrics: more green indicators, a higher modeled coverage percentage, or
 
 **Resolved OQ-7 (2026-11-17):** the accepted routing model completes the equipment/cable scope. One run ID across ordered floor segments/risers, explicit transition/drop lengths, fixed extras plus one percentage allowance, distinct supply/measured quantities and honest incomplete estimates are confirmed in FR-9/17/33/42/52. Earlier OQ-7 camera, equipment, annotation and closet/port decisions remain settled.
 
-**Confirmed OQ-8 cable-lifecycle refinement (2026-11-17):** independent retained cable records, historical endpoint links, explicit reuse/disconnection/removal, preserved port occupancy and validated restoration with appropriate retesting are confirmed in FR-35/36/53 and related clauses. Changed/deleted-floor restoration is subsequently confirmed below; accidental draft deletion remains undecided.
+**Confirmed OQ-8 cable-lifecycle refinement (2026-11-17):** independent retained cable records, historical endpoint links, explicit reuse/disconnection/removal, preserved port occupancy and validated restoration with appropriate retesting are confirmed in FR-35/36/53 and related clauses. Changed/deleted-floor restoration and draft deletion are subsequently confirmed below.
 
-**Confirmed OQ-8 floor-restoration refinement (2026-11-17):** stable floor identity, explicit placement on the current plan, destination selection/creation when missing, preserved historical location/evidence and cancellable per-device restoration are confirmed in FR-1/36/42/54 and related clauses. Accidental draft deletion is the remaining OQ-8 decision.
+**Confirmed OQ-8 floor-restoration refinement (2026-11-17):** stable floor identity, explicit placement on the current plan, destination selection/creation when missing, preserved historical location/evidence and cancellable per-device restoration are confirmed in FR-1/36/42/54 and related clauses. Draft deletion is subsequently confirmed below.
 
-OQ-8 and OQ-9 remain open without reopening confirmed product choices. Owners are planning responsibilities; no external person has been assigned or contacted. Each item must be resolved before its stated implementation or acceptance milestone. This draft does not authorize deployment or claim architecture readiness.
+**Resolved OQ-8 (2026-11-18):** history-based Delete draft, Cancel from design and Correct record actions, removal of eligible draft-only dependents, detachment rather than cascade for retained or shared records, and guarded own-session undo are confirmed in FR-21/35/36/55. Existing-condition records with no baseline or evidence history are deletable as drafts. Deleting a floor together with its contents is not defined by this decision.
+
+OQ-9 remains open without reopening confirmed product choices. Owners are planning responsibilities; no external person has been assigned or contacted. It must be resolved before its stated acceptance milestone. This draft does not authorize deployment or claim architecture readiness.
 
 | ID | Decision still needed | Owner | Revisit before |
 | --- | --- | --- | --- |
-| OQ-8 | Deleting accidental draft placements, including dependency/history safeguards (no recommendation recorded yet). Cable lifecycle and changed/deleted-floor restoration are confirmed in FR-53/54. | Kevin + architecture | Archive/restore implementation. |
 | OQ-9 | Representative project size, browser/device matrix, accessibility checks, timing targets, storage/report limits, and backup/recovery acceptance. | Kevin + engineering | POC acceptance plan and related architecture commitments. |
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
