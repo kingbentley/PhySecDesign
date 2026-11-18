@@ -73,3 +73,15 @@ The previous narrow extraction documented stable floor IDs, plan-only alignment 
 | survey.js | 94fee7edec5a44ce7f2b4172006514c7c8e3371d210f4994dbb40f701002cd39 |
 
 Only this extraction was written. No main documents, application files, tests, delegation or broad finalization review were changed/performed.
+
+## Focused reconciliation — PRD draft 0.15 (2026-11-17)
+
+No actionable discrepancies found.
+
+FR-1/22/36/42/54 and the confirmed addendum block represent stable floor identity, distinct new same-name floors, confirmed placement on current context, review/repositioning after drawing/scale/alignment changes, explicit destination selection/creation when missing, and cancellation leaving the device archived. No separate unplaced queue or automatic floor recreation is introduced. Per-device restoration remains separate from whole-project restoration.
+
+Historical floor/location/drawing/evidence context, missing-history disclosure, independent floor creation, same-asset cost treatment, current-context analysis/retest, guarded concurrent saves and project-archive restrictions are preserved. FR-53 continues to govern explicit connection validation, without automatic reconnection, invented route lengths or inherited current Pass.
+
+No stale changed-floor pending labels were found in the main PRD, addendum or source index. Their current summaries identify floor restoration as confirmed under FR-54. OQ-8 now names only accidental draft placement deletion and related dependency/history safeguards; OQ-9 remains open. The addendum's **Proposed accidental draft deletion — awaiting confirmation under OQ-8** heading and introduction explicitly keep that new recommendation unaccepted. Broader floor-deletion workflow remains outside the accepted restoration decision.
+
+Only this reconciliation was appended. No main documents, application files, tests or broad finalization review were changed/performed.
