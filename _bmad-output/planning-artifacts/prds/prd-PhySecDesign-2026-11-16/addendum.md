@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.20](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.21](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -589,6 +589,19 @@ The current prototype removes a floor together with all its contents in one step
 Confirmed 2026-11-18 when Kevin accepted the tabled slicing and its five choices: a cut line with slices 1–4 as core acceptance and slice 5 as extended; the fixture tested in two stages; return-visit history before extended modelling; camera-model templates in slice 2; and a Delivery slices section in the PRD with no change to requirement IDs or wording.
 
 The order reflects dependency, not importance. Shared server-saved records come first because issued designs, field evidence, conflict checks and fixed packages all assume them; the prototype’s local browser storage cannot carry them. FR-7, FR-9 and FR-19 are delivered in parts as tabled in the PRD, and FR-33 by its lettered parts. On 2026-11-18 Kevin also confirmed dividing FR-33 into FR-33a–f as a restructure only: every confirmed sentence was moved unchanged, the original check was divided among FR-33a and FR-33c, and new checks for FR-33b, d, e and f were written from existing FR-33 wording. A reference to FR-33 anywhere in these records means all six parts. Slice boundaries are a planning decision and can be revisited during architecture without reopening the requirements themselves.
+
+## Confirmed device state model
+
+Confirmed 2026-11-18 when Kevin accepted the consolidated model and its five choices. The PRD’s Terms and lifecycle rules section holds the tables. Four of the choices settle points the requirements left ambiguous:
+
+- Existing versus proposed is the lifecycle stage (Installed versus Proposed), not a separate flag.
+- Recording an actual removal archives the device in the same step; no removed-but-unarchived state exists.
+- Installed and configured are technician-recorded facts, separate from check-derived phase progress, with a non-blocking warning when they contradict.
+- Condition has three named values: Working, Faulty and Unknown.
+
+Most states in the requirements are not device states. Test outcomes and follow-up flags belong to checks, connection review belongs to cable ends and port assignments, and Not assessed belongs to camera views; a device only shows their roll-up. The current prototype stores a single existing/proposed flag on each device and has none of the other axes; migrating that flag to the lifecycle stage is architecture work.
+
+One suggestion from the review is not confirmed and is recorded only for UX work: on small screens, present one primary status badge and one attention count per device, with the detail one step away.
 
 ## Source and verification boundaries
 

@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.20"
+version: "0.21"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.20 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.21 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -79,6 +79,52 @@ The selected scope can show its work finished while documented property issues r
 
 Archiving pauses editing and retains view/search/export access. Reopening starts new current work without changing previous closeout records. Approval, bypass, or closure cannot turn a failed or unperformed test into a pass.
 
+### Device state model
+
+Confirmed 2026-11-18. This consolidates the device states used across the requirements into one set of product rules. It adds no workflow; storage and representation belong to architecture. Cable runs, ports and camera views keep their own rules under FR-48 and FR-51–53.
+
+**Stored on the device**
+
+| Axis | Values | Changes when |
+| --- | --- | --- |
+| Lifecycle | Proposed → Installed → Removed. Restoration returns a Removed device to Installed. | Actual installation, removal or restoration is recorded. A surveyed existing device starts at Installed. |
+| Condition | Working, Faulty, Unknown | A person records it. It applies while the device is Installed and starts as Unknown. |
+
+“Existing” and “proposed” are these lifecycle stages, not a separate flag: Installed means the device is recorded as on site, and Proposed means it is not yet on site. Recording an actual removal archives the device in the same step, so Removed and archived are one state under FR-35; there is no removed-but-unarchived device. Restoration records that the device is on site again under FR-36/54. It does not verify the installation, so affected checks are flagged under FR-28/44. A replacement is a new Proposed record linked to its predecessor, which stays Installed until its own removal is recorded.
+
+A Faulty device is not credited as functioning in a current operational estimate under FR-41. Unknown condition is disclosed as an assumption under FR-13. Condition is not changed automatically by a test outcome. Each view of a multi-view camera carries its own condition under FR-48.
+
+Three actions end a record instead of advancing it, all under FR-55: Delete draft leaves no record, Cancel from design marks an issued but never-installed device as cancelled, and Correct record marks an entry as mistaken or duplicate. Cancelled and corrected records appear in no current view, total or calculation.
+
+**Stored per device for each work scope**
+
+| Axis | Values |
+| --- | --- |
+| Planned action | None, Retain, Relocate, Service/reconfigure, Replace, Remove, Add new |
+| Scope category | Work now, Inspect/test only, Reference only |
+| Work recorded | Installation done or not done; configuration done or not done |
+
+None means no decision has been recorded for the device in this scope; Retain is an explicit decision to keep it. Work recorded applies to Work now items and is a fact a technician records. Recording installation done advances the lifecycle where the action requires it: an Add new device becomes Installed, a relocated device takes its new recorded location, and a recorded removal makes the device Removed. Fixed issued designs and closeout records keep the values they captured.
+
+**Derived, never set by hand**
+
+| Roll-up | Derived from |
+| --- | --- |
+| Installation, Configuration and Testing phase progress | The device’s checks, under FR-31 |
+| Attention flags: Needs review, Retest required, Needs definition, Needs connection review, Not assessed, open issues | Its checks, cable ends and port assignments, camera views and linked issues |
+| Current installation membership | Installed devices at their recorded locations |
+| Proposed design membership | Installed devices without a planned Remove or Replace, relocated devices at their planned positions, and Proposed devices |
+
+Work recorded and phase progress are separate. A technician’s installed or configured mark does not complete a phase, and passing checks do not set the mark. Show a warning when they contradict each other, such as all required installation checks passed on a device still marked not installed, or a test attempt recorded against a Proposed device. The warning blocks nothing and changes no outcome.
+
+**Combinations that cannot exist**
+
+- A Proposed device with Retain, Relocate, Service/reconfigure or Remove.
+- An Installed device with Add new.
+- A Removed, cancelled or corrected device with a planned action in the active scope.
+- A Replace action without a linked Proposed successor.
+- Work now with a planned action of None or Retain; these take Inspect/test only or Reference only under FR-45.
+
 ## Functional requirements
 
 Requirements use stable, globally numbered IDs. Each check describes observable acceptance behavior; it is not a report of tests already passed.
@@ -111,7 +157,7 @@ Requirements use stable, globally numbered IDs. Each check describes observable 
 
 ### Equipment and cable routes
 
-**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
+**FR-7 — Equipment catalog and identity.** Retain cameras, readers, door contacts, intrusion sensors, intercoms, lights, switches and cabinets. Add generic doors, gates, access controllers/control panels, locks/strikes, request-to-exit devices, low-voltage power supplies, recorders/NVRs and custom equipment records. Maintain unique IDs, type/model, mounting details, location, and notes. Distinguish existing versus proposed equipment and planned actions from installation, testing, and archive states, as set out in the device state model. Preserve legacy asset labels alongside stable internal IDs; see FR-39–41 for existing sites. Support user-defined camera-model selection under FR-47. Keep existing door-contact records distinct from the new door/opening records; linked components follow FR-49. Site annotations follow FR-50 and closets/port assignments follow FR-51; physical inter-floor cable detail follows FR-52.
 
 **Check:** Two similar devices remain individually identifiable in the plan, schedules, evidence, and revision history. Existing door-contact data remains a contact, and creating a door/gate or custom record does not invent installed components, cable connections or known specifications.
 
@@ -238,7 +284,7 @@ Detailed examples are in the addendum. Apply the common checklist and project-de
 
 **Check:** A project can tailor its starter to the scoped work and preserve all past attempts. An undefined expected result is flagged Needs definition and cannot produce a new Pass; this is readiness information, not a fifth test outcome. Unknown legacy details remain unknown unless the scoped check specifically requires them.
 
-**FR-30 — Separate field outcomes.** Record installed/not-installed work, configuration progress, and test outcomes separately. Tests support Pass, Fail, Not tested, and Not applicable. Pass requires a technician-recorded observation meeting the configured expectation and any required data/evidence; measured checks need the requested value, units and conditions. A completed test whose observed result does not meet its defined expected result is Fail with a short explanation. An unperformed test remains Not tested. Not applicable requires a reason and is counted separately from passes; it cannot excuse a failed or merely unavailable test.
+**FR-30 — Separate field outcomes.** Record installed/not-installed work, configuration progress, and test outcomes separately; the device state model relates these recorded facts to derived phase progress. Tests support Pass, Fail, Not tested, and Not applicable. Pass requires a technician-recorded observation meeting the configured expectation and any required data/evidence; measured checks need the requested value, units and conditions. A completed test whose observed result does not meet its defined expected result is Fail with a short explanation. An unperformed test remains Not tested. Not applicable requires a reason and is counted separately from passes; it cannot excuse a failed or merely unavailable test.
 
 **Check:** Installed does not imply configured or passing; predicted DORI does not automatically satisfy an on-site test. Inventorying an existing device creates no passing result. New/changed work receives applicable checks; unchanged devices are not automatically recommissioned merely because they were inventoried, but can be explicitly included in assessment/test scope. Known defects remain visible. Project applicability is explicit; FR-28/44 define targeted retest behavior, while FR-45/46 define scope and issue disposition without bypassing FR-32. Missing criteria, required measurements/evidence, or a modeled DORI/PoE result cannot supply a new field-test Pass.
 
@@ -289,7 +335,7 @@ Keep PDFs, optional materials/estimate CSVs and complete editable project backup
 
 **Check:** Later edits or approval decisions cannot change a previously downloaded package. A new edition identifies its source and cutoff. Reimporting a valid complete backup preserves captured evidence, archived records and retained package relationships; a PDF/CSV is not offered as an editable complete backup.
 
-**FR-35 — Removed-device archive.** Archive after actual removal is documented; a planned Remove/Replace action alone must not archive the current installation record. Never-installed or mistakenly recorded items follow FR-55 instead. Reversibly archive removed equipment with its captured identity/model/settings, last location, connections, installation/configuration records, tests/retests, notes/photos, and history. Record removal actor/date, optional reason, and replacement link. Exclude it from the normal active plan/schedule, coverage, equipment totals, and capacity/PoE demand while preserving previous revision/report values. Preserve and reconcile affected cable/port records under FR-53; device removal does not automatically remove cables or release ports.
+**FR-35 — Removed-device archive.** Archive after actual removal is documented; a planned Remove/Replace action alone must not archive the current installation record. Never-installed or mistakenly recorded items follow FR-55 instead. Recording the actual removal archives the device in the same step. Reversibly archive removed equipment with its captured identity/model/settings, last location, connections, installation/configuration records, tests/retests, notes/photos, and history. Record removal actor/date, optional reason, and replacement link. Exclude it from the normal active plan/schedule, coverage, equipment totals, and capacity/PoE demand while preserving previous revision/report values. Preserve and reconcile affected cable/port records under FR-53; device removal does not automatically remove cables or release ports.
 
 **Check:** A searchable archive and optional historical plan view expose the labeled removed record; archiving never requires metadata that was not captured or deletes its evidence.
 
@@ -629,7 +675,7 @@ The supported ceiling and all timing, browser, accessibility, storage and backup
 
 **Resolved OQ-10 (2026-11-18):** Delete floor for empty or draft-only floors, blocking with a list of required actions while active records with history remain, Retire floor with reinstatement when only history remains, removal of floor-level drawing content with a deleted floor, and a Move to another floor action distinguishing corrections from actual relocations are confirmed in FR-1/54/55/56.
 
-OQ-1 through OQ-10 are resolved and no owned open question remains. The build order and acceptance cut line are confirmed in the delivery slices. This does not make the draft final, authorize deployment or claim architecture readiness.
+OQ-1 through OQ-10 are resolved and no owned open question remains. The build order and acceptance cut line are confirmed in the delivery slices, and device states are consolidated in the device state model. This does not make the draft final, authorize deployment or claim architecture readiness.
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
 

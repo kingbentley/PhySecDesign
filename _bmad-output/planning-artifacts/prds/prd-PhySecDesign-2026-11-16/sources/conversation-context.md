@@ -212,3 +212,7 @@ On 2026-11-18 Kevin accepted five delivery slices and all five related choices. 
 ## Confirmed FR-33 split
 
 On 2026-11-18 Kevin accepted dividing FR-33 into lettered parts FR-33a–f (presets and contents; identification and status; defaults and honest evidence; layout, photos and omissions; lifecycle and connection context; extended-modelling content), keeping the FR-33 number so existing references stay valid. It is a restructure only, with confirmed sentences moved unchanged and a check per part. Draft0.20 also cites the lettered parts in the delivery slices.
+
+## Confirmed device state model
+
+On 2026-11-18 Kevin accepted a consolidated device state model and all five related choices. A device stores a lifecycle stage (Proposed, Installed, Removed) and a condition (Working, Faulty, Unknown). For each work scope it stores a planned action, a scope category and recorded installation/configuration work. Phase progress, attention flags and Current/Proposed membership are derived. Existing versus proposed is the lifecycle stage; recorded removal archives in one step; recorded work is separate from check-derived progress with a non-blocking warning on contradiction. Draft0.21 adds the subsection under Terms and lifecycle rules, with storage left to architecture.
