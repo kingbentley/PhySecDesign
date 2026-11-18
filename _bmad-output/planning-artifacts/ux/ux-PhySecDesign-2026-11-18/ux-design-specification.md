@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — UX Design Specification"
-status: draft 0.1 for Kevin's review
+status: draft 0.2, design decisions D1-D9 confirmed by Kevin on 2026-11-18
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendment 1.1 (FR-1–65, NFR-1–6, SM-1–5)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -8,13 +8,13 @@ method: BMAD Create UX, followed by hand (the BMAD skills are not installed in t
 
 # Site Studio — UX Design Specification
 
-This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62 and the proposed FR-63–65. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Decisions for Kevin](#12-decisions-for-kevin) and is a proposal until confirmed.
+This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62 and the proposed FR-63–65. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all nine on 2026-11-18.
 
 Three kinds of statement are kept apart throughout:
 
 - **Prototype today** — what the running application does, observed on 2026-11-18.
 - **Required** — what the PRD asks for, cited by FR or NFR number.
-- **Proposed** — the design this document recommends to meet the requirement.
+- **Proposed** — the design this document sets out to meet the requirement. The nine choices in section 12 are confirmed; the rest of the design detail is open to review on the canvas.
 
 Screens are numbered S-01 to S-24 so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
 
@@ -449,11 +449,11 @@ New or changed components that the build will need. Existing prototype component
 | Timeline | For records, issues and device history. |
 | Job progress | For import, package and backup jobs, with visible failure and retry. |
 
-## 12. Decisions for Kevin
+## 12. Confirmed design decisions
 
-These are the points where this document chose something the PRD leaves open. Each has a recommendation.
+These are the points where this document chose something the PRD leaves open. Kevin confirmed all nine as recommended on 2026-11-18. They are UX design decisions, not new product requirements; D3 in particular sets a layout default and does not add a pixel rule to the PRD.
 
-| # | Question | Recommendation |
+| # | Question | Confirmed |
 | --- | --- | --- |
 | D1 | Replace the tab row's dialogs with eight full-page areas (5.2)? | Yes. Dialogs cannot hold the schedules, import review or port tables. |
 | D2 | Keep View (Design or Installation) and Basis (Current, Proposed, Changes) as two controls (5.3)? | Yes, with the view setting a default basis. One merged control would hide which population a number uses. |
@@ -467,7 +467,7 @@ These are the points where this document chose something the PRD leaves open. Ea
 
 ## 13. Visual designs
 
-The key screens are drawn on a design canvas so they can be reviewed and commented on directly. The canvas link and the list of screens it holds are recorded in [design-canvas.md](design-canvas.md). The canvas illustrates this specification; where they differ, this document governs until the difference is resolved.
+Every screen in this document is drawn on a design canvas, except the map-style variations noted there, so each can be reviewed and commented on directly. The canvas link and the list of screens it holds are recorded in [design-canvas.md](design-canvas.md). The canvas illustrates this specification; where they differ, this document governs until the difference is resolved.
 
 ## 14. Requirements coverage
 
