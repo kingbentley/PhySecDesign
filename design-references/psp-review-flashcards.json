@@ -1,7 +1,7 @@
 {
   "title": "Physical Security Professional (PSP) review (ASIS Intl)",
   "source": "https://quizlet.com/_7sns5w",
-  "cardCount": 417,
+  "cardCount": 386,
   "cards": [
     {
       "id": 1,
@@ -54,11 +54,6 @@
       "definition": "CPTED, physical barriers and site hardening, physical entry and access control, security lighting, IDS, video surveillance, security personnel, security policies and procedures"
     },
     {
-      "id": 11,
-      "term": "Designing PPS",
-      "definition": "Determine objectives, Design PPS, Analyze design, re-design PPS"
-    },
-    {
       "id": 12,
       "term": "Determine objectives",
       "definition": "Facility characterization, threat definition, target identification"
@@ -89,29 +84,9 @@
       "definition": "Analysis/evaluation (EASI)"
     },
     {
-      "id": 18,
-      "term": "Target identification techniques",
-      "definition": "Manual listing, logic diagram"
-    },
-    {
       "id": 19,
       "term": "Vital area identification",
       "definition": "Fault tree"
-    },
-    {
-      "id": 20,
-      "term": "Detection performance measures",
-      "definition": "Probability of detection, time for communication & assessment, frequency of nuisance alarm"
-    },
-    {
-      "id": 21,
-      "term": "Delay performance measure",
-      "definition": "Time to defeat obstacles"
-    },
-    {
-      "id": 22,
-      "term": "Response performance measure",
-      "definition": "Probability of accurate communication to the response force, time to communicate, probability of deployment to adversary location, time to deploy, response force effectiveness"
     },
     {
       "id": 23,
@@ -134,19 +109,9 @@
       "definition": "Passive or active, covert or visible, volumetric or line detection"
     },
     {
-      "id": 27,
-      "term": "Interior sensor application",
-      "definition": "boundary-penetration, interior motion, proximity sensor"
-    },
-    {
       "id": 28,
       "term": "2 purposes of alarm assessment",
       "definition": "Determine cause of alarm, provide additional information"
-    },
-    {
-      "id": 29,
-      "term": "3 levels of alarm resolution",
-      "definition": "detection, classification, identification"
     },
     {
       "id": 30,
@@ -157,11 +122,6 @@
       "id": 31,
       "term": "Objectives of entry control",
       "definition": "Permit only authorized persons to enter and exit, detect and prevent contraband, provide information to facilitate assessment and response"
-    },
-    {
-      "id": 32,
-      "term": "Types of barriers",
-      "definition": "Passive, guards, dispensable"
     },
     {
       "id": 33,
@@ -192,11 +152,6 @@
       "id": 38,
       "term": "2 basic social behaviors",
       "definition": "Territoriality, natural surveillance"
-    },
-    {
-      "id": 39,
-      "term": "3 phases of vulnerability assessment",
-      "definition": "Planning, conducting, reporting"
     },
     {
       "id": 40,
@@ -299,11 +254,6 @@
       "definition": "Deter\nDeny\nDetect\nDelay\nDestroy"
     },
     {
-      "id": 60,
-      "term": "4 stages of a project",
-      "definition": "Feasibility, development, execution, close out"
-    },
-    {
       "id": 61,
       "term": "6 phases of a project life cycle",
       "definition": "planning, design & estimation, procurement, installation (operation and training), commissioning & warranty, Maintenance (evaluation & replacement)"
@@ -402,11 +352,6 @@
       "id": 80,
       "term": "What does PPS stand for?",
       "definition": "Physical Protection System"
-    },
-    {
-      "id": 81,
-      "term": "What is the definition of PPS",
-      "definition": "It integrates people, procedures, and equipment for the protection of assets or facilities against theft, sabotage, or other malevolent human attacks."
     },
     {
       "id": 82,
@@ -512,11 +457,6 @@
       "id": 102,
       "term": "The performance measure for access delay elements is ________.",
       "definition": "Time"
-    },
-    {
-      "id": 103,
-      "term": "Delay elements include:",
-      "definition": "Passive barriers, guards, and dispensable barriers."
     },
     {
       "id": 104,
@@ -784,11 +724,6 @@
       "definition": "theft, sabotage, or personal harm"
     },
     {
-      "id": 157,
-      "term": "Priorities of targets are based on...",
-      "definition": "Analysis of the consequence of the loss and threat."
-    },
-    {
       "id": 158,
       "term": "True or False: For every crime that is committed, there is a crime prevention or loss reduction defense or procedure that, if followed, could delay or prevent a criminal from committing that act.",
       "definition": "True"
@@ -994,11 +929,6 @@
       "definition": "The area within two parallel fences where the sensors are inside."
     },
     {
-      "id": 199,
-      "term": "A PPS is best measured by the concept of probability of __________ of a defined ________ along the most _________ path in the facility.",
-      "definition": "A PPS is best measured by the concept of probability of interruption of a defined adversary along the most vulnerable path in the facility."
-    },
-    {
       "id": 200,
       "term": "A PPS that is well designed will exhibit the following three characteristics:",
       "definition": "1. Protection-in-depth.\n2. Minimum consequence of component failure.\n3. Balanced protection."
@@ -1007,16 +937,6 @@
       "id": 201,
       "term": "A PPS where effective elements are encountered no matter how an adversary attempts to accomplish his goal is said to have...",
       "definition": "Balanced protection."
-    },
-    {
-      "id": 202,
-      "term": "What are the three functions of a PPS?",
-      "definition": "1. Detection.\n2. Delay.\n3. Response."
-    },
-    {
-      "id": 203,
-      "term": "What three things do the functions of a PPS integrate?",
-      "definition": "1. People.\n2. Procedures.\n3. Equipment."
     },
     {
       "id": 204,
@@ -1154,19 +1074,9 @@
       "definition": "sensor classification and application, probability of detection, nuisance alarm rate, and vulnerability to defeat."
     },
     {
-      "id": 231,
-      "term": "The performance measures for sensors are?",
-      "definition": "Probability of detection, NAR, vulnerability to defeat"
-    },
-    {
       "id": 232,
       "term": "What are used to reduce the load on human operators to assist their performance during malevolent events?",
       "definition": "AC&D systems"
-    },
-    {
-      "id": 233,
-      "term": "What are the methods of personnel entry authorization?",
-      "definition": "credentials, personal identification numbers, and automated personal identity verification"
     },
     {
       "id": 234,
@@ -1194,11 +1104,6 @@
       "definition": "Contingency planning"
     },
     {
-      "id": 239,
-      "term": "Response force strategies include what?",
-      "definition": "Containment, denial, and assault"
-    },
-    {
       "id": 240,
       "term": "The measures of response force effectiveness are...",
       "definition": "response force time for interruption & probability of communication"
@@ -1212,11 +1117,6 @@
       "id": 242,
       "term": "What are the performance measures used in a quantitative analysis?",
       "definition": "Probability of detection, delay times, and response force times."
-    },
-    {
-      "id": 243,
-      "term": "What is the point in a path when the remaining delay time exceeds the response time?",
-      "definition": "Critical detection point"
     },
     {
       "id": 244,
@@ -1279,11 +1179,6 @@
       "definition": "preventive, corrective, detective (measures)"
     },
     {
-      "id": 256,
-      "term": "What are the three types of procurement actions?",
-      "definition": "Sole source, requests for proposals (RFP), invitations to bid"
-    },
-    {
       "id": 257,
       "term": "What is a temporary endeavor undertaken to create a unique product, service, or result?",
       "definition": "a project"
@@ -1317,11 +1212,6 @@
       "id": 263,
       "term": "Once a project moves into stage ___, any changes must be subjected to a stringent process",
       "definition": "3 (Execution)"
-    },
-    {
-      "id": 264,
-      "term": "What are the 6 life cycle phases of a project",
-      "definition": "Planning, design, procurement, installation, commissioning, maintenance"
     },
     {
       "id": 265,
@@ -1372,11 +1262,6 @@
       "id": 274,
       "term": "What are the two main types of PPS maintenance?",
       "definition": "Preventive & remedial"
-    },
-    {
-      "id": 275,
-      "term": "The divisions of risk are limited to three common categories:",
-      "definition": "Personal, property, liability"
     },
     {
       "id": 276,
@@ -1474,21 +1359,6 @@
       "definition": "Flat bottom/curved bottom"
     },
     {
-      "id": 295,
-      "term": "What is the process identifying specific locations, actions, or assets to be protected to prevent undesirable consequences?",
-      "definition": "Target identification"
-    },
-    {
-      "id": 296,
-      "term": "A structured approach of target identification based on logic diagrams called fault trees.",
-      "definition": "Vital area identification"
-    },
-    {
-      "id": 297,
-      "term": "Priorities of targets are based on the analysis of the consequence of what?",
-      "definition": "the loss and the threat"
-    },
-    {
       "id": 298,
       "term": "A collection of components or elements designed to achieve an objective according to a plan.",
       "definition": "a system"
@@ -1497,11 +1367,6 @@
       "id": 299,
       "term": "Intrusion sensor performance is described by what three fundamental characteristics?",
       "definition": "Probability of detection, NAR, vulnerability to defeat"
-    },
-    {
-      "id": 300,
-      "term": "Classification of exterior sensors",
-      "definition": "passive or active, covert or visible, line of sight or terrain following, volumetric or line detection, application"
     },
     {
       "id": 301,
@@ -1522,11 +1387,6 @@
       "id": 304,
       "term": "What are the two basic techniques for combining sensors?",
       "definition": "OR and AND combinations"
-    },
-    {
-      "id": 305,
-      "term": "The use of multiple, continuous lines of detection provide for what?",
-      "definition": "Protection in depth"
     },
     {
       "id": 306,
@@ -1674,11 +1534,6 @@
       "definition": "The fastening device (latch or bolt) & the coded mechanism (Key cylinder)"
     },
     {
-      "id": 335,
-      "term": "Methods of personnel entry authorization include:",
-      "definition": "credentials, personal identification numbers (PIN), automated personal identity verification."
-    },
-    {
       "id": 336,
       "term": "The technology used to restrict entry or exit at a facility",
       "definition": "Entry control"
@@ -1727,11 +1582,6 @@
       "id": 345,
       "term": "Analysis and evaluation principles and models are based on what?",
       "definition": "The existence of adversary paths to an asset"
-    },
-    {
-      "id": 346,
-      "term": "An ordered series of actions against a facility, which, if completed, results in successful theft, sabotage, or other malevolent outcome.",
-      "definition": "Adversary path"
     },
     {
       "id": 347,
@@ -2049,11 +1899,6 @@
       "definition": "Accuracy, clarity, conciseness, timeliness, slant"
     },
     {
-      "id": 410,
-      "term": "Risk analysis is conducted during which PPS life cycle phase?",
-      "definition": "Planning"
-    },
-    {
       "id": 411,
       "term": "A successful security design integrates three primary elements:",
       "definition": "Architectural aspects, security systems, and operational factors"
@@ -2187,6 +2032,163 @@
       "original": "A hybrid system is a combination of Proprietary & contract security",
       "corrected": "A hybrid system is a combination of what?",
       "reason": "The original term contained its own answer."
+    }
+  ],
+  "removedDuplicates": [
+    {
+      "id": 11,
+      "term": "Designing PPS",
+      "duplicateOf": 124
+    },
+    {
+      "id": 18,
+      "term": "Target identification techniques",
+      "duplicateOf": 150
+    },
+    {
+      "id": 20,
+      "term": "Detection performance measures",
+      "duplicateOf": 189
+    },
+    {
+      "id": 21,
+      "term": "Delay performance measure",
+      "duplicateOf": 190
+    },
+    {
+      "id": 22,
+      "term": "Response performance measure",
+      "duplicateOf": 191
+    },
+    {
+      "id": 27,
+      "term": "Interior sensor application",
+      "duplicateOf": 306
+    },
+    {
+      "id": 29,
+      "term": "3 levels of alarm resolution",
+      "duplicateOf": 71
+    },
+    {
+      "id": 32,
+      "term": "Types of barriers",
+      "duplicateOf": 94
+    },
+    {
+      "id": 39,
+      "term": "3 phases of vulnerability assessment",
+      "duplicateOf": 246
+    },
+    {
+      "id": 60,
+      "term": "4 stages of a project",
+      "duplicateOf": 259
+    },
+    {
+      "id": 81,
+      "term": "What is the definition of PPS",
+      "duplicateOf": 121
+    },
+    {
+      "id": 103,
+      "term": "Delay elements include:",
+      "duplicateOf": 94
+    },
+    {
+      "id": 157,
+      "term": "Priorities of targets are based on...",
+      "duplicateOf": 229
+    },
+    {
+      "id": 199,
+      "term": "A PPS is best measured by the concept of probability of __________ of a defined ________ along the most _________ path in the facility.",
+      "duplicateOf": 354
+    },
+    {
+      "id": 202,
+      "term": "What are the three functions of a PPS?",
+      "duplicateOf": 122
+    },
+    {
+      "id": 203,
+      "term": "What three things do the functions of a PPS integrate?",
+      "duplicateOf": 123
+    },
+    {
+      "id": 231,
+      "term": "The performance measures for sensors are?",
+      "duplicateOf": 299
+    },
+    {
+      "id": 233,
+      "term": "What are the methods of personnel entry authorization?",
+      "duplicateOf": 311
+    },
+    {
+      "id": 239,
+      "term": "Response force strategies include what?",
+      "duplicateOf": 110
+    },
+    {
+      "id": 243,
+      "term": "What is the point in a path when the remaining delay time exceeds the response time?",
+      "duplicateOf": 210
+    },
+    {
+      "id": 256,
+      "term": "What are the three types of procurement actions?",
+      "duplicateOf": 271
+    },
+    {
+      "id": 264,
+      "term": "What are the 6 life cycle phases of a project",
+      "duplicateOf": 61
+    },
+    {
+      "id": 275,
+      "term": "The divisions of risk are limited to three common categories:",
+      "duplicateOf": 253
+    },
+    {
+      "id": 295,
+      "term": "What is the process identifying specific locations, actions, or assets to be protected to prevent undesirable consequences?",
+      "duplicateOf": 227
+    },
+    {
+      "id": 296,
+      "term": "A structured approach of target identification based on logic diagrams called fault trees.",
+      "duplicateOf": 228
+    },
+    {
+      "id": 297,
+      "term": "Priorities of targets are based on the analysis of the consequence of what?",
+      "duplicateOf": 229
+    },
+    {
+      "id": 300,
+      "term": "Classification of exterior sensors",
+      "duplicateOf": 24
+    },
+    {
+      "id": 305,
+      "term": "The use of multiple, continuous lines of detection provide for what?",
+      "duplicateOf": 192
+    },
+    {
+      "id": 335,
+      "term": "Methods of personnel entry authorization include:",
+      "duplicateOf": 311
+    },
+    {
+      "id": 346,
+      "term": "An ordered series of actions against a facility, which, if completed, results in successful theft, sabotage, or other malevolent outcome.",
+      "duplicateOf": 209
+    },
+    {
+      "id": 410,
+      "term": "Risk analysis is conducted during which PPS life cycle phase?",
+      "duplicateOf": 265
     }
   ]
 }
