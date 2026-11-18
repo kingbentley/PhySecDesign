@@ -69,7 +69,7 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
 
-Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.6c and story 2.13d); the self-hosted set-up code, printed in the server output (story 2.13a); installation instructions (story 9.1).
+Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.14); the self-hosted set-up code, printed in the server output (story 2.13a); installation instructions (story 9.1).
 
 ### Story 1.3a: Sign in and sign out
 

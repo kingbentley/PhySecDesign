@@ -2,7 +2,7 @@
 
 **Outcome.** A design can be saved as a named revision, estimated, reviewed or bypassed, issued as the fixed installation reference and exported as a retained package.
 
-**Depends on.** Epics 1, 2 and 3 complete. Within them this epic uses the sign-in throttle of story 1.3, sessions from story 1.5, Administration from story 1.8, the activity log from story 1.9, multi-part uploads from story 2.6, the acceptance-size project from story 2.7, Delete draft from story 2.11, the prototype import from story 2.12, self-hosted file storage from story 2.14, the Records and Costs and capacity pages from story 3.1, the status components from story 3.2 and the Historical segment from story 3.5. Nothing later: every criterion in this epic can be tested with the stories before it.
+**Depends on.** Epics 1, 2 and 3 complete. Within them this epic uses the sign-in throttle of story 1.3a, sessions from story 1.5, Administration from story 1.8a, the activity log from story 1.9, multi-part uploads from story 2.6c, device records and the Room or area field from story 2.7a, the acceptance-size project from story 2.7b, Delete draft from story 2.11b, the prototype import from story 2.12, self-hosted file storage from story 2.14, the Records timeline page and the Costs and capacity page from story 3.1b, the status and approval-state components from story 3.2 and the Historical segment from story 3.5. Nothing later: every criterion in this epic can be tested with the stories before it.
 
 **Why here.** Installation work in Epic 5 starts from an issued design, so revisions, review and issuing come before the field.
 
@@ -15,7 +15,7 @@ Covers: FR-1 (deletion guard for floors held in revisions), FR-22 (saving, proto
 **Core behaviour**
 - An Editor saves a named revision of the active scope.
 - The revision records its name, an identifier given by the server, its scope, the account that saved it and the time.
-- The Records page shows the Records timeline: one list in time order in which each named revision is an entry. It takes the place of the prototype's Revisions dialog on that page.
+- Each named revision is listed as an entry on the Records timeline, which takes the place of the prototype's Revisions dialog.
 - A revision opens read-only from the timeline.
 - The snapshot is taken at one saved version of the project. Another person's edit that the server accepted after that version is not in it.
 - After later edits to the working project, the revision's stored file has the same hash as when it was saved.
@@ -23,8 +23,7 @@ Covers: FR-1 (deletion guard for floors held in revisions), FR-22 (saving, proto
 - After such an import the import review no longer lists named revisions as not imported.
 
 **Refusals and edge cases**
-- If any of the saving user's own edits is still Unsaved or in Conflict, the save is refused and those items are listed. (CC-02)
-- The revision can be saved once none of those items remain.
+- If any of the saving user's own edits is still Unsaved or in Conflict, the save is refused and those items are listed. Once none remain, the revision can be saved. (CC-02)
 - A revision is listed only when its snapshot file is stored and its hash has been verified.
 - A failed snapshot write shows as Failed with Retry and lists no revision.
 - Saving a second revision with a name already used in the scope is refused with the reason. (CC-03)
@@ -34,7 +33,7 @@ Covers: FR-1 (deletion guard for floors held in revisions), FR-22 (saving, proto
 **Limits and values**
 - Identifiers read "Rev A", "Rev B" and so on, in the order revisions are saved within the scope, and are never reused. (CC-01)
 
-Notes: Left to later stories: compare and restore (story 4.1b); the timeline's other entries, each added by the story that creates the record; revisions of a later scope (story 6.10); revision content in portable backups (story 8.4).
+Notes: Left to later stories: compare and restore (story 4.1b); the timeline's other entries, each added by the story that creates the record; revisions of a later scope (story 6.10); revision content in portable backups (story 8.4a).
 
 ### Story 4.1b: Compare revisions and restore one into the working design
 
@@ -58,7 +57,10 @@ Covers: FR-22 (compare, restore), AD-7. Screens: S-20, S-21.
 - The undo is refused with an explanation if any restored item has been changed since.
 - Restore is not offered for a revision imported from a prototype file. (CC-06)
 
-Notes: This story sets the principle that a restore replaces design content only; each later story that adds a kind of record says what a restore does to it. Left to later stories: a camera moved in the field after the revision (story 5.3) or removed after it (story 6.8); the test that an earlier scope's revision cannot be restored (story 6.10).
+**Access and restore**
+- A restore changes no installation record: accounts, sessions, invitations, project members, settings and the activity log's earlier entries are the same before and after.
+
+Notes: This story sets the principle that a restore replaces design content only; each later story that adds a kind of record says what a restore does to it. Left to later stories: a camera moved in the field after the revision (story 5.3c) or removed after it (story 6.8a); the test that an earlier scope's revision cannot be restored (story 6.10).
 
 ### Story 4.2: More equipment types and device fields
 
@@ -71,7 +73,7 @@ Covers: FR-7.
 - Each new record has its own unchanging identifier, a type, a model, mounting details, a location and notes, and lifecycle Proposed by default.
 - Each new type appears in the plan, the equipment schedule and its export, and in search.
 - Cameras record enclosure type and alarm interface, and both show in the schedule.
-- Every device, of the earlier types and the new ones, has optional fields for serial number, IP address, MAC address and room or area. They show in the inspector and the equipment schedule. (CC-07)
+- Every device, of the earlier types and the new ones, has optional fields for serial number, IP address and MAC address. They show in the inspector and the equipment schedule.
 
 **Refusals and edge cases**
 - A door-contact record created before this story is still a contact afterwards and is not turned into a door.
@@ -80,11 +82,11 @@ Covers: FR-7.
 - Recording an enclosure type or an alarm interface creates no connection.
 
 **Limits and values**
-- An empty enclosure type, alarm interface, serial number, IP address, MAC address or room reads "Not recorded".
+- An empty enclosure type, alarm interface, serial number, IP address or MAC address reads "Not recorded".
 
 **Access and restore**
 - A revision holds devices of the new types with their fields, and a restore treats them as story 4.1b treats any device.
-- A proposed device of a new type is eligible for Delete draft on the conditions of story 2.11.
+- A proposed device of a new type is eligible for Delete draft on the conditions of story 2.11b.
 
 Notes: Left to later stories: linked components of doors and gates (story 7.3).
 
@@ -115,7 +117,7 @@ Covers: FR-47. Screens: S-08 Camera models.
 **Access and restore**
 - A revision restore leaves templates unchanged. A camera that a restore returns holds the optical values recorded in the revision, and shows that its template has changed if it has. (CC-10)
 
-Notes: Left to later stories: the retest that applying changed values triggers on a tested camera (story 5.6); several views and streams per camera (story 7.1); pan/tilt/zoom ranges (story 7.2).
+Notes: Left to later stories: the retest that applying changed values triggers on a tested camera (story 5.6b); several views and streams per camera (story 7.1); pan/tilt/zoom ranges (story 7.2a).
 
 ### Story 4.4: Estimate with labour, percentage lines and subsystems
 
@@ -124,7 +126,7 @@ As a designer, I want an estimate with equipment, cable, accessory, labour and p
 Covers: FR-17, FR-18, FR-22 (estimate lines in revisions and in the prototype file). Screens: S-14.
 
 **Core behaviour**
-- The estimate belongs to the active scope and is shown on the Costs and capacity page in place of the prototype's Materials dialog.
+- The estimate belongs to the active scope and is shown on the Costs and capacity page, where it replaces the prototype's Materials content.
 - Equipment and cable lines carry an editable supply quantity, unit cost and allowance, and each category shows a subtotal.
 - Manual accessory lines and labour lines can be added with a quantity, a unit and a rate.
 - Every line has an inclusion tick.
@@ -147,7 +149,7 @@ Covers: FR-17, FR-18, FR-22 (estimate lines in revisions and in the prototype fi
 **Access and restore**
 - A named revision saved after this story holds the estimate lines, and a restore returns them.
 
-Notes: Left to later stories: the cancelled group (story 4.9); retained equipment that is not purchased again (story 6.6); reusing rates or copying lines into a later scope (story 6.10); cable supply quantity from the length ledger (story 7.6).
+Notes: Left to later stories: the cancelled group (story 4.9); retained equipment that is not purchased again (story 6.6a); reusing rates or copying lines into a later scope (story 6.10); cable supply quantity from the length ledger (story 7.6b).
 
 ### Story 4.5: Capacity estimates
 
@@ -159,7 +161,7 @@ Covers: FR-19 (base). Screens: S-14.
 - Storage follows each recorded stream's bitrate, recording percentage and retention. Changing retention or bitrate changes storage.
 - Bandwidth follows the streams sent. Changing the recording percentage changes storage and leaves bandwidth unchanged.
 - Each figure states its units, its inputs and its overhead assumptions, and is labelled an estimate.
-- The capacity figures are shown on the Costs and capacity page in place of the prototype's Capacity dialog.
+- The capacity figures are shown on the Costs and capacity page, where they replace the prototype's Capacity content.
 
 **Refusals and edge cases**
 - A camera with no bitrate recorded is listed as unknown demand, and no camera is counted as zero.
@@ -168,7 +170,7 @@ Covers: FR-19 (base). Screens: S-14.
 **Access and restore**
 - A revision holds the bitrate, recording percentage and retention inputs, and a restore returns them. (CC-12)
 
-Notes: Left to later stories: multi-head cameras and display-only views (story 7.1); port and power capacity, and demand with no assigned switch (story 7.5).
+Notes: Left to later stories: multi-head cameras and display-only views (story 7.1); port and power capacity, and demand with no assigned switch (story 7.5b).
 
 ### Story 4.6a: Approval assignments
 
@@ -192,7 +194,7 @@ Covers: FR-23, FR-25 (an assignment gives no access), FR-69. Screens: S-23.
 **Access and restore**
 - A revision restore leaves assignments unchanged.
 
-Notes: Left to later stories: decisions by the design reviewer's account (story 4.6b); what Continue without approval records (story 4.6c); links for named people (story 4.7a); the final-acceptance decision on a closeout record (story 5.12); keeping or changing assignments for a later scope (story 6.10).
+Notes: Left to later stories: decisions by the design reviewer's account (story 4.6b); what Continue without approval records (story 4.6c); links for named people (story 4.7a); the final-acceptance decision on a closeout record (story 5.12d); keeping or changing assignments for a later scope (story 6.10).
 
 ### Story 4.6b: Request a review, comment and decide by account
 
@@ -203,7 +205,7 @@ Covers: FR-24 (decisions by account), FR-69 (decisions name the account). Screen
 **Core behaviour**
 - An Editor requests a design review of a saved revision. The request records the account and the time.
 - A signed-in Editor or administrator, or a Viewer who is the design-review assignee, can pin comments on the plan of a saved revision.
-- The same people can record a decision on it, Approve or Request changes, under their account. An Editor who is the assignee can approve their own revision. (CC-13)
+- The same people can record a decision on it, Approve or Request changes, under their account. An Editor who is the assignee can approve their own revision.
 - A decision records the account with its name at the time, the time and the revision.
 - A later decision adds a new entry and the earlier ones stay listed.
 - Requests, comments and decisions are listed with the revision in the Records timeline, in place of the prototype's Review dialog.
@@ -232,7 +234,7 @@ Covers: FR-25, FR-69 (bypasses name the account). Screens: S-22, S-23.
 - An Editor can bypass the design review of a saved revision, whatever has been recorded on it.
 - A bypass is recorded on that one revision, as Bypassed and never as Approved, with the account, the time and an optional reason.
 - Bypassing one revision changes the state of no other revision.
-- Each saved revision shows one review state: No review, Awaiting decision, Approved, Changes requested or Bypassed.
+- Each saved revision shows one review state, drawn with the approval-state component of story 3.2: No review, Awaiting decision, Approved, Changes requested or Bypassed.
 - The state is No review when nothing is recorded on the revision, Awaiting decision after a request with no decision since, and Approved or Changes requested after the latest decision. (CC-16)
 - A revision saved later starts at No review.
 - Once a revision is bypassed its state stays Bypassed. A decision recorded afterwards is kept and labelled as made after the bypass. (CC-17)
@@ -246,7 +248,7 @@ Covers: FR-25, FR-69 (bypasses name the account). Screens: S-22, S-23.
 **Access and restore**
 - A revision restore leaves bypasses and review states unchanged.
 
-Notes: Left to later stories: the state shown in the frame for the issued design (story 4.8a); bypass of final acceptance on a closeout record (story 5.12).
+Notes: Left to later stories: the state shown in the frame for the issued design (story 4.8a); bypass of final acceptance on a closeout record (story 5.12d).
 
 ### Story 4.7a: Reviewer links: open one revision, comment and decide
 
@@ -280,7 +282,7 @@ Covers: FR-24 (reviewer links), FR-69 (unverified name in the interface), FR-71 
 **Access and restore**
 - A revision restore leaves links and what was recorded through them unchanged.
 
-Notes: Left to later stories: replacing, revoking, expiry and the administrator's list (story 4.7b); the unverified-name label in packages (story 4.10a); links to a closeout record (story 5.12). This replaces the prototype's development-only review service.
+Notes: Left to later stories: replacing, revoking, expiry and the administrator's list (story 4.7b); the unverified-name label in packages (story 4.10a); links to a closeout record (story 5.12d). This replaces the prototype's development-only review service.
 
 ### Story 4.7b: Reviewer links: replace, revoke, expire and oversee
 
@@ -301,14 +303,13 @@ Covers: FR-24 (revocable, replaceable links), FR-70 (Reviewer links), FR-71, NFR
 - After a link is revoked or replaced, its next request is refused. Text already typed stays on the page and nothing is recorded.
 - A request through an expired link is refused and nothing is recorded.
 - When the assignment a link serves is reassigned, or the review of its revision is bypassed, the link still shows the revision and accepts no new comment or decision. (CC-21)
-- Requests with invalid link tokens from one network address are slowed as failed sign-ins are in story 1.3. (CC-22)
 - A standard user cannot open the installation's list of links.
 
 **Limits and values**
 - A revoked or replaced link reads "This link is no longer valid", and an expired one reads "This link has expired". (CC-23)
-- After 20 requests with invalid link tokens from one network address within 15 minutes, further link requests from that address are refused for 1 minute, doubling after each further failure up to 15 minutes.
+- After 20 requests with invalid link tokens from one network address within 15 minutes, further link requests from that address are refused for 1 minute, doubling after each further failure up to 15 minutes: the figures story 1.3a uses for failed sign-ins. (CC-22)
 
-Notes: Left to later stories: a link whose revision is superseded (story 4.8b); whose scope is closed (story 5.12); whose project is archived (story 6.11); links cancelled by a restored project (story 8.2) or a recovered installation (story 8.3).
+Notes: Left to later stories: a link whose revision is superseded (story 4.8b); whose scope is closed (story 5.12c); whose project is archived (story 6.11); links cancelled by a restored project (story 8.2b) or a recovered installation (story 8.3a).
 
 ### Story 4.8a: Issue a design as the current reference
 
@@ -317,7 +318,7 @@ As a designer, I want to issue a named revision and mark it as the current refer
 Covers: FR-25 (issuing without approval), FR-26, FR-55 (an issued device is not a deletable draft), FR-61. Screens: S-22, S-01.
 
 **Core behaviour**
-- An Editor issues a saved revision of the active scope in three steps: choose the revision; record an approval, request a review or bypass; confirm that it becomes the current reference.
+- An Editor issues a saved revision of the active scope in three steps: choose the revision, then record an approval, request a review or bypass, then confirm that it becomes the current reference.
 - The three choices in the second step are offered with equal weight, and each records what story 4.6b or story 4.6c records.
 - A revision can be issued with its review bypassed, or while a requested review is still awaiting a decision. (CC-24)
 - After issuing, the frame's issued-design chip shows the revision's identifier, its name, the issue date and the scope.
@@ -336,7 +337,7 @@ Covers: FR-25 (issuing without approval), FR-26, FR-55 (an issued device is not 
 - A proposed device contained in an issued design is not offered Delete draft, and the "Why can't I delete this?" link gives that reason.
 - A Delete draft sent from a view loaded before the design was issued is refused with the reason, and the device is unchanged.
 
-Notes: Left to later stories: superseding and comparing with the working project (story 4.8b); the issued-design strip where installers start work (story 5.1 and story 5.2); the warning when work starts with nothing issued (story 5.3); the test that an earlier scope's revision cannot be designated, and a later scope starting at Not issued (story 6.10); a service scope, which needs no issued design (story 6.12). An issued revision is never at No review, because the second step always records a decision, a request or a bypass.
+Notes: Left to later stories: superseding and comparing with the working project (story 4.8b); the issued-design strip where installers start work (story 5.1a and story 5.2); the warning when work starts with nothing issued (story 5.3a); the test that an earlier scope's revision cannot be designated, and a later scope starting at Not issued (story 6.10); a service scope, which needs no issued design (story 6.12c). An issued revision is never at No review, because the second step always records a decision, a request or a bypass.
 
 ### Story 4.8b: Supersede an issued design and compare it with the working project
 
@@ -353,10 +354,10 @@ Covers: FR-24 (decisions kept), FR-26 (another fixed reference, comparison), FR-
 - After the working layout is edited, the issued snapshot's hash and its decisions and bypass are unchanged.
 
 **Refusals and edge cases**
-- A reviewer link to a superseded revision still shows that revision and accepts no new comment or decision. (CC-26)
+- A reviewer link to a superseded revision still shows that revision and accepts no new comment or decision. (CC-21)
 - A decision recorded by an account on a superseded revision is kept and labelled as made after it was superseded. (CC-27)
 
-Notes: Left to later stories: proof that field records are untouched by a change of reference (story 5.1 and story 5.2).
+Notes: Left to later stories: proof that field records are untouched by a change of reference (story 5.3a and story 5.3c).
 
 ### Story 4.9: Cancel a proposal and correct a record
 
@@ -374,7 +375,6 @@ Covers: FR-55 (cancellation, correction), UX decision D8. Screens: S-04 device m
 - An Existing device entered in error or twice is corrected with a reason and, for a duplicate, a reference to the record that is kept. The correction is recorded as a correction, not as a removal.
 - A cancellation or correction records the account, the time and the reason.
 - Cancelled and corrected records are listed under Historical in Equipment with their reason, and are found by search.
-- Deleted drafts are not listed under Historical.
 - A cancellation or correction made by mistake is reversed with a reason. The device returns to where it was, and both entries stay in its history.
 
 **Refusals and edge cases**
@@ -385,7 +385,7 @@ Covers: FR-55 (cancellation, correction), UX decision D8. Screens: S-04 device m
 **Access and restore**
 - A revision restore leaves cancellations and corrections unchanged, and its dialog lists a cancelled device that the revision still holds as proposed.
 
-Notes: Left to later stories, each adding its own action to the device menu: reversing a mistaken Installed mark (story 5.3) and recording a removal (story 6.8). Also left: cancelling a proposal that carries test attempts (story 5.5); the cancelled item in the closeout (story 5.12).
+Notes: Left to later stories, each adding its own action to the device menu: reversing a mistaken Installed mark (story 5.3b) and recording a removal (story 6.8a). Also left: cancelling a proposal that carries test attempts (story 5.5b); the cancelled item in the closeout (story 5.12b).
 
 ### Story 4.10a: Design package: contents drawn from a saved revision
 
@@ -406,13 +406,13 @@ Covers: FR-33 (Design preset contents), FR-34 (fixed source and cutoff), FR-69 (
 - The cutoff is the time generation started. (CC-30)
 - Survey notes, measurements and photos are printed as recorded up to the time the revision was saved. (CC-31)
 - A decision made through a reviewer link is printed with its name marked not verified. A decision made by an account is printed with the account name, without that mark.
-- Until story 4.10c stores editions, the generated PDF is saved by the browser and its cover reads "Not retained".
+- At this story the generated PDF is saved by the browser, no edition is kept on the server, and the cover reads "Not retained".
 
 **Refusals and edge cases**
 - Generate is disabled, with the reason, when the selection produces no pages.
 - A required file that cannot be read fails the generation with the file named; no blank page takes its place.
 
-Notes: Left to later stories: page layout and options (story 4.10b); volumes and upload (story 4.10c); kept editions (story 4.10d); scoped checklist expectations linked by device identifier, and the label for a package that leaves out a required photo (story 5.4); open issues (story 5.9); the Closeout preset (story 5.12); planned actions and retained context (story 6.6); the extended-model sheets (story 7.7).
+Notes: Left to later stories: page layout and options (story 4.10b); volumes and upload (story 4.10c); kept editions (story 4.10d); scoped checklist expectations linked by device identifier (story 5.4b); open issues (story 5.9b); the Closeout preset (story 5.12e); planned actions and retained context (story 6.6b); the extended-model sheets (story 7.7).
 
 ### Story 4.10b: Design package: page layout and options
 
@@ -466,7 +466,7 @@ Covers: FR-33 (volumes, limits), FR-34 (failed generation visible and retryable)
 - After a dropped connection the upload resumes from the last accepted part.
 - When the volumes generated so far reach the edition limit, generation stops, the edition shows Failed with the reason, and the volumes already stored are discarded. (CC-32)
 - That failure offers a smaller floor selection or fewer optional contents. Nothing is left out silently to fit.
-- If the tab is closed during generation or upload, no edition is listed, generation can be started again, and the parts already stored are discarded as an unfinished upload under story 2.6.
+- If the tab is closed during generation or upload, no edition is listed, generation can be started again, and the parts already stored are discarded as an unfinished upload under story 2.6c.
 - If the person's role changes to Viewer or their membership is removed during upload, the next part is refused, the stored parts are discarded and no edition is listed.
 - If the session ends between parts, the stored parts are kept, and after the same account signs in again in the open tab the upload resumes from the last accepted part. (CC-33)
 
@@ -477,9 +477,9 @@ Covers: FR-33 (volumes, limits), FR-34 (failed generation visible and retryable)
 
 **Evidence to record**
 - Generation time and upload time are reported separately.
-- On the acceptance-size project from story 2.7, generating a complete edition takes no more than 5 minutes, not counting upload. This is a development measurement; the acceptance runs are in story 10.2. (CC-34)
+- On the acceptance-size project from story 2.7b, generating a complete edition takes no more than 5 minutes, not counting upload. (CC-34)
 
-Notes: Experiments R1 and R6 were run early and their results are in the architecture. Left to later stories: counting editions toward project storage usage, and abandoned parts not counting (story 8.5).
+Notes: Experiments R1 and R6 were run early and their results are in the architecture. The 5-minute timing here is a development measurement; the acceptance run is story 10.2c. Left to later stories: counting editions toward project storage usage, and abandoned parts not counting (story 8.5).
 
 ### Story 4.10d: Design package: editions kept exactly
 
@@ -501,4 +501,4 @@ Covers: FR-34 (fixed packages, editions), FR-61 (packages of a superseded issue;
 **Access and restore**
 - A revision restore leaves every edition unchanged.
 
-Notes: Left to later stories: appending an edition to an archived project (story 6.11); editions in backups (story 8.1 and story 8.4).
+Notes: Left to later stories: appending an edition to an archived project (story 6.11); editions in backups (story 8.1a and story 8.4a).

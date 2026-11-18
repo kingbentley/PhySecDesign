@@ -18,7 +18,7 @@ Covers: FR-2, FR-45 (first work scope), FR-68 (project list), FR-69, AD-2, AD-5.
 - The project is created with that scope, in the state In progress, as its active scope.
 - The first scope records the account that created it and the time.
 - The project list shows, for each project, its active scope's name and state and the time of its last activity.
-- The Projects table in Administration (story 1.8) shows the same scope name, scope state and last activity for every project.
+- The Projects table in Administration (story 1.8c) shows the same scope name, scope state and last activity for every project.
 - A Viewer opens and reads the project with editing controls removed and a "View only" mark in the header.
 - An administrator opens a project they were never added to and can edit it.
 **Refusals and edge cases**
@@ -32,7 +32,7 @@ Covers: FR-2, FR-45 (first work scope), FR-68 (project list), FR-69, AD-2, AD-5.
 **Access and restore**
 - A revision restore leaves the project's work scopes unchanged.
 
-Notes: Left to later stories: scope categories (story 6.7); later scopes and reopening (story 6.10); the attention count on the project list (story 5.9); the "View only" mark in the project frame (story 3.1a); refusal of a non-member's request for a project file (story 2.6c).
+Notes: Left to later stories: scope categories (story 6.7); later scopes and reopening (story 6.10); the attention count on the project list (story 5.9b); the "View only" mark in the project frame (story 3.1a); refusal of a non-member's request for a project file (story 2.6c).
 
 ### Story 2.2a: Save edits to the shared project and show the save state
 
@@ -60,7 +60,7 @@ Covers: FR-21, NFR-2, AD-5. Screens: S-01.
 **Evidence to record**
 - On the locally run server, a single-item save is acknowledged within 2 seconds in at least 19 of 20 trials, and the results are recorded as a development measurement.
 
-Notes: Left to later stories: lost connections, lost access and ended sessions (story 2.2b); the Conflict state (story 2.4); guarded deletion of floors and buildings (story 2.5), of devices (story 2.7a) and of survey entries (story 2.10a); plan images on the server (story 2.6c); named revisions (story 4.1); cost entry (story 4.4); review (story 4.6); the status in the project frame (story 3.1a); the 2-second target against the large fixture (story 2.7b) and at acceptance (story 10.2).
+Notes: Left to later stories: lost connections, lost access and ended sessions (story 2.2b); the Conflict state (story 2.4); guarded deletion of floors and buildings (story 2.5), of devices (story 2.7a) and of survey entries (story 2.10a); plan images on the server (story 2.6c); named revisions (story 4.1a); cost entry in the estimate (story 4.4); capacity estimates in place of the Capacity dialog (story 4.5); review (story 4.6b); the status in the project frame (story 3.1a); the 2-second target against the large fixture (story 2.7b) and at acceptance (story 10.2a).
 
 ### Story 2.2b: Keep unsaved edits through a lost connection, lost access or an ended session
 
@@ -81,7 +81,7 @@ Covers: FR-21, FR-68 (access changes), NFR-2. Screens: S-01.
 - If a different account signs in on that page, the earlier account's unsaved edits are not shown to it and are not sent.
 - Those edits stay bound to the earlier account and are offered again only when that account signs in again in the same browser.
 
-Notes: Left to later stories, each adding its own refusal reason to the list: "not saved: no active scope — reopen first" (story 5.12); "not saved: project archived" (story 6.11); "not saved: project was restored" (story 8.2). An edit that clashes on reconnection becomes a conflict in story 2.4.
+Notes: Left to later stories, each adding its own refusal reason to the list: "not saved: no active scope — reopen first" (story 5.12c); "not saved: project archived" (story 6.11); "not saved: project was restored" (story 8.2b). An edit that clashes on reconnection becomes a conflict in story 2.4.
 
 ### Story 2.3: See other people's changes within seconds
 
@@ -147,7 +147,7 @@ Covers: FR-1, FR-60. Screens: S-03 left panel.
 **Access and restore**
 - A revision restore deletes no building or floor and renames none. (CB-05)
 
-Notes: Left to later stories, each adding its own blocking record to the deletion rule: a stored plan (story 2.6c); survey entries (story 2.10a); a saved revision that holds the floor (story 4.1); a site check with attempts (story 5.8); closeout context (story 5.12); a removed device's last location (story 6.8); annotations (story 7.4); a closet (story 7.5); a riser reference (story 7.6). Undoing a floor or building deletion is story 2.11a. The plan-switch timing is story 2.7b.
+Notes: Left to later stories, each adding its own blocking record to the deletion rule: a stored plan (story 2.6c); survey entries (story 2.10a); a saved revision that holds the floor (story 4.1a); a floor-level site check with an attempt (story 5.8); a closeout record that holds the floor (story 5.12b); a removed device's last location (story 6.8a); annotations (story 7.4); a closet (story 7.5a); a riser reference (story 7.6a). Undoing a floor or building deletion is story 2.11a. The plan-switch timing is story 2.7b.
 
 ### Story 2.6a: Property lookup and map views
 
@@ -159,7 +159,7 @@ Covers: FR-3, FR-70 (saved map key in use). Screens: S-03.
 - Searching by address or by coordinates moves the map view to the result and changes nothing else.
 - Street mapping from OpenStreetMap works with no key.
 - Switching between street and aerial views leaves the aligned plan and every device at the same geographic position.
-- With a Google mapping key saved in Settings (story 1.10), Google mapping is offered to every member of every project without anyone entering a key.
+- With a Google mapping key saved in Settings (story 1.10a), Google mapping is offered to every member of every project without anyone entering a key.
 - The prototype's per-session key dialog is removed.
 **Refusals and edge cases**
 - A lookup that fails, or a provider that is unavailable, shows a plain message.
@@ -191,7 +191,7 @@ Covers: FR-4, FR-5, FR-6, AD-10. Screens: S-03.
 **Evidence to record**
 - The preview of a selected PDF page appears within 30 seconds on a test PDF whose size and page count are recorded, as a development measurement.
 
-Notes: Left to later stories: the original file and its preview stored on the server (story 2.6c), until which the plan image stays in the browser's own storage; undoing an applied alignment (story 2.11a); the password's absence from backups (story 8.1 and story 8.4).
+Notes: Left to later stories: the original file and its preview stored on the server (story 2.6c), until which the plan image stays in the browser's own storage; undoing an applied alignment (story 2.11a); the password's absence from backups (story 8.1a and story 8.4a).
 
 ### Story 2.6c: Plans stored on the server with their originals
 
@@ -209,6 +209,7 @@ Covers: FR-4 (retained original), FR-6 (retained source PDF), NFR-2, AD-3, AD-4.
 **Refusals and edge cases**
 - A hash or size mismatch shows Failed with Retry, and the file is not referenced.
 - If the user's role is changed to Viewer or their membership is removed between parts, the next part is refused, the parts already stored are discarded, and the plan shows "not saved: access changed".
+- Each part accepted while an upload is in progress counts as use of the session.
 - If the session ends between parts, the stored parts are kept and the sign-in prompt is shown.
 - After the same account signs in again, that upload resumes from the last accepted part.
 - A signed-in user who is not a member is refused a plan file, even with its exact address.
@@ -244,7 +245,7 @@ Covers: FR-7 (base), FR-8 (base), FR-41 (Current and Proposed, base). Screens: S
 **Access and restore**
 - A revision restore replaces Proposed devices and their positions with the revision's, and leaves the recorded attributes of Existing devices unchanged.
 
-Notes: Left to later stories: more equipment types (story 4.2); Delete draft with its Undo and preview (story 2.11b); correcting a device wrongly recorded as existing (story 4.9); Installed making an add-new device Existing (story 5.3); existing-site inventory, condition and provenance (story 6.1); the Changes basis (story 6.6); removal and the Removed value (story 6.8).
+Notes: Left to later stories: more equipment types (story 4.2); Delete draft with its Undo and preview (story 2.11b); correcting a device wrongly recorded as existing (story 4.9); Installed making an add-new device Existing (story 5.3a); existing-site inventory, condition and provenance (story 6.1); the Changes basis (story 6.6b); removal and the Removed value (story 6.8a).
 
 ### Story 2.7b: Acceptance-size test project and first timings
 
@@ -257,6 +258,7 @@ Covers: NFR-4, SM-5 (large fixture and timings).
 - The project has 10 buildings, 25 plans and 600 devices, of which 150 are cameras with 60 on the busiest plan, and it has obstructions, 20 targeted zones and routes on the busiest plan. (CB-13)
 - A declared share of its devices is Existing.
 - The same seed produces the same project.
+- The script generates buildings, plans, devices, obstructions, zones and routes only, and takes its counts as options that later stories extend.
 **Evidence to record**
 - Against that fixture on the locally run server, search and filter return within 1 second in at least 19 of 20 trials.
 - Selection and direct-edit feedback appear within 250 ms in at least 19 of 20 trials.
@@ -266,7 +268,7 @@ Covers: NFR-4, SM-5 (large fixture and timings).
 - A switch to another saved plan completes within 5 seconds in at least 19 of 20 trials.
 - All results are recorded as development measurements, not as acceptance evidence.
 
-Notes: Left to later stories: survey notes and photos in the fixture (story 2.10b); an inventory file (story 6.2); plan and photo files up to the 8 GiB budget (story 8.2); the small functional project, the workload manifest, its confirmation and the reference calculations (story 10.1); acceptance measurement (story 10.2).
+Notes: Left to later stories: survey notes and photos in the fixture (story 2.10b); an inventory file (story 6.2a); plan and photo files up to the 8 GiB budget (story 8.2c); the small functional project, the workload manifest, its confirmation and the reference calculations (story 10.1); acceptance measurement (story 10.2a).
 
 ### Story 2.8a: Coverage computed off the main thread, with an honest status
 
@@ -295,7 +297,7 @@ Covers: FR-10, FR-11, FR-12, FR-13, NFR-4, AD-9. Screens: S-05.
 **Access and restore**
 - Obstructions, zones, the analysis boundary and analysis settings are design content that a revision restore returns to the revision's values.
 
-Notes: Left to later stories: DORI and zone results (story 2.8b); sampling, the time allowance and saved summaries (story 2.8c); unsupported and illustrative views such as fisheye and stitched (story 7.1); accuracy against independent reference calculations (story 10.1 and story 10.2).
+Notes: Left to later stories: DORI and zone results (story 2.8b); sampling, the time allowance and saved summaries (story 2.8c); unsupported and illustrative views such as fisheye and stitched (story 7.1); accuracy against independent reference calculations (story 10.1 and story 10.2b).
 
 ### Story 2.8b: DORI and zone targets, with uncertain results flagged
 
@@ -347,7 +349,7 @@ Covers: NFR-4, AD-9, experiment R2. Screens: S-05.
 - That plan is timed in a Web Worker in a browser with 60 cameras and all 20 zones, and completes within 10 seconds of a committed edit in at least 19 of 20 trials.
 - The timing is recorded as a development measurement.
 
-Notes: Experiment R2 found that the prototype's work budget and cell cap coarsen sampling to 6 to 12 m on the acceptance workload, and that without them 60 cameras and 20 zones finish in under half a second at 0.5 m. Examination of the R2 experiment copies found the contour-mesh limit and the two clipping boundaries, which are prototype behaviour to correct. Left to later stories: acceptance measurement (story 10.2).
+Notes: Experiment R2 found that the prototype's work budget and cell cap coarsen sampling to 6 to 12 m on the acceptance workload, and that without them 60 cameras and 20 zones finish in under half a second at 0.5 m. Examination of the R2 experiment copies found the contour-mesh limit and the two clipping boundaries, which are prototype behaviour to correct. Left to later stories: acceptance measurement (story 10.2a).
 
 ### Story 2.9: Cable routes on one floor
 
@@ -367,7 +369,7 @@ Covers: FR-9 (base).
 **Access and restore**
 - Proposed routes are design content that a revision restore returns to the revision's values.
 
-Notes: Left to later stories: the dependency preview before a connected draft is deleted (story 2.11b); removal of an installed device and its connections (story 6.8); runs between floors and the length ledger (story 7.6).
+Notes: Left to later stories: the dependency preview before a connected draft is deleted (story 2.11b); removal of an installed device (story 6.8a) and the review of its cable ends (story 6.8b); runs between floors (story 7.6a) and the length ledger (story 7.6b).
 
 ### Story 2.10a: Survey notes and measurements as separate entries
 
@@ -394,7 +396,7 @@ Covers: FR-20 (base), FR-45 (scope on evidence), NFR-5 (site credentials kept ou
 **Access and restore**
 - Survey entries are not design content: a revision restore leaves every entry unchanged.
 
-Notes: Left to later stories: photos (story 2.10b); what an Editor can add when the project has no active scope (story 5.12).
+Notes: Left to later stories: photos (story 2.10b); refusal of a new survey entry or photo while the project has no active scope (story 5.12c).
 
 ### Story 2.10b: Survey photos kept with their originals
 
@@ -420,7 +422,7 @@ Covers: FR-20 (photos), NFR-2, AD-3. Screens: S-04 Evidence tab.
 - A photo's preview is shown within 10 seconds of its upload completing, recorded as a development measurement.
 - The fixture script from story 2.7b also generates survey notes and photos, in numbers it declares.
 
-Notes: Left to later stories: photo capture on phones over poor connections, experiment R4 (story 5.5).
+Notes: Left to later stories: photo capture on phones over poor connections, experiment R4 (story 5.5d).
 
 ### Story 2.11a: Undo and redo my own recent edits
 
@@ -443,7 +445,7 @@ Covers: FR-21 (undo and redo), FR-5 (undo of an alignment), AD-7.
 - Undo and redo cover my last 40 edits made in the open page. (CB-21)
 - Reloading the page or signing out empties both lists.
 
-Notes: Left to later stories: full revision restore, a separate guarded action (story 4.1); undo and a port reassigned by someone else (story 7.5).
+Notes: Left to later stories: full revision restore, a separate guarded action (story 4.1b); undo and a port reassigned by someone else (story 7.5c).
 
 ### Story 2.11b: Delete an accidental draft device
 
@@ -469,7 +471,7 @@ Covers: FR-55 (Delete draft).
 - Undoing a draft deletion is refused, with the reason, if the device's floor has since been deleted.
 - A retried Delete draft is applied once only.
 
-Notes: Left to later stories: cancelling a proposal that cannot be deleted, and correcting a record (story 4.9). Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (story 4.8); an Installed or Configured mark (story 5.3); a test attempt (story 5.5); an issue (story 5.9); a Current installation port assignment (story 7.5).
+Notes: Left to later stories: cancelling a proposal that cannot be deleted, and correcting a record (story 4.9). Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (story 4.8a); an Installed or Configured mark (story 5.3a); a test attempt (story 5.5b); an issue (story 5.9a); a Current installation port assignment (story 7.5c). A floor held in a saved revision stays undeletable even when its only devices are deleted drafts (story 4.1a).
 
 ### Story 2.12: Bring in a project saved by the prototype
 
@@ -499,7 +501,7 @@ Covers: FR-22 (format migration), FR-20 (images from older records), AD-14.
 **Access and restore**
 - A revision restore leaves the record of the import and the imported notes and photos unchanged.
 
-Notes: Left to later stories: named revisions from the file (story 4.1) and costs from the file (story 4.4), each then removing its item from the "not imported" list; the portable backup of the new format (story 8.4).
+Notes: Left to later stories: named revisions from the file (story 4.1a) and costs from the file (story 4.4), each then removing its item from the "not imported" list; the portable backup of the new format (story 8.4a).
 
 ### Story 2.13a: Run Site Studio on your own server over HTTPS
 
@@ -522,7 +524,7 @@ Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 - A start while no administrator exists prints a new set-up code, and the earlier code stops working.
 - Once an administrator exists, no start generates or prints a set-up code.
 
-Notes: Left to later stories: an operator's own proxy (story 2.13b); the deployment key and administrator recovery (story 2.13c); the smoke suite (story 2.13d); files on disk (story 2.14); durability (story 2.15); the published installation instructions (story 9.1); the updater container (story 9.5).
+Notes: Left to later stories: an operator's own proxy (story 2.13b); the deployment key and administrator recovery (story 2.13c); the smoke suite (story 2.13d); files on disk (story 2.14); durability (story 2.15); the published installation instructions (story 9.1); the updater container (story 9.5a).
 
 ### Story 2.13b: Run behind your own HTTPS proxy
 
@@ -547,19 +549,18 @@ As an organisation's administrator, I want the key that protects stored secrets 
 Covers: FR-66 (self-hosted), FR-70 (administrator recovery, self-hosted), NFR-7, AD-17.
 
 **Core behaviour**
-- On first start the server generates the deployment key that story 1.4 and story 1.10 encrypt with, and writes it to a key file in a folder set in the Compose file, separate from the records and files folders. (CB-29)
+- On first start the server generates the deployment key that story 1.4 and story 1.10a encrypt with, and writes it to a key file in a folder set in the Compose file, separate from the records and files folders. (CB-29)
 - On that first start the server output says where the key file is and that a copy must be kept off the server.
 - After a restart, two-step verification secrets and Settings secrets saved earlier still work.
 - After the containers are removed and recreated, or a newer image is started, the key file is unchanged and those secrets still work.
+- When a key file is already in that folder, including one the operator placed there before the first start, the server uses it and generates no key.
 - When the only administrator cannot sign in, a documented command run on the server prints a one-time recovery code.
-- A named administrator account uses the code to set a new password and have its two-step verification reset, under the rules of story 1.8.
+- A named administrator account uses the code to set a new password and have its two-step verification reset, and the code works once and expires, as in story 1.8d.
 - The issue of the code and its use each appear in the activity log.
 **Refusals and edge cases**
-- The server never generates a key while a key file exists.
 - With records present and the key file missing, the server refuses to start, names the missing file and generates no new key. (CB-30)
-- The recovery code works once and expires as story 1.8 states.
 
-Notes: Left to later stories: recovery of a whole installation with or without the key (story 8.3); the instruction to keep the key off the server, in the published instructions (story 9.1).
+Notes: Left to later stories: recovery of a whole installation with the key (story 8.3a) or without it (story 8.3b); the instruction to keep the key off the server, in the published instructions (story 9.1).
 
 ### Story 2.13d: Self-hosted smoke suite for accounts and the shared project
 
@@ -606,12 +607,12 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-3, AD-4, AD-16.
 - The server refuses to start if both settings point to the same folder, with an explanation.
 - Two installations with separate volumes share no files: a file address from one is refused on the other.
 **Limits and values**
-- An unfinished upload is discarded after 7 days, as on Cloudflare.
+- An unfinished upload is discarded after 7 days, as on Cloudflare. (CB-06)
 **Evidence to record**
 - One set of file-store tests passes against both the Cloudflare file store and the disk file store.
 - The self-hosted smoke suite gains the file cases (upload a plan and a photo, restart, read back whole and by range) and passes against the image.
 
-Notes: Left to later stories: behaviour when a disk is full (story 2.15); the first write to the backup location, and the warning when it is on the same disk as the live data (story 8.1).
+Notes: Left to later stories: behaviour when a disk is full (story 2.15); the first write to the backup location (story 8.1b); the warning when it is on the same disk as the live data (story 8.1c).
 
 ### Story 2.15: Records survive crashes and power loss
 
@@ -635,7 +636,7 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-2, experiment R12.
 - Storage that loses an acknowledged save or fails to lock is listed as unsupported in the experiment record.
 - If R12 fails on the typical virtual-machine disk, the story is not done; the fallback the architecture names is to require local disk for records.
 
-Notes: Left to later stories: a full backup disk (story 8.1); the supported kinds of server and storage, stated in the published instructions from this story's results (story 9.1).
+Notes: Left to later stories: a full backup disk (story 8.1b); the supported kinds of server and storage, stated in the published instructions from this story's results (story 9.1).
 
 ## Epic 3: A workspace that holds the whole job
 
@@ -668,7 +669,7 @@ Covers: UX 5.1, 17.1, decisions D1 and D12, FR-2 (views), FR-21 (save status). S
 - Switching the view changes no permission: a Viewer gains no editing control in either view.
 - "Members and reviewer links" offers no control to change members.
 
-Notes: Left to later stories: the areas as routes (story 3.1b); managing reviewer links (story 4.7); the issued design chip filled in (story 4.8); the Installation view's recording tools (story 5.2); the archived banner (story 6.11). Members are managed in Administration (story 1.8).
+Notes: Left to later stories: the areas as routes (story 3.1b); managing reviewer links (story 4.7b); the issued design chip filled in (story 4.8a); the Installation view's recording tools (story 5.2); the archived banner (story 6.11). Members are managed in Administration (story 1.8c).
 
 ### Story 3.1b: Eight areas, each with its own address
 
@@ -687,7 +688,7 @@ Covers: UX 5.2, FR-2 (views). Screens: S-02.
 - A direct address to an area of a project the user does not belong to is refused.
 - No placeholder figures or sample records are shown anywhere in the frame or the areas.
 
-Notes: Left to later stories: Equipment as a page (story 3.5); the first Records entries, named revisions (story 4.1); Field work (story 5.1); Issues (story 5.9); Connections (story 7.5).
+Notes: Left to later stories: Equipment as a page (story 3.5); the first Records entries, named revisions (story 4.1a); the estimate (story 4.4) and capacity estimates (story 4.5) on the Costs and capacity page; Field work (story 5.1a); Issues (story 5.9a); Connections, with closets and ports (story 7.5a) and cable runs (story 7.6a).
 
 ### Story 3.2: Status language components
 
@@ -708,7 +709,7 @@ Covers: UX section 6, NFR-3.
 - The incomplete-total component is never styled as a pass.
 - Two different families are never combined into one badge.
 
-Notes: Left to later stories, which use these components: totals with unknown inputs (story 4.4 and story 4.5); approval states (story 4.6); condition on devices (story 6.1).
+Notes: Left to later stories, which use these components: totals with unknown inputs (story 4.4 and story 4.5); approval states (story 4.6c); condition on devices (story 6.1).
 
 ### Story 3.3: Readable text, contrast, targets and focus
 
@@ -733,7 +734,7 @@ Covers: NFR-3, UX section 10, audit findings A2, A3, A5, A6.
 - The text contrast measurements are recorded for every screen that exists at this story.
 - The marker, icon and focus-ring contrast measurements are recorded against both the plan and aerial imagery.
 
-Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1). Screens added later meet these rules under standing rule 5.
+Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1a). Screens added later meet these rules under standing rule 5.
 
 ### Story 3.4: Plan workspace regrouped
 
@@ -755,7 +756,7 @@ Covers: UX 7.1, decision D5, audit findings A7, A8, A9, A12. Screens: S-03.
 **Limits and values**
 - At 1440 × 900 and at 1280 × 720 the analysis strip overlaps neither the dock nor the scale bar. (CB-40)
 
-Notes: Left to later stories: attention marks on floors (story 5.9); Awaiting placement in Place and the left panel (story 6.4); the annotation tools in the Annotate group (story 7.4).
+Notes: Left to later stories: attention marks on floors (story 5.9b); Awaiting placement in Place and the left panel (story 6.4); the annotation tools in the Annotate group (story 7.4).
 
 ### Story 3.5: Equipment as a full page
 
@@ -782,7 +783,7 @@ Covers: FR-8, FR-68 (Viewer export), NFR-6, audit finding A1. Screens: S-08.
 - Search and filter results appear within 1 second on the fixture.
 - While the table is scrolled from its first row to its last, no main-thread task lasts longer than 200 ms. (CB-42)
 
-Notes: Left to later stories: the tabbed side panel (story 3.6); Historical filled by cancelled and corrected records (story 4.9) and removed devices (story 6.8); Awaiting placement (story 6.4); multi-select for bulk cleanup (story 6.5).
+Notes: Left to later stories: the tabbed side panel (story 3.6); Historical filled by cancelled and corrected records (story 4.9) and removed devices (story 6.8a); Awaiting placement (story 6.4); multi-select for bulk cleanup (story 6.5); the Doors and gates tab (story 7.3).
 
 ### Story 3.6: Device inspector with tabs
 
@@ -801,4 +802,4 @@ Covers: UX 7.2. Screens: S-04.
 - Work and Checks each say plainly that the feature is not available yet.
 - The device menu offers Delete draft where story 2.11b allows it, and otherwise the "Why can't I delete this?" link.
 
-Notes: Left to later stories: the other device-menu actions (story 4.9 and story 6.8); the Work tab (story 5.3, story 6.6 and story 7.5); the Checks tab (story 5.4 and story 5.5); flag chips in the header (story 5.6); condition in the header (story 6.1).
+Notes: Left to later stories: the other device-menu actions (story 4.9 and story 6.8a); the Work tab, filled with marks (story 5.3a), the planned action (story 6.6a) and port assignments (story 7.5a); the Checks tab (story 5.4a and story 5.5a); flag chips in the header (story 5.6a); condition in the header (story 6.1).

@@ -2,7 +2,7 @@
 
 **Outcome.** Projects and the installation's own data are backed up daily, a project or a whole installation can be recovered, and a project can be moved as a portable backup.
 
-**Depends on.** Epics 1 to 7. The backup and restore checks name records from all of them: revisions, reviewer links and packages (Epic 4), evidence and issues (Epic 5), removed devices and archive state (Epic 6), connections (Epic 7). The Backups and Projects screens and the activity log come from story 1.8 and story 1.9, the deployment key from story 1.4 and story 2.13, the Settings screen and the project-creation setting from story 1.10, and the large test project from story 2.7. The self-hosted parts need story 2.13, story 2.14 and story 2.15. Nothing later.
+**Depends on.** Epics 1 to 7. The backup and restore checks name records from all of them: revisions, reviewer links and packages (Epic 4), evidence and issues (Epic 5), removed devices and archive state (Epic 6), connections (Epic 7). The Administration area and its Projects table come from story 1.8a and story 1.8c, the activity log from story 1.9, the Records timeline from story 4.1a, the deployment key from story 1.4 and story 2.13c, the Settings screen and the project-creation setting from story 1.10a, and the acceptance-size project and its script from story 2.7b. The self-hosted parts need story 2.13a, story 2.14 and story 2.15. Nothing later.
 
 **Why here.** A backup is only complete once every kind of record exists, and updates in Epic 9 cannot be built until a backup can be taken and restored.
 
@@ -72,8 +72,8 @@ Covers: FR-34, FR-70 (Backups), FR-71, AD-13. Screens: S-34, S-31, S-02, S-20.
 - Self-hosted, when the backup location is on the same disk as the live data the server still starts, and S-34 shows a warning that a disk failure would lose both.
 
 **Refusals and edge cases**
-- Back up now pressed while a backup of the same project is running shows the running job and starts no second one. (CF-04)
-- A daily backup that falls due while a manual one runs waits for it, and is skipped if that one succeeded. (CF-04)
+- Back up now pressed while a backup of the same project is running shows the running job and starts no second one.
+- A daily backup that falls due while a manual one runs waits for it, and is skipped if that one succeeded.
 - Archiving or un-archiving a project is refused, with the reason, while a backup job for that project is running. (CF-05)
 - A backup that falls due while a project is being archived waits for the archive to finish. (CF-05)
 
@@ -131,6 +131,7 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 - The restored project shows its recovery point and the possible loss window on the Overview and Records.
 - The restored project shows no revision, decision or issued designation made after its recovery point.
 - The switch appears in the activity log.
+- The switch is an entry in the project's Records timeline of story 4.1a, naming the recovery point.
 
 **Refusals and edge cases**
 - "Make this copy current" is not offered for a copy with a failed check or an interrupted restore.
@@ -148,13 +149,14 @@ As Kevin, the product owner, I want a full-size restore timed on each host befor
 Covers: FR-34 (recovery target), experiment R3.
 
 **Core behaviour**
-- The restore and switch of story 8.2a and story 8.2b are run on an 8 GiB project on a deployed Cloudflare test installation and on a self-hosted server.
+- The fixture script of story 2.7b is extended with an option that adds files to the acceptance-size project until it reaches a stated stored size.
+- The restore and switch of story 8.2a and story 8.2b are run on an 8 GiB project made that way, on a deployed Cloudflare test installation and on a self-hosted server.
 
 **Limits and values**
 - The target is 60 minutes from starting the restore to a project that opens and acknowledges a save.
 
 **Evidence to record**
-- The 8 GiB project is generated with the size option of the story 2.7 script, and the record states its file kinds and counts.
+- The record states the file kinds and counts of the 8 GiB project.
 - Every file added for size has distinct content, and the project's stored size, summed from its backup manifest, is between 7.5 and 8 GiB. (CF-09)
 - Each elapsed time is recorded against the target, with the preparation assumed.
 
@@ -239,7 +241,7 @@ Covers: FR-34, FR-68, FR-71, NFR-5, AD-14.
 **Refusals and edge cases**
 - A failed creation is shown as Failed and can be retried.
 - A job interrupted by a server restart continues from its last completed step.
-- A request to start a second portable-backup job for a project while one runs shows the running job and starts no other. (CF-15)
+- A request to start a second portable-backup job for a project while one runs shows the running job and starts no other. 
 - A portable backup that would be larger than 10 GiB, or of a project over the 8 GiB payload boundary, is not produced: the job stops with the reason and the project is unchanged.
 
 **Limits and values**
@@ -248,6 +250,9 @@ Covers: FR-34, FR-68, FR-71, NFR-5, AD-14.
 **Access and restore**
 - A Viewer's request to create or download a portable backup is refused by the server.
 - A revision restore leaves a finished portable backup file unchanged.
+
+**Evidence to record**
+- A test makes a portable backup of a project holding a plan imported from a password-protected PDF, searches the file for the password and finds none.
 
 Notes: Left to later stories: importing (story 8.4b); replacing a live project (story 8.4c); the timed full-size runs (story 8.4d).
 
@@ -258,7 +263,7 @@ As a designer (an Editor), I want to bring a portable backup into this or anothe
 Covers: FR-34, FR-68, FR-71, FR-51 and FR-63 (kept through a portable backup), NFR-1, NFR-7, AD-14.
 
 **Core behaviour**
-- Importing a portable backup is offered to whoever may create projects: administrators, and standard users when the setting of story 1.10 allows it.
+- Importing a portable backup is offered to whoever may create projects: administrators, and standard users when the setting of story 1.10a allows it.
 - An import creates a new project and changes no existing one.
 - The new project is given a new project identity and records the identity of its source. (CF-17)
 - A standard user who imports becomes the new project's Editor, and no other member is added. (CF-18)
@@ -325,7 +330,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 **Core behaviour**
 - Members see the project's current usage against the 8 GiB budget on Records.
 - The count includes originals, previews, distinct older files, records and history, and retained package editions.
-- The count excludes backups, portable backup files held for download, unfinished uploads that are later discarded, and the stored parts of a package edition that failed.
+- The count excludes backups, portable backup files held for download, unfinished uploads that are later discarded, and the stored parts of a package edition that failed or was abandoned.
 - The Projects table in Administration (S-31) shows each project's stored size.
 - Settings gains a Limits group showing each storage limit and current usage as read-only values, with no control to raise them.
 - Before an upload, an inventory import or a portable-backup import starts, the server compares its declared size with the remaining budget; if it would exceed the budget, the user sees a warning naming the limit and the amount over, and nothing is sent.
@@ -333,8 +338,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 - A warning is shown on Records, and to administrators on S-31, when a project's usage reaches 90% of the budget. (CF-22)
 
 **Refusals and edge cases**
-- Space is reserved when an upload or job starts and released when it fails or is abandoned. (CF-23)
-- Of two uploads started together that would jointly exceed the budget, the later one is refused before sending and the earlier one completes. (CF-23)
+- Of two uploads started together that would jointly exceed the budget, the later one is refused before sending and the earlier one completes.
 - After an operation is refused for a limit, the project's records, files and history are the same as before it.
 - An export that cannot complete within a limit is shown as Failed and is never delivered truncated.
 - A project at its budget can still be opened, searched, exported, backed up and downloaded as a portable backup.
@@ -346,7 +350,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 **Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
-**Depends on.** Story 9.1 needs story 1.2, story 1.4, story 1.8, story 2.13, story 2.14, story 2.15, story 8.1b and story 8.3a. Story 9.2 needs story 1.1, story 2.13 and story 9.1. Story 9.3a needs story 1.1; story 9.3b needs all of Epic 8, story 1.9 and story 4.7; story 9.3c needs story 9.2. Story 9.4 needs story 1.8, story 1.9 and story 9.2. Story 9.5a to story 9.7d need all of Epic 8 and story 9.2 to story 9.4, because an update takes a backup first and restores it on failure; story 9.7b also needs the settings secrets of story 1.10. Nothing later.
+**Depends on.** Story 9.1 needs story 1.2, story 1.4, story 1.8d, story 2.13a, story 2.13b, story 2.13c, story 2.14, story 2.15, story 8.1b and story 8.3a. Story 9.2 needs story 1.1, story 2.13a, story 2.13d and story 9.1. Story 9.3a needs story 1.1; story 9.3b needs all of Epic 8, story 1.9 and story 4.7a; story 9.3c needs story 9.2. Story 9.4 needs story 1.8a, story 1.9 and story 9.2. Story 9.5a to story 9.7d need all of Epic 8 and story 9.2 to story 9.4, because an update takes a backup first and restores it on failure; story 9.7b also needs the settings secrets of story 1.10a. Nothing later.
 
 **Why here.** Updating safely needs the backup and restore of Epic 8, and the instructions can only be written and followed once both hosts and their backups exist.
 
@@ -362,8 +366,8 @@ Covers: FR-66 (instructions), SM-6.
 - They state which kinds of disk are supported and unsupported, from the R12 results of story 2.15.
 - They state what is not supported (no Docker, Windows Server, Kubernetes) and that Cloudflare needs the Workers Paid plan.
 - The self-hosted instructions cover: getting the image and Compose file, HTTPS by the bundled web server or by the operator's own proxy with the trusted-proxy setting, the live and backup folder settings and why the backup folder should be on another disk or machine, the deployment key file and keeping a copy off the server, and where the one-time set-up code appears.
-- The Cloudflare instructions cover: deploying from the organisation's own copy of the repository, the two storage buckets the deployment creates, the deployment key that is shown once at deployment and must be kept outside the Cloudflare account, and where the one-time set-up code appears.
-- Both sets name the command that issues a one-time recovery code for a locked-out sole administrator, and the recovery procedure of story 8.3a.
+- The Cloudflare instructions cover: deploying from the organisation's own copy of the repository, the two storage buckets the deployment creates, the deployment key of story 1.4 and keeping it outside the Cloudflare account, and where the one-time set-up code appears.
+- Both sets name the command that issues a one-time recovery code for a locked-out sole administrator (story 1.8d on Cloudflare, story 2.13c self-hosted), and the recovery procedure of story 8.3a.
 
 **Evidence to record**
 - A person who has not seen the project follows the self-hosted instructions on a fresh server, using nothing else, and reaches a working sign-in page over HTTPS, completes the set-up step, and sees a plain HTTP request redirected or refused.
@@ -381,7 +385,7 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 
 **Core behaviour**
 - Pushing a version tag starts a workflow that runs the test suite and builds the one Worker bundle and, from that bundle and the pinned runtime, the Docker image for x64 and arm64.
-- The workflow runs the self-hosted smoke suite against the image it built.
+- The workflow runs the self-hosted smoke suite of story 2.13d against the image it built.
 - The workflow signs the bundle and the image and publishes a release with its version number and notes.
 - The image is published to GitHub's container registry under the same version.
 - Verifying a published bundle or image against this repository's release workflow succeeds.
@@ -501,8 +505,7 @@ As an administrator of a self-hosted installation, I want to install a new relea
 Covers: FR-72, NFR-8, FR-71, AD-21. Screens: S-35.
 
 **Core behaviour**
-- With a newer release available, S-35 shows what the update will do in order, how long users will be interrupted, and Update now.
-- Nothing installs without that action.
+- With a newer release available, S-35 shows what the update will do in order, how long users will be interrupted, and Update now; nothing installs without that action.
 - The Compose file gains the updater container, the only part allowed to start and stop containers.
 - The application reaches the updater over a private connection protected by a shared secret.
 - The steps run in this order: the updater verifies the image's signature; signed-in users are warned; changes of every kind stop; a complete backup of every project and of the installation's data is taken as the "before an update" backup of story 8.1a; the pending-update marker is set; the updater records that installation has begun and swaps the image; the new version converts every project and the installation's own data; the health check of story 9.3b runs.
@@ -516,8 +519,7 @@ Covers: FR-72, NFR-8, FR-71, AD-21. Screens: S-35.
 - A release with a bad signature is refused before users are warned, nothing is installed, and the refusal is shown and logged.
 - If the backup fails, nothing is installed, changes are accepted again, and the failure is shown and logged.
 - The marker is written only after the complete backup has succeeded and before installation changes anything: a failure before that point leaves no marker, and a restart then works normally.
-- While an update runs, a second administrator's request to update is refused by the server.
-- While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason. (CF-27)
+- While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason, and a second administrator's request to update is refused by the server. (CF-27)
 - A daily backup that falls due during an update does not start until the update has finished. (CF-27)
 
 **Access and restore**
@@ -615,12 +617,11 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 **Core behaviour**
 - The organisation's copy of the repository contains an update workflow that is started with the name of the release to install.
 - The workflow, not the Worker, verifies the release's signature, and does so before it deploys anything.
-- Immediately before deploying, the workflow tells the installation, which records in the marker that installation has begun. (CF-32)
+- Immediately before deploying, the workflow asks the installation whether the marker still stands, and on that answer the installation records in the marker that installation has begun. (CF-32)
 - With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.3b.
 - On success the marker is cleared and S-35 shows the new version.
 - If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
 - The earlier version, finding the marker, restores the pre-update backup as in story 9.3b, then accepts changes again and records the failed attempt in the activity log.
-- A deployment by the workflow never regenerates the deployment key or, once an administrator exists, the set-up code.
 
 **Refusals and edge cases**
 - With a bad signature the workflow deploys nothing and reports the refusal; the installation withdraws the marker, accepts changes again, and shows and logs the refusal.
@@ -630,7 +631,7 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 - If the rollback or the restore cannot be completed, the installation shows the warning of story 9.6a with Cloudflare deployment steps to recover by hand, and never reports success.
 
 **Evidence to record**
-- On a deployed Cloudflare test installation, after an update a user with two-step verification signs in with a current code and a settings secret saved before the update still works.
+- On a deployed Cloudflare test installation, the redeployment rule of story 1.2 and story 1.4 holds for a deployment by the workflow: after an update a user with two-step verification signs in with a current code, and a settings secret saved before the update still works.
 - All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the marker set by a test function.
 
 Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. Left to later stories: starting the run from the interface (story 9.7b); manual steps and releases that change a Durable Object class (story 9.7c). Experiment R11 in story 9.7d covers the run that stops after deploying and the cases after the time limit.
@@ -643,7 +644,7 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 
 **Core behaviour**
 - An administrator stores a GitHub token for the organisation's copy of the repository in Settings.
-- The token is kept as the other settings secrets of story 1.10 are: encrypted and showing only its last 4 characters.
+- The token is kept as the other settings secrets of story 1.10a are: encrypted and showing only its last 4 characters.
 - Saving or replacing the token is logged without its value.
 - A recovery without the deployment key (story 8.3b) clears the token with the other stored secrets.
 - With a newer release and a stored token, S-35 shows what the update will do in order, how long users will be interrupted, and Update now.
@@ -720,14 +721,15 @@ As Kevin, the product owner, I want the test workload written down and confirmed
 Covers: acceptance profile, SM-5, NFR-4 (reference calculations).
 
 **Core behaviour**
-- The small functional project and the larger project, both produced by the fixture script of story 2.7 as later stories extended it, are loaded on the Cloudflare test installation.
+- The fixture script of story 2.7b is extended to build the small functional project.
+- The small functional project and the larger, acceptance-size project of story 2.7b are loaded on the Cloudflare test installation.
 - The larger project has about 10 buildings, 600 devices including 150 physical cameras, 20 to 30 plans, and about 60 cameras on the busiest plan.
 - The fixtures contain what the functional coverage needs: several floors, cameras and other equipment, an obstruction, a targeted zone, routes, costs and capacity, survey evidence, an existing-site survey with unknown details, retained equipment and cable, and a planned replacement recorded as actual work.
 - Where the script does not yet produce one of those, this story extends it.
-- A written manifest records, for each fixture, the plans, boundaries and geometry, zones, physical cameras against analytical views and configured streams, connections, evidence and history volumes, stored size, and the hardware, browsers and network conditions of the test.
+- A written manifest for each of the two fixtures records the plans, boundaries and geometry, zones, physical cameras against analytical views and configured streams, connections, evidence and history volumes, stored size, and the hardware, browsers and network conditions of the test.
 - The manifest declares the parser, decoded-image and page-complexity guards and the temporary space the jobs use.
 - Independent reference values are produced outside the application's code, by hand or by a separate script, for a stated set of optical, field-of-view and DORI cases and zone qualifying-area cases, and for counts, units, rounding and allowance arithmetic in the schedules and estimate.
-- Kevin confirms in writing that the larger fixture is representative, and the manifest is fixed at that point, before any acceptance run.
+- Kevin confirms in writing that the larger fixture is representative, and both manifests are fixed at that point, before any acceptance run.
 
 **Refusals and edge cases**
 - A change to a fixture after the confirmation is recorded as a new manifest version, and the affected runs are repeated. (CF-35)

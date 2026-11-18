@@ -18,10 +18,10 @@ Covers: FR-39, device state model (condition and provenance).
 - A known cable route can be drawn as existing. It keeps a stable run identifier and creates no purchase quantity.
 - An Existing device has a condition of Working, Faulty or Unknown. It starts as Unknown and a person sets it.
 - The condition is shown as a chip in the inspector header and on the device sheet.
-- A device record gains optional fields for manufacturer, serial number, IP address, MAC address, source asset ID, room and installation date. An empty field reads Unknown.
+- A device record gains optional fields for manufacturer, source asset ID and installation date. An empty one reads "Not recorded".
 - Each recorded value can carry a provenance of Imported, Old document, Estimate or Site-confirmed, shown as a chip beside the field with the source detail on demand.
-- A camera with an unknown model or installation date can be saved with those fields shown as Unknown. Recording it today does not set its installation date.
-- A device keeps its internal identifier and can also hold the label already used on site. Both are searchable, and search also matches the room.
+- A camera whose model or installation date is unknown can be saved with those fields empty. Recording it today does not set its installation date.
+- The label already used on site is recorded as the device's label, beside its unchanged internal identifier, and search finds the device by either.
 - A surveyed baseline can be saved as a fixed named revision, marked as the baseline in Records.
 
 **Refusals and edge cases**
@@ -59,11 +59,11 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 - An inventory file can hold at most 5,000 data rows. (CE-01)
 
 **Evidence to record**
-- The fixture script of story 2.7 also produces a 600-row inventory as .xlsx and as .csv.
+- The fixture script of story 2.7b also produces a 600-row inventory as .xlsx and as .csv.
 - While the 600-row file is parsed, Cancel and the step controls respond within 250 ms. (CE-02)
 - The preview of the 600-row file appears within 30 seconds of choosing the file, in each of three runs, recorded as a development measurement.
 
-Notes: Left for later: server-side enforcement of file limits and the usage display (story 8.5); the acceptance measurement of the 30-second target (story 10.2).
+Notes: Left for later: server-side enforcement of file limits and the usage display (story 8.5); the acceptance measurement of the 30-second target (story 10.2a).
 
 ### Story 6.2b: Map inventory columns
 
@@ -146,7 +146,7 @@ Covers: FR-58 (apply, re-import, concurrent changes), FR-62 (result, source and 
 **Evidence to record**
 - The confirmed import of the 600-row fixture completes within 30 seconds in each of three runs, recorded as a development measurement.
 
-Notes: Left for later: searching, verifying and placing records that await placement (story 6.4); cleaning up a mistaken batch (story 6.5); the acceptance measurement of the 30-second target (story 10.2).
+Notes: Left for later: searching, verifying and placing records that await placement (story 6.4); cleaning up a mistaken batch (story 6.5); the acceptance measurement of the 30-second target (story 10.2a).
 
 ### Story 6.4: Awaiting placement, and verifying on site
 
@@ -221,7 +221,7 @@ Covers: FR-40, FR-55 (reversal on equipment that was already existing), device s
 - A choice the state model forbids is disabled with its reason: any action except Add new on a Proposed device, Add new on an Existing device, and any new action on a removed, cancelled or corrected device.
 - Replace cannot be saved without the link to its successor.
 - Planning an action changes no recorded location, archives nothing and sets no mark.
-- Reversing a mistaken Installed mark on a device that was Existing before the scope clears the mark for the scope and leaves the device Existing. (CE-11)
+- From this story on, "Reverse installed mark" of story 5.3b is also offered for a device that was Existing before the scope. It clears the mark for the scope and leaves the device Existing. (CE-11)
 - Reversing a mistaken Installed mark on a relocated device also returns it to its earlier recorded location.
 
 **Access and restore**
@@ -261,7 +261,7 @@ Covers: FR-45. Screens: S-11.
 - The category is preselected from the planned action: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only. (CE-12)
 - Changing a category is recorded with actor and time.
 - The scope panel shows the estimate and the required checks that each category implies, and both update when a category changes.
-- The applicable core checks of story 5.4 are required by default for each Work now device. (CE-13)
+- The applicable core checks of story 5.4a are required by default for each Work now device. (CE-13)
 - An Inspect or test only device has no check required until an Editor selects the checks that apply to it.
 - A Reference only device gets no checks.
 - Reference-only equipment still counts in coverage and capacity and creates no purchase line.
@@ -301,7 +301,6 @@ Covers: FR-35, FR-8 (historical records), FR-42, FR-58 (archived match), FR-60 (
 - The predecessor's notes, photos and passes stay with the predecessor.
 
 **Refusals and edge cases**
-- A planned Remove or Replace archives nothing by itself.
 - With no scope active, Record removal is refused with "not saved: no active scope — reopen first".
 - A save onto a removed device from a stale tab or a reconnecting phone is refused and kept for review as "not saved: device removed". It is not applied and not discarded. (CE-16)
 - A re-imported row that matches a removed device goes to Needs review. It does not reactivate the device and creates no new one.
@@ -329,8 +328,8 @@ Covers: FR-53 (cable ends and dispositions), FR-35 (reconciling connections), FR
 - Recording the removal of a switch flags the cable ends connected to it for review and archives no other device.
 - Open issues and required retests on the device stay in the remaining-work list after removal. Removal resolves no issue.
 - An open reliability run that covers the device is flagged and keeps running.
-- The project list's attention count of story 5.9 includes cable ends flagged Needs connection review. (CE-17)
-- The closeout record and the Closeout package list removed and replaced equipment and the retained, reassigned, removed and unresolved cable ends, with historical ends shown apart from current connections.
+- The project list's attention count of story 5.9b includes cable ends flagged Needs connection review. (CE-17)
+- A closeout record written from this story on, and its Closeout package, list removed and replaced equipment and the retained, reassigned, removed and unresolved cable ends, with historical ends shown apart from current connections.
 
 **Refusals and edge cases**
 - The removal and its dispositions are saved as one operation. A stale tab cannot leave a cable end actively connected to a removed device.
@@ -408,10 +407,10 @@ Covers: FR-38, FR-45 (one active scope), FR-46 (carryover). Screens: S-20, S-18.
 - Once the project is reopened, design edits, Installed and Configured marks, test results, removals and new revisions are accepted again.
 
 **Refusals and edge cases**
-- Reopening restores no removed device, resolves no issue, and carries no approval or pass into the new scope.
+- Reopening restores no removed device, resolves no issue, and carries no pass into the new scope.
 - Reopening leaves earlier closeout records and packages unchanged, checked by hash.
 - Reopening is refused while a scope is active.
-- When two people reopen at the same moment, one scope is created and the second person is taken to it. (CE-22)
+- When two people reopen at the same moment, one scope is created and the second person is taken to it.
 - A revision of an earlier scope cannot be restored into the new scope.
 - A revision of an earlier scope cannot be designated as the new scope's current issued design. (CE-23)
 
@@ -436,7 +435,7 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 - Exporting may add a new retained package edition without un-archiving the project.
 - Un-archiving is an explicit action, starts no scope and changes no record.
 - Reopen on an archived project first asks to un-archive it.
-- Archiving and un-archiving appear in the activity log with actor and time.
+- Archiving and un-archiving each add an entry to the Records timeline and to the activity log, with actor and time.
 
 **Refusals and edge cases**
 - Archiving is refused while a scope is In progress, with the reason shown.
@@ -444,7 +443,7 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 - A save into an archived project from a stale tab or a reconnecting phone is refused and kept for review, and is not retried. (CE-25)
 - When two people archive at the same moment, the project is archived once and the second person sees that it already is.
 - A revision restore is refused while the project is archived.
-- While the project is archived, a reviewer link opens its revision read-only and accepts no comment or decision. (CE-26)
+- While the project is archived, a reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision. (CE-26)
 
 **Limits and values**
 - The banner reads "Archived — view, search and export only".
@@ -453,7 +452,7 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 **Access and restore**
 - No revision restore changes the archive state or its history.
 
-Notes: Left for later: backup and restore jobs that also block archiving (story 8.1).
+Notes: Left for later: backup jobs (story 8.1c) and restore jobs (story 8.2a) that also block archiving.
 
 ### Story 6.12a: Warranty records
 
@@ -473,13 +472,14 @@ Covers: FR-65 (warranty records and status), FR-33 (warranty details). Screens: 
 - Changing a warranty's term, start date, provider or covered items is recorded with actor and time, and the earlier values stay in its history.
 - Warranty details are shown on the device record and as an optional column in the equipment schedule.
 - When an issue is raised on a device, the device's warranty status is shown on the issue.
-- The closeout record is written after the warranty step, and it and the Closeout package show the warranty details entered there. Skipping the step records no warranty. (CE-28)
+- A warranty is its own record, kept apart from the closeout record. The Closeout package shows the warranty details as they stand at the package's cutoff.
+- Skipping the warranty step records no warranty.
 
 **Refusals and edge cases**
 - A term of zero, a negative term or a part-month term is refused.
 - A warranty recorded on a scope that is not yet closed, with no start date entered, shows Not started. (CE-29)
 - With no scope active, a warranty can still be added or changed.
-- A warranty changed after closeout leaves that scope's closeout record unchanged, checked by hash.
+- Adding or changing a warranty, at the warranty step or later, leaves the scope's closeout record unchanged, checked by hash.
 
 **Limits and values**
 - A warranty term is entered in whole months, with a minimum of 1. (CE-30)
@@ -507,7 +507,8 @@ Covers: FR-65 (service visits), FR-46 (visits on an issue), FR-33 (service visit
 - A second visit on the same issue sits beside the first, and visits added by two people at the same moment are both kept.
 - A corrected visit keeps its earlier entry.
 - The issue page's timeline shows each visit.
-- The closeout record and the Closeout package of a scope show every service visit recorded in it.
+- The Closeout package of a scope shows every service visit recorded in that scope, as the visits stand at the package's cutoff.
+- Recording or correcting a visit leaves every closeout record unchanged, checked by hash.
 
 **Refusals and edge cases**
 - The visit time cannot be earlier than the reported time, and neither can be in the future. (CE-31)
@@ -527,16 +528,15 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 **Core behaviour**
 - With no scope active, an issue offers Start service visit. After a confirmation that says what will happen, the project reopens into a new scope marked as service, with the issue included and the visit form open.
 - A service scope needs no estimate and can be closed without one.
-- A service scope starts with no current issued design, and issuing one remains available.
+- A service scope needs no issued design: it starts with none, and issuing one remains available.
 - In a service scope, Installed and Configured marks and field changes are recorded with nothing issued, and the warning "Work started with no issued design" is not shown.
 - A camera re-aimed during a visit is recorded with its reason and flags its checks, although the service scope has no issued design.
 - The service mark is a label only: the scope follows the one-active-scope rule and is closed out like any other scope.
-- The service scope's closeout record shows every visit made in it.
-- The original scope's closeout record and its warranty details are unchanged, checked by hash.
+- Starting a service scope leaves the original scope's closeout record, checked by hash, and its warranty records unchanged.
 - For an archived project, the action first asks to un-archive it.
 
 **Refusals and edge cases**
-- When two people use Start service visit at the same moment, one service scope is created and the second person is taken to it. (CE-33)
+- When two people use Start service visit at the same moment, one service scope is created and the second person is taken to it.
 - While a scope is active, Start service visit is not offered.
 
 **Limits and values**
@@ -691,6 +691,7 @@ Covers: FR-51 (closets, port schedule, assignments), FR-60 (closets block floor 
 - A port can be reserved with unknown power.
 - Current installation and Proposed design assignments are kept separately.
 - The inspector's Work tab shows a device's port assignments on each basis, with a link to the port schedule.
+- The device sheet shows the device's closet, port and cable reference.
 - A connection on an Unavailable port keeps its record and shows a warning.
 - A controller terminal creates no Ethernet port and no power source, and a device wired to a controller uses no switch port.
 - A cable whose end disagrees with its port assignment is shown as a discrepancy on both.

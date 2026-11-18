@@ -2,7 +2,7 @@
 
 **Outcome.** A technician with a phone can find a device, read what is required, record work, results and photos, and the scope can be closed honestly with a Closeout package.
 
-**Depends on.** Epics 1 to 4 complete. From Epic 4: named revisions and the floor-deletion guard (story 4.1), camera-model templates (story 4.3), the estimate (story 4.4), approval assignments (story 4.6), reviewer links (story 4.7), the issued design and its approval state (story 4.8), cancellation, correction and the device menu (story 4.9), and packages (story 4.10). From earlier epics: sessions (story 1.5), the first work scope and the project list (story 2.1), saving and conflicts (story 2.2, story 2.3 and story 2.4), guarded floor deletion (story 2.5), device records with lifecycle, the basis control and the acceptance-size fixture (story 2.7), coverage (story 2.8), routes (story 2.9), notes and photos (story 2.10), Delete draft (story 2.11), the project frame, view switch and Overview (story 3.1), the status language (story 3.2) and the inspector tabs (story 3.6). Nothing later: no criterion in this epic needs a story from Epics 6 to 10.
+**Depends on.** Epics 1 to 4 complete. From Epic 4: named revisions, the Records timeline and the floor-deletion guard (story 4.1a), revision restore (story 4.1b), the serial number, IP address and MAC address fields (story 4.2), camera-model templates (story 4.3), the estimate (story 4.4), approval assignments (story 4.6a), review decisions and bypass (story 4.6b and story 4.6c), reviewer links (story 4.7a and story 4.7b), the issued design and its approval state (story 4.8a), designating a different issued design (story 4.8b), cancellation, correction and the device menu (story 4.9), and packages (story 4.10a, story 4.10b, story 4.10c and story 4.10d). From earlier epics: sessions (story 1.5), the first work scope and the project list (story 2.1), saving and conflicts (story 2.2a, story 2.2b, story 2.3 and story 2.4), guarded floor deletion (story 2.5), device records with lifecycle, the basis control, search and the Room or area field (story 2.7a), the acceptance-size fixture (story 2.7b), coverage (story 2.8a and story 2.8b), routes (story 2.9), notes with their on-form warning (story 2.10a), photos (story 2.10b), Delete draft (story 2.11b), the project frame and view switch (story 3.1a), the Overview and the other areas (story 3.1b), the status language and its approval-state component (story 3.2) and the inspector tabs (story 3.6). Nothing later: no criterion in this epic needs a story from Epics 6 to 10.
 
 **Why here.** Field recording needs an issued design to compare against, and Epic 6 (existing sites, removal, reopening) builds on the installed marks, checks and issues defined here.
 
@@ -16,7 +16,7 @@ Covers: NFR-3, FR-61 (shown where installers start work), UX 8.1, decisions D3 a
 - On a phone, a project opens in the field shell: one top row with the floor switcher, save status and account menu, and bottom navigation with Plan and Equipment.
 - Directly under the top row a chip is always visible showing the current issued design's identifier and name, its issue date and the active work scope. It is not inside the account menu.
 - Tapping the chip opens the issued design read-only, with no editing controls.
-- The opened issued design shows its approval state, as story 4.8 defines it, separately from the word Current.
+- The opened issued design shows its approval state (Approved, Changes requested, Awaiting decision, Bypassed or No review) with the component of story 3.2, separately from the word Current.
 - When a different design is designated current in another browser, the chip shows the new identifier and date within 5 seconds.
 - A phone always gets the field shell. A tablet or laptop gets it by available width and can switch between the field shell and the desktop workspace.
 - The field shell has no tools for plan alignment, walls, zones, routes, estimate editing or checklist template editing. Coverage can be shown as a layer.
@@ -44,7 +44,7 @@ As a technician, I want to reach one device quickly by search, by list or by tap
 Covers: NFR-3 (equipment lookup), UX 8.2 (Find). Screens: S-F2.
 
 **Core behaviour**
-- A device can be found by search on identifier, label, name or model, with recently opened devices listed first.
+- A device can be found by search on identifier, label, name, room or area, or model, with recently opened devices listed first.
 - A device can be found in a list filtered to the current floor.
 - A device can be found by tapping its marker on the plan.
 - All three ways open the same device sheet.
@@ -56,10 +56,10 @@ Covers: NFR-3 (equipment lookup), UX 8.2 (Find). Screens: S-F2.
 - On the acceptance-size project, search returns results within 1 second in at least 19 of 20 trials.
 
 **Evidence to record**
-- The search timing is recorded as a development measurement; the acceptance run is story 10.2.
+- The search timing on the acceptance-size project is recorded.
 - The three ways of finding a device are checked on a real iPhone in Safari, a real iPad in Safari and a real Android phone in Chrome.
 
-Notes: Left to later stories: search by room, once devices carry a room value (story 6.2); the filtered lists "Not installed" (story 5.3a), "Checks outstanding" (story 5.7) and the survey filters (story 6.4).
+Notes: Left to later stories: the filtered lists "Not installed" (story 5.3a), "Checks outstanding" (story 5.7) and the survey filters (story 6.4). The search timing is a development measurement; the acceptance run is story 10.2a.
 
 ### Story 5.2: The device sheet and the issued reference
 
@@ -83,7 +83,7 @@ Covers: FR-2 (views), FR-26, FR-41 (base), FR-61, UX 5.3, decision D2. Screens: 
 **Evidence to record**
 - On a real iPhone and a real Android phone, the device sheet, the comparison and the issued reference toggle are opened and read.
 
-Notes: Left to later stories: condition on the device sheet (story 6.1); the wording for planned actions other than Add new (story 6.6); the device's connection, closet and port (story 7.5).
+Notes: Left to later stories: condition on the device sheet (story 6.1); the wording for planned actions other than Add new (story 6.6a); the device's connection, closet and port (story 7.5a).
 
 ### Story 5.3a: Mark work Installed and Configured
 
@@ -95,10 +95,10 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - In this epic a device is in scope when it is Proposed and not cancelled, or became Existing through an Installed mark recorded in the active scope. A device set to Existing by hand or brought in as Existing is not in scope.
 - The device sheet of an in-scope device has two separate marks, Installed and Configured.
 - Setting a mark records the account's name, the time and the active scope. A device holds at most one Installed and one Configured mark for each work scope.
-- Recording Installed on a Proposed device sets its lifecycle value from story 2.7 to Existing, and it appears in Current installation at its recorded location.
+- Recording Installed on a Proposed device sets its lifecycle value from story 2.7a to Existing, and it appears in Current installation at its recorded location.
 - Configured can be set before Installed. The device then shows a neutral notice that it is marked configured but not installed, and nothing is blocked. (CD-04)
 - When the first Installed mark of a scope is recorded while nothing is issued for that scope, the mark is saved at once and the project shows the warning "Work started with no issued design".
-- The warning carries a link that takes an Editor to issue a design (story 4.8), and it goes away when a design is issued for the scope.
+- The warning carries a link that takes an Editor to issue a design (story 4.8a), and it goes away when a design is issued for the scope.
 - The field shell's filtered lists gain "Not installed": the in-scope devices with no Installed mark in the active scope.
 - On desktop, the inspector's Work tab shows the two marks with the same behaviour.
 
@@ -115,7 +115,7 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - A device with an Installed or Configured mark is not offered Delete draft.
 - A Delete draft sent from a stale view after a mark was set is refused with the reason.
 
-Notes: Left to later stories: reversing a mistaken mark (story 5.3b); the rule that a mark changes no phase count (story 5.7); refusing a mark when no scope is active (story 5.12c); marks on existing devices with a planned action (story 6.6); a planned Remove, which is completed by the recorded removal and not by an Installed mark (story 6.8); marks in a later scope (story 6.10); a service scope, which needs no issued design and shows no warning (story 6.12).
+Notes: Left to later stories: reversing a mistaken mark (story 5.3b); the rule that a mark changes no phase count (story 5.7); refusing a mark when no scope is active (story 5.12c); marks on existing devices with a planned action (story 6.6a); a planned Remove, which is completed by the recorded removal and not by an Installed mark (story 6.8a); marks in a later scope (story 6.10); a service scope, which needs no issued design and shows no warning (story 6.12c).
 
 ### Story 5.3b: Reverse a mistaken mark
 
@@ -125,7 +125,7 @@ Covers: FR-55 (reversing a mistaken Installed or Configured mark), the device st
 
 **Core behaviour**
 - The device menu of story 4.9 gains "Reverse installed mark". A mistaken Installed mark is reversed with a required reason.
-- After the reversal the device returns to Proposed and leaves Current installation.
+- After the reversal an add-new device returns to Proposed and leaves Current installation.
 - The device's notes, photos and other evidence stay attached.
 - The reversal is listed in the device's history with actor, time and reason.
 - A Configured mark can be cleared with a required reason, kept in the device's history.
@@ -137,7 +137,7 @@ Covers: FR-55 (reversing a mistaken Installed or Configured mark), the device st
 - A device whose mark was reversed or cleared is still not offered Delete draft.
 - A revision restore leaves reversals unchanged.
 
-Notes: Left to later stories: the Needs review flags a reversal raises (story 5.6a); reversing the mark of a relocated device, which returns it to Existing at its earlier location (story 6.6).
+Notes: Left to later stories: the Needs review flags a reversal raises (story 5.6a); reversing the mark of a relocated device and of a device that was Existing before the scope, which stays Existing (story 6.6a).
 
 ### Story 5.3c: Report a change found on site
 
@@ -152,7 +152,7 @@ Covers: FR-27, FR-26 (the field record is kept apart from the issued design), FR
 - A moved camera appears at its new position in Current installation as soon as the change is saved, without any review step.
 - After a field change, the issued design, its package and its approval or bypass record are unchanged, checked by the revision's hash.
 - Placing and moving on a touch screen use a fixed crosshair with "Place here" and four nudge buttons. Dragging is available and is never required.
-- The device sheet records the installed unit's serial number, IP address and MAC address. Each reads "Not recorded" while empty, and filling one in asks for no reason. (CD-06)
+- The device sheet shows the serial number, IP address and MAC address fields of story 4.2 for the installed unit, and filling one in asks for no reason.
 - Adding a note or photo, or setting a mark, asks for no change reason.
 - On desktop, the inspector's Work tab offers "Report a change" with the same four kinds.
 
@@ -164,7 +164,7 @@ Covers: FR-27, FR-26 (the field record is kept apart from the issued design), FR
 **Evidence to record**
 - On a real iPhone and a real Android phone, a camera is moved with the crosshair and the nudge buttons, without dragging.
 
-Notes: Left to later stories: the checks a change flags (story 5.6a); refusing a field change when no scope is active (story 5.12c); a planned relocation (story 6.6); recorded removal (story 6.8); changes to ports and power connections (story 7.5).
+Notes: Left to later stories: the checks a change flags (story 5.6a); refusing a field change when no scope is active (story 5.12c); a planned relocation (story 6.6a); recorded removal (story 6.8a); changes to ports and power connections (story 7.5b).
 
 ### Story 5.4a: Checklists and starters
 
@@ -193,7 +193,7 @@ Covers: FR-29, FR-42 (checklist definitions). Screens: S-16.
 **Access and restore**
 - A revision restore leaves the working checklist definitions unchanged.
 
-Notes: Left to later stories: checklist expectations in revisions and the Design package (story 5.4b); recording results (story 5.5a); what a definition change does to recorded results (story 5.6b); applicability by planned action and scope category (story 6.6 and story 6.7); the pan/tilt/zoom starter (story 7.2).
+Notes: Left to later stories: checklist expectations in revisions and the Design package (story 5.4b); recording results (story 5.5a); what a definition change does to recorded results (story 5.6b); applicability by planned action and scope category (story 6.6a and story 6.7); the pan/tilt/zoom starter (story 7.2a).
 
 ### Story 5.4b: Checklist expectations in revisions and the Design package
 
@@ -269,13 +269,11 @@ Covers: FR-31 (photos and required evidence), FR-20 (prompts in the field), NFR-
 
 **Core behaviour**
 - "Take photo" opens the camera and "Choose photo" opens the library.
-- A photo taken from a check is attached to that attempt and shows the Uploading, Saved and Failed states of story 2.10.
+- A photo taken from a check is attached to that attempt and shows the Uploading, Saved and Failed states of story 2.10b.
 - Where a check requires a photo, Pass is offered only once a photo has been attached to the attempt.
 - Where a check requires a photo, a Pass recorded while the photo is Uploading or Failed reads "Pass pending evidence" and is not counted as passed until the photo is Saved. (CD-13)
-- The field note form offers the optional prompts of story 2.10, and they can be skipped.
-
-**Limits and values**
-- Note, explanation and reason fields carry the hint "Do not enter passwords or access codes for the site's systems". (CD-14)
+- The field note form offers the optional prompts of story 2.10a, and they can be skipped.
+- The field note form and the explanation and reason fields of a check show story 2.10a's warning against entering passwords or access codes for the site's systems.
 
 **Access and restore**
 - A revision restore leaves photos and notes attached to attempts unchanged.
@@ -283,7 +281,7 @@ Covers: FR-31 (photos and required evidence), FR-20 (prompts in the field), NFR-
 **Evidence to record**
 - Taking a photo and choosing one from the library are checked on a real iPhone in Safari, a real iPad in Safari and a real Android phone in Chrome.
 
-Notes: Left to later stories: counting Pass pending evidence as outstanding (story 5.7 and story 5.12a). The photo size limit, allowed types and resumed uploads are story 2.10's.
+Notes: Left to later stories: counting Pass pending evidence as outstanding (story 5.7 and story 5.12a). The photo size limit, allowed types and resumed uploads are set in story 2.10b.
 
 ### Story 5.5d: Large photos over a poor connection
 
@@ -328,7 +326,7 @@ Covers: FR-28, FR-44 (follow-up flags), FR-55 (follow-up after a reversed Instal
 **Access and restore**
 - A revision restore leaves flags unchanged.
 
-Notes: Left to later stories: flags from definition and template changes, and how a flag is cleared (story 5.6b); flags for removed, restored and replaced devices (story 6.8 and story 6.9); flags from port and power-connection changes, and Needs connection review (story 7.5).
+Notes: Left to later stories: flags from definition and template changes, and how a flag is cleared (story 5.6b); flags for removed, restored and replaced devices (story 6.8b, story 6.9a and story 6.9b); flags from port and power-connection changes (story 7.5b); Needs connection review (story 6.8b and story 7.5c).
 
 ### Story 5.6b: Definition changes, added checks and clearing a flag
 
@@ -378,7 +376,7 @@ Covers: FR-30, FR-31, the device state model (work recorded and progress are sep
 **Limits and values**
 - Progress is shown as counts. No percentage bar is shown.
 
-Notes: Left to later stories: site checks in progress and remaining work (story 5.8); open issues (story 5.9b); a required reliability stage with no current Pass (story 5.11b); scope categories and a planned Remove (story 6.7 and story 6.8).
+Notes: Left to later stories: site checks in progress and remaining work (story 5.8); open issues (story 5.9b); a required reliability stage with no current Pass (story 5.11b); scope categories, which redefine the in-scope devices and checks from then on (story 6.7); a planned Remove, listed until its removal is recorded (story 6.8a).
 
 ### Story 5.8: Site checks
 
@@ -432,7 +430,7 @@ Covers: FR-46 (records and dispositions), FR-55 (Delete draft eligibility). Scre
 - A device with a linked issue is not offered Delete draft.
 - A Delete draft sent from a stale view after an issue was linked is refused with the reason.
 
-Notes: Left to later stories: issues in counts, lists and the Design package (story 5.9b); raising an issue when no scope is active (story 5.12c); carrying unresolved issues into a later scope (story 6.10); service visits on an issue (story 6.12).
+Notes: Left to later stories: issues in counts, lists and the Design package (story 5.9b); raising an issue when no scope is active (story 5.12c); carrying unresolved issues into a later scope (story 6.10); service visits on an issue (story 6.12b).
 
 ### Story 5.9b: Issues in remaining work, counts and the Design package
 
@@ -445,12 +443,12 @@ Covers: FR-46 (deferred faults stay visible), FR-33 (Design preset: open issues)
 - The project list shows, for each project, an attention count: the number of open issues, deferred ones included, plus the checks flagged Needs review, Retest required or Needs definition in the active scope. (CD-21)
 - The field shell's bottom navigation gains Issues.
 - Saving a named revision records the open issues as they stand at that moment.
-- The Design package of story 4.10 lists the issues that were open when its revision was saved, each with its identifier, linked devices and whether it was deferred.
+- The Design package of story 4.10a lists the issues that were open when its revision was saved, each with its identifier, linked devices and whether it was deferred.
 
 **Refusals and edge cases**
 - A resolved or corrected issue is in neither the remaining-work list nor the attention count.
 
-Notes: Left to later stories: cable ends flagged Needs connection review join the attention count (story 6.8 and story 7.5).
+Notes: Left to later stories: cable ends flagged Needs connection review and ports flagged the same way join the attention count (story 6.8b and story 7.5c).
 
 ### Story 5.10a: Define a reliability period
 
@@ -501,7 +499,7 @@ Covers: FR-64 (runs and their timing), FR-44 (a change during a run flags the st
 **Access and restore**
 - A revision restore leaves runs unchanged.
 
-Notes: Left to later stories: a run's outcome, so that until story 5.11b a run can be started, stopped and ended but shows no Pass or Fail; a run still open when the scope is closed (story 5.12b); a recorded removal of a covered device during a run (story 6.8).
+Notes: Left to later stories: a run's outcome, so that until story 5.11b a run can be started, stopped and ended but shows no Pass or Fail; a run still open when the scope is closed (story 5.12b); a recorded removal of a covered device during a run (story 6.8b).
 
 ### Story 5.11a: Downtime log and availability
 
@@ -546,7 +544,8 @@ Covers: FR-64 (outcomes; required stages in remaining work), FR-44 (a recorded o
 - A new run after a Fail is a new attempt, and the earlier attempt and its log are kept.
 - A required stage that has no current Pass appears in the remaining-work list, whatever the states of its runs.
 - Once stage 1 has passed, starting stage 2 no longer lists it in the warning.
-- The PRD's worked example holds: a one-hour single stage with a 99% target and one counted three-minute outage, affecting all covered devices and linked to an issue, shows 95% and Fail, and the issue stays open; a restarted run with no downtime passes; both attempts are kept.
+- The PRD's worked example holds: a one-hour single stage with a 99% target and one counted three-minute outage, affecting all covered devices and linked to an issue, shows 95% and Fail, and the issue stays open.
+- In the same example a restarted run with no downtime passes, and both attempts are kept.
 
 **Refusals and edge cases**
 - A stage showing Needs definition cannot record a Pass.
@@ -576,7 +575,7 @@ Covers: FR-32 (the two closing states), FR-25 (approval never gates closing), FR
 - A bypassed approval does not count as a passed test or retest.
 - A device value that reads Unknown or Not recorded, a check that is not in scope and an optional check not performed do not prevent Completed.
 
-Notes: Left to later stories: writing the closeout record (story 5.12b); the warranty step (story 6.12).
+Notes: Left to later stories: writing the closeout record (story 5.12b); scope categories, which redefine what is outstanding from then on (story 6.7); the warranty step (story 6.12a).
 
 ### Story 5.12b: Close the scope and write the closeout record
 
@@ -590,6 +589,7 @@ Covers: FR-32 (fixed closeout record), FR-42 (closeout), FR-64 (runs at closeout
 - The scope's state changes only when the closeout record is stored and its hash verified.
 - After closing, the scope's state reads Completed or Closed with outstanding items in the frame, the field shell chip and the project list.
 - A proposal cancelled during the scope appears in the closeout record as a change to the scope, with its reason.
+- The closeout record is added as an entry on the Records timeline of story 4.1a.
 
 **Refusals and edge cases**
 - The outstanding list is rechecked on the server at the moment of closing. If something became outstanding after the page loaded, Completed is refused and the new list is shown.
@@ -603,7 +603,7 @@ Covers: FR-32 (fixed closeout record), FR-42 (closeout), FR-64 (runs at closeout
 - A revision restore leaves closeout records unchanged.
 - A floor held in a closeout record cannot be deleted, and the refusal lists the record.
 
-Notes: Left to later stories: what is accepted after closing (story 5.12c); final acceptance (story 5.12d); the Closeout package (story 5.12e); removed and replaced equipment and connection context in the record (story 6.8); warranty details and service visits in the record (story 6.12).
+Notes: Left to later stories: what is accepted after closing (story 5.12c); final acceptance (story 5.12d); the Closeout package (story 5.12e); removed and replaced equipment and connection context in the record (story 6.8b). Warranty and service-visit records are kept apart from the closeout record (story 6.12a and story 6.12b).
 
 ### Story 5.12c: A closed scope, and a project with no active scope
 
@@ -617,14 +617,14 @@ Covers: FR-32, FR-42 (stale saves), FR-24 (reviewer links after closing), FR-45 
 - With no active scope an Editor can defer, resolve, reopen and correct an issue. Include now is unavailable and says why. (CD-30)
 - With no active scope, a design edit, an Installed or Configured mark, a test result and a new revision are each refused with "not saved: no active scope — reopen first".
 - Design edits here are changes to buildings, floors, plans, devices, routes, zones, obstructions, analysis settings, checklist and site-check definitions, the reliability definition and the estimate. (CD-31)
-- With no active scope, a field change, a note or photo, a run start, a revision restore and a designation are refused in the same way. (CD-32)
-- Reading, exporting and generating a Design package remain available with no active scope.
+- With no active scope, a field change, a survey or field note or photo, a run start, a revision restore, issuing or designating a design, and cancelling or correcting a device are refused in the same way. (CD-32)
+- With no active scope, reading, exporting, generating a package from an already saved revision and recording a review decision on a saved revision remain available.
 
 **Refusals and edge cases**
 - A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried. (CD-38)
-- Once a scope is closed, a reviewer link to one of that scope's design revisions opens its revision read-only and accepts no comment or decision. (CD-33)
+- Closing a scope changes no reviewer link: a link to one of its design revisions still opens and accepts comments and decisions until it expires, is replaced or is revoked. (CD-33)
 
-Notes: Left to later stories: refusing a removal with no active scope (story 6.8); reopening into a new scope (story 6.10); warranty and service-visit records, which stay editable with no active scope, and Start service visit (story 6.12).
+Notes: Left to later stories: refusing a removal (story 6.8a) and a restore of a removed device (story 6.9a) with no active scope; reopening into a new scope (story 6.10); warranty records (story 6.12a) and service-visit records (story 6.12b), which stay editable with no active scope; Start service visit (story 6.12c).
 
 ### Story 5.12d: Final acceptance of the closeout record
 
@@ -633,8 +633,8 @@ As a client reviewer, I want to review the fixed closeout record and give my dec
 Covers: FR-23 and FR-24 (final acceptance of a closeout record), FR-25, FR-69 (attribution). Screens: S-23, S-24.
 
 **Core behaviour**
-- The final-acceptance assignee of story 4.6, signed in, opens the fixed closeout record, comments on it and records a decision, Approve or Request changes.
-- An Editor can create a reviewer link to the closeout record under the rules of story 4.7, and the named reviewer comments and decides through it.
+- The final-acceptance assignee of story 4.6a, signed in, opens the fixed closeout record, comments on it and records a decision, Approve or Request changes.
+- An Editor can create a reviewer link to the closeout record under the rules of story 4.7a and story 4.7b, and the named reviewer comments and decides through it.
 - An Editor can bypass final acceptance. The bypass is recorded on that closeout record as Bypassed, with the account, the time and an optional reason.
 - Decisions, comments and bypasses are separate entries added beside the closeout record. The record's stored file and hash are unchanged by them.
 - Final acceptance is recorded after closing, with no active scope needed, and is never a condition of closing. (CD-34)
@@ -657,7 +657,7 @@ Covers: FR-33 (Closeout preset), FR-34 (generated from a fixed closeout), FR-64 
 
 **Core behaviour**
 - The Closeout package is generated from the closeout record, with the final-acceptance entries recorded up to the package's cutoff, and never from live records.
-- It is generated, split, verified, retained and downloaded under the rules of the Design package in story 4.10.
+- It is laid out, split, verified, retained and downloaded under the rules of the Design package in story 4.10b, story 4.10c and story 4.10d.
 - The package shows recorded installation plans and status, changes from the issued design, recorded settings and identifiers, phase summaries, every attempt of the scope with earlier failures and corrections, notes and photos, outstanding issues, and approvals or bypasses as they stood at its cutoff.
 - A proposal cancelled during the scope is shown as a change to the scope, with its reason.
 - For each reliability run the package shows its dates, planned and actual duration, downtime log with the devices affected, availability, target and outcome.
@@ -673,7 +673,7 @@ Covers: FR-33 (Closeout preset), FR-34 (generated from a fixed closeout), FR-64 
 **Limits and values**
 - Photos are two to a page, each captioned with its device or note reference.
 
-Notes: Left to later stories: removed and replaced equipment and connection context (story 6.8); warranty details and service visits (story 6.12); closet, port and inter-floor schedules (story 7.7).
+Notes: Left to later stories: removed and replaced equipment and connection context (story 6.8b); warranty records (story 6.12a) and service visits (story 6.12b), read as they stand at the package's cutoff; closet, port and inter-floor schedules (story 7.7).
 
 ### Story 5.13: Lost connection and conflicts on a phone
 
@@ -692,7 +692,7 @@ Covers: FR-21, FR-42, NFR-2, NFR-3. Screens: S-F7.
 - For each field the technician keeps the saved value or reapplies their own, and the version is checked again on save.
 - A change saved by someone else to a device whose form is open is not applied to the form. A notice names who updated it and offers to review.
 - If the session ends while a device sheet is open, the sheet asks the technician to sign in again and keeps what was entered on the page.
-- After the same account signs in again, the entries kept on the page are saved, and an interrupted photo upload continues under story 2.10's rules.
+- After the same account signs in again, the entries kept on the page are saved, and an interrupted photo upload continues under the rules of story 2.10b.
 
 **Refusals and edge cases**
 - A pending entry refused because the technician's access was removed, reduced or deactivated stays visible as "not saved: access changed", can be copied, and is not retried.
@@ -704,4 +704,4 @@ Covers: FR-21, FR-42, NFR-2, NFR-3. Screens: S-F7.
 **Evidence to record**
 - After a reload on a real iPhone and a real Android phone, every entry that showed Saved is still present.
 
-Notes: Left to later stories: refusing a stale save onto a removed device (story 6.8) and into an archived project (story 6.11), both using the comparison built here. A stale save into a closed scope is story 5.12c.
+Notes: Left to later stories: refusing a stale save onto a removed device (story 6.8a) and into an archived project (story 6.11), both using the comparison built here. A stale save into a closed scope is story 5.12c.
