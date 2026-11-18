@@ -12,9 +12,9 @@ SID = r'\d+\.\d+[a-z]?'
 LABELS = ['Core behaviour', 'Refusals and edge cases', 'Limits and values', 'Access and restore', 'Evidence to record']
 problems, notes = [], []
 
-parts = {g: open(W + f'part{g}.md').read().rstrip() + '\n\n' for g in 'ABCDEF'}
+parts = {g: open(W + f'part{g}.md', encoding='utf-8').read().rstrip() + '\n\n' for g in 'ABCDEF'}
 body = ''.join(parts[g] for g in 'ABCDEF')
-front, back = open(W + 'front.md').read(), open(W + 'back.md').read()
+front, back = open(W + 'front.md', encoding='utf-8').read(), open(W + 'back.md', encoding='utf-8').read()
 
 # ---- old ids, in order of appearance, and the renumbering map ----
 epic_order, old_ids = [], collections.OrderedDict()
@@ -112,7 +112,7 @@ if miss: problems.append('not covered: ' + ', '.join(miss))
 # ---- choices ----
 choices = []
 for g in 'ABCDEF':
-    for ln, line in enumerate(open(W + f'choices{g}.md'), 1):
+    for ln, line in enumerate(open(W + f'choices{g}.md', encoding='utf-8'), 1):
         line = line.strip().strip('|').strip()
         if not line or line.startswith('#'): continue
         f = [x.strip() for x in line.split('|')]
@@ -168,4 +168,4 @@ print('PROBLEMS', len(problems)); [print('  ', p) for p in problems]
 print('NOTES', len(notes)); [print('  ', p) for p in notes[:40]]
 if '--write' in sys.argv:
     if problems or ambiguous: sys.exit('not written: fix problems and ambiguous references first')
-    open(OUT, 'w').write(doc); json.dump(remap, open(W + 'old-to-new.json', 'w'), indent=1); print('written')
+    open(OUT, 'w', encoding='utf-8').write(doc); json.dump(remap, open(W + 'old-to-new.json', 'w', encoding='utf-8'), indent=1); print('written')
