@@ -35,6 +35,11 @@ The project manager may be the installer or someone else. The chart covers one p
 | Editing dependencies | By dragging on the chart and from a plain list on the row, so the action never depends on dragging alone |
 | Rows with no dates | Shown with an empty “not scheduled” track, and counted |
 | Closeout package | Optional and off by default. When included, it shows final dates beside the latest baseline. |
+| Finished | A phase row is finished when its required checks have passed, as PRD 1.1 defines phase completion (FR-31). A subsystem row is finished when all its phases are. |
+| Progress on the bar | The fill shows recorded work, so “work recorded, checks outstanding” is visible and is not shown as finished |
+| Where dates are set | On a subsystem row for a rough plan. Once any of its phases has its own dates, the subsystem row’s dates become the span of its phases. |
+| Work removed from scope | A row whose work has all left scope stays visible, marked “no work in scope”, with the rows that depend on it flagged, until the manager removes it. Baselines already taken keep their copy. |
+| Who sets a baseline | Anyone with edit access, recorded with display name and time as unverified attribution, the same as approvals in PRD 1.1 |
 | Typed task that repeats app work | A hint beside the entry box says typed tasks are for work outside the app. No automatic detection. |
 
 ## What it can reuse from PRD 1.1
@@ -63,15 +68,9 @@ The discussion rated this a substantial feature: it reuses progress and grouping
 
 ## Open questions
 
-The eight questions first listed here were settled with Kevin on 2026-11-18 and are in the table above. Smaller points not yet discussed:
-
-- Whether a row finishes when its work is recorded, when its checks pass, or both.
-- Whether planned dates can be set on a subsystem row, on its phase rows, or on either.
-- What happens to a row’s dates and dependencies when its work is removed from scope.
-- Who may set a baseline, given that PRD 1.1 has no accounts.
+None recorded. Every question raised in the discussion on 2026-11-18 was settled with Kevin and is in the table above. The feature still needs requirements and Checks written, and review, before it can be built.
 
 ## Before this can be built
 
 - Project scheduling comes off the exclusions list in a later PRD revision, with requirements and Checks written for the items above.
-- The smaller points above are settled.
 - Architecture places dates, dependencies and baselines in the shared-edit and conflict rules (FR-21, FR-42).
