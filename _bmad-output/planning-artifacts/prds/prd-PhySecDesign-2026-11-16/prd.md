@@ -136,7 +136,7 @@ Work recorded and phase progress are separate. A technician’s installed or con
 
 These apply when a planned action is chosen. Once the work for an action is recorded, the action remains as history and the resulting lifecycle stage is expected: an Add new device that is now Existing is not a contradiction.
 
-- Retain, Relocate, Service/reconfigure, Replace or Remove for a Proposed device; an unwanted proposed device is deleted or cancelled under FR-55.
+- Retain, Relocate, Service/reconfigure, Replace or Remove for a Proposed device; an unwanted proposed device is handled under FR-55.
 - Add new for a device that is already Existing.
 - Any new planned action for a Removed, cancelled or corrected device.
 - Replace without a linked successor record.
@@ -345,7 +345,7 @@ Preserve parent/view/stream identities, selected profiles and source distinction
 
 Let each placed camera hold named stored positions, each with pan, tilt and zoom, and mark one as home. The home position is the resting view. Analyze it under FR-10 as a varifocal camera at the home settings; it is the only view of this camera counted in combined coverage, DORI and zone results under FR-12–15. Until a home position is defined, the camera contributes no assessed coverage and is disclosed as unassessed under FR-13. Any other stored position can be previewed with its own coverage and DORI. A preview is labeled as such and changes no counted result.
 
-Show the camera’s reach as a separate layer labeled reachable on demand: the area it could view within its limits, analysis range and modeled obstructions at the selected target height. Reach is never counted as covered or as overlap. Where an area within reach is otherwise uncovered, identify it as reachable on demand instead of as having no camera view. Within reach, show for each location the best detail achievable at the narrowest field of view that can still include that location within the camera’s pan, tilt and zoom limits, labeled as achievable in one place at a time. Near a limit, where only a wider view can include the location, show the detail of that wider view. This is not a DORI coverage result. Without sufficient optical data, show the reach outline alone with detail Not assessed.
+Show the camera’s reach as a separate layer labeled reachable on demand: the area it could view within its limits, analysis range and modeled obstructions at the selected target height. Reach is never counted as covered or as overlap. Where an area within reach is otherwise uncovered, identify it as reachable on demand instead of as having no camera view. Within reach, show for each location the best detail achievable at the narrowest field of view that can still include that location within the camera’s pan, tilt and zoom limits, labeled as achievable in one place at a time. Near a limit, where only a wider view can include the location, show the detail of that wider view. This is not a DORI coverage result. Without sufficient optical data, show the reach outline alone with detail Not assessed. Draw that outline from the pan limits, the analysis range and modeled obstructions only, as the directions the camera can be pointed, without assuming a field of view. Where the pan limits are also unknown, show no reach and disclose the camera’s reach as unassessed under FR-13.
 
 A zone shows its counted result as today and, separately, which cameras can reach it on demand, how much of it and at what achievable detail. Judge the zone’s target on the counted result only.
 

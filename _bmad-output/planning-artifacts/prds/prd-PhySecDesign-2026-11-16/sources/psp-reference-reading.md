@@ -2,7 +2,7 @@
 
 > **Numbering note (2026-11-18).** This digest was written in a parallel session against its own draft, not against the final PRD 1.0. Requirement numbers up to FR-54 match PRD 1.0, and FR-33a means FR-33. The three requirements that came out of this review are FR-63, FR-64 and FR-65 of proposed amendment 1.1. PRD 1.0 also retains original photos and adds inventory import, which the coverage tables below do not reflect. See the [amendment status](../amendment-1.1-status.md).
 
-Prepared 2026-11-18 during review of PRD draft 0.21. This digest records one public source that was read, three licensed references Kevin holds that have not been consulted, and the questions to take to them. It began as a record that changed no requirement. On 2026-11-18 Kevin accepted the sort of candidates below, and group A was written into PRD draft 0.22.
+Prepared 2026-11-18 during review of PRD draft 0.21. This digest records what was read and what was not. Read: the public ASIS PSP examination outline in full; pages of Patterson that Kevin shared from his own copy; and part of a public Department of Energy assessment guide. Not consulted: Garcia and Fischer, the other two licensed references Kevin holds. It also keeps the questions that were taken to those books. It began as a record that changed no requirement. On 2026-11-18 Kevin accepted the sort of candidates below, and group A was written into PRD draft 0.22.
 
 ## Source read
 
