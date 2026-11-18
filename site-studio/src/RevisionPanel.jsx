@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ClockCounterClockwise, GitDiff, MapTrifold, Plus, Trash } from '@phosphor-icons/react';
+import { ClockCounterClockwise, GitDiff, MapTrifold, Plus, Trash, VideoCamera } from '@phosphor-icons/react';
 import RevisionLayout from './RevisionLayout.jsx';
 import { MAX_PROJECT_REVISIONS, MAX_REVISION_NAME, normalizeProject } from './projectModel.js';
 import { sameDesignValue, UNDO_LIMIT } from './projectHistory.js';

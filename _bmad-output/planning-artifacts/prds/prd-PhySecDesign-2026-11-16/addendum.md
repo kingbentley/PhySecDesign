@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
+Supporting context for [final PRD 1.0](prd.md), updated 2026-11-17; a section on proposed amendment 1.1 was added on 2026-11-18. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
 
 - [Implementation baseline and migration context](#implementation-baseline-and-migration-context)
 - [Property context, work scope and issued design](#property-context-work-scope-and-issued-design)
@@ -531,6 +531,7 @@ Provide quick Delete draft for accidental proposed placements while preserving c
 | --- | --- |
 | Accidental proposed placement, never installed or surveyed as an existing asset, not included in an issued/approved design, with no actual installation/configuration/test evidence | Delete draft removes it from the working design and applicable proposed schedules, coverage, capacity and estimates; offer immediate Undo. Retain its stable ID and deletion/change history for guarded recovery. An untouched starter checklist is not field evidence. |
 | Previously issued/approved planned device that will not be installed | Cancel the planned item in the current working revision with a short reason. Preserve its issued representation, comments and decisions, and show the scope change in comparison/closeout. Cancellation is not actual removal, a failed test or an approval of the changed design. |
+| Unissued proposed device that is not eligible for Delete draft and is no longer wanted, for example one that keeps evidence after a mistaken installed mark was reversed (proposed amendment 1.1) | Cancel it with a short reason. It keeps its identity, history and evidence and leaves the proposed design. As above, cancellation is not actual removal, a failed test or an approval of the changed design. |
 | Existing, installed, commissioned or field-evidenced equipment | Do not offer quick draft deletion. Use the existing actual-removal/archive workflow for real removal. For a duplicate or erroneous record, make a history-preserving record correction with a reason and reference to the retained record when applicable; do not fabricate a physical removal. |
 
 Eligibility follows the record’s origin and history, not merely an unchecked Installed box, visibility, a Draft project label or the absence of a price/serial number. A saved draft revision alone does not prevent editing the current design; its captured content remains unchanged. If eligibility is ambiguous, require review/correction rather than guessing that the asset never existed. Planning notes may be retained with their original record/location context; they do not become installation evidence merely because a draft exists.
@@ -787,6 +788,49 @@ Create at least daily automatic complete recovery backups, retaining at least se
 Keep zero loss of acknowledged records/attachments for ordinary browser closure or service restart, as already confirmed in NFR-2. For catastrophic store loss, use a recovery point no older than 24 hours and restoration to a usable project within 60 minutes after recovery begins in the documented prepared recovery environment. The 60-minute exercise includes automated backup retrieval, validation and restoring records/assets/access configuration; it cannot depend on a multi-hour user upload over a 5 Mbps connection. Display the restored recovery-point timestamp and the potential loss window; do not fabricate records after that point or imply that its issued-design designation reflects later lost changes. Record environment/preparation assumptions and total elapsed time; this is a POC recovery target, not a production availability guarantee. If the latest valid backup is older or recovery misses the target, show that failure rather than claim compliance.
 
 Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Re-establish authorized access under the existing demo model. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
+
+## Proposed amendment 1.1 — reference-based additions
+
+Added 2026-11-18. These notes support FR-63–65 and the small additions proposed in the PRD. They were confirmed by Kevin in a parallel session and have not been through the finalization review. The [amendment status](amendment-1.1-status.md) records what was ported and what was not; the [reference digest](sources/psp-reference-reading.md) holds the sources.
+
+### What the references are, and their limits
+
+| Source | Use | Limit |
+| --- | --- | --- |
+| ASIS PSP examination outline (public, updated 2022) | Topic-level map of what the requirements cover | A topic list with no requirements, criteria or test values |
+| Patterson, *Implementing Physical Protection Systems*, 2nd edition | Test stages, the reliability test, warranty, repair logs, design-package contents and estimating | Only pages Kevin shared were read; findings are paraphrased and no book text is stored |
+| Department of Energy *Physical Security Systems Assessment Guide* (December 2016) | Camera field tests and the maintenance chain | Assessment guidance for high-security nuclear sites, read in part, partly analog-era |
+
+None is adopted as a standard and no compliance claim is made. Against the outline, the requirements are strong on electronic-system design, installation, commissioning, as-built records and replacement, and nearly silent on risk assessment, bidding and procurement, and personnel.
+
+### Pan/tilt/zoom cameras (FR-63)
+
+Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and earns no credit. For each location it shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit only a wider view may include it. Reach reuses the existing visibility calculation swept across the pan and tilt limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
+
+### Optional reliability period (FR-64)
+
+The idea is Patterson’s reliability or operational availability test. The requirement reuses the confirmed check, attempt, issue and retest rules; its one new element is a downtime log from which availability is computed. It differs from the source deliberately: nothing is prescribed, where he describes about 30 days in two phases; it warns and records but never blocks starting or continuing a run, where he requires all deficiencies corrected first and no repairs without written permission, while a required stage that has not passed still prevents Completed under FR-32; and availability is defined as time not down divided by total elapsed time, where his printed formula can be read two ways. People enter every start, end and outage, so a recorded availability is only as complete as the log.
+
+### Warranty and service visits (FR-65)
+
+Two warranty levels are kept because their clocks differ: the installer’s runs by default from a scope’s closeout, unless another start date is set, while a manufacturer’s belongs to an individual device, including a later replacement. Status is calculated and informational, and equipment with no warranty recorded is Unknown. Service visits fill the middle of a chain the requirements already had at both ends: an issue records the fault, and resolution requires a closing check. A service call after closeout reopens the project into a work scope marked as service through one action, after un-archiving it first if it was archived, so no separate service track exists; each such scope ends with its own closeout record. A service scope starts with no current issued design under FR-61.
+
+### Small additions
+
+The optional camera checks in FR-29 include two that verify the model in the field: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
+
+### Clarifications adopted from the parallel session
+
+Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, and adopted four clarifications where 1.0 was silent.
+
+- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can be returned to not installed with a reason. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
+- **Whole-revision restore (FR-22).** A restore changes design content only. Recorded actual positions, recorded work, evidence, issues and archive state are facts and are never rolled back. Deleted floors are not brought back.
+- **Un-archiving versus reopening (FR-37).** Leaving the archive is its own explicit action and starts no work scope; reopening for later work remains FR-38.
+- **Cancelled and corrected records (FR-8/41).** They stay listed and searchable with their reason, and the Changes view lists them against the current issued design.
+
+### Device state model
+
+The model in the PRD’s Terms section consolidates states that the requirements already use, for the architecture stage that the handoff asks to decide lifecycle identities. It was adapted to PRD 1.0: the middle lifecycle stage is named Existing, not Installed, because an import must not establish actual installation; a Placement axis covers the Awaiting placement list; and provenance is stated not to be a device state. The prototype stores a single existing/proposed flag and has none of the other axes.
 
 ## Downstream responsibilities and evidence boundaries
 
