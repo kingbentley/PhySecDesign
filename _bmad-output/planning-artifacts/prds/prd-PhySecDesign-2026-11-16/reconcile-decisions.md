@@ -1,103 +1,116 @@
-# Product-decision reconciliation — first full PRD draft
+# Canonical decision reconciliation — finalization input
 
-Reviewed 2026-11-16 against [PRD draft 0.1](prd.md) and [addendum](addendum.md). This is a documentation reconciliation, not final product signoff, application verification, or authorization to implement/deploy.
+Audited: 2026-11-17, current draft 0.27 before structural consolidation. This report replaces the earlier first-draft decision audit. It is a source-reconciliation input, not a software test, final rubric review or status change.
 
-## Inputs and precedence
+## Result
 
-- [.memlog.md](.memlog.md): canonical chronological decision record. Later explicit decisions supersede earlier assumptions and pending questions.
-- [Preserved discovery notes](sources/discovery-notes.md): detailed rationale and previously proposed behavior; their historical labels are intentionally retained.
-- [Conversation context](sources/conversation-context.md): original feature intent and confirmed guided decisions.
-- [Decision extraction](sources/draft-decision-extract.md): grouped consolidation checklist.
-- Latest confirmation explicitly adopts one continuing property project and the preceding later-work recommendation, and authorizes a first full draft. The current PRD correctly retains status draft and does not claim final approval.
+All 146 canonical decision/assumption/change entries were audited, together with all 271 lines of conversation-context.md, against fresh prd.md and addendum.md. All entries are assigned to the 39 theme dispositions below; none is unclassified. The original requested-capability mapping is separately recorded.
 
-Operational setup/tooling events were excluded from the requirement comparison. This review did not rerun application tests or independently validate implementation evidence reported by the addendum.
+**No accepted product capability was found missing. One actionable acceptance-wording inconsistency remains in the audited snapshot (DA-1).** All 62 functional IDs and their 62 checks are present. No new product choice is required to address the finding.
 
-## Overall result
+Current files were loaded before the audit; full canonical chronology was read rather than treating historical pending text as current policy. All 148 inventoried source files were checked: 147 unchanged; only the already documented .gitignore drift. No application tests, web research or main-file edits were performed.
 
-**All grouped guided-discovery product decisions are represented.** The latest property lifecycle confirmation is fully adopted rather than left as an open choice. No material contradiction was found in optional approvals, truthful test/closeout status, shared demo work, revision-specific approval, field changes, device archives, or reopened work.
+## Actionable finding
 
-One minor original-capability requirement is not explicit (autosave). One package-label ambiguity is worth tightening so a confirmed evidence outcome cannot be mistaken for an optional proposal. Neither requires restarting discovery or reopening settled decisions.
+### DA-1 — Preserve the 19-of-20 pass proportion when running extra timing trials
 
-## Grouped decision coverage
+- **Accepted authority:** .memlog.md:204; conversation-context.md:260; prd.md:588.
+- **Conflicting location:** addendum.md:730, Timing targets and completion boundaries.
+- **Issue:** The main criterion requires at least 19 of 20 trials to meet each timing target. The addendum instead says to run “at least 20” trials but require only “at least 19” successes. Literally, 19 successes among 40 or 100 trials could satisfy that sentence, weakening the accepted timing policy.
+- **Minimal fix:** State 20-trial batches with at least 19 successes per batch, or explicitly maintain the same at-least-95% proportion when the sample exceeds 20. Keep accuracy/integrity/access requirements on every applicable trial.
+- **Disposition at audit:** Open wording correction. No FR renumbering or new acceptance target is needed.
 
-| Product decision group | Representation in current draft/addendum | Result |
-| --- | --- | --- |
-| Physical-security professional audience; POC continues through building lifecycle | Opening, Users and POC scope, UJ-1–UJ-4; addendum distinguishes existing design capabilities from new lifecycle work | Represented; no production or compliance claim |
-| End-to-end design outcome: property, plan, equipment, coverage, cables, estimate, package | FR-1–FR-20, FR-33–FR-34; UJ-1 | Represented |
-| Maps/imagery, two-point alignment, PDF-page input | FR-3–FR-6; addendum Maps, plans, and equipment | Represented with baseline limits distinguished from product outcomes |
-| Equipment IDs/models/mounting; broader requested catalog and network closets/ports | FR-7–FR-9; OQ-7; addendum catalog/routes boundary | Represented; broader requested capability is explicitly pending POC prioritization rather than falsely claimed implemented |
-| Camera/combined coverage, DORI, walls, blind spots, zones, cleaner rendering | FR-10–FR-16; addendum Analysis conventions | Represented; estimates are not field passes, 90% is an example, sampled conventions are disclosed |
-| Survey notes/photos, costs/accessories/optional labor, capacity | FR-17–FR-20; addendum cost/capacity/evidence boundaries | Represented |
-| Autosave, undo/recovery, named revision comparison, existing versus proposed | FR-7, FR-21–FR-22; addendum records current local autosave | Partial only for explicit autosave requirement; see RD-1 |
-| Optional installer handoff and solo participant | Users and POC scope, UJ-2, FR-2, FR-23, SM-1 | Represented; same participant can design, perform field work, and close out |
-| Shared online project, phones/tablets/laptops, online-only POC | Scope table, FR-2, NFR-2/NFR-3, SM-1/SM-4; OQ-1/OQ-2/OQ-9 | Represented; shared persistence is required and offline sync excluded |
-| Shared demo access without individual accounts/invitations or verified identity | Scope table, FR-2/FR-23/FR-24, NFR-5, OQ-1; addendum shared-access boundary | Represented; simplified access does not downgrade shared project requirement |
-| Client/site owner approvals; project-specific assignees, same/different people, self-approval | Users and POC scope, FR-23–FR-25 | Represented |
-| Every approval optional/bypassable; bypass distinct, no mandatory reason, no changed tests/access | Lifecycle rules, FR-25, FR-32 acceptance check, SM-3 | Represented; no mandatory external signoff introduced |
-| Core planning/installation/configuration/testing phases; independent device progress | Lifecycle rules, FR-29–FR-31; OQ-3 keeps exact criteria open | Represented; optional approval/acceptance remains separate |
-| Editable device-type/generic checklists, expected/actual outcomes, actor/time, optional project-required photos | FR-29–FR-31; OQ-3 | Represented |
-| Pass/Fail/Not tested/Not applicable, explanations, preserved attempts/wording, remaining work | FR-29–FR-31; test-attempt/outstanding-item definitions, SM-2/SM-3 | Represented; Not applicable is not counted as Pass |
-| Direct authorized field changes against fixed issued design, even without handoff/approval | FR-26–FR-28; issued/working definitions, UJ-2 | Represented; role/access mechanism remains intentionally open in OQ-1 |
-| Before/after, IDs, actor/time/reason, optional photos; changed calculations/retest attention | FR-27–FR-28; OQ-4 | Represented; routine evidence entry does not require a design-change reason |
-| Field reviews nonblocking; correction requests visible; no erased actual conditions or inherited approvals | FR-24–FR-28; SM-2 | Represented |
-| In progress/Completed/Closed with outstanding items; explicit closure note, visible issues, optional owner/date | Lifecycle table, FR-32, FR-33, SM-3 | Represented; unfinished work cannot silently become Completed |
-| Approval/closure never turns failed/unperformed tests into passes; retain retests and reopen | Lifecycle rules, FR-25/FR-31/FR-32/FR-38 | Represented |
-| Closeout package reflects actual installation, recorded work/testing, changes, approvals/bypass, remaining work | FR-32–FR-34, NFR-6; A-1/OQ-6 | Represented; proposal labeling can be clarified under RD-2 |
-| Reversible removed-device archive with recorded identity/settings/location/connections/evidence; removal metadata | FR-35; FR-20/FR-34; addendum current deletion versus new archive behavior | Represented; no absent metadata is newly required solely to archive |
-| Archive excluded from current plan/schedule/coverage/counts/estimates/capacity but searchable/historical/backed up | FR-34–FR-35; NFR-1 | Represented; prior revision/report values remain preserved |
-| Same-ID restoration; new linked physical replacement; no overwrite or inherited historic pass | FR-36; OQ-8 | Represented |
-| One continuing project per property; fixed closeouts; read-only project archive until explicit reopening | Opening/scope, UJ-4, FR-32/FR-37/FR-38 | Represented; latest confirmation adopted |
-| Reopen latest installation into named revision/new scope/In progress with stable IDs | FR-38, UJ-4, NFR-1 | Represented |
-| Fresh scoped estimates/checks, no charges merely for retained equipment, historical estimates retained | FR-17/FR-32/FR-38; addendum later-work costing; OQ-5 | Represented |
-| Reopening retains unresolved work/history and does not restore removed devices, inherit passes/approvals, or alter prior closeouts | FR-38 acceptance check, FR-23/FR-32/FR-37, NFR-1, SM-2/SM-3 | Represented |
-| No supplied PSP source set; limited external references cannot mandate approval gates or establish compliance | PRD source caveat; addendum Source and verification boundaries | Represented |
+A minor consolidation note, not a separate product gap: prd.md:18 still says open choices are identified below, while prd.md:669 correctly says no known product question remains. The introduction should describe resolved policy and owned downstream details during the already-authorized prose consolidation.
 
-## Actionable drafting findings
+## Original conversation capability coverage
 
-### RD-1 — State autosave explicitly in FR-21
+The original table in conversation-context.md:13–33 is preserved as follows:
 
-**Type:** Minor requirement omission from original stated capability, not a missing guided lifecycle decision.
-
-The conversation context explicitly lists autosave under Recovery and alternatives. FR-21 currently requires save status, failed-save feedback, undo/redo, and backup recovery, but a manual-save-only implementation could satisfy its wording. The addendum mentions existing local autosave only as an implementation fact.
-
-**Action:** Add explicit automatic saving of supported working edits to FR-21 and its observable check, with shared-save status/failure behavior under NFR-2/OQ-2. Keep the autosave mechanism and concurrency design open; this does not require offline synchronization.
-
-### RD-2 — Limit the package proposal label to the unsettled details
-
-**Type:** Minor ambiguity; the required outcome already appears in FR-32–FR-34.
-
-The confirmed discovery model requires completed field records and outstanding items in the closeout package. A-1 is titled Proposed package detail and says the complete package should summarize configuration/checklist evidence before saying exact content is not confirmed. OQ-6 also broadly lists configuration/test detail. Read in isolation, those passages could make inclusion of confirmed field evidence seem optional even though FR-33 correctly requires communicating installation and configuration/testing.
-
-**Action:** Clarify that configuration/test evidence and outstanding-work communication are settled, while selection of summary versus full attached records, exact manifest, layout, pagination, and historical retention/reproduction remain OQ-6. Do not invent a detailed package schema or reopen whether evidence must be included.
-
-## Genuine open questions correctly preserved
-
-OQ-1/OQ-2 retain shared demo access, roles, hosting, saved-update visibility, persistence, concurrency, and shared undo/recovery. OQ-3 retains starter checks, applicability, pass criteria, phase completion, and system checks. OQ-4 retains retest triggers. OQ-5 retains scope selection, costing changed/retained assets, and carryover disposition. OQ-6 retains package/report details. OQ-7 keeps previously requested catalog/network/riser extensions visible. OQ-8 retains archive/cable/floor/draft-deletion edges. OQ-9 retains device/browser, accessibility, scale, performance, storage, and recovery acceptance targets.
-
-The extraction's no-handoff interaction-detail question is adequately covered at first-draft level by FR-2/FR-23/SM-1 plus role and phase questions. It does not need an additional blocker or a repeat question about whether handoff is optional.
-
-## Superseded proposals and pending questions
-
-| Historical proposal/pending question | Superseding decision now represented |
+| Original intent | Current disposition |
 | --- | --- |
-| Approval parties/gates undecided | Client/site owner expected; project-specific assignments; every approval bypassable; self-approval allowed |
-| Closeout of unfinished work/failed tests undecided | Three explicit states; brief outstanding-item closure note and list; retained tests/retests; reopening |
-| Device retention/restoration undecided | Reversible archive, full captured history, current-calculation exclusions, same-ID restoration, linked physical replacements |
-| Freeform versus checklist field documentation undecided | Editable type checklists plus evidence, four test outcomes, explanations, retained wording/attempts |
-| Field platforms/offline needs undecided | Phones/tablets/laptops and online-only POC |
-| File-based versus shared collaboration undecided | One persisted shared online project; files supplemental |
-| Proposed-change-only versus direct installer editing undecided | Direct authorized field updates with immutable issued reference and optional nonblocking review |
-| Individual accounts/invitations potentially required | Shared demo access sufficient; participant attribution unverified |
-| New linked project versus reopened property project undecided | One continuing project, fixed closeouts, read-only archive, new named revisions, fresh scoped estimates/evidence and visible carryover |
-| Full draft pending further guided discussion | First full draft authorized; final signoff not granted |
+| Address/satellite/property context (line 15) | Captured: FR-3; optional Google/open-source mapping and provider failures remain explicit. |
+| Two-corner plan alignment (16) | Captured: FR-4/5; drawing-only transform, preview/cancel/undo, no perspective/CAD claim. |
+| Selected-page PDF import (17) | Captured: FR-6; local password handling plus newly accepted source retention, page association and legacy-unavailable distinction. |
+| Equipment models/mounting/IDs (18) | Captured: FR-7/47–49; contacts versus openings, physical camera versus views/streams and independent component identity. |
+| Closets, connection endpoints, routes/slack (19) | Captured: FR-9/51–53; logical assignments versus physical routes, explicit lengths/bases and one-time allowances. |
+| Lens/height/FoV/obstructions/blind spots (20) | Captured: FR-10/11/13/47/48; unsupported contribution and uncertainty are disclosed. |
+| Combined coverage/overlap/unseen (21) | Captured: FR-12/13; basis independent of visual hiding and unsupported analysis not proof of blindness. |
+| Individual/combined DORI (22) | Captured: FR-14/48; best eligible single view, no pixel summing. |
+| Clean vector/cone presentation (23) | Captured: FR-16; presentation does not claim exact continuous analysis. |
+| Named zones/DORI percentage shortfalls (24) | Captured: FR-15; optional target and example90% not universal, full denominator and threshold uncertainty retained. |
+| Survey photos/measurements/constraints (25) | Captured: FR-20/50; shared evidence references, field measurements distinct from plan estimates. |
+| PDF plans/legends/schedules/evidence (26) | Captured and refined: FR-33/34; exact complete editions/volumes, scope and omission disclosure. |
+| Storage/bandwidth/PoE/ports (27) | Captured: FR-19/51; actual streams versus bodies, full bandwidth versus recording percentage, compatible bases/unknowns. |
+| Equipment/cable/accessory/optional labor cost (28) | Captured: FR-17/18/45/52; current supply scope, no retained repurchase, estimate CSV. |
+| Autosave/undo/revisions/comparison/current-proposed (29) | Captured: FR-21/22/39–42; guarded session undo distinct from whole-version restoration. |
+| Fixed-version named review/comments/approval (30) | Captured: FR-2/23–25/61; demo attribution explicitly supersedes any implied verified-person identity. |
+| Optional installer handoff and field documentation (31) | Captured: UJ-1/2; FR-26–31; solo workflow and observed states preserved. |
+| Planning/installation/configuration/testing (32) | Captured: lifecycle terms; FR-29–32/43; independent completion and optional approvals. |
+| Project/device lifecycle and later revisions (33) | Captured: FR-35–38/53–55; one continuing property and fresh scopes/evidence. |
 
-Older assumption/event entries in the chronological memory and proposal labels in preserved discovery notes are not contradictions when read with their later confirmations and historical headers. They should remain historical evidence, not be revived as open product choices.
+Original purpose/visual direction (context:5–9) is captured by the PRD introduction, primary-user scope and linked white/teal map-first reference under Experience. PSP/source-input limitations (context:37–50) are preserved in the final source boundary: no supplied PSP corpus or compliance/certification claim. The historical guided path and prior first-draft authorization do not constrain Kevin's subsequent explicit finalization authorization.
 
-## Finding disposition — targeted recheck, 2026-11-16
+## Canonical theme dispositions
 
-Rechecked only RD-1 and RD-2 against the updated PRD. Both are addressed; no remaining issue from these two findings.
+Source numbers below are exact .memlog.md line numbers at this audit. Entries marked assumption/change are interpreted in sequence: a proposal later confirmed is captured, an abandoned option is historical, and implementation mechanisms remain downstream. Each row includes its later governing requirement, so an earlier pending phrase does not reopen the decision.
 
-- **RD-1 addressed:** FR-21 now explicitly says to automatically save working edits. Its acceptance check requires a supported edit to persist without a manual save command, retaining save-state and failure feedback. This closes the manual-save-only ambiguity.
-- **RD-2 addressed:** A-1 is now Proposed package presentation and explicitly confirms inclusion of installation/configuration/test evidence and outstanding work. It reserves summary/detail level, section layout, photo pagination, and cost/capacity section inclusion for OQ-6. This preserves the confirmed evidence outcome while leaving presentation choices open.
+| Theme | Canonical entries | Disposition | Current coverage / supersession |
+| --- | --- | --- | --- |
+| T01 — Foundational scope and planning route | 6, 7, 8, 9 | Captured / process history | POC scope, supplied-input boundary and guided vision/features discovery; no production/compliance assumption. Discovery route is historical process, not an application feature.<br>PRD introduction, scope and finalization boundaries; addendum Source and verification boundaries. |
+| T02 — End-to-end outcome and phases | 15, 16, 17, 18, 19, 20 | Captured | Design through optional handoff, actual installation/configuration/testing, closeout and continuing lifecycle. Initial unresolved phase/archive detail is settled by later decisions.<br>UJ-1–4; FR-1–20/26–38; terms and lifecycle rules. |
+| T03 — Approval assignment, bypass and solo work | 21, 24, 25, 26, 27 | Captured; earlier gate assumption superseded | Client/site-owner assignments may differ or be the same/self; every approval optional, bypass distinct, reason optional. Early before/after gate proposal does not impose mandatory signoff.<br>FR-23–25/30–32; addendum demo access, checklist and closeout sections. |
+| T04 — Explicit honest closeout | 29, 32 | Captured | In progress / Completed / Closed with outstanding items; brief note, visible remaining work, optional owners/dates, reopening and preserved failures.<br>Lifecycle definitions; FR-31/32/38/46; addendum Closeout remains explicit. |
+| T05 — Removed-device history and replacement identity | 34, 35, 37 | Captured | Recorded identity/settings/location/connections/evidence retained; actual archive excludes active demand; searchable historical view; same-ID restoration, new linked replacement ID.<br>FR-35/36/53/54; FR-8; NFR-1. |
+| T06 — Core field checklist/evidence policy | 41, 42, 44 | Captured | Editable type starters, expected/actual observations, four outcomes, fail/N/A explanations, actor/time and retained attempts; optional photos unless project-required.<br>FR-29–31/43/44; addendum checklist model. |
+| T07 — Mixed-device online shared workflow | 45, 46, 47 | Captured | Phones/tablets/laptops, online-only, persisted shared project; file exchange supplements rather than supplies collaboration.<br>FR-2/21/42; NFR-2/3; SM-4. |
+| T08 — Direct installer changes and fixed issued baseline | 50, 51, 52, 54 | Captured | Meaningful before/after/actor/time/reason, optional photos, affected calculations/checks, nonblocking review and no inherited approvals.<br>FR-26–28/44/61; addendum retest and current-issued sections. |
+| T09 — Shared demo access | 55, 71, 78 | Captured | HTTPS, revocable project editing versus fixed-version review, server-enforced scope including files, unverified attribution, sanitized data; vendor downstream.<br>FR-2/23–25; NFR-5; addendum Confirmed demo access model. |
+| T10 — One continuing property and later work | 58, 59, 61 | Captured | Fixed closeouts, read-only archives, explicit reopen/new scope/revision, stable IDs, fresh estimates/evidence, visible carried issues; no revived devices/passes/approvals.<br>FR-37/38/45/46/61; UJ-4. |
+| T11 — First-draft consolidation and inherited baseline | 63, 65, 66 | Captured / later refined | Initial fixture/package open items later resolved. Drawing-only transforms, local PDF/password processing, linked optics, typed optional zones/DORI display, stream/storage distinction, estimate CSV and explicit autosave retained. New original retention supersedes prototype nonretention.<br>FR-4/6/10/14/15/18/19/21/33/34; addendum baseline and package sections. |
+| T12 — Existing-site survey/upgrade model | 74, 75, 77, 79 | Captured; intake deferral superseded | Provenance/unknowns and surveyed baseline, stable/legacy IDs, planned actions versus actual work, current/proposed/changes basis, retained demand/no repurchase, scoped tests and visible defects. Manual-only intake proposal superseded by FR-56–62.<br>FR-17/19/30/35/39–41/45/46/56; addendum existing-site workflow. |
+| T13 — Shared edits, evidence, undo and consistent snapshots | 80, 81, 83, 84 | Captured; timing later confirmed | Per-item versions, no silent same-item merge, independent writes, coupled dependency checks, separate evidence, duplicate-safe retries, session-guarded undo, visible pending data and fixed saved snapshots. Exact transport/storage remains downstream; five-second peer target now confirmed.<br>FR-2/21/22/24/31/32/42; NFR-2; acceptance timing table. |
+| T14 — Detailed checklist/pass criteria and site checks | 86, 87, 88, 90, 91 | Captured | Common/type/generic starters, required/applicable distinctions, readiness without fifth outcome, observed evidence, independent phases/no-checks status, optional failure visibility, scoped site checks; no universal standards library.<br>FR-29–31/43; addendum checklist model. |
+| T15 — Targeted retesting | 92, 93, 95, 96 | Captured | Proposed/actual/correction distinctions, scoped dependencies, preserved historical outcomes, separate follow-up flags, reasoned unaffected dispositions and current tested-context completion; no blanket reset/waiver.<br>FR-28/31/32/44; addendum targeted retest. |
+| T16 — Work scope, costs and persistent issues | 97, 98, 100, 101, 102 | Captured | One active scope, multiple revisions, three scope categories; supply/accessory/optional labor, no recharge, slack once, unknown price; stable Include/Defer/Resolve issues and explicit outstanding-item closeout.<br>FR-17/32/38/45/46/52; addendum work scope. |
+| T17 — Design/closeout packages | 103, 104, 106, 107, 108 | Captured; image limits later refined | Presets and detailed evidence/history, quantities/capacity default on, costs optional off, all floors default/partial labels, clean/coverage sheets, two photos/page, exact file retention/new editions/cutoffs, separate backup/CSV, no approval gate. Original-plus-preview retention later extends prototype capture limits.<br>FR-33/34; NFR-6; addendum package and file/recovery sections. |
+| T18 — Initial broad catalog/cable proposal | 109, 110 | Superseded by specific later confirmations | Accepted only through subsequent camera, panorama, equipment, annotation, closet/port and physical-routing decisions. Dedicated noncamera template automation was not committed; no discovery/3D routing/rack/electrical scope added.<br>FR-7/47–52; addendum confirmed equipment/cable scope and exclusions. |
+| T19 — Specific camera models and coherent optical input | 112, 113, 114 | Captured; normalization mechanics downstream | Searchable reusable templates; pixel modes, fixed/varifocal settings, angular FoV versus scene dimensions and sensor millimeters versus format; consistent authority/unknowns, no invented interpolation or silent instance/history updates.<br>FR-7/10/47; addendum camera-model templates. |
+| T20 — Physical camera/views/streams and panoramic limits | 117, 118, 119, 121, 122, 123, 124 | Captured; other proposal groups adopted separately | Stable body/view/stream IDs, eligible conventional heads, best single-view DORI/no summing; hardware versus actual stream demand. Illustrative fisheye/composite output Not assessed, full denominator/no invented credit; calibrated panoramic analysis deferred. Remaining groups later resolved.<br>FR-10/12–15/19/47/48; addendum panoramic support. |
+| T21 — Additional equipment and linked openings | 126, 127 | Captured | Actual openings versus contacts; added generic hardware, independent linked IDs/cost/work/evidence; shared components not cloned; no automatic bundle/cable/port/pass. Noncamera template-library automation remains uncommitted.<br>FR-7/29/49; addendum equipment families. |
+| T22 — Site annotations | 128, 129, 131, 132 | Captured | Named lines/entrances/arrows, existing zones, callouts and known-scale estimated dimensions, survey evidence reuse; no analytical/cable semantics or hidden issue deletion; normal edits/history/export.<br>FR-15/20/33/42/50; addendum site annotations. |
+| T23 — Closets, ports and compatible power bases | 133, 134, 136, 137 | Captured | Named grouping without load/duplication, manual ports/terminals, current/proposed and allocation/condition separation, reservations once, uplinks, known compatible PoE bases and unknown-demand warnings; logical crossing distinct from geometry.<br>FR-9/19/33/42/49/51; addendum closets/ports. |
+| T24 — Physical inter-floor routing and allowances | 138, 139, 141, 142, 143 | Captured | One run ID, per-floor segments/risers, explicit vertical/drop sources, R and Q formula with percentage once excluding extras, separate purchase rounding/overrides/measured length, no patch-lead double count; partial legacy basis visible.<br>FR-9/17/33/42/52; addendum inter-floor routes. |
+| T25 — Cable/device lifecycle independence | 144, 146, 147, 148 | Captured | Keep cable/history, explicit endpoint disposition, actual versus planned removal, occupancy versus demand, replacement linked IDs, validated explicit restoration/reuse, shared dependents and current retest.<br>FR-35/36/51/53; addendum cable lifecycle. |
+| T26 — Restoration on changed/missing floors | 149, 151, 152, 153 | Captured; import-only list is a later explicit exception | Same ID; valid current floor/confirmed position, no name guessing/autorecreation, cancel stays archived, preserve former evidence. Restoration requires placement; later Awaiting placement applies only to imports.<br>FR-1/22/36/42/53/54/57; addendum floor restoration. |
+| T27 — Draft deletion, cancellation and correction | 154, 156, 157 | Captured | Eligible unissued never-installed/surveyed drafts, quick isolated undo, history-based eligibility, guarded dependencies/reservations; issued proposals cancel, actual assets archive/correct, no evidence erasure or indefinite undo promise.<br>FR-35/36/42/55/59; addendum draft deletion. |
+| T28 — Original small-fixture acceptance candidates | 158, 159, 160 | Historical / superseded | Earlier 2-building/100-device/three-participant geometry/time/file limits were not adopted as a package. Later explicit scale/browser/performance/file confirmations control, including numbers independently reselected. Prototype caps are evidence, not accepted limits.<br>NFR-3/4; SM-4/5; current tables; sources/superseded-acceptance-candidates.md. |
+| T29 — Real-site scale and two-fixture approach | 163, 164, 165, 167, 168 | Captured | 10 buildings; 600 devices including 150 physical cameras; roughly20–30 plans; about60 cameras busiest plan; usually1/sometimes2 users; small functional plus larger fixture. Views/streams/workload declared separately; no permanent ceiling/measured claim.<br>NFR-4; SM-5; A-2; addendum scale tests. |
+| T30 — Readiness advice and party candidates | 169, 172 | Historical advice / later resolved | Finalization audit/review/consolidation is document work; mechanisms/testing downstream. PM-1/PM-2 subsequently accepted; intake tradeoff superseded by FR-56–62. No new PSP compliance gate.<br>FR-60/61; resolved OQs; addendum finalization readiness/ownership. |
+| T31 — Inventory import followed by survey | 173, 174, 175 | Captured; candidate mechanics later settled | Import when available, manual fallback, same stable records, source claims versus field observations. Missing-location, matching and formats are now confirmed rather than open.<br>FR-39/56–59/62; UJ-1; addendum import refinements. |
+| T32 — Awaiting placement and initial bulk request | 177, 178, 179, 180 | Captured; later specifics confirmed | Property-level import-only unplaced list, hints/unknowns and normal survey placement on same ID; no invented geometry/demand zero/pass. Initial bulk request alone was not approval, but later confirmed scope now controls.<br>FR-8/54/56–59; addendum placement/reconciliation. |
+| T33 — Reviewed duplicates/re-imports and bulk cleanup | 182, 183, 184, 185 | Captured; later PM decisions settled | Stable IDs not names/IP clues; four preview groups, batch valid rows, repeat-safe operations, verified-value protection, no blank/absent-row erasure, explicit archived restore. Eligible unused imports/drafts only; protect matched existing/evidence/history/dependencies; activity/undo.<br>FR-42/55–59; addendum reviewed imports/cleanup; FR-60/61 resolve later PM proposals. |
+| T34 — Unused-draft container deletion | 187, 188, 189 | Captured; following issue proposal later accepted | Unused draft floors/buildings only, no active/historical dependencies, visible blockers/no cascade, shared guards; full retirement not added. Later issue designation governed by FR-61.<br>FR-1/42/54/60; addendum container deletion. |
+| T35 — Current issued design | 191, 192, 193 | Captured; following format proposal later accepted | One explicit fixed current reference per active scope, Not issued before issue, visible revision/date/separate approval, no draft/export promotion, superseded exact history, field work untouched, actor/time/conflict guards.<br>FR-26/42/45/61; addendum current issued design; FR-62 resolves subsequent formats. |
+| T36 — CSV/.xlsx and column mapping | 195, 196, 197 | Captured; later acceptance groups settled | Selected tabular sheet/header, one physical device/row, editable defaults/mapping, minimum label/sourceID, unknowns, provenance/leading zeros, no inferred optics/connections/field pass, values-only/no macros, sample template and previewed remembered mapping.<br>FR-56/62; addendum spreadsheet scope; later NFR acceptance confirmations. |
+| T37 — Browser/usability and subsequent timing recommendation | 199, 200, 201, 202 | Captured; timing later confirmed | Windows Chrome/Edge desktop; real iPhone/iPad Safari and Android Chrome field/review, recorded versions, both fixtures, labels/focus/zoom/touch/drag/noncolor, no full phone drafting/conformance claim. Subsequent targets are confirmed, not measured.<br>NFR-3/4; SM-4/5; browser and performance tables/addendum. |
+| T38 — Performance/accuracy and subsequent file proposal | 204, 205, 206, 207 | Captured with DA-1 wording issue | 250ms/1s/2s/5s/10s/5s/10s completion-specific targets, 19-of-20 with universal integrity, independent optical1%/zone2pp, ≤1m refined sampling, honest threshold uncertainty/exact accounting. File proposal subsequently confirmed.<br>FR-13/15; NFR-4; SM-5; performance table; addendum performance section. |
+| T39 — File/export/backups/recovery and finalization readiness | 209, 210, 211, 212 | Captured; implementation/finalization distinct | 100/25/10MiB inputs;250p/100MiB volumes;1GiB edition;8GiB project;10GiB backup;originals/previews and complete manifests;30s/10s/30s each/5m/10m/15m post-byte clocks;daily7successful plus premaintenance;normal zero-loss,catastrophe≤24h/60m,isolated validation and no revoked-link resurrection. All product OQs closed; finalization work authorized separately.<br>FR-4/6/20/21/33/34; NFR-2/4/6; acceptance tables; addendum file/recovery and downstream ownership. |
 
-This targeted disposition supersedes the two open drafting findings above. The report remains a first-draft reconciliation, not final approval or implementation verification. No main documents or application files were changed during this recheck.
+## Supersession and nonrequirements checked explicitly
+
+- Early recommended approval gates were replaced by optional assignments, bypass and solo-user rules. Approval never manufactures installation, Pass, issue resolution or access privileges.
+- Initial manual-only intake was superseded by the accepted spreadsheet workflow. The restoration requirement for a confirmed destination remains; the later Awaiting placement exception is import-only.
+- Broad generic noncamera template-library automation was proposed but never confirmed as a hard requirement. Added equipment/relationships and common/generic checks are captured without that scope increase.
+- Initial panoramic deferral was replaced by bounded physical-parent/multiple-view support and explicitly unassessed fisheye/composite outputs; detailed calibrated panoramic DORI remains deferred.
+- Prototype source-image nonretention was superseded for new uploads by original-plus-preview retention. Historical originals never retained remain unavailable, and passwords remain local/unexported.
+- Original small-fixture counts and timing/file values are historical candidates. Later explicit larger-site, browser, performance and file/recovery confirmations govern; matching numbers were adopted only through those later confirmations. The historical candidate record remains linked rather than treated as additional requirements.
+- Current geometry, undo-count, revision-count, encoded-photo, portable-file and review-snapshot caps describe the prototype, not permanent accepted limits or permission to purge history.
+- OQ-1–10 and PM-1/PM-2 are resolved. Hosting/storage/transactions, parser/resource guards, exact test manifest, responsive controls/layout and site/manufacturer checklist values remain owned downstream details with milestones, not forgotten product decisions.
+- Known acceptance requirements do not establish measured support. Document finalization is separate from implementation, load/field/recovery testing and acceptance of the POC software.
+- Operational tooling, roster/session choices, link/hash checks and earlier review outcomes are process/evidence history, not product requirements. No external sources were treated as blanket feature adoption or regulatory obligations.
+
+## Audit limits and handoff
+
+This report checks decision fidelity, including the baseline capability references in the canonical change records. It does not certify every engineering edge case, current runtime behavior or external standard. The separately authorized current-document review and structural/prose consolidation still determine final readiness.
+
+Preserve all 62 FR IDs/checks and the accepted behavior through consolidation. Disposition DA-1, then reconcile any final condensed wording against the retained draft0.27 snapshots and canonical sources. This report does not change the main PRD's draft status.

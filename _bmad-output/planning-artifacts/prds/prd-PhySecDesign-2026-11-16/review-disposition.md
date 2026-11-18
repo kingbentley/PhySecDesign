@@ -67,3 +67,93 @@ Added accepted inter-floor routing and allowances in FR-52 with linked FR-9/17/3
 ## Guided refinement — draft 0.14, 2026-11-17
 
 Added accepted cable lifecycle in FR-53 and related archive/restoration, equipment, port and export clauses, preserving FR-1–52. The [focused reconciliation](sources/confirmed-cable-lifecycle-extract.md) found accepted behavior intact and two stale addendum scope labels; corrected those plus one earlier current-route summary to reference FR-53. Floor-restoration/accidental-deletion details remain OQ-8, with the guided destination/placement proposal explicitly pending; OQ-9 is unchanged. Verified 53 consecutive requirements/checks, 97 local links across seven documents and seven unchanged relevant application fingerprints. No application changes, tests or PRD finalization occurred.
+
+## Guided refinement — draft 0.15, 2026-11-17
+
+Added accepted floor restoration in FR-54 and linked floor identity, per-device versus project restoration, shared-edit and lifecycle clauses, preserving FR-1–53. The [focused reconciliation](sources/confirmed-floor-restoration-extract.md) found no actionable discrepancies or stale pending labels. Accidental draft deletion is the remaining OQ-8 decision, with the delete/cancel/correct-or-archive recommendation explicitly pending; OQ-9 is unchanged. Verified 54 consecutive requirements/checks, 95 local links across seven documents and six unchanged relevant application fingerprints. No application changes, tests or PRD finalization occurred.
+
+## Guided refinement — draft 0.16, 2026-11-17
+
+Added accepted draft deletion in FR-55 and related history/lifecycle/shared-edit clauses, preserving FR-1–54 and resolving OQ-8. The [focused deletion reconciliation](sources/confirmed-draft-deletion-extract.md) found no actionable discrepancies or stale pending OQ-8 labels. OQ-9 acceptance remains explicitly pending in the addendum. The [acceptance baseline/sanity check](sources/poc-acceptance-baseline.md) verified budget/transfer arithmetic and identified sampling/timing ambiguity: clarified effective sampling no coarser than 1 m and selected-plan combined coverage plus all its zones (up to10), with current solver limits requiring implementation improvements or explicit scope revision. No findings remain in that narrow check; no proposed target is a measured performance claim.
+
+Read the source index/canonical log under the updated workspace instructions and checked all148 inventory files:147 match; only .gitignore differs. Preserved the historical inventory and recorded this policy-file drift separately; application sources are unchanged. Verified55 consecutive requirements/checks,103 local links across eight current documents and only OQ-9 open. No application changes, tests or PRD finalization occurred.
+
+## Guided refinement — draft 0.17, 2026-11-17
+
+Recorded Kevin’s larger-site inputs in NFR-4/A-2 and revised the pending OQ-9 proposal:10 buildings,600 devices including150 physical cameras,about20–30 plans,up to about60 cameras on the busiest plan,and one usual/two concurrent users. The [focused scale reconciliation](sources/large-site-scale-extract.md) found no actionable discrepancies. Earlier small-fixture timing/file candidates are explicitly unapproved and require re-evaluation; no tested-capacity claim was added. All55 FRs/checks remain stable and OQ-9 stays open.
+
+Read source-index/.memlog before changes; all148 inventory files were checked,147 unchanged with only the previously recorded .gitignore drift. Verified104 local links across six current documents. No application changes, load tests or PRD finalization occurred.
+
+## Guided refinement — draft 0.18, 2026-11-17
+
+Confirmed the small functional plus larger real-site POC test approach in NFR-4/SM-5/resolved A-2, with 10 buildings, 600 devices including 150 physical cameras, roughly 20–30 plans, about 60 cameras on the busiest plan and one usual/two concurrent users. The [focused reconciliation](sources/confirmed-scale-test-extract.md) found no actionable discrepancies. All 55 FRs/checks remain stable; five success measures now include explicit scale evidence. OQ-9 remains open for browser/accessibility, responsiveness/fidelity and media/report/backup/recovery policy; earlier numeric candidates are not approved.
+
+The [finalization-readiness extraction](sources/prd-finalization-readiness.md) separates those product decisions from downstream fixture construction, benchmark mechanisms and architecture. Current scale-confirmation labels are synchronized. Full final decision/input reconciliation, current-document review, open-item disposition and structure/prose polish remain; this was not the final reviewer gate. Verified 112 local links across seven current documents and 148 source fingerprints (147 unchanged, same .gitignore-only drift). No application changes, tests, load measurements or PRD finalization occurred.
+
+## Party-mode refinement — draft 0.19, 2026-11-17
+
+Kevin explicitly requested importing an existing equipment spreadsheet when available, then verifying/correcting and adding devices during the survey. Updated FR-39/UJ-1 and added FR-56, superseding the earlier bulk-equipment-import deferral while retaining manual survey intake and automatic-discovery exclusion. The [scope extraction](sources/confirmed-inventory-import-extract.md) separates this accepted workflow from undecided formats, mapping, matching/re-import and missing-placement behavior in OQ-10. No import staging queue is accepted yet and FR-54 restoration remains unchanged. OQ-9 and the other party candidates remain open. Verified 56 consecutive FRs/checks and 112 local links across seven documents; 147 of148 inventory fingerprints match, with the same .gitignore-only drift. Party discussion continues; no application work, tests or formal final reviewer gate occurred.
+
+## Party-mode refinement — draft 0.20, 2026-11-17
+
+Added accepted import-only Awaiting placement in FR-57 and linked FR-8/54/56 clauses, preserving stable identities/provenance, applicable property demand, unknowns and the separate archived-restoration destination requirement. The [focused reconciliation](sources/confirmed-import-placement-extract.md) found no actionable discrepancies. Bulk delete is requested direction; its eligibility and matching/re-import rules remain pending under OQ-10, as do formats. OQ-9 and the other party proposals remain open. Verified 57 consecutive FRs/checks and 113 local links across seven documents; 147 of148 source fingerprints match with the same .gitignore-only drift. No app changes/tests or formal finalization; party mode continues.
+
+## Party-mode refinement — draft 0.21, 2026-11-17
+
+Added accepted duplicate/re-import and bulk-cleanup rules in FR-58/59, with FR-55/56 cross-references. The [focused reconciliation](sources/confirmed-import-reconciliation-extract.md) found no actionable discrepancies: stable identity, reviewed previews, verified-value protection, no implicit removal/restoration, eligible/blocked batch cleanup and guarded recovery are preserved. OQ-10 now retains formats and sheet/column mapping; PM-1/PM-2 and OQ-9 remain pending. Verified 59 consecutive FRs/checks and 114 local links across seven documents; all148 source fingerprints checked,147 unchanged and the same .gitignore-only drift. No application changes/tests, final reviewer gate or PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.22, 2026-11-17
+
+Added accepted unused-draft-only floor/building deletion in FR-60 and linked FR-1/42/54. The [focused reconciliation](sources/confirmed-container-deletion-extract.md) found no actionable discrepancies: dependent records/history block deletion with explanations, no cascade is permitted, guarded recovery remains, and FR-54 covers already-missing references without authorizing new deletion. PM-2 current issued-design designation remains a proposal; OQ-9 and formats/mapping under OQ-10 remain open. Verified60 consecutive FRs/checks and117 local links across7documents;148 source fingerprints checked,147 unchanged with the same .gitignore-only drift. No app changes/tests, full final reviewer gate or PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.23, 2026-11-17
+
+Added accepted current issued-design designation in FR-61 and linked FR-26/42/45, resolving PM-2. The [focused reconciliation](sources/confirmed-current-issue-extract.md) found no actionable discrepancies: one explicit current reference per active scope, visible designation and separate approval status, unchanged field records, retained superseded PDFs/decisions and guarded concurrent changes. OQ-10 formats/mapping remains proposed, and OQ-9 acceptance is unchanged. Verified61 consecutive FRs/checks and119 local links across7documents; all148 source fingerprints checked with147 unchanged and the same .gitignore drift. No app changes/tests, formal final reviewer gate or PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.24, 2026-11-17
+
+Added accepted spreadsheet formats/mapping in FR-62 and linked FR-56, resolving OQ-10. The [focused reconciliation](sources/confirmed-spreadsheet-scope-extract.md) found no actionable discrepancies: CSV/.xlsx and sheet/header selection, editable mappings, minimal inventory fields, unknowns, reviewed outcomes and identity/location/source-evidence safeguards are preserved. The [acceptance refinement](sources/remaining-acceptance-refinement.md) separates the remaining OQ-9 groups; the proposed browser/task matrix and earlier numerical criteria remain unapproved. Verified62 consecutive FRs/checks and134 local links across8documents, with only OQ-9 in the open-question table. Checked148 source fingerprints:147 unchanged and the same .gitignore-only drift. No application changes/tests, final reviewer gate or PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.25, 2026-11-17
+
+Confirmed browser/task and focused usability acceptance in NFR-3/SM-4, narrowing OQ-9 to numerical performance/fidelity and file/recovery. The [focused browser reconciliation](sources/confirmed-browser-usability-extract.md) found no actionable discrepancies; all62 FRs/checks remain unchanged. The [performance/accuracy sanity check](sources/performance-accuracy-refinement.md) found no meaningful issues in the pending proposal: timings remain unmeasured goals, workload is declared,1 m spacing is not sufficient proof,2-point reference tolerance is not a universal live error bound, and uncertain threshold cases require refinement/clear labeling. Accuracy/integrity checks have no timing-percentile exception; file budgets remain separate. Verified132 local links across8documents and148 source fingerprints with147 unchanged/same .gitignore drift. No app changes/tests, benchmark results or formal PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.26, 2026-11-17
+
+Confirmed performance/analysis targets in NFR-4/SM-5, FR-13/15 and the main acceptance table. The [focused reconciliation](sources/confirmed-performance-accuracy-extract.md) found no actionable discrepancies: exact timings, freshness/completion boundaries, independent reference tolerances and uncertain-target safeguards match acceptance, without claiming measured support. All62 FR IDs/checks remain. The [file/recovery sanity check](sources/file-recovery-refinement.md) found no meaningful issues in the pending scaled budgets, original retention, numbered PDF editions, transfer/processing clocks and backup/recovery separation. OQ-9 now concerns only file/media/export/backup/recovery policy. Verified139 local links across8documents and148 source fingerprints with147 unchanged/same .gitignore drift. No app changes/tests, measured capacity or formal PRD finalization; party mode continues.
+
+## Party-mode refinement — draft 0.27, 2026-11-17
+
+Confirmed original retention, complete numbered PDF editions, file/job budgets and backup/recovery policy in FR-4/6/20/21/33/34, NFR-2/4/6 and acceptance tables, resolving OQ-9. The [focused reconciliation](sources/confirmed-file-recovery-extract.md) found one stale FR-6 Check claiming original PDF nonretention; corrected it to source/page retention, local-only passwords and no editable-CAD implication. Recheck found no remaining actionable discrepancies. All62 FR IDs/checks are retained.
+
+The [readiness extraction](sources/finalization-readiness-after-acceptance.md) finds all known OQ-1–10 and PM-1/PM-2 decisions settled. Full canonical audit/input reconciliation, the current-document reviewer gate, finding disposition and structural/prose consolidation remain before final status. Downstream architecture, UX, domain-template and test-manifest ownership/milestones are recorded without requiring implementation or load tests to finalize the requirements. [Superseded numerical candidates](sources/superseded-acceptance-candidates.md) were preserved as historical source and removed from active policy tables.
+
+Verified156 local links across9documents;148 inventoried files checked,147 unchanged with the same .gitignore drift. No application changes/tests, software acceptance, full final-review verdict or PRD finalization occurred.
+
+
+## Finalization review — 2026-11-17
+
+Kevin authorized finalization after confirming all known product choices. The canonical [decision audit](reconcile-decisions.md), [design/coverage reconciliation](reconcile-design-coverage.md), [delivery/lifecycle reconciliation](reconcile-delivery-lifecycle.md), and [reference/context reconciliation](reconcile-reference-context.md) found no dropped accepted capability or new product-scope blocker. Original draft0.27 text is preserved in [PRD](sources/pre-finalization-draft-0.27/prd.md.txt) and [addendum](sources/pre-finalization-draft-0.27/addendum.md.txt) snapshots; links within those exact text snapshots retain their original document-relative bases.
+
+The [current rubric](review-rubric-finalization.md) found zero critical/high findings and two medium findings: archived-export wording and consolidation. The [consistency review](review-consistency-finalization.md) independently found the archived-export wording and the timing-batch ambiguity, with no additional substantive issue.
+
+| Finding | Disposition |
+| --- | --- |
+| Archive export versus read-only project | Clarified FR-37: a new retained output edition may be appended under FR-34; source/business records and prior packages remain frozen, and later work requires explicit reopening. This reconciles accepted export/retention behavior. |
+| Additional timing trials could weaken 19-of-20 | Clarified the addendum to use 20-trial batches, each requiring at least 19 successes; all applicable integrity checks still pass. |
+| Retained map/boundary/target-plane behavior was implicit | Made FR-3/13 explicit and restored the simple, professional UX framing. Prototype fallback order and 0 m plane are labeled current implementation context in the addendum. |
+| Stale pending labels in support records | Reconciled current summaries and labeled historical proposals as superseded; prior evidence remains available. |
+| Repeated policy and discovery chronology | Structural and prose consolidation follows the gate; final result is recorded below. |
+
+The source fingerprint audit checked all148 files:147 unchanged and only the already known .gitignore drift. No application code, build, runtime, browser, benchmark, file-limit or recovery verification is claimed. Architecture, UX, workload manifests and domain-specific checklist wording retain their downstream owners and revisit milestones.
+
+
+### Completed finalization and handoff
+
+Applied the accepted [PRD structure findings](review-structure-prd-finalization.md) and [addendum structure findings](review-structure-addendum-finalization.md), followed by their separate [PRD prose](review-prose-prd-finalization.md) and [addendum prose](review-prose-addendum-finalization.md) passes. Requirements now sit in ten thematic groups; the addendum has twelve domains and linked navigation. Removed repeated discovery chronology and consolidated shared safeguards/acceptance definitions. Final documents contain 15442 and 18430 words respectively; exact pre-consolidation text remains in the snapshots.
+
+The independent [PRD fidelity check](reconcile-final-prd-fidelity.md) and [addendum fidelity check](reconcile-final-addendum-fidelity.md) found no lost accepted behavior or changed targets. Preserved all 62 FR IDs and Checks, six NFRs, five success measures, 17 addendum tables and 11 examples. The final addendum prose changes preserve its numeric-token sequence. All current findings are resolved; no product-scope blocker or unowned open question remains.
+
+Marked PRD status final/version 1.0 on 2026-11-17 under Kevin’s authorization. The [planning handoff](handoff.md) recommends BMAD UX, architecture, epics/stories and sprint planning. Configured external handoffs/on-complete hooks are empty; none was executed or invented. Software implementation and measured acceptance remain downstream.
+
+Final mechanical verification: 62 unique FR IDs spanning1–62,62 Checks,6 NFRs and5 success measures; 228 local file/section references across 19 current artifacts resolve. Git diff whitespace check passed. Corrected two residual source-index progress labels and made quoted review links resolve to their addendum sections. Source fingerprint result remains 147 unchanged of 148, with known .gitignore-only drift.
