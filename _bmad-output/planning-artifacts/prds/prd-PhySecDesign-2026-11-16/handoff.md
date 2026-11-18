@@ -1,6 +1,6 @@
 # Site Studio — planning handoff
 
-Prepared 2026-11-17. Use the [final PRD 1.0](prd.md) as the product requirements baseline. The [addendum](addendum.md) carries implementation context, examples and downstream responsibilities; the [source index](source-index.md) locates the existing prototype and evidence. Preserve FR-1–62, NFR-1–6 and SM-1–5 when deriving work. A proposed amendment 1.1, added on 2026-11-18 and not yet through finalization review, adds FR-63–65 and small additions; see the [amendment status](amendment-1.1-status.md) before relying on them.
+Prepared 2026-11-17, updated 2026-11-18. Use the [final PRD 1.1](prd.md) as the product requirements baseline. The [addendum](addendum.md) carries implementation context, examples and downstream responsibilities; the [source index](source-index.md) locates the existing prototype and evidence. Preserve FR-1–65, NFR-1–6 and SM-1–5 when deriving work. Amendment 1.1, finalized on 2026-11-18, added FR-63–65, a device state model and smaller additions; the [amendment status](amendment-1.1-status.md) records its history and five deferred items are in the decision log.
 
 ## Recommended BMAD sequence
 

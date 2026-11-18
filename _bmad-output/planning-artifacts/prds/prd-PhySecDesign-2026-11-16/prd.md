@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
-status: final 1.0 with proposed amendment 1.1
-version: "1.1-proposed"
+status: final
+version: "1.1"
 created: 2026-11-16
 updated: 2026-11-18
 phase: finalized
@@ -13,9 +13,9 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is the finalized PRD 1.0 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. Finalization establishes the requirements baseline; implementation, software acceptance and compliance are separate. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is the finalized PRD 1.1 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. Finalization establishes the requirements baseline; implementation, software acceptance and compliance are separate. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
-**Proposed amendment 1.1 (2026-11-18).** FR-63 to FR-65 and the additions listed under [decision status](#decision-status-and-downstream-work) were confirmed by Kevin in a separate session on 2026-11-18 and are proposed additions to this baseline. They have not been through the finalization review. FR-1–62, NFR-1–6 and SM-1–5 keep their IDs and meaning.
+**Amendment 1.1 (finalized 2026-11-18).** FR-63 to FR-65 and the additions listed under [decision status](#decision-status-and-downstream-work) were confirmed by Kevin on 2026-11-18 and finalized through the same review process as 1.0. FR-1–62, NFR-1–6 and SM-1–5 keep their IDs; FR-55 gained one narrow cancellation case, and the other changes to them are additions and clarifications.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions; the [addendum](addendum.md) preserves technical context and limits. Read the [thematic requirements](#functional-requirements), [acceptance criteria](#poc-success-and-acceptance), and [decision status](#decision-status-and-downstream-work) for the confirmed scope and remaining downstream work.
 
@@ -98,7 +98,7 @@ The selected scope can show its work finished while documented property issues r
 
 Archiving pauses editing and retains view/search/export access. Returning an archived project to editing is un-archiving: it is explicit and starts no work by itself. Reopening starts new current work under FR-38 without changing previous closeout records. Approval, bypass, or closure cannot turn a failed or unperformed test into a pass.
 
-### Device state model (proposed 1.1)
+### Device state model
 
 This consolidates the device states used across the requirements into one set of product rules and names values the requirements use informally. It adds no workflow of its own: the contradiction warning below is delivered by FR-30 and the record lists by FR-8 and FR-41. Storage and representation belong to architecture. Cable runs, ports and camera views keep their own rules under FR-48 and FR-51–53.
 
@@ -718,7 +718,7 @@ Counter-metrics: more green indicators, a higher modeled coverage percentage, or
 
 No known product question remains open. The resolved OQ-1–10 and subsequent refinements are represented in these requirements; the [decision log](.memlog.md) and [conversation context](sources/conversation-context.md) retain their chronology. Product decisions do not establish implementation or acceptance evidence.
 
-**Proposed amendment 1.1 (2026-11-18).** A parallel session, working from an earlier draft without knowledge of this baseline, produced additions that Kevin confirmed there. Those with no counterpart here are proposed as FR-63 (pan/tilt/zoom cameras), FR-64 (optional reliability period) and FR-65 (warranty and service-visit records), with additions to FR-7/18/20/29/43, pointer sentences in FR-10/32/33/38/46/47/48, a trade-term table, new Terms rows, added exclusions and added functional coverage in the acceptance profile. Where that session decided something this baseline also decides, this baseline stands: Kevin reviewed the differences on 2026-11-18 and kept this baseline on every one except a narrow case adopted afterwards: an unissued proposal that is not eligible for Delete draft can be cancelled with a reason (FR-55). He adopted four clarifications that fill silences here, namely reversing a mistaken installed mark (FR-55), what a whole-revision restore may change (FR-22), un-archiving as distinct from reopening (FR-37), and listing cancelled and corrected records (FR-8/41), together with a consolidated [device state model](#device-state-model-proposed-11) and its contradiction warning (FR-30). The [amendment status](amendment-1.1-status.md) records every item. The amendment has not been through the finalization review.
+**Amendment 1.1 (finalized 2026-11-18).** A parallel session, working from an earlier draft without knowledge of this baseline, produced additions that Kevin confirmed there. Those with no counterpart here are FR-63 (pan/tilt/zoom cameras), FR-64 (optional reliability period) and FR-65 (warranty and service-visit records), with additions to FR-7/18/20/29/43, pointer sentences in FR-10/32/33/38/46/47/48, a trade-term table, new Terms rows, added exclusions and added functional coverage in the acceptance profile. Where that session decided something this baseline also decides, this baseline stands: Kevin reviewed the differences on 2026-11-18 and kept this baseline on every one except a narrow case adopted afterwards: an unissued proposal that is not eligible for Delete draft can be cancelled with a reason (FR-55). He adopted four clarifications that fill silences here, namely reversing a mistaken installed mark (FR-55), what a whole-revision restore may change (FR-22), un-archiving as distinct from reopening (FR-37), and listing cancelled and corrected records (FR-8/41), together with a consolidated [device state model](#device-state-model) and its contradiction warning (FR-30). The [amendment status](amendment-1.1-status.md) records every item. The amendment went through the finalization review on 2026-11-18: decision-log audit, input reconciliation, rubric review, and structure and prose polish. Five low items were deferred with owners in the decision log.
 
 Architecture, UX, detailed test manifests and domain-template wording remain downstream work with planning owners identified in the [addendum](addendum.md). Owners are planning roles, not assignments to external people. Hosting, transport, storage and recovery mechanisms remain architecture choices within the confirmed product and acceptance boundaries.
 
@@ -726,7 +726,7 @@ Architecture, UX, detailed test manifests and domain-template wording remain dow
 
 **A-2 — Acceptance scale and fixture approach, resolved.** The [acceptance profile](#acceptance-profile), NFR-3/4 and SM-4/5 govern the two fixtures and declared workload. Physical-camera counts are distinct from views/streams. The current acceptance targets supersede earlier candidate values without claiming tested support.
 
-**PSP references (reviewed 2026-11-18, proposed 1.1).** The public ASIS PSP examination outline was read and mapped to the requirements; it lists topics, not requirements. Kevin shared pages from Patterson, *Implementing Physical Protection Systems* (2nd edition), and a public Department of Energy assessment guide was read in part. Their findings informed FR-63–65 and the optional checklist items, camera fields, survey prompts and estimate lines added to FR-7/18/20/29/43. Checklist content remains project-defined, and no PSP or other compliance claim is made. The [reference digest](sources/psp-reference-reading.md) holds the mapping and paraphrased findings. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**PSP references (reviewed 2026-11-18).** The public ASIS PSP examination outline was read and mapped to the requirements; it lists topics, not requirements. Kevin shared pages from Patterson, *Implementing Physical Protection Systems* (2nd edition), and a public Department of Energy assessment guide was read in part. Their findings informed FR-63–65 and the optional checklist items, camera fields, survey prompts and estimate lines added to FR-7/18/20/29/43. Checklist content remains project-defined, and no PSP or other compliance claim is made. The [reference digest](sources/psp-reference-reading.md) holds the mapping and paraphrased findings. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 **After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets.
 

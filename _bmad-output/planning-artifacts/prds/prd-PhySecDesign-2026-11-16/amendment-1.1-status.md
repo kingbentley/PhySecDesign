@@ -1,6 +1,6 @@
-# Site Studio — proposed amendment 1.1: status
+# Site Studio — amendment 1.1: status
 
-Prepared 2026-11-18. The [final PRD 1.0](prd.md) remains the requirements baseline. This note tracks what a parallel session added on top of it, what is still to be ported, and where that session's decisions differ from 1.0 and have **not** been applied.
+Prepared 2026-11-18. Amendment 1.1 was finalized on 2026-11-18 and the [PRD](prd.md) is now final 1.1; the wording below is kept as written while the amendment was proposed. This note tracks what a parallel session added on top of it, what is still to be ported, and where that session's decisions differ from 1.0 and have **not** been applied.
 
 ## How this arose
 
