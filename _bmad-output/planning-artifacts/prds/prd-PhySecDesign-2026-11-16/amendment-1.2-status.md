@@ -80,4 +80,4 @@ These details were needed to write the requirements and were not among the three
 
 ## Still to do
 
-The finalization review and the addendum revision are done. Remaining: revision of the epics and stories, which Kevin deferred.
+The finalization review and the addendum revision are done. The epics and stories were also revised on 2026-11-18 (draft 0.2) and await Kevin's review.
