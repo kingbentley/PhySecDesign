@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.18"
+version: "0.19"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.18 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.19 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -543,7 +543,39 @@ The fixture also carries the conditions described above: an existing-site survey
 | Backup and recovery | Automatic nightly server backup retained for 7 days, with one restore demonstrated during acceptance. Acknowledged saves survive an ordinary service restart. A portable backup export and re-import preserves the complete project under FR-34. |
 | Not promised | Uptime, support hours, or recovery of changes newer than the last nightly backup after loss of the server. |
 
-Measure timings on the fixture with one mid-range laptop and one mid-range phone, at the fixture’s three concurrent browsers.
+The fixture is exercised in the two stages defined in the delivery slices. Measure timings on the fixture with one mid-range laptop and one mid-range phone, at the fixture’s three concurrent browsers.
+
+## Delivery slices
+
+Confirmed 2026-11-18. The slices set the build order and the acceptance cut line. They do not change any requirement’s ID, wording or confirmed status. Each slice ends with an outcome that can be demonstrated from start to finish.
+
+| Slice | Demonstrable outcome | Requirements |
+| --- | --- | --- |
+| 1. Shared foundation | The existing design tool running as one shared online project | FR-1–6, FR-8, FR-10–16, FR-20–22, FR-42; base parts of FR-7 and FR-9 |
+| 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-34, FR-47, FR-55; parts of FR-7 and FR-33 |
+| 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44; part of FR-33; the phone field view under NFR-3 |
+| 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56; part of FR-33 |
+| 5. Extended modelling | Richer design detail | FR-48–52; extension parts of FR-9, FR-19 and FR-33 |
+
+Four requirements are delivered in parts:
+
+| Requirement | Earlier part | Later part |
+| --- | --- | --- |
+| FR-7 | Slice 1: the current catalog, identity and existing/proposed distinction | Slice 2: the added equipment types and camera-model selection. Linked openings, annotations and closets arrive with FR-49–51 in slice 5. |
+| FR-9 | Slice 1: same-floor routes with stable run IDs | Slice 5: inter-floor segments, risers and the FR-52 length model |
+| FR-19 | Slice 2: storage, bandwidth, and port/PoE estimates from recorded connections | Slice 5: explicit port assignments under FR-51 and multi-head hardware/stream accounting under FR-48 |
+| FR-33 | Slice 2: Design preset. Slice 3: Closeout preset. | Slice 4: removed/replaced equipment and FR-53 connection context. Slice 5: closet/port schedules, inter-floor continuations, annotations and panoramic disclosures. |
+
+Slice 1 is largely a port: these capabilities exist in the prototype against local browser storage and must be rebuilt on shared server-saved records. Slices 2 and 3 use one implicit work scope; scope selection and issue carryover (FR-45/46) arrive in slice 4, when a second scope first exists. A clause that refers to a record type from a later slice takes effect when that slice is delivered. NFR-1, NFR-2 and NFR-4 to NFR-6 apply from slice 1.
+
+**Acceptance cut line.** Slices 1–4 are core acceptance: they cover UJ-1 to UJ-4 and SM-1 to SM-4. Slice 5 is extended acceptance and can follow. The acceptance fixture is exercised in two stages:
+
+| Stage | After | Fixture content |
+| --- | --- | --- |
+| Core | Slice 4 | The confirmed fixture without the four-head and fisheye cameras, closets and port schedules, inter-floor runs, linked openings and annotations. Cameras are conventional single-view models and all routes are same-floor. |
+| Extended | Slice 5 | The remaining fixture items, plus a recheck that core results, totals and retained packages are unchanged. |
+
+The supported ceiling and all timing, browser, accessibility, storage and backup targets apply at core acceptance. The draft is fully accepted only when both stages pass.
 
 ## Open questions and assumptions
 
@@ -581,7 +613,7 @@ Measure timings on the fixture with one mid-range laptop and one mid-range phone
 
 **Resolved OQ-10 (2026-11-18):** Delete floor for empty or draft-only floors, blocking with a list of required actions while active records with history remain, Retire floor with reinstatement when only history remains, removal of floor-level drawing content with a deleted floor, and a Move to another floor action distinguishing corrections from actual relocations are confirmed in FR-1/54/55/56.
 
-OQ-1 through OQ-10 are resolved and no owned open question remains. This does not make the draft final, authorize deployment or claim architecture readiness.
+OQ-1 through OQ-10 are resolved and no owned open question remains. The build order and acceptance cut line are confirmed in the delivery slices. This does not make the draft final, authorize deployment or claim architecture readiness.
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
 

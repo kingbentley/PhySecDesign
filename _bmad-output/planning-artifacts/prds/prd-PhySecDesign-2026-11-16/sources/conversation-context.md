@@ -204,3 +204,7 @@ On 2026-11-18 Kevin accepted the acceptance proposal and all five of its choices
 ## Confirmed floor deletion, retirement and moves — OQ-10 resolved
 
 On 2026-11-18 Kevin accepted the floor-deletion proposal and all four of its choices, explicitly including the move action. Delete a floor only when it is empty or draft-only and was never in an issued design, surveyed baseline or closeout. Block removal while active records with history remain, listing the action each needs; no one-step archive of everything on a floor. Retire a floor when only history remains, keeping it read-only and reinstatable. Floor-level drawing content goes with a deleted floor. Move to another floor keeps IDs and history, needs a confirmed destination position and is identified as a correction or an actual relocation. Draft0.18 adds FR-56 and linked FR-1/54/55 clauses. No owned open question remains; the draft is still not final.
+
+## Confirmed delivery slices
+
+On 2026-11-18 Kevin accepted five delivery slices and all five related choices. Slice 1 is the shared foundation, slice 2 design and issue, slice 3 install/test/close out, slice 4 existing sites and return visits, and slice 5 extended modelling (FR-48–52). Slices 1–4 are core acceptance and slice 5 is extended; the fixture is tested in two stages. Return-visit history precedes extended modelling, camera-model templates sit in slice 2, and FR-7/9/19/33 are delivered in parts. Draft0.19 adds the Delivery slices section without changing any requirement ID or wording.

@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.18](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.19](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -583,6 +583,12 @@ Floor-level drawing content (overlay, zones, obstructions, annotations, analysis
 Move to another floor is new scope added by this decision. It keeps IDs, evidence and history, requires a confirmed position on the destination, and for records with history must be identified as a record correction or an actual relocation. Cables and port assignments are flagged for review, never rerouted automatically.
 
 The current prototype removes a floor together with all its contents in one step, has no retire or reinstate state, cannot remove a building and has no move-between-floors operation.
+
+## Confirmed delivery slices
+
+Confirmed 2026-11-18 when Kevin accepted the tabled slicing and its five choices: a cut line with slices 1–4 as core acceptance and slice 5 as extended; the fixture tested in two stages; return-visit history before extended modelling; camera-model templates in slice 2; and a Delivery slices section in the PRD with no change to requirement IDs or wording.
+
+The order reflects dependency, not importance. Shared server-saved records come first because issued designs, field evidence, conflict checks and fixed packages all assume them; the prototype’s local browser storage cannot carry them. FR-7, FR-9, FR-19 and FR-33 are delivered in parts as tabled in the PRD. Slice boundaries are a planning decision and can be revisited during architecture without reopening the requirements themselves.
 
 ## Source and verification boundaries
 
