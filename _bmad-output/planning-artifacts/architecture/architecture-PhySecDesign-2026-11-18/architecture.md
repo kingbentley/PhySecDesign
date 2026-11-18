@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — Architecture"
-status: draft 0.2 for Kevin's review; hosting and language decisions confirmed
+status: 1.0, decisions K1-K8 confirmed by Kevin on 2026-11-18; nothing built or measured
 created: 2026-11-18
 inputs: "PRD 1.0 with proposed amendment 1.1; UX design specification draft 0.2; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
@@ -10,7 +10,7 @@ method: BMAD Create Architecture, followed by hand (the BMAD skills are not inst
 
 This document decides how the Site Studio proof of concept is built and hosted so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
 
-Kevin decided on 2026-11-18 that the application is hosted on Cloudflare, and that new server and shared code is written in TypeScript and tested with Vitest in Cloudflare's runtime (AD-15). Everything else here is a proposal. The choices that are his to make are listed in [Decisions for Kevin](#12-decisions-for-kevin).
+Kevin decided on 2026-11-18 that the application is hosted on Cloudflare, and that new server and shared code is written in TypeScript and tested with Vitest in Cloudflare's runtime (AD-15). On the same day he confirmed the remaining choices listed in [Confirmed decisions](#12-confirmed-decisions) as recommended. The decisions stand subject to the early experiments in section 11; a failed experiment brings its decision back to him.
 
 Three kinds of statement are kept apart:
 
@@ -95,7 +95,7 @@ flowchart LR
 
 ## 5. Decisions
 
-Each decision gives the choice, the reason and what was set aside. AD-1 and AD-15 are decided; the rest are proposed.
+Each decision gives the choice, the reason and what was set aside. Kevin confirmed all of them on 2026-11-18.
 
 ### AD-1 — Host on Cloudflare (decided)
 
@@ -366,9 +366,11 @@ Each of these should be tested with a short experiment before the work that depe
 | R6 | Details not confirmed from documentation: the minimum part size for R2 multipart uploads, and whether Cloudflare's browser service prints PDFs. | Check both before AD-4 and the R1 fallback are relied on. | Adjust part size; choose another fallback. |
 | R7 | Cloudflare's Vite plugin and Vitest integration have not been checked against the prototype's versions (Vite 6.4, React 19). | Make this the first task of the foundation work: run the existing app and one project-room test locally. | Run the Worker with Wrangler beside the Vite development server. |
 
-## 12. Decisions for Kevin
+## 12. Confirmed decisions
 
-| # | Question | Recommendation |
+Kevin confirmed each of these as recommended on 2026-11-18.
+
+| # | Question | Confirmed |
 | --- | --- | --- |
 | K1 | Accept the Workers Paid plan, about 5 US dollars a month plus a few cents of storage? | Yes. The Free plan's limits are too low for this design. |
 | K2 | One Durable Object per project as the place of record (AD-2)? | Yes. It makes the conflict and consistency rules simple to enforce. |
