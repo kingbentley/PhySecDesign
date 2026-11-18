@@ -66,7 +66,7 @@ Two notes on the R2 scripts. The "total" they once printed was the sum of two se
 
 ## R1 — Generating a full-size package in the browser
 
-To run it again: put four JPEG photographs named `p1048.jpg`, `p1067.jpg`, `p122.jpg` and `p164.jpg` in `r1-package-generation/photos/` (the folder is ignored by git, and every mix the runners use has photo pages). The R1 and R7 browser scripts import Playwright from a global installation, as the cloud session provided; elsewhere, install `playwright` and its Chromium first. Memory was sampled as pages were generated, not during packing and hashing, so the figures below can understate the peak of the whole operation.
+To run it again: put four JPEG photographs named `p1048.jpg`, `p1067.jpg`, `p122.jpg` and `p164.jpg` in `r1-package-generation/photos/` (the folder is ignored by git, and every mix the runners use has photo pages). The R1 and R7 browser scripts import Playwright from a global installation, as the cloud session provided; elsewhere, install `playwright` and its Chromium first. A global package is not on Node's module path by default, so the scripts were run with `NODE_PATH=$(npm root -g)` set, as they were in the session that produced these results. Memory was sampled as pages were generated, not during packing and hashing, so the figures below can understate the peak of the whole operation.
 
 Folder: [r1-package-generation](r1-package-generation). The harness uses the prototype's own page and PDF code (`reportPaper.js`, `rasterPdf.js`) in headless Chromium. Pages are Letter landscape at 216 dpi (2376 × 1836 pixels), JPEG quality 0.94, as the prototype produces them. Photo pages hold two real photographs each (four test photographs fetched from a public photo service, not kept in the repository).
 
