@@ -1,7 +1,7 @@
 {
   "title": "Physical Security Professional (PSP) review (ASIS Intl)",
   "source": "https://quizlet.com/_7sns5w",
-  "cardCount": 386,
+  "cardCount": 475,
   "cards": [
     {
       "id": 1,
@@ -1932,6 +1932,629 @@
       "id": 386,
       "term": "High rise building operating modes",
       "definition": "Open, closed, hybrid"
+    },
+    {
+      "id": 387,
+      "term": "What is a mass notification system (MNS)?",
+      "definition": "A system that delivers emergency information and instructions to people in a building, across a site, or over a wider area, usually through several channels at once.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 388,
+      "term": "Name common mass notification delivery channels.",
+      "definition": "Public address and voice messages, sirens and strobes, text messages, email, phone calls, desktop alerts, digital signage.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 389,
+      "term": "Why should emergency notification use multiple channels?",
+      "definition": "No single channel reaches everyone, and redundancy keeps messages flowing if one channel fails.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 390,
+      "term": "What is the difference between a public address system and an intercom?",
+      "definition": "Public address is a one-way broadcast to an area; an intercom allows two-way conversation between stations.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 391,
+      "term": "Which US code covers emergency communications systems, including mass notification?",
+      "definition": "NFPA 72, National Fire Alarm and Signaling Code.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 392,
+      "term": "Why prepare pre-scripted emergency messages?",
+      "definition": "So messages are fast, clear and consistent when sent under stress.",
+      "topic": "Emergency notification systems",
+      "added": true
+    },
+    {
+      "id": 393,
+      "term": "On-premise storage vs. cloud storage",
+      "definition": "On-premise: equipment owned and housed by the organization, giving more control but higher up-front cost. Cloud: hosted by a provider, scalable, and dependent on the network connection and the provider.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 394,
+      "term": "What is redundancy in data storage?",
+      "definition": "Duplicating data or components (e.g., RAID, mirrored servers, off-site backups) so a single failure does not cause data loss.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 395,
+      "term": "What does RAID stand for?",
+      "definition": "Redundant Array of Independent Disks.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 396,
+      "term": "What is a retention period?",
+      "definition": "The length of time recorded data, such as video, is kept before it is deleted or overwritten. It is set by policy and by legal and regulatory requirements.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 397,
+      "term": "What factors determine video storage requirements?",
+      "definition": "Number of cameras, resolution, frame rate, compression, recording mode (continuous or event-based), and retention period.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 398,
+      "term": "What is personally identifiable information (PII)?",
+      "definition": "Information that can identify a specific individual, alone or combined with other data, such as names, ID numbers, biometrics and images.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 399,
+      "term": "What is the principle of least privilege for user permissions?",
+      "definition": "Each user is given only the access needed to do their job.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 400,
+      "term": "What is a hybrid storage approach?",
+      "definition": "A combination of on-premise and cloud storage, such as recording locally and backing up to the cloud.",
+      "topic": "Data storage and management",
+      "added": true
+    },
+    {
+      "id": 401,
+      "term": "LAN vs. WAN",
+      "definition": "A local area network connects devices within a building or site; a wide area network connects separate sites over long distances.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 402,
+      "term": "What is a VPN?",
+      "definition": "A virtual private network: an encrypted tunnel that carries private traffic across a public or untrusted network.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 403,
+      "term": "DHCP vs. static IP addressing",
+      "definition": "DHCP assigns addresses automatically from a pool; static addresses are set manually and do not change. Security devices such as cameras and controllers usually get static or reserved addresses so they can always be found.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 404,
+      "term": "What is TCP/IP?",
+      "definition": "The suite of protocols used by the internet and most networks. IP handles addressing and routing; TCP provides reliable delivery.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 405,
+      "term": "TCP vs. UDP",
+      "definition": "TCP is connection-oriented and guarantees delivery; UDP is connectionless and faster, with no delivery guarantee, and is often used for streaming video.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 406,
+      "term": "What is a VLAN?",
+      "definition": "A virtual LAN: a logical segment of a network, often used to separate security devices from general business traffic.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 407,
+      "term": "What is Power over Ethernet (PoE)?",
+      "definition": "Delivery of power and data to a device over the same twisted-pair network cable.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 408,
+      "term": "What is token ring?",
+      "definition": "A legacy LAN technology in which a token circulates around a ring and a station must hold the token to transmit. It has largely been replaced by Ethernet.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 409,
+      "term": "Why must networked security devices be hardened?",
+      "definition": "Cameras, controllers and servers are network endpoints that can be attacked. Typical measures: change default passwords, keep firmware updated, segment the network, and disable unused services.",
+      "topic": "Network infrastructure",
+      "added": true
+    },
+    {
+      "id": 410,
+      "term": "What is the primary power source for most security systems?",
+      "definition": "The utility grid.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 411,
+      "term": "What is an uninterruptible power supply (UPS)?",
+      "definition": "A battery-backed unit that supplies immediate, short-term power, and conditions power, when the main supply fails.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 412,
+      "term": "How do a UPS and a generator work together?",
+      "definition": "The UPS carries the load instantly while the generator starts; the generator then supplies power for long outages.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 413,
+      "term": "What is an automatic transfer switch?",
+      "definition": "A switch that moves the load from utility power to the generator when utility power fails, and back when it is restored.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 414,
+      "term": "Name alternative or renewable backup power sources.",
+      "definition": "Solar, wind and fuel cells.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 415,
+      "term": "How is backup power kept reliable?",
+      "definition": "Regular testing under load, battery inspection and replacement, and fuel management for generators.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 416,
+      "term": "What determines how long backup power must last?",
+      "definition": "The risk assessment, applicable codes and standards, and the operational requirements of the facility.",
+      "topic": "Primary and backup power",
+      "added": true
+    },
+    {
+      "id": 417,
+      "term": "What is the purpose of screening?",
+      "definition": "To detect weapons, explosives and other contraband entering a facility, and unauthorized removal of assets leaving it.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 418,
+      "term": "Name technologies used for personnel screening.",
+      "definition": "Walk-through and handheld metal detectors, body scanners, explosives trace detection, and physical search.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 419,
+      "term": "Name methods used for package and mail screening.",
+      "definition": "X-ray inspection, explosives trace detection, canine teams, and manual search.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 420,
+      "term": "Name methods used for vehicle screening.",
+      "definition": "Driver credential checks, visual inspection, under-vehicle inspection, canine teams, and explosives trace detection.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 421,
+      "term": "Where should vehicle screening take place?",
+      "definition": "At the perimeter, as far as practical from the protected asset, to preserve standoff distance.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 422,
+      "term": "Where should mail and package screening take place?",
+      "definition": "In a separate building or an isolated area away from critical operations.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 423,
+      "term": "What is secondary screening?",
+      "definition": "A more thorough inspection carried out when primary screening alarms or cannot resolve an item.",
+      "topic": "Personnel, package and vehicle screening",
+      "added": true
+    },
+    {
+      "id": 424,
+      "term": "What are the core elements of a visitor management process?",
+      "definition": "Authorization by a host, identity verification, a sign-in record, a temporary badge, escort where required, and sign-out with badge return.",
+      "topic": "Visitor and vendor management",
+      "added": true
+    },
+    {
+      "id": 425,
+      "term": "Why should visitor badges look different from employee badges and expire?",
+      "definition": "So visitors are easy to recognize and a badge cannot be reused later.",
+      "topic": "Visitor and vendor management",
+      "added": true
+    },
+    {
+      "id": 426,
+      "term": "What extra controls apply to vendors and contractors?",
+      "definition": "Confirm the business need, vet as required, limit access to the necessary areas and times, escort or supervise, and control tools, materials and keys.",
+      "topic": "Visitor and vendor management",
+      "added": true
+    },
+    {
+      "id": 427,
+      "term": "Why keep visitor records?",
+      "definition": "For accountability, investigations, and knowing who is on site in an emergency.",
+      "topic": "Visitor and vendor management",
+      "added": true
+    },
+    {
+      "id": 428,
+      "term": "What is the purpose of an escort?",
+      "definition": "To keep a visitor under continuous observation and within authorized areas.",
+      "topic": "Visitor and vendor management",
+      "added": true
+    },
+    {
+      "id": 429,
+      "term": "Name the typical design phases of a security project.",
+      "definition": "Pre-design (planning), schematic design, design development, and construction documents.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 430,
+      "term": "What is produced in pre-design?",
+      "definition": "The requirements and basis of design, along with an initial budget and schedule.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 431,
+      "term": "What do construction documents consist of?",
+      "definition": "Drawings and specifications, used for bidding and for building the system.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 432,
+      "term": "What is the Construction Specifications Institute (CSI) known for?",
+      "definition": "Publishing MasterFormat, the standard for organizing construction specifications into numbered divisions.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 433,
+      "term": "Which CSI MasterFormat division covers electronic safety and security?",
+      "definition": "Division 28.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 434,
+      "term": "What are the three parts of a CSI specification section?",
+      "definition": "Part 1 General, Part 2 Products, Part 3 Execution.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 435,
+      "term": "What is MasterSpec?",
+      "definition": "A library of master guide specifications associated with the American Institute of Architects (AIA).",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 436,
+      "term": "Name the main design elements in project documentation.",
+      "definition": "Calculations, drawings, specifications, technical data, and design reviews.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 437,
+      "term": "What are as-built drawings?",
+      "definition": "Drawings that record the system as it was actually installed, including changes made during construction.",
+      "topic": "Design phases and specification standards",
+      "added": true
+    },
+    {
+      "id": 438,
+      "term": "What is a Gantt chart?",
+      "definition": "A bar chart that plots project tasks against time, showing each task's start, duration and finish.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 439,
+      "term": "What is a PERT chart?",
+      "definition": "A network diagram of tasks and their dependencies that uses three time estimates for each task: optimistic, most likely and pessimistic.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 440,
+      "term": "What is the PERT expected-time formula?",
+      "definition": "(Optimistic + 4 x most likely + pessimistic) / 6.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 441,
+      "term": "What is the critical path?",
+      "definition": "The longest sequence of dependent tasks in a project. It sets the minimum project duration, and a delay to any task on it delays the project.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 442,
+      "term": "What is a milestone?",
+      "definition": "A significant point or event in a project, with no duration of its own.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 443,
+      "term": "What is value engineering?",
+      "definition": "A systematic review of a design to deliver the required functions at the lowest life cycle cost without reducing required performance.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 444,
+      "term": "What is return on investment (ROI)?",
+      "definition": "The net benefit of an investment divided by its cost.",
+      "topic": "Scheduling and cost analysis",
+      "added": true
+    },
+    {
+      "id": 445,
+      "term": "What is a request for information (RFI)?",
+      "definition": "A formal request for information. Owners use it to survey the market; during bidding, bidders use it to ask for clarification of the bid documents.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 446,
+      "term": "What is a request for quotation (RFQ)?",
+      "definition": "A request for prices for clearly defined goods or services.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 447,
+      "term": "When is a request for proposal (RFP) the best choice?",
+      "definition": "When the owner states the need or performance required and wants vendors to propose solutions, which are evaluated on more than price.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 448,
+      "term": "When is an invitation for bid (IFB) the best choice?",
+      "definition": "When requirements are fully specified and the award goes to the lowest responsive, responsible bidder.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 449,
+      "term": "When is sole source procurement appropriate?",
+      "definition": "When only one vendor can meet the requirement, for example for compatibility with an existing proprietary system. It should be justified in writing.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 450,
+      "term": "What is the purpose of a pre-bid meeting?",
+      "definition": "To explain the project, walk the site and answer questions so that all bidders receive the same information.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 451,
+      "term": "How are answers to bidders' questions issued?",
+      "definition": "As written addenda sent to all bidders.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 452,
+      "term": "What is a substitution request?",
+      "definition": "A bidder's formal request to use a product other than the one specified. It must show equivalence and be approved.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 453,
+      "term": "Name criteria used to evaluate bids.",
+      "definition": "Cost, experience, schedule, certifications, resources, references, and technical compliance.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 454,
+      "term": "Name the main components of a bid package.",
+      "definition": "Scope or statement of work, drawings and specifications, schedule, terms and conditions, instructions to bidders, and evaluation criteria.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 455,
+      "term": "What does ethics in contracting require?",
+      "definition": "Treating all bidders equally, avoiding conflicts of interest, keeping bid information confidential, and refusing gifts or favors.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 456,
+      "term": "What does vendor due diligence check?",
+      "definition": "Financial stability, licensing and insurance, references, and past performance.",
+      "topic": "Bid process",
+      "added": true
+    },
+    {
+      "id": 457,
+      "term": "What are general orders?",
+      "definition": "Standing instructions that apply to all security officers, such as conduct and standards.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 458,
+      "term": "What are post orders?",
+      "definition": "Written instructions specific to one post: duties, procedures, hours and emergency actions.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 459,
+      "term": "What are special orders?",
+      "definition": "Temporary instructions for a specific event or situation.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 460,
+      "term": "What is a key performance indicator (KPI)?",
+      "definition": "A measurable value showing how well an objective is being met, such as response time or patrol completion.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 461,
+      "term": "What is progressive discipline?",
+      "definition": "Escalating corrective steps, typically verbal warning, written warning, suspension, then termination.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 462,
+      "term": "What sets the limits of a security officer's authority?",
+      "definition": "The law, licensing requirements, and employer or client policy. Officers generally have no more legal authority than a private citizen unless the law grants it.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 463,
+      "term": "What does security personnel professional development include?",
+      "definition": "Initial and ongoing training, certification, and continuing education.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 464,
+      "term": "What should guide the choice of security uniforms and equipment?",
+      "definition": "The duties and environment of the post, the image and authority to be projected, and the training and licensing each item of equipment requires.",
+      "topic": "Managing security personnel",
+      "added": true
+    },
+    {
+      "id": 465,
+      "term": "What is the purpose of security awareness training for non-security staff?",
+      "definition": "To help employees understand the threats, their own responsibilities, and how to report concerns, so they become part of the security program.",
+      "topic": "Security awareness training",
+      "added": true
+    },
+    {
+      "id": 466,
+      "term": "Name typical security awareness topics.",
+      "definition": "Wearing badges, not allowing tailgating, visitor procedures, reporting suspicious activity, protecting information, social engineering, and emergency procedures.",
+      "topic": "Security awareness training",
+      "added": true
+    },
+    {
+      "id": 467,
+      "term": "When should security awareness training be delivered?",
+      "definition": "At onboarding and at regular intervals afterward.",
+      "topic": "Security awareness training",
+      "added": true
+    },
+    {
+      "id": 468,
+      "term": "How can the effectiveness of awareness training be measured?",
+      "definition": "Tests and drills, audits, surveys, and trends in incident and reporting rates.",
+      "topic": "Security awareness training",
+      "added": true
+    },
+    {
+      "id": 469,
+      "term": "What is commissioning?",
+      "definition": "Verifying and documenting that the installed system operates as designed and meets the owner's requirements.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 470,
+      "term": "Factory acceptance test vs. site acceptance test",
+      "definition": "A factory acceptance test is run at the vendor's facility before shipment; a site acceptance test is run on the installed system at the site.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 471,
+      "term": "What is a punch list?",
+      "definition": "A list of incomplete or deficient items that the contractor must correct before final acceptance.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 472,
+      "term": "Name the common warranty types.",
+      "definition": "Manufacturer, installation (workmanship), replacement parts, and extended.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 473,
+      "term": "Manufacturer's warranty vs. installation warranty",
+      "definition": "The manufacturer's warranty covers defects in the equipment; the installation warranty covers the installer's workmanship.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 474,
+      "term": "What does a service level agreement define?",
+      "definition": "Hours of coverage, response and repair times, required uptime, and remedies if the levels are missed.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
+    },
+    {
+      "id": 475,
+      "term": "Why is ongoing system training needed?",
+      "definition": "System upgrades and staff turnover erode knowledge; some manufacturers also require certification to maintain their systems.",
+      "topic": "Commissioning, warranty and service",
+      "added": true
     }
   ],
   "contentCorrections": [
@@ -2476,21 +3099,26 @@
         "lookedUp": false,
         "pdfNumber": 408
       }
-    ],
-    "topicsInExamOutlineNotCoveredByDeck": [
-      "Emergency notification systems (mass notification, public address, intercom)",
-      "Data storage and management (cloud, on-premise, redundancy, retention, personally identifiable information)",
-      "Network infrastructure beyond basics (LAN/WAN, VPN, DHCP vs. static, TCP/IP)",
-      "Primary and backup power sources (UPS, generators, renewable)",
-      "Personnel, package, and vehicle screening",
-      "Visitor and vendor management policies",
-      "Design phases and construction specification standards (CSI, AIA MasterSpec)",
-      "Scheduling (Gantt and PERT charts) and value engineering",
-      "Bid process details (RFI, RFQ, substitution requests, pre-bid meeting, bid evaluation, ethics in contracting)",
-      "Managing security personnel (KPIs, performance review, post orders, uniforms and equipment)",
-      "Security awareness training for non-security personnel",
-      "Warranty types and service agreements"
     ]
   },
-  "numbering": "Cards are numbered 1-386. pdfNumber in the audit sections is the card number in the original 417-card PDF."
+  "numbering": "Cards 1-386 come from the original PDF; cards 387-475 were added. pdfNumber in the audit sections is the card number in the original 417-card PDF.",
+  "addedCards": {
+    "ids": "387-475",
+    "count": 89,
+    "topics": {
+      "Emergency notification systems": 6,
+      "Data storage and management": 8,
+      "Network infrastructure": 9,
+      "Primary and backup power": 7,
+      "Personnel, package and vehicle screening": 7,
+      "Visitor and vendor management": 5,
+      "Design phases and specification standards": 9,
+      "Scheduling and cost analysis": 7,
+      "Bid process": 12,
+      "Managing security personnel": 8,
+      "Security awareness training": 4,
+      "Commissioning, warranty and service": 7
+    },
+    "note": "These cards were not in the original PDF. They cover topics from the 2022 PSP Body of Knowledge that the deck lacked, written from general knowledge and not checked against the ASIS reference books."
+  }
 }
