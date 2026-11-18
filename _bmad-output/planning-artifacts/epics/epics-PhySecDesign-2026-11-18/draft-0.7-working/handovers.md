@@ -60,3 +60,48 @@
 - 5.9 (D): attention count is extended by cable ends (6.8b) and ports (7.5c) flagged Needs connection review -- stated in those stories, nothing to do in 5.9.
 - 1.9 (A): no bulk-cleanup event needed (project change log has it). Done.
 - 10.2 (F): inventory preview and import timings in 6.2a and 6.3b are development measurements; acceptance run stays in 10.2.
+
+## Split map, Epic 5
+- 5.1 -> 5.1a field shell and issued-design chip; 5.1b find a device in the field
+- 5.3 -> 5.3a mark Installed and Configured; 5.3b reverse a mistaken mark; 5.3c report a change found on site
+- 5.4 -> 5.4a checklists and starters; 5.4b expectations in revisions and package
+- 5.5 -> 5.5a record a check's outcome; 5.5b attempts, retests, corrections; 5.5c photos as check evidence; 5.5d experiment R4
+- 5.6 -> 5.6a site changes flag affected checks; 5.6b definition changes and clearing flags
+- 5.9 -> 5.9a raise and track issues; 5.9b issues in counts and package
+- 5.10 -> 5.10a define the reliability period; 5.10b start, end, stop a run
+- 5.11 -> 5.11a downtime log and availability; 5.11b outcome of a run
+- 5.12 -> 5.12a choose Completed or outstanding; 5.12b close and write closeout record; 5.12c closed scope, no active scope (owns the rule and label); 5.12d final acceptance of closeout record; 5.12e Closeout package
+- 5.2, 5.7, 5.8, 5.13 unchanged
+
+## Split map, Epics 2-3
+- 2.2 -> 2.2a autosave, versioned items, save status; 2.2b lost connection, access, session end
+- 2.6 -> 2.6a property lookup and map views; 2.6b import, align, lock a plan; 2.6c plan originals stored on server
+- 2.7 -> 2.7a device records, lifecycle, basis, search, Room-or-area field; 2.7b acceptance-size fixture and first timings
+- 2.8 -> 2.8a coverage in worker, Updating status; 2.8b DORI and zone target results; 2.8c sampling, time allowance, saved summaries, R2
+- 2.10 -> 2.10a notes, measurements, constraints as entries; 2.10b photos with originals stored
+- 2.11 -> 2.11a undo and redo own edits; 2.11b Delete draft for accidental devices
+- 2.13 -> 2.13a image, Compose, bundled HTTPS; 2.13b operator's own HTTPS proxy; 2.13c deployment key and administrator recovery; 2.13d named smoke-suite case list
+- 3.1 -> 3.1a project frame and view switch; 3.1b eight areas as routes
+
+## RULINGS (coordinator) on overlaps
+- Device fields: "Room or area" is created in 2.7a and searchable from then on. Serial number, IP address and MAC address are created in 4.2. Stories 4.2 (room), 5.3c and 6.1 must NOT create these again; they use them. 5.1b can search on room again.
+- "Evidence-limited summary" for a package that leaves out a required photo: 5.12e owns it for the Closeout package; 5.4b owns it for the Design package if required photos affect the Design package, else nowhere else.
+- Small functional project: 10.1 only. Fixture extension to 8 GiB: 8.2 only. Fixture script: 2.7b.
+- With no active scope: survey notes and photos (2.10) are refused like other field records; 5.12c lists them.
+- Approval state list (Approved, Changes requested, Bypassed, Awaiting decision, No review) lives in the 3.2 component and is used by 4.6c/4.8a/5.1a.
+
+## From part B (Epics 2-3)
+- 1.2 (A): on Cloudflare too, a deployment with no administrator issues a new set-up code and invalidates the old one; none once an administrator exists.
+- 4.1a (C): puts the first entries on the Records timeline; 3.1b creates Records as an empty timeline page (so 4.1a adds entries, not the page).
+- 4.9 (C): a device that is or has been Existing has no delete control from 2.7a onward; 4.9 is the first way to remove a mistaken one.
+- 5.5 (D): field note form reuses 2.10a's on-form warning against entering site passwords or access codes.
+- 8.1 and 8.4 (F): carry "a PDF password is absent from every backup".
+- 8.3 (F): 2.13c refuses to start when records exist and the key file is missing; recovery without the key goes through 8.3.
+- 9.1 (F): the published instructions say to keep a copy of the key off the server.
+- 10.1/10.2 (F): timings in 2.2a, 2.6b, 2.7b, 2.8c, 2.10b, 3.5, 5.1b, 6.2a, 6.3b are development measurements; acceptance runs stay in 10.2.
+
+## From part D (Epic 5)
+- 7.7 (E): closet, port and inter-floor schedules in the Closeout package.
+- 4.6/4.7 (C): 5.12d records a final-acceptance bypass on the closeout record itself and relies on 4.7's link rules.
+- 2.5 (B): two more floor-deletion blockers exist: a floor-level site check with an attempt (5.8) and a floor held in a closeout record (5.12b); 2.5 Notes should name them.
+- 6.8 (E): label "not saved: device removed"; 5.13 uses "not saved: device cancelled or corrected".
