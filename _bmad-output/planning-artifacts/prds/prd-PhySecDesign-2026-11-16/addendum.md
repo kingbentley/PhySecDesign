@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for the [final PRD 1.1](prd.md), updated 2026-11-18 with a section on [amendment 1.1](#amendment-11--reference-based-additions). This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
+Supporting context for [final PRD 1.2](prd.md), updated 2026-11-17; a section on amendment 1.1 was added on 2026-11-18, and the access section was rewritten and a section on amendment 1.2 added on the same day. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
 
 - [Implementation baseline and migration context](#implementation-baseline-and-migration-context)
 - [Property context, work scope and issued design](#property-context-work-scope-and-issued-design)
@@ -13,7 +13,6 @@ Supporting context for the [final PRD 1.1](prd.md), updated 2026-11-18 with a se
 - [Archive, restoration and cleanup](#archive-restoration-and-cleanup)
 - [Design and closeout packages](#design-and-closeout-packages)
 - [POC acceptance and operating targets](#poc-acceptance-and-operating-targets)
-- [Amendment 1.1 — reference-based additions](#amendment-11--reference-based-additions)
 - [Downstream responsibilities and evidence boundaries](#downstream-responsibilities-and-evidence-boundaries)
 
 ## Implementation baseline and migration context
@@ -30,7 +29,7 @@ The existing Site Studio application is a React/Vite map editor with browser-loc
 | Hosting | Vite development/preview serves the local review API; the separate static Sites package does not. | Implement the confirmed access model, select hosting in architecture, and implement the confirmed shared-save/conflict model before claiming online workflow acceptance. |
 | Field/lifecycle | Survey notes, existing/proposed devices, revisions and review are present. | Installation/configuration/tests, issued-design history, device archives, fixed closeout and reopened work are new capabilities. |
 
-Recorded demo participant names do not authenticate people. Owner/reviewer bearer credentials and private review files are not project-export content. No production access model is selected by this POC.
+In the prototype, recorded participant names do not authenticate people, and owner/reviewer bearer credentials and private review files are not project-export content. Under amendment 1.2 the product gains accounts and roles (FR-66–72); the prototype has none.
 
 ### Maps, plan import and original assets
 
@@ -118,11 +117,11 @@ Changing the reference must not roll back or overwrite field placements, notes/p
 
 ## Access, shared editing and record integrity
 
-### Demo access
+### Access (rewritten for amendment 1.2)
 
-Use one hosted HTTPS demo with a revocable project edit link shared by trusted designers/installers and separate revocable links for designated reviewers of fixed design/closeout versions (FR-2/23–25, NFR-5). Design and Installation are work views, not permissions. Editors can manage reviewer links and use self-approval/bypass. Display names are unverified demo attribution: anyone holding a link can exercise its permissions.
+Each organisation runs its own installation over HTTPS, on its own server or on its own Cloudflare account (FR-66). People who edit sign in with individual accounts created by an administrator's invitation (FR-67) and reach a project only as its Editor or Viewer; administrators manage users, projects, settings, backups and updates and can open every project (FR-68, FR-70). Separate revocable links remain for designated reviewers of fixed design/closeout versions who have no account (FR-23–25). Design and Installation are work views, not permissions. Project Editors manage a project's reviewer links and use self-approval/bypass; administrators can see and revoke every reviewer link. Actions by signed-in people are attributed to their account; a name entered through a reviewer link is unverified and is labelled so (FR-69). The earlier model of one hosted demo with a shared project edit link and unverified display names for editors is withdrawn; its text is preserved in [sources/pre-amendment-1.2](sources/pre-amendment-1.2/addendum.md.txt).
 
-Enforce project/revision scope on the server for records and stored drawings/photos. Keep access credentials out of portable projects. Use sample or sanitized nonconfidential data; confidential client use needs a separate access/data decision. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the two-link model is a Site Studio product decision. Hosting vendor and shared-update implementation choices belong to architecture.
+Enforce accounts, roles, membership and reviewer-link scope on the server for records and stored drawings/photos (NFR-5). Keep passwords, session tokens, recovery codes and link tokens out of records, logs, exports and portable projects. Each hosting organisation is responsible for the data it stores; the software carries no security certification, and an independent security review is required before it is recommended for confidential client data. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the account-plus-reviewer-link model is a Site Studio product decision. Sign-in mechanics, session handling and the two hosting implementations belong to architecture.
 
 ### Shared editing and common safeguards
 
@@ -148,7 +147,7 @@ Add new notes, photo attachments, test attempts and reviewer decisions as separa
 
 If connectivity fails, show the unsaved state and retain pending input while the page is open; pause server-dependent work and retry/revalidate on reconnection. Do not promise durable offline capture, background offline work or recovery after closing the page. A timeout can occur after a successful server save, so retries must determine whether that action already succeeded.
 
-Undo applies to the current browser session's recent working edits, using an internal session identifier rather than trusting the display name. It creates a new recorded reversal and checks affected versions. If another edit has changed the relevant item or dependencies, explain why direct undo cannot proceed and offer review. It must not roll back another person's work, erase evidence, or modify fixed revisions. Redo uses the same guards.
+Undo applies to the current browser session's recent working edits, identified by the signed-in account and its session. It creates a new recorded reversal and checks affected versions. If another edit has changed the relevant item or dependencies, explain why direct undo cannot proceed and offer review. It must not roll back another person's work, erase evidence, or modify fixed revisions. Redo uses the same guards.
 
 Named snapshots, issuing, restoration and closeout use a consistent server-saved version and revalidate project state. Resolve the initiating user's relevant pending/conflicting edits before taking the snapshot. Other clients' unsaved edits are not included or represented as saved. Closeout rechecks current outstanding work. A full revision restore is a deliberate guarded project action, separate from ordinary undo.
 
@@ -532,7 +531,7 @@ Provide quick Delete draft for accidental proposed placements while preserving c
 | --- | --- |
 | Accidental proposed placement, never installed or surveyed as an existing asset, not included in an issued/approved design, with no actual installation/configuration/test evidence | Delete draft removes it from the working design and applicable proposed schedules, coverage, capacity and estimates; offer immediate Undo. Retain its stable ID and deletion/change history for guarded recovery. An untouched starter checklist is not field evidence. |
 | Previously issued/approved planned device that will not be installed | Cancel the planned item in the current working revision with a short reason. Preserve its issued representation, comments and decisions, and show the scope change in comparison/closeout. Cancellation is not actual removal, a failed test or an approval of the changed design. |
-| Unissued proposed device that is not eligible for Delete draft and is no longer wanted, for example one that keeps evidence after a mistaken installed mark was reversed ([amendment 1.1](#amendment-11--reference-based-additions)) | Cancel it with a short reason. It keeps its identity, history and evidence and leaves the proposed design. Cancellation is not actual removal, a failed test or an approval of the changed design. |
+| Unissued proposed device that is not eligible for Delete draft and is no longer wanted, for example one that keeps evidence after a mistaken installed mark was reversed (amendment 1.1) | Cancel it with a short reason. It keeps its identity, history and evidence and leaves the proposed design. As above, cancellation is not actual removal, a failed test or an approval of the changed design. |
 | Existing, installed, commissioned or field-evidenced equipment | Do not offer quick draft deletion. Use the existing actual-removal/archive workflow for real removal. For a duplicate or erroneous record, make a history-preserving record correction with a reason and reference to the retained record when applicable; do not fabricate a physical removal. |
 
 Eligibility follows the record’s origin and history, not merely an unchecked Installed box, visibility, a Draft project label or the absence of a price/serial number. A saved draft revision alone does not prevent editing the current design; its captured content remains unchanged. If eligibility is ambiguous, require review/correction rather than guessing that the asset never existed. Planning notes may be retained with their original record/location context; they do not become installation evidence merely because a draft exists.
@@ -622,7 +621,7 @@ Following FR-53, prior cable/port choices remain historical until explicitly rev
 
 Recalculate supported current/proposed analysis only using the selected location and known inputs, identifying unresolved route/scale/coverage assumptions. Apply existing change/retest rules: actual return to service or relocation needs appropriate current checks, while a supported drawing-only correction does not by itself establish a physical move. Historical passing results remain historical.
 
-Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Un-archive an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
+Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Reopen an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
 
 Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. FR-60 permits only unused-draft container deletion; already-missing historical floor references still use this restoration rule. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
 
@@ -788,11 +787,11 @@ Create at least daily automatic complete recovery backups, retaining at least se
 
 Keep zero loss of acknowledged records/attachments for ordinary browser closure or service restart, as already confirmed in NFR-2. For catastrophic store loss, use a recovery point no older than 24 hours and restoration to a usable project within 60 minutes after recovery begins in the documented prepared recovery environment. The 60-minute exercise includes automated backup retrieval, validation and restoring records/assets/access configuration; it cannot depend on a multi-hour user upload over a 5 Mbps connection. Display the restored recovery-point timestamp and the potential loss window; do not fabricate records after that point or imply that its issued-design designation reflects later lost changes. Record environment/preparation assumptions and total elapsed time; this is a POC recovery target, not a production availability guarantee. If the latest valid backup is older or recovery misses the target, show that failure rather than claim compliance.
 
-Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Re-establish authorized access under the existing demo model. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
+Demonstrate actual recovery into an isolated destination, including stable IDs/relationships, original/processed media, archived devices, revisions, unresolved issues, exact historical PDF volumes/manifests and the current issued-reference designation/history. Verify completeness/content integrity before a deliberate switch; incomplete/invalid restores must not overwrite a working project. Portable project backups exclude credentials; recovery must not reactivate revoked bearer links or claim old access grants are current. Under amendment 1.2, recovering an installation restores its accounts, roles and memberships, ends every session and cancels every reviewer link, so that Editors issue new ones; a portable backup of one project carries no accounts, and its members are set again in the installation that receives it. A PDF report is not an editable backup, and a successful backup download is not proof of restoration. These product requirements are confirmed; their implementation and acceptance evidence remain outstanding.
 
 ## Amendment 1.1 — reference-based additions
 
-Added 2026-11-18 and finalized with PRD 1.1. These notes support FR-63–65 and the smaller additions. They originate in a parallel planning session that worked from an earlier draft without knowledge of PRD 1.0 (the “parallel session”); Kevin confirmed them, and they then went through the finalization review. The [amendment status](amendment-1.1-status.md) records what was ported and what was not; the [reference digest](sources/psp-reference-reading.md) holds the sources.
+Added 2026-11-18. These notes support FR-63–65 and the small additions in the PRD. They were confirmed by Kevin in a parallel session, reviewed on 2026-11-18 and are part of final PRD 1.2. The [amendment status](amendment-1.1-status.md) records what was ported and what was not; the [reference digest](sources/psp-reference-reading.md) holds the sources.
 
 ### What the references are, and their limits
 
@@ -806,38 +805,57 @@ None is adopted as a standard and no compliance claim is made. Against the outli
 
 ### Pan/tilt/zoom cameras (FR-63)
 
-Two sources, Patterson in two places and the Department of Energy guide, assumed pan/tilt/zoom cameras, while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and is never counted as covered. For each location, the reach layer shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit, only a wider view may include the location. Reach reuses the existing visibility calculation, swept from the mounting point across the pan and tilt limits. Guard tours, auto-tracking and time-share coverage figures are out of scope.
+Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and earns no credit. For each location it shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit only a wider view may include it. Reach reuses the existing visibility calculation swept across the pan and tilt limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
 
 ### Optional reliability period (FR-64)
 
-The idea is Patterson’s reliability or operational availability test. The requirement reuses the confirmed check, attempt, issue and retest rules; its one new element is a downtime log from which availability is computed. It differs from the source deliberately in three ways:
-
-- **Duration.** Nothing is prescribed; Patterson describes about 30 days in two phases.
-- **Blocking.** The requirement warns and records but never blocks starting or continuing a run; Patterson requires all deficiencies corrected first and no repairs without written permission. A required stage that has not passed still prevents Completed under FR-32.
-- **Formula.** Availability is defined as time not down divided by total elapsed time; Patterson’s printed formula can be read two ways.
-
-People enter every start, end and outage, so a recorded availability is only as complete as the log.
+The idea is Patterson’s reliability or operational availability test. The requirement reuses the confirmed check, attempt, issue and retest rules; its one new element is a downtime log from which availability is computed. It differs from the source deliberately: nothing is prescribed, where he describes about 30 days in two phases; it warns and records but never blocks starting or continuing a run, where he requires all deficiencies corrected first and no repairs without written permission, while a required stage that has not passed still prevents Completed under FR-32; and availability is defined as time not down divided by total elapsed time, where his printed formula can be read two ways. People enter every start, end and outage, so a recorded availability is only as complete as the log.
 
 ### Warranty and service visits (FR-65)
 
-Two warranty levels are kept because their clocks differ: the installer’s runs by default from a scope’s closeout, unless another start date is set, while a manufacturer’s belongs to an individual device, including a later replacement. Status is calculated and informational, and equipment with no warranty recorded is Unknown. Service visits fill the middle of a chain the requirements already had at both ends: an issue records the fault, and resolution requires a closing check. For a service call after closeout, one action reopens the project into a work scope marked as service (an archived project is un-archived first), so no separate service track exists; each such scope ends with its own closeout record. A service scope starts with no current issued design under FR-61.
+Two warranty levels are kept because their clocks differ: the installer’s runs by default from a scope’s closeout, unless another start date is set, while a manufacturer’s belongs to an individual device, including a later replacement. Status is calculated and informational, and equipment with no warranty recorded is Unknown. Service visits fill the middle of a chain the requirements already had at both ends: an issue records the fault, and resolution requires a closing check. A service call after closeout reopens the project into a work scope marked as service through one action, after un-archiving it first if it was archived, so no separate service track exists; each such scope ends with its own closeout record. A service scope starts with no current issued design under FR-61.
 
 ### Small additions
 
-The optional camera checks in FR-29 include two that complement the model in the field without verifying a DORI level: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
+The optional camera checks in FR-29 include two that verify the model in the field: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
 
 ### Clarifications adopted from the parallel session
 
-Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, apart from one narrow FR-55 cancellation exception adopted afterwards (the Unissued proposed device row in [Choose the action from the record’s history](#choose-the-action-from-the-records-history)), and adopted four clarifications where 1.0 was silent.
+Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, and adopted four clarifications where 1.0 was silent.
 
-- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can have that mark reversed with a reason, returning it to not installed or not configured respectively. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
+- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can be returned to not installed with a reason. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
 - **Whole-revision restore (FR-22).** A restore changes design content only. Recorded actual positions, recorded work, evidence, issues and archive state are facts and are never rolled back. Deleted floors are not brought back.
 - **Un-archiving versus reopening (FR-37).** Leaving the archive is its own explicit action and starts no work scope; reopening for later work remains FR-38.
-- **Cancelled and corrected records (FR-8/41).** These records stay listed and searchable with their reason, and the Changes view lists them against the current issued design.
+- **Cancelled and corrected records (FR-8/41).** They stay listed and searchable with their reason, and the Changes view lists them against the current issued design.
 
 ### Device state model
 
-The device state model in the PRD’s [Terms and lifecycle rules](prd.md#terms-and-lifecycle-rules) section consolidates states that the requirements already use. It is there for the architecture stage, which the handoff asks to decide lifecycle identities. It was adapted to PRD 1.0: the middle lifecycle stage is named Existing, not Installed, because an import must not establish actual installation; a Placement axis covers the Awaiting placement list; and provenance is stated not to be a device state. The prototype stores a single existing/proposed flag and has none of the other axes.
+The model in the PRD’s Terms section consolidates states that the requirements already use, for the architecture stage that the handoff asks to decide lifecycle identities. It was adapted to PRD 1.0: the middle lifecycle stage is named Existing, not Installed, because an import must not establish actual installation; a Placement axis covers the Awaiting placement list; and provenance is stated not to be a device state. The prototype stores a single existing/proposed flag and has none of the other axes.
+
+## Amendment 1.2 — hosting, accounts, administration and updates
+
+Added 2026-11-18. These notes support FR-66–72, NFR-7, NFR-8, SM-6 and UJ-5. Kevin confirmed the amendment's content, including the details listed in the [amendment 1.2 status](amendment-1.2-status.md). The prototype implements none of it.
+
+### What the prototype has and lacks
+
+| Area | Prototype | Required by 1.2 |
+| --- | --- | --- |
+| Hosting | A local development server, and a static package with no server-side storage. | An installation an organisation can run on its own server or its own Cloudflare account, behaving the same on both (FR-66, NFR-7). |
+| People | No accounts. A typed name on review comments. | Accounts by invitation, email-and-password sign-in, optional two-step verification, sessions, deactivation (FR-67). |
+| Permissions | Whoever opens the page can edit. Reviewer links are scoped to one revision. | Administrator or standard user; Editor or Viewer per project; reviewer links kept (FR-68). |
+| Attribution | Unverified names. | The signed-in account, with reviewer-link names labelled unverified (FR-69). |
+| Administration | None. | Users, projects, reviewer links, settings, backups, software and activity (FR-70, FR-71). |
+| Updates | Rebuild and redeploy by hand. | Installed version shown, public signed releases, and an administrator-only update with backup, check and return (FR-72, NFR-8). |
+
+### Boundaries worth keeping in view
+
+- An installation serves one organisation. Several organisations in one installation, single sign-on, directory synchronisation, licensing and billing are outside the amendment.
+- Email is optional. Every invitation and password reset can be delivered as a link an administrator copies.
+- A Viewer reads, searches, downloads what already exists and exports schedules and estimates, and adds nothing, including evidence. The one exception is recording a decision as the approval assignee. A Viewer creates no retained package and downloads no portable backup.
+- An update is never installed without an administrator's action. How it is installed differs by host and is stated in the interface; the outcome required is the same.
+- The acceptance profile's one usual user and two simultaneous users per project are unchanged. The amendment adds SM-6 and extends the device matrix of NFR-3 to the sign-in and administrator screens; it sets no new timing targets.
+- Password rules, lock-out thresholds and session length are left to architecture and the administrator's settings; the PRD sets no figures.
+
 
 ## Downstream responsibilities and evidence boundaries
 

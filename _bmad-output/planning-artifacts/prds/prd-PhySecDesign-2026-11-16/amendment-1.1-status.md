@@ -1,6 +1,6 @@
 # Site Studio — amendment 1.1: status
 
-Prepared 2026-11-18. Amendment 1.1 was finalized on 2026-11-18 and the [PRD](prd.md) is now final 1.1; the wording below is kept as written while the amendment was proposed. This note tracks what a parallel session added on top of it, what is still to be ported, and where that session's decisions differ from 1.0 and have **not** been applied.
+Prepared 2026-11-18. Amendment 1.1 was reviewed together with amendment 1.2 on the same day and is part of the [final PRD 1.2](prd.md); see the [amendment review](review-finalization-amendments.md). This note tracks what a parallel session added on top of PRD 1.0 and where that session's decisions differ from 1.0. Those differences are not applied, except as listed under Decisions taken on 2026-11-18.
 
 ## How this arose
 
@@ -8,9 +8,9 @@ PRD 1.0 was finalized on 2026-11-17. A separate cloud session started minutes ea
 
 The parallel draft, its addendum and its decision-log entries are preserved unedited in [sources/parallel-session-draft-0.28](sources/parallel-session-draft-0.28/prd.md.txt). Requirement numbers in that snapshot above FR-54 do not match this PRD.
 
-## Ported into the PRD as proposed amendment 1.1
+## Ported into the PRD as amendment 1.1
 
-All of these were confirmed by Kevin in the parallel session. None has been through the finalization review.
+All of these were confirmed by Kevin in the parallel session and were reviewed on 2026-11-18. The table also includes the items adopted later under the decisions below.
 
 | Addition | Where in the PRD | Number in the snapshot |
 | --- | --- | --- |
@@ -29,8 +29,8 @@ All of these were confirmed by Kevin in the parallel session. None has been thro
 | Whole-revision restore changes design content only | FR-22 | FR-22 |
 | Un-archiving as distinct from reopening | Terms, FR-37, FR-65 | Terms, FR-37 |
 | Cancelled and corrected records stay listed | FR-8, FR-41 | FR-8, FR-41 |
-| Narrow cancellation exception for an unissued proposal not eligible for Delete draft | FR-55 | Not in the snapshot |
 | Device state model, adapted, with its contradiction warning | Terms and lifecycle rules; FR-30 | Terms; FR-30 |
+| Cancelling an unissued proposal that is not eligible for Delete draft (decision 6) | FR-55; state model | Not in the snapshot in this form |
 
 Also carried over unchanged: the [PSP reference digest](sources/psp-reference-reading.md) and a one-line application fix in `site-studio/src/RevisionPanel.jsx`.
 
@@ -109,7 +109,7 @@ Suggested handling: keep PRD 1.0. Its workload is larger and its measurement rul
 | C9 | Single-camera coverage update | Within 1 second of finishing an edit | No such row; nearest is 250 ms interaction feedback |
 | C10 | Acceptance stages | Core after slice 4, extended after slice 5 | No staged acceptance; SM-5 covers representative scale |
 
-The acceptance profile gained functional coverage for FR-63–65 during finalization. No timing or accuracy target is set for the reach layer.
+The acceptance profile of PRD 1.0 contains nothing for pan/tilt/zoom cameras, the reliability period or warranty records. Until it does, FR-63–65 are verified only by their own Checks.
 
 ### D. Storage, files and recovery
 
@@ -167,7 +167,6 @@ The parallel slices do not place FR-56 to FR-62 of this PRD (inventory import, A
 - The whole-revision restore rule does not bring back deleted floors, which the parallel draft allowed and FR-55 and FR-60 do not.
 - FR-64 calls the parts of a reliability period “stages”, while the Terms section of PRD 1.0 also uses “stages” for points in the workflow.
 - “Return to service” is used in two senses in both documents; neither settles it.
-- Confirmed by Kevin during finalization on 2026-11-18: the Existing lifecycle name, the Placement axis, the FR-61 sentence in FR-65, and the unknown-optics reach outline in FR-63. He also decided that in-scope work still marked not installed is unfinished work under FR-32, and that the acceptance profile gains functional coverage for FR-63–65 with no reach timing target.
 - After automated review of the pull request, FR-63 was corrected so that reach detail uses the narrowest field of view that can still include each location within the camera’s limits, instead of assuming full zoom everywhere. Kevin had confirmed “best achievable detail at full zoom”; near a pan or tilt limit full zoom cannot always include the location.
 
 ## Not carried over

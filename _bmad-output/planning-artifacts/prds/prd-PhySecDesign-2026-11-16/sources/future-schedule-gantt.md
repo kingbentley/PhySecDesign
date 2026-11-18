@@ -2,6 +2,8 @@
 
 Prepared 2026-11-18 from a party-mode discussion with Kevin (John, Mary, Sally, Winston, Amelia). This is a planned feature for after the POC. It is **not** a requirement of the [final PRD 1.1](../prd.md), which still lists project scheduling among its exclusions. Nothing here has been through PRD review.
 
+**Note added when carried into PRD 1.2 (2026-11-18).** This was written against PRD 1.1, and its references to “PRD 1.1” are left as written. Amendment 1.2 has since added accounts and roles (FR-67–69). Two points below should be re-read against it before this feature is planned: “Who sets a baseline” assumed unverified display names, and the excluded item on individual accounts and a manager with rights over all projects is now partly answered by accounts and the Administrator role. Nothing else here has been changed, and it remains a planned feature, not a requirement.
+
 ## Purpose
 
 Give the project manager for a property a schedule of the work on that property: what is planned when, what depends on what, how far along each part is, and what is running late against the plan.
