@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2025 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2029 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
 - **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
@@ -4079,7 +4079,9 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 **Core behaviour**
 - The organisation's copy of the repository contains an update workflow that is started with the name of the release to install.
 - The workflow, not the Worker, verifies the release's signature, and does so before it deploys anything.
-- Immediately before deploying, the workflow asks the installation whether the marker still stands, and on that answer the installation records in the marker that installation has begun. (CF-32)
+- Immediately before deploying, the workflow asks the installation whether the marker still stands, and in that same step the installation records in the marker that installation has begun. (CF-32)
+- If the marker has been withdrawn, the installation answers no and the workflow stops without deploying.
+- Once installation is recorded as begun, the marker cannot be withdrawn; only a completed update or a completed return clears it.
 - With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.4.
 - On success the marker is cleared and S-35 shows the new version.
 - If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
@@ -4121,7 +4123,9 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 - If the run cannot be started, nothing is deployed, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
 - When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
-- Once the run is confirmed cancelled, or confirmed to have deployed nothing, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged as "no result".
+- At the time limit, if installation has not been recorded as begun, the installation withdraws the marker, so the run can no longer deploy, and asks GitHub to cancel the run.
+- Changes are accepted again only after the marker is withdrawn and the run is confirmed cancelled or finished; the attempt is shown and logged as "no result".
+- If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
 - If neither can be confirmed, the installation stays stopped for changes and shows the warning of story 9.10 with the Cloudflare steps to recover by hand.
 
 **Limits and values**

@@ -617,7 +617,9 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 **Core behaviour**
 - The organisation's copy of the repository contains an update workflow that is started with the name of the release to install.
 - The workflow, not the Worker, verifies the release's signature, and does so before it deploys anything.
-- Immediately before deploying, the workflow asks the installation whether the marker still stands, and on that answer the installation records in the marker that installation has begun. (CF-32)
+- Immediately before deploying, the workflow asks the installation whether the marker still stands, and in that same step the installation records in the marker that installation has begun. (CF-32)
+- If the marker has been withdrawn, the installation answers no and the workflow stops without deploying.
+- Once installation is recorded as begun, the marker cannot be withdrawn; only a completed update or a completed return clears it.
 - With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.3b.
 - On success the marker is cleared and S-35 shows the new version.
 - If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
@@ -659,7 +661,9 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 - If the run cannot be started, nothing is deployed, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
 - When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
-- Once the run is confirmed cancelled, or confirmed to have deployed nothing, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged as "no result".
+- At the time limit, if installation has not been recorded as begun, the installation withdraws the marker, so the run can no longer deploy, and asks GitHub to cancel the run.
+- Changes are accepted again only after the marker is withdrawn and the run is confirmed cancelled or finished; the attempt is shown and logged as "no result".
+- If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
 - If neither can be confirmed, the installation stays stopped for changes and shows the warning of story 9.6a with the Cloudflare steps to recover by hand.
 
 **Limits and values**
