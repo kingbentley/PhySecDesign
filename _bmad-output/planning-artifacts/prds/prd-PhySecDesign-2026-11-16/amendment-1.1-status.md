@@ -108,7 +108,7 @@ Suggested handling: keep PRD 1.0. Its workload is larger and its measurement rul
 | C9 | Single-camera coverage update | Within 1 second of finishing an edit | No such row; nearest is 250 ms interaction feedback |
 | C10 | Acceptance stages | Core after slice 4, extended after slice 5 | No staged acceptance; SM-5 covers representative scale |
 
-The acceptance profile of PRD 1.0 contains nothing for pan/tilt/zoom cameras, the reliability period or warranty records. Until it does, FR-63–65 are verified only by their own Checks.
+The acceptance profile gained functional coverage for FR-63–65 during finalization. No timing or accuracy target is set for the reach layer.
 
 ### D. Storage, files and recovery
 
@@ -166,6 +166,7 @@ The parallel slices do not place FR-56 to FR-62 of this PRD (inventory import, A
 - The whole-revision restore rule does not bring back deleted floors, which the parallel draft allowed and FR-55 and FR-60 do not.
 - FR-64 calls the parts of a reliability period “stages”, while the Terms section of PRD 1.0 also uses “stages” for points in the workflow.
 - “Return to service” is used in two senses in both documents; neither settles it.
+- Confirmed by Kevin during finalization on 2026-11-18: the Existing lifecycle name, the Placement axis, the FR-61 sentence in FR-65, and the unknown-optics reach outline in FR-63. He also decided that in-scope work still marked not installed is unfinished work under FR-32, and that the acceptance profile gains functional coverage for FR-63–65 with no reach timing target.
 - After automated review of the pull request, FR-63 was corrected so that reach detail uses the narrowest field of view that can still include each location within the camera’s limits, instead of assuming full zoom everywhere. Kevin had confirmed “best achievable detail at full zoom”; near a pan or tilt limit full zoom cannot always include the location.
 
 ## Not carried over

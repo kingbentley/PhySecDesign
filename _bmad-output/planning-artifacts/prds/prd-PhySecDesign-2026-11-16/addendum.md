@@ -621,7 +621,7 @@ Following FR-53, prior cable/port choices remain historical until explicitly rev
 
 Recalculate supported current/proposed analysis only using the selected location and known inputs, identifying unresolved route/scale/coverage assumptions. Apply existing change/retest rules: actual return to service or relocation needs appropriate current checks, while a supported drawing-only correction does not by itself establish a physical move. Historical passing results remain historical.
 
-Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Reopen an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
+Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Un-archive an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
 
 Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. FR-60 permits only unused-draft container deletion; already-missing historical floor references still use this restoration rule. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
 
@@ -805,7 +805,7 @@ None is adopted as a standard and no compliance claim is made. Against the outli
 
 ### Pan/tilt/zoom cameras (FR-63)
 
-Three sources assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and earns no credit. For each location it shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit only a wider view may include it. Reach reuses the existing visibility calculation swept across the pan and tilt limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
+Two sources, Patterson in two places and the government assessment guide, assumed such cameras while the requirements gave every camera one fixed aim. The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets, because the camera views one place at a time. Reach is a separate reachable-on-demand layer and earns no credit. For each location it shows the best detail achievable at the narrowest field of view that can still include that location within the camera’s limits; near a pan or tilt limit only a wider view may include it. Reach reuses the existing visibility calculation swept across the pan and tilt limits from the mounting point. Guard tours, auto-tracking and time-share coverage figures are out of scope.
 
 ### Optional reliability period (FR-64)
 
@@ -817,13 +817,13 @@ Two warranty levels are kept because their clocks differ: the installer’s runs
 
 ### Small additions
 
-The optional camera checks in FR-29 include two that verify the model in the field: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
+The optional camera checks in FR-29 include two that complement the model in the field without verifying a DORI level: a person at the far end of the view, and a person behind an obstruction or in its shadow. They sit beside the modeled estimate and never alter it. FR-43 gains optional checks for alarm-to-camera call-up and handover. FR-7 gains camera enclosure type and alarm interface. FR-20 gains survey prompts that are observations only. FR-18 gains percentage lines with a stated base and subsystem subtotals that never change the total.
 
 ### Clarifications adopted from the parallel session
 
-Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, and adopted four clarifications where 1.0 was silent.
+Kevin kept PRD 1.0 on every point where the parallel session disagreed with it, apart from one narrow FR-55 cancellation exception adopted afterwards, and adopted four clarifications where 1.0 was silent.
 
-- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can be returned to not installed with a reason. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
+- **Reversing a mistaken mark (FR-55).** A proposed device marked installed or configured in error can have that mark reversed with a reason, returning it to not installed or not configured respectively. The record, its notes and its attempts are kept, and the reversal never makes the record eligible for quick deletion.
 - **Whole-revision restore (FR-22).** A restore changes design content only. Recorded actual positions, recorded work, evidence, issues and archive state are facts and are never rolled back. Deleted floors are not brought back.
 - **Un-archiving versus reopening (FR-37).** Leaving the archive is its own explicit action and starts no work scope; reopening for later work remains FR-38.
 - **Cancelled and corrected records (FR-8/41).** They stay listed and searchable with their reason, and the Changes view lists them against the current issued design.
