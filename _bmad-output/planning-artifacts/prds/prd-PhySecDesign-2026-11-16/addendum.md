@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.23](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.24](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -633,6 +633,18 @@ Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its six choices
 The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets. Reach is shown as a separate reachable-on-demand layer and earns no credit, because the camera views one place at a time. Kevin chose to show best achievable detail within reach, at the narrowest field of view, labeled as one place at a time, over a plain outline. Guard tours, auto-tracking and time-share coverage figures are out of scope. The work is in slice 5 with the other extended camera modelling, and the extended acceptance fixture gains one such camera.
 
 Reach reuses the existing visibility calculation swept across the pan limits from the mounting point; it needs no new optical model. The current prototype gives every camera one bearing and has no stored positions, limits or reach layer. Architecture should allow a view’s direction to be one of several stored positions from slice 1, even though the feature arrives in slice 5.
+
+## Confirmed optional reliability period
+
+Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its six choices. FR-58 and a pointer in FR-43 capture the behavior. The idea comes from Patterson’s reliability or operational availability test; the [reference digest](sources/psp-reference-reading.md) holds the paraphrased source.
+
+The requirement reuses the confirmed check, attempt, issue and retest rules. Its one new element is a downtime log from which availability is computed. It differs from Patterson deliberately in three ways:
+
+- Nothing is prescribed. He describes about 30 days in two phases and mentions a very high availability as an ideal; here the duration, phases, downtime definition and target are whatever the project sets.
+- It warns and records but never blocks. He requires all deficiencies corrected before starting and no repairs during a phase without written permission; here a run may start with work outstanding, and a change during a run is flagged for a recorded continue-or-restart decision.
+- Availability is defined as time not down divided by total elapsed time. His printed formula can be read as test time over test time plus downtime; the two agree only when test time means time in operation.
+
+People enter every start, end and outage. The POC has no monitoring of the installed system, so a recorded availability is only as complete as the log. The work is in slice 3, and the core acceptance fixture runs a deliberately short period. The current prototype has no site-level checks at all.
 
 ## Source and verification boundaries
 

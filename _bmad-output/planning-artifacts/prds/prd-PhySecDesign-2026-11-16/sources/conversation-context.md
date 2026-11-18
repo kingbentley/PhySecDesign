@@ -228,3 +228,7 @@ On 2026-11-18 Kevin shared further Patterson pages, decided to keep the DORI con
 ## Confirmed pan/tilt/zoom cameras
 
 On 2026-11-18 Kevin accepted the pan/tilt/zoom proposal and all six choices. Such a camera is one asset with one view, named stored positions and a home. Only the home view counts toward combined coverage and zone targets; other positions are previews; reach is a separate reachable-on-demand layer showing best achievable detail at full zoom, with no credit. Guard tours, auto-tracking and time-share figures are out of scope. Draft0.23 adds FR-57 in slice 5 and one such camera in the extended fixture. Remaining group B items: an optional reliability period, then a warranty record.
+
+## Confirmed optional reliability period
+
+On 2026-11-18 Kevin accepted the reliability-period proposal and all six choices. It is an optional site-level check, off by default, with project-defined duration, phases, downtime definition and availability target and nothing prescribed. People record each run’s start, end and outages; each outage links to an issue and states whether it counts; the software computes availability. Starting with work outstanding and changing equipment during a run are warned and flagged, never blocked. Existing outcome, retest and closeout rules apply. Draft0.24 adds FR-58 in slice 3, with a short period in the core fixture. The remaining group B item is a warranty record with service-visit fields.

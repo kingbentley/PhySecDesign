@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.23"
+version: "0.24"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.23 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.24 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -76,6 +76,7 @@ Trade terms and their closest equivalents here, for recognition only:
 | Site or system acceptance testing | Testing-phase device checks together with site-level checks (FR-29–31/43). |
 | Field test | A check a technician performs on site and records as an observation. |
 | Commissioning | The installation, configuration and testing phases through closeout. |
+| Reliability or operational availability test | The optional reliability period (FR-58). |
 
 The workflow is planning → installation → configuration → testing → closeout. Work on different devices may be at different stages. Design approval and final acceptance are optional checkpoints; installation, test outcome, approval, closeout, and archive state must remain distinct.
 
@@ -400,7 +401,7 @@ Validate connected changes together, including devices/routes, floor contents, a
 
 ### Site-level commissioning checks
 
-**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Optional starters cover alarm-to-camera call-up, including whether the view or recording is available quickly enough for the project’s purpose, and handover of manuals, training, as-built records and the programming list. A handover check records that an item was delivered; it does not store the item or judge its adequacy. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
+**FR-43 — End-to-end site checks.** Provide a small editable project/floor checklist for applicable end-to-end operation and final records: named devices/events reach the intended systems, scoped recordings can be retrieved, identity/time/location records align, and drawings/evidence reflect the recorded installation. Link each check to the endpoints, scope and conditions actually tested. Use the same outcome, evidence and history rules as device checks. Extra night, recovery, integration or duration checks are enabled only where scoped. Optional starters cover alarm-to-camera call-up, including whether the view or recording is available quickly enough for the project’s purpose, and handover of manuals, training, as-built records and the programming list. A handover check records that an item was delivered; it does not store the item or judge its adequacy. An optional reliability period follows FR-58. Technicians perform the tests and enter observations; the POC does not execute hardware tests.
 
 **Check:** A sampled site check does not mark untested devices passed, a configured retention setting does not prove available recording history, and device pass totals do not automatically satisfy an unperformed required end-to-end check. Optional approval and explicit outstanding-items closeout remain independent.
 
@@ -585,6 +586,24 @@ Count one device, its documented power demand and its configured streams under F
 
 **Check:** A roof camera with its home position on the car-park entrance contributes only that view to combined coverage and to the entrance zone. The loading-dock zone, within reach but outside every counted view, keeps its counted shortfall and separately shows that the camera can reach it on demand with its achievable detail; that line does not meet the target. Previewing a second stored position changes no totals. Narrowing a pan limit shrinks the reach. Changing the home position changes counted coverage and flags that position’s checks. The camera remains one device with one power demand.
 
+### Optional reliability period
+
+**FR-58 — Reliability period and downtime log.** Offer an optional site-level check, off by default, for a period of observed operation after testing. The project defines what the period covers, its planned duration, the number of phases, what counts as downtime and an availability target. Prescribe none of these. Each phase is a check with its own attempts under FR-31 and FR-43.
+
+A person records the start and the end of each run, and each run is one attempt. The POC observes nothing itself: it has no automatic monitoring, alerts or connection to the installed system.
+
+Log each outage during a run as a separate entry with what was affected, its start and end time, a description and a linked issue under FR-46. Each entry states whether it counts toward availability under the project’s definition, with a short reason when it does not. Every entry stays visible in the run and in exports. An outage with no recorded end counts as continuing. Entries added by different participants coexist.
+
+Compute availability as the time not down divided by the total elapsed time of the run, as a percentage, from the counted entries; overlapping entries are not counted twice. Show it beside the target with the counted and uncounted downtime totals, and mark it provisional while the run is open. Availability is never entered by hand.
+
+Apply the outcomes of FR-30. A Pass requires a recorded start and end, the full planned duration and the target met. A full run that misses the target is Fail. A run stopped because the system failed to perform is Fail with an explanation. A run stopped for another reason is kept as an incomplete attempt and the check stays Not tested. A period with no duration or target defined shows Needs definition and cannot pass. Repeating or restarting creates a new attempt and keeps earlier attempts and their logs. Changing the definition or target afterwards does not rewrite a recorded outcome.
+
+Allow a run to start while work is outstanding, with a warning listing the outstanding required checks, retests and open issues in the covered scope. Show an actual change to covered equipment recorded during a run on that run, and flag the attempt Needs review under FR-44; a participant records whether the run continues or restarts, with a reason. Neither case is blocked and no approval is added.
+
+Treat the period as required or optional like any other check. FR-32 is unchanged: a required period that is running, failed or not started prevents Completed and permits Closed with outstanding items. The Closeout package shows each run’s dates, planned and actual duration, downtime log, availability, target and outcome under FR-33a.
+
+**Check:** A project enables a one-hour, single-phase period with a 99% target. A technician starts it, logs a three-minute counted camera outage linked to an issue, and ends it: availability shows 95%, the attempt is Fail and the issue stays open. After the correction, a restarted run with no downtime passes, and both attempts appear in the Closeout package. An uncounted entry stays visible without changing availability. Moving a covered camera during a run flags the attempt for review without stopping it. A period with no target shows Needs definition and cannot pass. While the required period is unpassed, the scope can close only with outstanding items.
+
 ## Experience and cross-cutting quality
 
 Preserve the selected [white/teal map-first direction](../../../../design-mockups/04-map-overlay-studio.png): project/floors/layers, central map and drawing, contextual properties, and direct placement tools. On smaller screens, prioritize locating a device, viewing its requirements, and recording work/photos/results. Desktop supports detailed design and comparison. These are draft quality targets, not production service commitments.
@@ -622,7 +641,7 @@ Confirmed 2026-11-18 (OQ-9). The fixture is the project actually exercised for a
 | History | 3 named revisions, 1 issued design, 1 closeout, 2 work scopes | 50 named revisions |
 | Concurrent editors | 3 browsers | 5 browsers |
 
-The fixture also carries the conditions described above: an existing-site survey with unknown details, retained equipment and cable, an obstruction, a targeted zone, field changes, a failed test and retest, a replacement, a removal and restoration, and a reopened scope.
+The fixture also carries the conditions described above: an existing-site survey with unknown details, retained equipment and cable, an obstruction, a targeted zone, field changes, a failed test and retest, a replacement, a removal and restoration, a reopened scope, and a deliberately short reliability period with one logged outage and one restart.
 
 | Area | Target |
 | --- | --- |
@@ -647,7 +666,7 @@ Confirmed 2026-11-18. The slices set the build order and the acceptance cut line
 | --- | --- | --- |
 | 1. Shared foundation | The existing design tool running as one shared online project | FR-1–6, FR-8, FR-10–16, FR-20–22, FR-42; base parts of FR-7 and FR-9 |
 | 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-33b–d, FR-34, FR-47, FR-55; the Design preset of FR-33a; part of FR-7 |
-| 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44; the Closeout preset of FR-33a; the phone field view under NFR-3 |
+| 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44, FR-58; the Closeout preset of FR-33a; the phone field view under NFR-3 |
 | 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-33e, FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56 |
 | 5. Extended modelling | Richer design detail | FR-33f, FR-48–52, FR-57; extension parts of FR-9 and FR-19 |
 
@@ -717,7 +736,7 @@ OQ-1 through OQ-10 are resolved and no owned open question remains. The build or
 
 **After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets.
 
-**Under discussion (nothing assumed).** An optional reliability period with a downtime log, and a warranty record with service-visit fields. Pan/tilt/zoom cameras were confirmed in FR-57 on 2026-11-18. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**Under discussion (nothing assumed).** A warranty record with service-visit fields. Pan/tilt/zoom cameras and the optional reliability period were confirmed in FR-57 and FR-58 on 2026-11-18. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 ## Supporting records
 
