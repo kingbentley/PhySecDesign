@@ -216,11 +216,11 @@
     {
       "id": 52,
       "term": "Security video systems aspect ratio",
-      "definition": "4x3 (16x9 wide screen)"
+      "definition": "4:3 for legacy analog video; 16:9 for widescreen/HD"
     },
     {
       "id": 53,
-      "term": "2 types of video scanning",
+      "term": "2 types of video scanning (analog-era terminology)",
       "definition": "Raster, digital or progressive"
     },
     {
@@ -236,7 +236,7 @@
     {
       "id": 56,
       "term": "5 network infrastructure devices",
-      "definition": "Hubs\nSwitches\nRouters\nFirewalls\nIntrusion detection systems"
+      "definition": "Hubs (largely obsolete, replaced by switches)\nSwitches\nRouters\nFirewalls\nIntrusion detection systems"
     },
     {
       "id": 57,
@@ -251,7 +251,7 @@
     {
       "id": 59,
       "term": "The 5 Ds of asset protection",
-      "definition": "Deter\nDeny\nDetect\nDelay\nDestroy"
+      "definition": "Deter\nDeny\nDetect\nDelay\nDestroy\n(The current PSP Body of Knowledge cites the 4 Ds: deter, detect, delay, deny.)"
     },
     {
       "id": 61,
@@ -286,7 +286,7 @@
     {
       "id": 67,
       "term": "The most effective form of outdoor lighting",
-      "definition": "High & low pressure sodium"
+      "definition": "High & low pressure sodium (the traditional answer; LED is now the common choice)"
     },
     {
       "id": 68,
@@ -320,7 +320,7 @@
     },
     {
       "id": 74,
-      "term": "A resolution of ___ lines per foot is suggested in order to classify a crawling human target.",
+      "term": "A resolution of ___ TV lines per foot (analog video) is suggested in order to classify a crawling human target.",
       "definition": "6"
     },
     {
@@ -591,7 +591,7 @@
     {
       "id": 130,
       "term": "Facility Characterization\nSafety Considerations",
-      "definition": "* Strike a balance between safety and security.\n* 1-15 second time delay on fire exits.\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\""
+      "definition": "* Strike a balance between safety and security.\n* 15-second time delay on delayed-egress fire exits (30 seconds with approval of the authority having jurisdiction).\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\""
     },
     {
       "id": 131,
@@ -1246,7 +1246,7 @@
     {
       "id": 271,
       "term": "What are the three common methods of procurement?",
-      "definition": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)"
+      "definition": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)\n(The current PSP Body of Knowledge also lists request for quotation, RFQ.)"
     },
     {
       "id": 272,
@@ -1280,13 +1280,13 @@
     },
     {
       "id": 279,
-      "term": "The leading cause of death for women and the second leading cause of death for men in the workplace.",
-      "definition": "Workplace violence"
+      "term": "Historically (1990s data), the leading cause of death for women and the second leading cause of death for men in the workplace.",
+      "definition": "Workplace violence (homicide)\n(No longer true: in 2023 transportation incidents caused 36.8% of all US workplace deaths and homicides 8.7%.)"
     },
     {
       "id": 280,
       "term": "4 types of workplace violence",
-      "definition": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - domestic violence"
+      "definition": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - personal relationship (e.g., domestic violence)"
     },
     {
       "id": 281,
@@ -1460,8 +1460,8 @@
     },
     {
       "id": 320,
-      "term": "Most street lights are...",
-      "definition": "Mercury vapor"
+      "term": "Historically, most street lights were...",
+      "definition": "Mercury vapor (now largely replaced by high-pressure sodium and LED)"
     },
     {
       "id": 321,
@@ -1520,8 +1520,8 @@
     },
     {
       "id": 332,
-      "term": "The de facto badges which have become industry standard are?",
-      "definition": "Wiegand wire badges"
+      "term": "The wire badges that were long the de facto industry standard are?",
+      "definition": "Wiegand wire badges (since superseded by proximity and smart cards)"
     },
     {
       "id": 333,
@@ -1890,7 +1890,7 @@
     },
     {
       "id": 408,
-      "term": "Signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
+      "term": "In analog video, signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
       "definition": "frame, fields"
     },
     {
@@ -2190,5 +2190,268 @@
       "term": "Risk analysis is conducted during which PPS life cycle phase?",
       "duplicateOf": 265
     }
-  ]
+  ],
+  "currencyReview": {
+    "reviewedOn": "2026-11-18",
+    "examOutline": {
+      "source": "https://www.asisonline.org/globalassets/certification/documents/physical-security-professional----bok.pdf",
+      "updated": 2022,
+      "format": "125 scored and up to 15 unscored multiple-choice questions",
+      "domains": [
+        {
+          "name": "Physical Security Assessment",
+          "weight": "34%"
+        },
+        {
+          "name": "Application, Design, and Integration of Physical Security Systems",
+          "weight": "35%"
+        },
+        {
+          "name": "Implementation of Physical Security Measures",
+          "weight": "31%"
+        }
+      ]
+    },
+    "references": {
+      "source": "https://www.asisonline.org/bundles/psp-bundle/",
+      "items": [
+        "Protection of Assets (2021 edition) - Physical Security",
+        "Implementing Physical Protection Systems, 3rd edition",
+        "Business Continuity Guideline",
+        "Physical Asset Protection Standard"
+      ]
+    },
+    "cards": [
+      {
+        "id": 4,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 5,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 6,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 7,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 8,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 52,
+        "status": "updated",
+        "field": "definition",
+        "original": "4x3 (16x9 wide screen)",
+        "corrected": "4:3 for legacy analog video; 16:9 for widescreen/HD",
+        "reason": "Clarifies which ratio applies to which generation of video.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 53,
+        "status": "updated",
+        "field": "term",
+        "original": "2 types of video scanning",
+        "corrected": "2 types of video scanning (analog-era terminology)",
+        "reason": "Raster/interlaced scanning belongs to analog video; current IP cameras use progressive scan.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 56,
+        "status": "updated",
+        "field": "definition",
+        "original": "Hubs\nSwitches\nRouters\nFirewalls\nIntrusion detection systems",
+        "corrected": "Hubs (largely obsolete, replaced by switches)\nSwitches\nRouters\nFirewalls\nIntrusion detection systems",
+        "reason": "Hubs are no longer used in new networks.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 59,
+        "status": "updated",
+        "field": "definition",
+        "original": "Deter\nDeny\nDetect\nDelay\nDestroy",
+        "corrected": "Deter\nDeny\nDetect\nDelay\nDestroy\n(The current PSP Body of Knowledge cites the 4 Ds: deter, detect, delay, deny.)",
+        "reason": "The 2022 Body of Knowledge names four Ds, not five.",
+        "source": "https://www.asisonline.org/globalassets/certification/documents/physical-security-professional----bok.pdf",
+        "lookedUp": true
+      },
+      {
+        "id": 67,
+        "status": "updated",
+        "field": "definition",
+        "original": "High & low pressure sodium",
+        "corrected": "High & low pressure sodium (the traditional answer; LED is now the common choice)",
+        "reason": "LED has overtaken sodium for new outdoor lighting.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 74,
+        "status": "updated",
+        "field": "term",
+        "original": "A resolution of ___ lines per foot is suggested in order to classify a crawling human target.",
+        "corrected": "A resolution of ___ TV lines per foot (analog video) is suggested in order to classify a crawling human target.",
+        "reason": "TV lines is an analog measure; IP video uses pixels per foot.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 130,
+        "status": "updated",
+        "field": "definition",
+        "original": "* Strike a balance between safety and security.\n* 1-15 second time delay on fire exits.\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
+        "corrected": "* Strike a balance between safety and security.\n* 15-second time delay on delayed-egress fire exits (30 seconds with approval of the authority having jurisdiction).\n* Dispatch a guard to protect an area.\n* \"Safety & security personnel must work together to design systems that will be effective in normal (daily operations), abnormal (fire), and malevolent (attack on facility by a human adversary) conditions.\"",
+        "reason": "NFPA 101 delayed-egress locks release after 15 seconds, or 30 with approval; \"1-15\" was wrong.",
+        "source": "https://www.csemag.com/door-locking-requirements-in-nfpa-101/",
+        "lookedUp": true
+      },
+      {
+        "id": 142,
+        "status": "kept",
+        "reason": "Old single-study claim; left as the reference answer, not checked.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 271,
+        "status": "updated",
+        "field": "definition",
+        "original": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)",
+        "corrected": "Sole source, Request for proposal (RFP), Invitation for bids (IFB)\n(The current PSP Body of Knowledge also lists request for quotation, RFQ.)",
+        "reason": "The 2022 Body of Knowledge lists RFP, RFQ, IFB and sole source as bid package types.",
+        "source": "https://www.asisonline.org/globalassets/certification/documents/physical-security-professional----bok.pdf",
+        "lookedUp": true
+      },
+      {
+        "id": 279,
+        "status": "updated",
+        "field": "term",
+        "original": "The leading cause of death for women and the second leading cause of death for men in the workplace.",
+        "corrected": "Historically (1990s data), the leading cause of death for women and the second leading cause of death for men in the workplace.",
+        "reason": "Homicide led workplace deaths for women in 1993-94 BLS data but no longer does.",
+        "source": "https://www.bls.gov/news.release/archives/cfoi_12192024.htm",
+        "lookedUp": true
+      },
+      {
+        "id": 279,
+        "status": "updated",
+        "field": "definition",
+        "original": "Workplace violence",
+        "corrected": "Workplace violence (homicide)\n(No longer true: in 2023 transportation incidents caused 36.8% of all US workplace deaths and homicides 8.7%.)",
+        "reason": "BLS Census of Fatal Occupational Injuries, 2023.",
+        "source": "https://www.bls.gov/news.release/archives/cfoi_12192024.htm",
+        "lookedUp": true
+      },
+      {
+        "id": 280,
+        "status": "updated",
+        "field": "definition",
+        "original": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - domestic violence",
+        "corrected": "I - criminal intent, II - customer/client related, III - worker versus worker, IV - personal relationship (e.g., domestic violence)",
+        "reason": "The NIOSH typology calls Type IV \"personal relationship\".",
+        "source": "https://www.cdc.gov/niosh/learning/safetyculturehc/module-2/10.html",
+        "lookedUp": true
+      },
+      {
+        "id": 320,
+        "status": "updated",
+        "field": "term",
+        "original": "Most street lights are...",
+        "corrected": "Historically, most street lights were...",
+        "reason": "Mercury vapor has largely been replaced by high-pressure sodium and LED.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 320,
+        "status": "updated",
+        "field": "definition",
+        "original": "Mercury vapor",
+        "corrected": "Mercury vapor (now largely replaced by high-pressure sodium and LED)",
+        "reason": "Same as above.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 332,
+        "status": "updated",
+        "field": "term",
+        "original": "The de facto badges which have become industry standard are?",
+        "corrected": "The wire badges that were long the de facto industry standard are?",
+        "reason": "Wiegand wire cards have been superseded by proximity and smart cards.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 332,
+        "status": "updated",
+        "field": "definition",
+        "original": "Wiegand wire badges",
+        "corrected": "Wiegand wire badges (since superseded by proximity and smart cards)",
+        "reason": "Same as above.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 340,
+        "status": "kept",
+        "reason": "The 1-3 mile radio range is an old rule of thumb; left as the reference answer, not checked.",
+        "source": null,
+        "lookedUp": false
+      },
+      {
+        "id": 397,
+        "status": "kept",
+        "reason": "ASIS still lists its Business Continuity Guideline as a PSP exam reference, so the readiness/prevention/response/recovery model stays.",
+        "source": "https://www.asisonline.org/bundles/psp-bundle/",
+        "lookedUp": true
+      },
+      {
+        "id": 408,
+        "status": "updated",
+        "field": "term",
+        "original": "Signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
+        "corrected": "In analog video, signals are transmitted in what is called a _____ of picture video, made up of two _____ of information",
+        "reason": "Frames made of two fields describe interlaced analog video.",
+        "source": null,
+        "lookedUp": false
+      }
+    ],
+    "topicsInExamOutlineNotCoveredByDeck": [
+      "Emergency notification systems (mass notification, public address, intercom)",
+      "Data storage and management (cloud, on-premise, redundancy, retention, personally identifiable information)",
+      "Network infrastructure beyond basics (LAN/WAN, VPN, DHCP vs. static, TCP/IP)",
+      "Primary and backup power sources (UPS, generators, renewable)",
+      "Personnel, package, and vehicle screening",
+      "Visitor and vendor management policies",
+      "Design phases and construction specification standards (CSI, AIA MasterSpec)",
+      "Scheduling (Gantt and PERT charts) and value engineering",
+      "Bid process details (RFI, RFQ, substitution requests, pre-bid meeting, bid evaluation, ethics in contracting)",
+      "Managing security personnel (KPIs, performance review, post orders, uniforms and equipment)",
+      "Security awareness training for non-security personnel",
+      "Warranty types and service agreements"
+    ]
+  }
 }
