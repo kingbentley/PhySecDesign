@@ -146,7 +146,7 @@ What Cloudflare says:
 
 What this means for the architecture:
 
-- A single server build for both hosts is feasible. The Node.js server and its separate storage adapters (story 9.1, most of AD-16) could be dropped.
+- A single server build for both hosts is feasible. The Node.js server and its separate storage adapters (then story 9.1, now story 2.13; most of AD-16) could be dropped.
 - To stay off the experimental flag, the design would use only what ran without it: Durable Objects for project records **and** for the installation's own data (in place of D1), alarms for the daily backup and for long jobs (in place of scheduled triggers and Workflows), and a small file-store interface with two implementations (R2 on Cloudflare, the disk service self-hosted).
 - The main risk is the experimental label on the storage format. An upgrade of the runtime could, in principle, be unable to read older data. That bears directly on safe updates (NFR-8). It can be managed by pinning the runtime version in each release, testing every release against data from the previous one, and keeping the portable backup as a format-independent way out.
 

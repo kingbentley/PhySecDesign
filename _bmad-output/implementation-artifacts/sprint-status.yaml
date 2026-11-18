@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-18-2026 17:30
-last_updated: 11-18-2026 19:30
+last_updated: 11-18-2026 19:08
 project: PhySecDesign
 project_key: NOKEY
 tracking_system: file-system
@@ -41,8 +41,8 @@ development_status:
   1-3-invite-a-person-and-sign-in: backlog
   1-4-two-step-verification: backlog
   1-5-my-account-and-sessions: backlog
-  1-6-roles-membership-and-the-access-gate: backlog
-  1-7-projects-list-and-creating-a-project: backlog
+  1-6-projects-list-and-creating-a-project: backlog
+  1-7-roles-membership-and-the-access-gate: backlog
   1-8-administration-users-and-project-members: backlog
   1-9-activity-log: backlog
   1-10-settings-and-optional-email: backlog
@@ -61,6 +61,7 @@ development_status:
   2-10-survey-notes-and-photos-as-separate-entries: backlog
   2-11-undo-my-own-recent-edits-and-delete-an-accidental-draft: backlog
   2-12-bring-in-a-project-saved-by-the-prototype: backlog
+  2-13-run-site-studio-on-your-own-server: backlog
   epic-2-retrospective: optional
 
   epic-3: backlog
@@ -135,14 +136,13 @@ development_status:
   epic-8-retrospective: optional
 
   epic-9: backlog
-  9-1-run-site-studio-on-your-own-server: backlog
-  9-2-published-installation-instructions: backlog
-  9-3-signed-public-releases: backlog
-  9-4-data-conversions-between-versions: backlog
-  9-5-installed-version-and-update-check: backlog
-  9-6-update-a-self-hosted-installation-from-the-interface: backlog
-  9-7-when-a-self-hosted-update-fails: backlog
-  9-8-update-a-cloudflare-installation-from-the-interface: backlog
+  9-1-published-installation-instructions: backlog
+  9-2-signed-public-releases: backlog
+  9-3-data-conversions-between-versions: backlog
+  9-4-installed-version-and-update-check: backlog
+  9-5-update-a-self-hosted-installation-from-the-interface: backlog
+  9-6-when-a-self-hosted-update-fails: backlog
+  9-7-update-a-cloudflare-installation-from-the-interface: backlog
   epic-9-retrospective: optional
 
   epic-10: backlog

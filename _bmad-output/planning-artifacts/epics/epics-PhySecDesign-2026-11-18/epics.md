@@ -1,9 +1,9 @@
 ---
 title: "Site Studio — Epics and Stories"
-status: draft 0.4 for Kevin's review; revised for architecture 3.0 on 2026-11-18
+status: draft 0.5; epic order confirmed by Kevin on 2026-11-18; checked against the BMAD epic-design and validation rules
 created: 2026-11-18
 inputs: "final PRD 1.2; UX design specification 0.5; architecture 3.0"
-method: BMAD Create Epics and Stories, followed by hand (the BMAD skills are not installed in the cloud checkout)
+method: BMAD Create Epics and Stories; drafted by hand, then checked with the installed skill's epic-design and validation rules
 ---
 
 # Site Studio — Epics and Stories
@@ -16,7 +16,9 @@ It is a draft. The epic order, the story boundaries and the acceptance criteria 
 
 **Draft 0.3** applies the readiness check of 2026-11-18: criteria that depended on later epics moved out of Epic 1, three large stories split, four UX decisions cited, and the Packages screen renumbered S-37. Headings use the form the BMAD sprint-planning script reads.
 
-**Draft 0.4** follows architecture 3.0 and the experiments run on 2026-11-18: one server build for both hosts (stories 1.1, 9.1, 9.3, 9.4), the coverage sampling fix (2.8), smaller package pages and resumable upload (4.10), and Cloudflare updates through a GitHub Actions run (9.8). Experiments R1, R2, R6, R7, R8 and R10 are done; R13 to R16 are new.
+**Draft 0.4** follows architecture 3.0 and the experiments run on 2026-11-18: one server build for both hosts (the stories now numbered 1.1, 2.13, 9.2 and 9.3), the coverage sampling fix (2.8), smaller package pages and resumable upload (4.10), and Cloudflare updates through a GitHub Actions run (now 9.7). Experiments R1, R2, R6, R7, R8 and R10 are done; R13 to R16 are new.
+
+**Draft 0.5** settles the order with Kevin (accounts first; the self-hosted image moved to story 2.13; extended modelling stays after return visits) and applies the epic-design and final-validation rules of the BMAD `bmad-create-epics-and-stories` workflow to the existing stories. That check found criteria that depended on later stories; they were moved: the project-creation story now comes before the roles story, settings-dependent criteria moved to the settings story, and closeout-dependent criteria moved to the closeout story. Epic 9's stories are renumbered.
 
 ## How to read it
 
@@ -32,7 +34,7 @@ It is a draft. The epic order, the story boundaries and the acceptance criteria 
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
-6. Rules that span the browser and the server are written once in the shared module, in TypeScript, with tests (AD-15).
+6. Rules that span the browser and the server are written once in the shared module, in TypeScript, with tests (architecture section 10, decision K6).
 7. The server is one build for both hosts. Host-specific code lives only behind the file-store and update interfaces, and no platform feature outside the list in AD-16 is used. Server tests run in Cloudflare's runtime, and the self-hosted smoke suite is extended for each new area. A new record shape comes with its data conversion (AD-20).
 8. A story is done when its criteria pass in a browser against the locally run server, its automated tests and the self-hosted smoke suite pass, and the existing tests still pass.
 
@@ -71,13 +73,13 @@ Every functional requirement appears in at least one story. This table is genera
 | FR-27 | 5.3 | FR-63 | 7.2 |
 | FR-28 | 5.6 | FR-64 | 5.10, 5.11 |
 | FR-29 | 5.4 | FR-65 | 6.12 |
-| FR-30 | 5.3, 5.5, 5.7 | FR-66 | 1.2, 9.1, 9.2 |
+| FR-30 | 5.3, 5.5, 5.7 | FR-66 | 1.2, 2.13, 9.1 |
 | FR-31 | 5.5, 5.7 | FR-67 | 1.3, 1.4, 1.5, 1.10 |
 | FR-32 | 5.12 | FR-68 | 1.6, 1.7, 1.8, 6.11, 8.4 |
-| FR-33 | 4.10, 5.12, 7.7 | FR-69 | 1.6, 2.1 |
+| FR-33 | 4.10, 5.12, 7.7 | FR-69 | 1.7, 2.1 |
 | FR-34 | 4.1, 4.10, 8.1, 8.2, 8.3, 8.4 | FR-70 | 1.8, 1.10, 4.7, 8.1, 8.2, 8.5 |
-| FR-35 | 6.8 | FR-71 | 1.9, 4.7, 8.1, 9.6, 9.7 |
-| FR-36 | 6.9 | FR-72 | 9.3, 9.5, 9.6, 9.7, 9.8 |
+| FR-35 | 6.8 | FR-71 | 1.9, 4.7, 8.1, 9.5, 9.6 |
+| FR-36 | 6.9 | FR-72 | 9.2, 9.4, 9.5, 9.6, 9.7 |
 
 | Quality requirement or measure | Stories |
 | --- | --- |
@@ -85,16 +87,16 @@ Every functional requirement appears in at least one story. This table is genera
 | NFR-2 Shared-save clarity | 2.2, 5.5, 5.13 |
 | NFR-3 Browser, field and accessibility | 3.2, 3.3, 5.1, 10.3 |
 | NFR-4 Honest analysis and responsiveness | 2.8, 10.2 |
-| NFR-5 Access boundary | 1.3, 1.6, 4.7, 8.3 |
+| NFR-5 Access boundary | 1.3, 1.7, 4.7, 8.3 |
 | NFR-6 Consistent deliverables | 4.10, 5.12 |
-| NFR-7 Same product on either host | 8.4, 9.1, 10.4 |
-| NFR-8 Safe updates | 9.4, 9.6, 9.7, 9.8 |
+| NFR-7 Same product on either host | 2.13, 8.4, 10.4 |
+| NFR-8 Safe updates | 9.3, 9.5, 9.6, 9.7 |
 | SM-1 | 10.3 |
 | SM-2 | 10.3 |
 | SM-3 | 10.3 |
 | SM-4 | 10.3 |
 | SM-5 | 10.1, 10.2 |
-| SM-6 | 9.2, 10.4 |
+| SM-6 | 9.1, 10.4 |
 
 | Early experiment | Story |
 | --- | --- |
@@ -107,13 +109,13 @@ Every functional requirement appears in at least one story. This table is genera
 | R7 | 1.1 |
 | R8 | 1.1 |
 | R9 | 1.3 |
-| R10 | 9.8 |
-| R11 | 9.7, 9.8 |
-| R12 | 9.1 |
+| R10 | 9.7 |
+| R11 | 9.6, 9.7 |
+| R12 | 2.13 |
 | R13 | 1.10 |
-| R14 | 9.4 |
+| R14 | 9.3 |
 | R15 | 4.10 |
-| R16 | 9.8 |
+| R16 | 9.7 |
 
 ## Epic 1: Install, sign in and manage people
 
@@ -125,7 +127,7 @@ Every functional requirement appears in at least one story. This table is genera
 
 As the developer, I want the existing app served by one Worker build that also starts under the self-hosted runtime, so that everything later runs on either host.
 
-Covers: AD-1, AD-15, AD-16, AD-17, experiments R7 and R8 (both run early; see the experiments record).
+Covers: AD-1, AD-16, AD-17, architecture section 10, experiments R7 and R8 (both run early; see the experiments record).
 
 - Given the repository, when the local development command runs, then the existing app loads from the locally run Worker through Cloudflare's Vite plugin with no change in behaviour, and the existing tests still pass.
 - The Worker has the two Durable Object classes the architecture fixes: a project room and the installation object, each with SQLite storage. No other class is added later without Kevin's decision.
@@ -155,7 +157,7 @@ As an administrator, I want to invite a colleague who then sets a password and s
 Covers: FR-67 (invitation, sign-in), NFR-5, AD-12, experiment R9. Screens: S-26, S-27, S-30 invite panel.
 
 - An administrator invites a person by email, name and role and receives a link to copy. There is no open registration.
-- The invitation works once and expires after the period the administrator has set; a used or expired link says so.
+- The invitation works once and expires after a default period, which the administrator can change from story 1.10; a used or expired link says so.
 - The invited person sets a name and password, with the password rules shown as they are met, and is signed in.
 - A wrong email or password gives one message that does not reveal whether the email has an account; repeated failures are slowed.
 - Passwords are stored only as salted PBKDF2-SHA256 hashes made through Web Crypto, with the parameters stored beside each hash. Experiment R9 confirms on a deployed Worker that the chosen iteration count is accepted and fast enough; if not, the fallback is taken and recorded.
@@ -170,8 +172,7 @@ Covers: FR-67 (two-step verification), UX decision D14. Screens: S-26, S-29.
 
 - A user turns it on by scanning a code and confirming with one generated code, and is then shown recovery codes once, with Copy and Download.
 - With it on, a correct password alone does not sign in; a current code does; a recovery code works once.
-- An administrator can require it for everyone. A user who has not set it up when it becomes required must do so at their next sign-in before doing anything else.
-- Turning it off asks for the password. An administrator can reset it for a user who has lost their device.
+- Turning it off asks for the password. Reset by an administrator arrives in story 1.8.
 - The code step works on a phone, with a numeric keypad and code autofill.
 
 ### Story 1.5: My account and sessions
@@ -182,33 +183,34 @@ Covers: FR-67 (password change, sessions, sign-out). Screens: S-29.
 
 - A user changes their name, and changes their password by giving the current one.
 - A user sees their signed-in sessions and can sign out everywhere else; those sessions are refused on their next request.
-- A session ends after the period without use that the administrator has set.
+- A session ends after a default period without use, which the administrator can change from story 1.10.
 - Given a session that ends while a page is open, when the user signs in again, then input pending on that page is still there.
 - Deactivating an account ends its sessions and prevents sign-in. Everything the person recorded keeps their name.
 
-### Story 1.6: Roles, membership and the access gate
+### Story 1.6: Projects list and creating a project
+
+As a user, I want to land on my projects after signing in, so that I can open the property I work on.
+
+Covers: FR-68 (project creation), UX decision D11. Screens: S-28.
+
+- After signing in, an administrator sees every project with scope state, last activity and attention count. What a standard user sees arrives with membership in story 1.7.
+- A user with exactly one project goes straight to it.
+- An administrator can create a project.
+- A user with no project sees a plain message to ask an administrator.
+- An administrator sees an update-available marker here once story 9.4 is built.
+
+### Story 1.7: Roles, membership and the access gate
 
 As an administrator, I want access decided by role and project membership on the server, so that people see and change only what they should.
 
 Covers: FR-68, FR-69, NFR-5, AD-12.
 
 - Every request, including every file download, passes one access gate that identifies the caller and decides from their role and membership. A route not marked public, reviewer-link or signed-in is refused.
-- A standard user reaches a project only as its Editor or Viewer. An administrator can open every project as an Editor.
+- A standard user reaches a project only as its Editor or Viewer, and their project list shows only those projects with their role. An administrator can open every project as an Editor.
 - A Viewer's attempt to change anything is refused by the server, not merely hidden in the interface; a Viewer can read. Each later story that adds a way to change or download something shows the same for its own feature.
 - Removing a member, changing a role or deactivating an account takes effect on that person's next request.
 - The last administrator cannot be demoted or deactivated.
 - The actor recorded on every action is the signed-in account and its name at the time, supplied by the gate and never by the browser. Renaming a user leaves earlier records showing the earlier name.
-
-### Story 1.7: Projects list and creating a project
-
-As a user, I want to land on my projects after signing in, so that I can open the property I work on.
-
-Covers: FR-68 (project creation), UX decision D11. Screens: S-28.
-
-- After signing in, a user sees the projects they belong to with role, scope state, last activity and attention count; a user with exactly one project goes straight to it.
-- An administrator sees every project and can create one. A standard user can create one only when the administrator has allowed it, becomes its Editor, and cannot add members.
-- A user with no project sees a plain message to ask an administrator.
-- An administrator sees an update-available marker here once story 9.5 is built.
 
 ### Story 1.8: Administration: users and project members
 
@@ -245,12 +247,14 @@ Covers: FR-70 (Settings), FR-67 (reset by email), AD-17, AD-18, experiment R13. 
 - A saved secret, such as an email password or a map key, is stored encrypted and shown only masked.
 - With an HTTP email service configured, a test message can be sent, invitations can be emailed and a user can reset a forgotten password by email. Without it, every invitation and reset is a link the administrator copies, and nothing else stops working.
 - Experiment R13 tries SMTP through the runtime's outbound sockets on both hosts. SMTP is offered only if it passes.
+- When two-step verification is made required, a user without it must set it up at their next sign-in before doing anything else.
+- When standard users are allowed to create projects, a standard user creates one, becomes its Editor and cannot add members.
 
 ## Epic 2: One shared project online
 
-**Outcome.** The existing design tool runs as one shared project. Two members can edit different things at once, see each other's changes within seconds and resolve a clash without losing work.
+**Outcome.** The existing design tool runs as one shared project, on Cloudflare and on your own server. Two members can edit different things at once, see each other's changes within seconds and resolve a clash without losing work.
 
-Issued designs, field evidence, conflict checks and fixed packages all assume a shared server-saved record, and the prototype saves only in the browser.
+Issued designs, field evidence, conflict checks and fixed packages all assume a shared server-saved record, and the prototype saves only in the browser. The self-hosted image is built at the end of this epic (story 2.13), at Kevin's decision, so that both hosts are exercised from early on.
 
 ### Story 2.1: Open a project as a member and work in it together
 
@@ -392,6 +396,20 @@ Covers: FR-22 (format migration), AD-14.
 - Given a version 1 or version 2 portable project file, when imported, then a new shared project is created with its floors, plans, devices, routes, obstructions, zones, notes, costs and named revisions.
 - Given content the new model cannot represent exactly, then it is listed for review, not dropped silently.
 - Original drawings that the old file never held are marked "original not available".
+
+### Story 2.13: Run Site Studio on your own server
+
+As an organisation's administrator, I want to run Site Studio on a Linux server with Docker, so that our data stays on our own machine.
+
+Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, experiment R12.
+
+- One Docker image holds Cloudflare's open-source runtime at a pinned version, the same Worker bundle that is deployed to Cloudflare, and its configuration. It is built for x64 and arm64 on a glibc base.
+- A Compose file starts the application and an optional web server providing HTTPS. HTTPS is required.
+- Files are stored through the runtime's disk service in a live folder, with each file's hash and size kept in the records. Upload in parts, streaming download and range reads behave as on Cloudflare.
+- Records are kept on a persistent volume and survive a restart and a forced kill with no acknowledged save lost.
+- First-run set-up (story 1.2) works with the set-up code printed in the server output.
+- The self-hosted smoke suite from story 1.1 covers everything in Epics 1 and 2 and passes against the image. From here on, every story extends it.
+- Experiment R12 tests durability on a typical virtual-machine disk, including power loss, and on a network disk; unsupported storage is documented.
 
 ## Epic 3: A workspace that holds the whole job
 
@@ -672,7 +690,6 @@ Covers: FR-64 (definition, runs, outcomes). Screens: S-17.
 - Stages can be run in any order. Starting a run with work outstanding, or before an earlier stage has passed, shows a warning and proceeds.
 - A full run that meets its target is Pass; one that misses is Fail; a run stopped because the system failed is Fail with an explanation; a run stopped for another reason is kept with no outcome.
 - A covered camera moved during a run flags the check without stopping the run.
-- A required stage that has not passed prevents Completed and permits closing with outstanding items.
 
 ### Story 5.11: Downtime log and availability
 
@@ -682,7 +699,7 @@ Covers: FR-64 (downtime log, availability).
 - Each entry states whether it counts, with a reason when it does not. An uncounted entry stays visible and does not change availability.
 - Overlapping counted entries are not counted twice, and an entry with no end counts as continuing.
 - Availability is computed from the counted entries, shown beside the target and marked provisional while the run is open. It is never entered by hand.
-- The PRD's worked example holds: a one-hour stage with a 99% target and one counted three-minute outage shows 95% and Fail; a restarted clean run passes; both attempts are kept and appear in the Closeout package.
+- The PRD's worked example holds: a one-hour stage with a 99% target and one counted three-minute outage shows 95% and Fail; a restarted clean run passes; both attempts are kept.
 
 ### Story 5.12: Close out, with a Closeout package
 
@@ -693,6 +710,7 @@ Covers: FR-32, FR-33 (Closeout preset), NFR-6. Screens: S-23, S-37.
 - Missing approval does not prevent closing, and bypass does not satisfy a required test.
 - The outstanding list is rechecked at the moment of closing, and the closeout record is one consistent snapshot.
 - The Closeout package shows recorded installation, changes from the issued design, attempts, photos, outstanding issues and approvals or bypasses, including when only some floors are chosen.
+- A required reliability stage that has not passed prevents Completed and permits closing with outstanding items. Every run, with its downtime log and outcome, appears in the Closeout package.
 
 ### Story 5.13: Lost connection and conflicts on a phone
 
@@ -917,6 +935,7 @@ Covers: FR-34, FR-70 (Backups), FR-71, AD-13. Screens: S-34, S-02.
 - Administration shows each project's and the installation's latest backup, its age and any failure, and can start a backup. The Overview and Records show the project's backup age.
 - A backup more than 24 hours old, or a failed one, is shown as a failure, not hidden.
 - Backups and their failures appear in the activity log.
+- Self-hosted, the installer asks for a backup location, and the interface warns when it is the same disk as the live data.
 
 ### Story 8.2: Restore one project into an isolated copy, then switch
 
@@ -959,28 +978,13 @@ Covers: acceptance table for files and project content; FR-70 (limits shown).
 - A warning appears before an operation would exceed a limit.
 - Reaching a limit never truncates an export, lowers the quality of a kept original, removes history or loses saved work.
 
-## Epic 9: Host it yourself and update from the interface
+## Epic 9: Install from published instructions and update from the interface
 
-**Outcome.** An organisation can run Site Studio on its own server, and an administrator on either host can install a new signed release with one action and get the earlier version back if it fails.
+**Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
-Story 9.1 can start any time after Epic 2, since the same build has started under the self-hosted runtime since story 1.1. Stories 9.4 to 9.8 need Epic 8, because an update takes a backup first.
+Stories 9.3 to 9.7 need Epic 8, because an update takes a backup first.
 
-### Story 9.1: Run Site Studio on your own server
-
-As an organisation's administrator, I want to run Site Studio on a Linux server with Docker, so that our data stays on our own machine.
-
-Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, experiment R12.
-
-- One Docker image holds Cloudflare's open-source runtime at a pinned version, the same Worker bundle that is deployed to Cloudflare, and its configuration. It is built for x64 and arm64 on a glibc base.
-- A Compose file starts the application, the updater and an optional web server providing HTTPS. HTTPS is required.
-- Files are stored through the runtime's disk service in a live folder, with each file's hash and size kept in the records. Upload in parts, streaming download and range reads behave as on Cloudflare.
-- Records are kept on a persistent volume and survive a restart and a forced kill with no acknowledged save lost.
-- The installer asks for a backup location and the interface warns when it is the same disk as the live data.
-- First-run set-up (story 1.2) works with the set-up code printed in the server output.
-- The self-hosted smoke suite from story 1.1 is extended to every area built so far and passes against the image.
-- Experiment R12 tests durability on a typical virtual-machine disk, including power loss, and on a network disk; unsupported storage is documented.
-
-### Story 9.2: Published installation instructions
+### Story 9.1: Published installation instructions
 
 As someone installing Site Studio, I want instructions I can follow without help.
 
@@ -990,7 +994,7 @@ Covers: FR-66 (instructions), SM-6.
 - A person who has not seen the project follows each from a fresh server and a fresh Cloudflare account to a working sign-in page, using nothing but the instructions; where they got stuck is recorded and fixed.
 - The Cloudflare instructions cover deploying from the organisation's own copy of the repository and setting up one-step deployment for updates.
 
-### Story 9.3: Signed public releases
+### Story 9.2: Signed public releases
 
 As Kevin, I want a release produced the same way every time, so that installations can trust what they install.
 
@@ -1001,7 +1005,7 @@ Covers: FR-72 (publication), AD-19.
 - Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class.
 - Making the repository public is Kevin's action on GitHub and is done when the first release is ready (K15), after a check that nothing private is in the history.
 
-### Story 9.4: Data conversions between versions
+### Story 9.3: Data conversions between versions
 
 Covers: NFR-8, AD-20, experiment R14.
 
@@ -1013,7 +1017,7 @@ Covers: NFR-8, AD-20, experiment R14.
 - Schema changes are made inside SQLite. No Durable Object class is added, renamed or removed.
 - Experiment R14: the release workflow starts the new image, with its pinned runtime, against a data folder written by the previous release and confirms it reads and converts correctly. A runtime upgrade that fails this is not released.
 
-### Story 9.5: Installed version and update check
+### Story 9.4: Installed version and update check
 
 Covers: FR-72 (version, check). Screens: S-35, S-28.
 
@@ -1022,7 +1026,7 @@ Covers: FR-72 (version, check). Screens: S-35, S-28.
 - With a newer release, administrators see its version and notes and an update-available marker; a standard user sees neither.
 - The check can be turned off; then nothing contacts the release list and the installed version is still shown.
 
-### Story 9.6: Update a self-hosted installation from the interface
+### Story 9.5: Update a self-hosted installation from the interface
 
 Covers: FR-72, NFR-8, FR-71, AD-21, UX decision D13. Screens: S-35.
 
@@ -1031,9 +1035,10 @@ Covers: FR-72, NFR-8, FR-71, AD-21, UX decision D13. Screens: S-35.
 - A release with a bad signature is refused. If the signature or the backup fails, nothing is installed and changes are accepted again.
 - Users see a warning before saving stops and a full-page notice while it runs; unsaved edits are still in their pages afterwards.
 - The update and its outcome are recorded in the activity log.
+- The Compose file gains the updater container, the only part allowed to start and stop containers.
 - The same steps can be run from a command line on the server.
 
-### Story 9.7: When a self-hosted update fails
+### Story 9.6: When a self-hosted update fails
 
 Covers: FR-72 (return), NFR-8, FR-71, AD-21, experiment R11. Screens: S-35.
 
@@ -1042,7 +1047,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-21, experiment R11. Screens: S-35.
 - If the return itself fails, the installation says so plainly, never reports success, and shows the manual recovery steps.
 - Experiment R11 breaks an update at each step and confirms each outcome.
 
-### Story 9.8: Update a Cloudflare installation from the interface
+### Story 9.7: Update a Cloudflare installation from the interface
 
 Covers: FR-72, NFR-8, AD-21, experiments R10 (run early), R11 and R16. Screens: S-35.
 
@@ -1057,6 +1062,8 @@ Covers: FR-72, NFR-8, AD-21, experiments R10 (run early), R11 and R16. Screens: 
 ## Epic 10: Acceptance
 
 **Outcome.** The proof of concept is measured against the PRD's acceptance profile on Cloudflare, and then on a self-hosted installation.
+
+BMAD asks that every epic deliver user value. This one is a verification milestone and is kept deliberately: the PRD's success measures SM-1 to SM-6 can only be shown by one run across everything built.
 
 ### Story 10.1: Acceptance fixtures and the workload manifest
 
@@ -1096,10 +1103,25 @@ Covers: NFR-7, SM-6.
 - A project backed up on each host is restored on the other.
 - On each host an administrator reviews the activity log and confirms that backups are succeeding.
 
-## Open points for Kevin
+## Order and validation
 
-1. **Accounts before the shared project.** The architecture's suggested order builds the project foundation first and accounts second. This draft puts accounts first (Epic 1), so the shared project is built on real sign-in from the start. Say if you would rather keep the architecture's order.
-2. **Where self-hosting sits.** Epic 9 is late, but the same build starts under the self-hosted runtime from story 1.1, and story 9.1 is now much smaller. It can be pulled forward to any point after Epic 2 if you want a self-hosted demo early.
-3. **Epic 7 (extended modelling)** still comes after return visits. Say if you want pan/tilt/zoom cameras or closets and ports earlier.
-4. **Experiments.** R1, R2, R6, R7, R8 and R10 were run early. Each of the rest, R3 to R5, R9 and R11 to R16, is attached to the first story that depends on it. A failed experiment brings its decision back to you before that story is called done.
-5. **No estimates are given.** Sizing belongs to sprint planning, the BMAD step after an implementation-readiness check of the PRD, UX, architecture and these epics together.
+**Order, confirmed by Kevin on 2026-11-18.**
+
+- Accounts and sign-in come first (Epic 1), then the shared project (Epic 2).
+- The self-hosted image is built at the end of Epic 2 (story 2.13), not in Epic 9.
+- Extended modelling (Epic 7) stays after existing sites and return visits.
+
+**Checked against the BMAD epic-design and final-validation rules on 2026-11-18.**
+
+| Check | Result |
+| --- | --- |
+| Every FR appears in at least one story | Pass, by script: FR-1 to FR-72. |
+| Starter template | Not applicable. The architecture names none; story 1.1 sets up the project around the existing prototype. |
+| Records created only when needed | Pass, with one stated exception: story 1.1 creates both Durable Object classes, because the architecture fixes the classes from the first release. Tables inside them are created by the stories that need them. |
+| Stories depend only on earlier stories | Pass after the moves described above. Several stories name a later story that extends them; none needs it to be completed. |
+| Epics deliver user value | Pass for Epics 1 to 9. Epic 10 is a verification milestone, kept deliberately. |
+| Epics stand alone | Pass. Epic 3 can run beside Epic 2; Epic 8 can start after Epic 4; stories 9.3 to 9.7 need Epic 8. |
+| Repeated changes to the same files across epics | Considered. Epics 4 to 7 all extend the device record and the plan workspace. They are kept separate because each ends in a different demonstrable outcome and field feedback from Epic 5 can change Epics 6 and 7. |
+| Story size | Three large stories were split earlier. Stories 2.8, 4.10 and 9.5 remain the largest. |
+
+Not done as part of this check: an independent reader's review of the stories, and sizing, which belongs to sprint planning.

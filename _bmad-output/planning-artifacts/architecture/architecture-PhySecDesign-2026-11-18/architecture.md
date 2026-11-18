@@ -426,7 +426,7 @@ Input to the epics.
 4. **Files and fixed records.** Uploads in parts, snapshots, issuing, packages with smaller pages. Run R15.
 5. **Field work**, then **existing sites and return visits**, then **extended modelling**.
 6. **Recovery.** Backups of projects and the installation, restore, portable backup. Run R3 and R5.
-7. **Self-hosting.** The Docker image, Compose file and install guide. Run R12 and R13.
+7. **Self-hosting.** The Docker image, Compose file and install guide. Run R12 and R13. On 2026-11-18 Kevin moved the Docker image and R12 forward, to directly after step 3 (story 2.13 in the epics), so that both hosts are exercised from early on. The install guide and the updater container stay here.
 8. **Releases and updates.** Release workflow, signing, version check, conversions, the updater, the Cloudflare update workflow. Run R11, R14 and R16. Then the cross-host acceptance of SM-6.
 
 ## 15. Not decided here
