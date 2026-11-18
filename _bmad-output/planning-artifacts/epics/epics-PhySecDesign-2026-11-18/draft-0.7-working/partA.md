@@ -35,7 +35,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: Left to later stories: moving between released versions, and the pending-update rule added to the refusal above (story 9.3). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: Left to later stories: moving between released versions (story 9.3a); the pending-update rule added to the refusal above (story 9.3b). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -69,7 +69,7 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
 
-Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.6 and story 2.13); the self-hosted set-up code, printed in the server output (story 2.13); installation instructions (story 9.1).
+Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.6c and story 2.13d); the self-hosted set-up code, printed in the server output (story 2.13a); installation instructions (story 9.1).
 
 ### Story 1.3a: Sign in and sign out
 
@@ -80,7 +80,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 **Core behaviour**
 - An installation that has an administrator shows the sign-in page, with the installation's name, to anyone not signed in.
 - The administrator created in story 1.2 signs in with their email and password.
-- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax. (CA-06)
+- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax.
 - The server stores only a hash of the session token.
 - An account menu in the existing header shows the signed-in user's name and Sign out.
 - Sign out ends the session, and a later request with its cookie is refused.
@@ -148,17 +148,17 @@ Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX 
 - A user turns it on by scanning a code and confirming with one generated code.
 - The user is then shown recovery codes once, with Copy and Download; the codes cannot be displayed again.
 - With it on, a correct password alone does not sign in; a current code does.
-- "Use a recovery code" accepts a recovery code once.
+- "Use a recovery code" accepts a recovery code in place of a generated code, once.
 - The account page shows how many recovery codes remain.
 - A user makes a fresh set of recovery codes by giving their password and a current code, and the old set stops working. (CA-13)
 - A person who has just accepted an invitation is offered two-step set-up and can skip it.
 - Recovery codes are stored only as hashes.
 - The authenticator secret is stored encrypted with a deployment key that the deploy command generates and supplies to the installation as a secret. (CA-14)
 - The deploy command prints the deployment key once, when it creates it, with an instruction to keep a copy outside the Cloudflare account.
+- When the operator supplies a deployment key kept from an earlier installation, the deploy command uses it and generates none.
 
 **Refusals and edge cases**
 - A code that has been accepted is refused if used again.
-- A recovery code that has been used is refused afterwards.
 - Wrong codes and wrong recovery codes count toward the same limit and wait as wrong passwords in story 1.3a. (CA-15)
 - Turning it off asks for the password. (CA-13)
 - Neither the authenticator secret nor a recovery code appears in any reply after set-up.
@@ -172,7 +172,7 @@ Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX 
 **Access and restore**
 - A revision restore leaves two-step set-up and recovery codes unchanged.
 
-Notes: Left to later stories: the two-step controls on the My account page (story 1.5 places them there); reset or requirement by an administrator for one user (story 1.8b); requirement for everyone (story 1.10b); the self-hosted key file (story 2.13).
+Notes: Left to later stories: the two-step controls on the My account page (story 1.5 places them there); reset or requirement by an administrator for one user (story 1.8b); requirement for everyone (story 1.10b); the self-hosted key file (story 2.13c).
 
 ### Story 1.5: My account and sessions
 
@@ -199,7 +199,7 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 **Limits and values**
 - The period without use is 24 hours. (CA-18)
 
-Notes: Left to later stories: ending sessions by deactivation (story 1.7b); the administrator changing the 24-hour period (story 1.10a); pending project edits kept the same way (story 2.2); an upload in progress counting as use and resuming after sign-in (story 2.6).
+Notes: Left to later stories: ending sessions by deactivation (story 1.7b); the administrator changing the 24-hour period (story 1.10a); pending project edits kept the same way (story 2.2b); an upload in progress counting as use and resuming after sign-in (story 2.6c).
 
 ### Story 1.6: Projects list and creating a project
 
@@ -211,7 +211,7 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 - After signing in, an administrator sees every project by name, and a Create project action.
 - An administrator creates a project by giving its name; it appears in the list without reloading the page, and its creator is recorded.
 - Each project has its own address, and opening a project from the list goes to that address.
-- Until story 2.1, a project's address loads the existing app, whose data is still held only in the browser.
+- A project's address loads the existing app, whose data is still held only in the browser.
 - A user whose list holds exactly one project, an administrator included, goes straight to it after signing in. (CA-22)
 - The projects list is reachable from the account menu and by its own address, including for a user who was sent straight to a project.
 
@@ -226,7 +226,7 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 **Access and restore**
 - A revision restore leaves a project's name and recorded creator unchanged.
 
-Notes: Left to later stories: membership, so until then every standard user sees the empty message (story 1.7a); scope state and last activity on the list (story 2.1); the attention count (story 5.9); project creation by standard users (story 1.10a).
+Notes: Left to later stories: membership, so until then every standard user sees the empty message (story 1.7a); project data held on the server, and scope state and last activity on the list (story 2.1); the attention count (story 5.9b); project creation by standard users (story 1.10a).
 
 ### Story 1.7a: Project membership and the access gate
 
@@ -238,7 +238,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17.
 - Every request passes one access gate that identifies the caller and decides from their installation role and project membership.
 - An administrator's server functions add a user to a project as Editor or Viewer, change that role and remove the user.
 - A standard user's project list shows only the projects they belong to, each with their role; an administrator's list shows every project.
-- Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project; an Editor may read and change their own project; a Viewer may read their project and is refused any change; a non-member and an ended session are refused.
+- Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project, an Editor may read and change their own project, a Viewer may read their project and is refused any change, and a non-member and an ended session are refused.
 - Removing a member or changing a role takes effect on that person's next request: a test changes a role and shows that the very next request is decided by the new role, with no delay from any held lookup.
 - The actor recorded on every action is the signed-in account and its name at the time, supplied by the gate.
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
@@ -253,7 +253,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17.
 **Access and restore**
 - A revision restore leaves a project's members and their roles unchanged.
 
-Notes: Left to later stories: installation roles and deactivation (story 1.7b); the screens for members (story 1.8c); a Viewer reading an open project and being refused a save (story 2.1); pending project edits refused because access changed (story 2.2); the Viewer who is an approval assignee (story 4.6). Downloads and exports are shown under the gate by the stories that add them.
+Notes: Left to later stories: installation roles and deactivation (story 1.7b); the screens for members (story 1.8c); a Viewer reading an open project and being refused a save (story 2.1); pending project edits refused because access changed (story 2.2b); the Viewer who is an approval assignee (story 4.6b). Downloads and exports are shown under the gate by the stories that add them.
 
 ### Story 1.7b: Installation roles, deactivation and the last administrator
 
@@ -299,7 +299,7 @@ Covers: FR-70 (Users), FR-67 (deactivation), UX decision D10. Screens: S-30.
 - When an administrator's role is removed while they have an unsaved change open in Administration, the save is refused and shown as "not saved: access changed".
 - What they entered stays on the page and is not retried.
 
-Notes: Left to later stories: reset links, two-step reset and requirement (story 1.8b); Projects (story 1.8c); Activity (story 1.9); Settings (story 1.10a); Reviewer links (story 4.7); Backups (story 8.1); Software (story 9.4).
+Notes: Left to later stories: reset links, two-step reset and requirement (story 1.8b); Projects (story 1.8c); Activity (story 1.9); Settings (story 1.10a); Reviewer links (story 4.7b); Backups (story 8.1c); Software (story 9.4).
 
 ### Story 1.8b: Administration: reset links and two-step control
 
@@ -313,7 +313,7 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 - A password reset leaves two-step verification on. (CA-25)
 - A user's detail lets an administrator reset that user's two-step verification: the user then signs in with the password alone and is offered set-up again.
 - After a reset, the user's old recovery codes no longer work. (CA-26)
-- A user's detail lets an administrator require two-step verification for that user, and remove the requirement. (CA-27)
+- A user's detail lets an administrator require two-step verification for that user, and remove the requirement.
 - A user for whom it is required and who has not set it up must do so at their next sign-in before doing anything else, and a session already signed in can do nothing but set it up from its next request.
 - The Users table shows "Required but not set up" for such a user.
 - Users lists unused invitations and reset links with their expiry, and each can be cancelled.
@@ -348,7 +348,7 @@ Covers: FR-70 (Projects), FR-68. Screens: S-31.
 **Refusals and edge cases**
 - The members controls are absent for a standard user who is the project's Editor.
 
-Notes: Left to later stories: scope state and last activity in the table (story 2.1); Archive and Un-archive (story 6.11); latest backup (story 8.1); stored size (story 8.5).
+Notes: Left to later stories: scope state and last activity in the table (story 2.1); Archive and Un-archive (story 6.11); latest backup (story 8.1c); stored size (story 8.5).
 
 ### Story 1.8d: Recovery when the only administrator is locked out
 
@@ -369,7 +369,7 @@ Covers: FR-70 (administrator recovery, Cloudflare host), AD-12.
 **Limits and values**
 - The code expires 1 hour after it is printed. (CA-30)
 
-Notes: Left to later stories: the activity-log entries for issuing and using the code (story 1.9); the self-hosted form of the command (story 2.13); the command in the published instructions (story 9.1).
+Notes: Left to later stories: the activity-log entries for issuing and using the code (story 1.9); the self-hosted form of the command (story 2.13c); the command in the published instructions (story 9.1).
 
 ### Story 1.9: Activity log
 
@@ -378,11 +378,10 @@ As an administrator, I want a log of sign-ins and administrative changes, so tha
 Covers: FR-71. Screens: S-36.
 
 **Core behaviour**
-- Administration's left-hand list gains Activity, which shows time, who, what and detail, newest first.
-- Each entry records the time, the actor and what changed.
+- Administration's left-hand list gains Activity, which shows each entry's time, actor, what changed and detail, newest first.
 - Sign-in events add entries: sign-in, failed sign-in including a failed second step, sign-out and sign out everywhere.
-- Credential events add entries: password change and reset; two-step verification turned on, turned off, reset, required and no longer required for a user; recovery codes renewed.
-- Invitation and link events add entries: invitation issued, accepted and cancelled; reset link issued and cancelled.
+- Credential events add entries: password change and reset, recovery codes renewed, and two-step verification turned on, turned off, reset, required and no longer required for a user.
+- Invitation and link events add entries: invitation issued, accepted and cancelled, and reset link issued and cancelled.
 - Account and project events add entries: set-up completed, role and membership changes, deactivation and reactivation, and project creation.
 - Issuing and using the recovery code of story 1.8d each add an entry; the issue is recorded as made from the host, with the account it names.
 - A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32)
@@ -401,7 +400,7 @@ Covers: FR-71. Screens: S-36.
 **Access and restore**
 - A revision restore leaves the activity log unchanged.
 
-Notes: Left to later stories, which add their own events: settings changes (story 1.10a); reviewer links and link decisions (story 4.7); archiving (story 6.11); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
+Notes: Left to later stories, which add their own events: settings changes (story 1.10a); reviewer links and link decisions (story 4.7a and story 4.7b); archiving (story 6.11); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
 
 ### Story 1.10a: Settings: installation, sign-in and maps
 
@@ -434,7 +433,7 @@ Covers: FR-70 (Settings), FR-67 (session period, invitation life), FR-68 (projec
 **Access and restore**
 - A revision restore leaves settings unchanged.
 
-Notes: Left to later stories: requiring two-step verification (story 1.10b); the Email group (story 1.10c); delivering the Google mapping key to members' browsers and removing the prototype's per-session key dialog (story 2.6); the Limits group (story 8.5); the GitHub token for Cloudflare updates, stored the same way (story 9.7).
+Notes: Left to later stories: requiring two-step verification (story 1.10b); the Email group (story 1.10c); delivering the Google mapping key to members' browsers and removing the prototype's per-session key dialog (story 2.6a); the Limits group (story 8.5); the GitHub token for Cloudflare updates, stored the same way (story 9.7b).
 
 ### Story 1.10b: Require two-step verification for everyone
 
@@ -497,4 +496,4 @@ Covers: AD-18, experiment R13.
 - Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 
-Notes: The self-hosted image is story 2.13; this experiment uses the configuration of story 1.1 because it comes earlier.
+Notes: The self-hosted image is story 2.13a; this experiment uses the configuration of story 1.1 because it comes earlier.
