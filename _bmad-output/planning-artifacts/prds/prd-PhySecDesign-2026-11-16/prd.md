@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.17"
+version: "0.18"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.17 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.18 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -85,7 +85,7 @@ Requirements use stable, globally numbered IDs. Each check describes observable 
 
 ### Property workspace and drawing alignment
 
-**FR-1 — Property, buildings, and floors.** Create and maintain a property project with named buildings/floors. Preserve stable floor identities through renaming; a newly created floor has a distinct identity even when it reuses an earlier name. Keep each floor's drawing, equipment, routes, obstructions, zones, notes, and analysis settings independent. Provide property-wide schedules with floor context.
+**FR-1 — Property, buildings, and floors.** Create and maintain a property project with named buildings/floors. Preserve stable floor identities through renaming; a newly created floor has a distinct identity even when it reuses an earlier name. Keep each floor's drawing, equipment, routes, obstructions, zones, notes, and analysis settings independent. Provide property-wide schedules with floor context. Deleting or retiring a floor and moving records between floors follow FR-56.
 
 **Check:** Switching floors preserves each floor's content and does not mix its geometry or results with another floor.
 
@@ -446,7 +446,7 @@ Apply existing shared-edit/dependency safeguards to concurrent archive, release,
 
 **FR-54 — Confirmed destination and preserved location history.** Restore an individual archived device with its existing ID/history, separately from whole-project revision restoration. Require a valid current floor in the same property and an explicitly confirmed position before completing active restoration. Match the original floor by stable identity, not name. On an unchanged or merely renamed floor, preview the former position for confirmation. On a replaced drawing or changed scale, alignment or layout, require placement review/repositioning; uncertain old coordinates must not become an invented current position.
 
-If the original floor is deleted or cannot be resolved, let the user choose an existing floor or create one through the normal workflow and then place the device. Do not automatically recreate a deleted floor or treat a new same-named floor as the original. If placement is not ready, allow cancellation leaving the device archived and its history intact; a separately created floor remains a separate action. Do not add a separate unplaced-device queue for this POC. Unknown scale/drawing inputs remain disclosed rather than fabricated to permit restoration.
+If the original floor is deleted or cannot be resolved, let the user choose an existing floor or create one through the normal workflow and then place the device. Do not automatically recreate a deleted floor or treat a new same-named floor as the original. A retired floor must be reinstated under FR-56 before it can be the destination. If placement is not ready, allow cancellation leaving the device archived and its history intact; a separately created floor remains a separate action. Do not add a separate unplaced-device queue for this POC. Unknown scale/drawing inputs remain disclosed rather than fabricated to permit restoration.
 
 Preserve the former floor identity/label, location, captured plan/revision context and dated evidence. Record the new placement, actor/time and meaningful change context without relabeling old photos/tests as evidence at the new location or changing fixed historical packages. Display a historical drawing only when retained; missing historical context stays unavailable. Selecting a point does not certify physical location accuracy, installation or a field-test Pass, and restoring the same asset does not create a replacement purchase.
 
@@ -469,9 +469,27 @@ A just-placed existing-condition record with no such history is deletable like a
 
 Remove dependent routes, port reservations/assignments and associations with the record only when they are themselves eligible drafts. Never cascade into retained or installed cables, occupied ports, shared equipment, linked components, survey evidence or issues; detach these and mark them Needs connection review under FR-53. Deleting a multi-view camera removes its own draft views and streams, not other assets. Do not reuse a deleted record’s ID.
 
-Undo restores the deleted draft and its uncontested draft relationships. It cannot reclaim a port or relationship since assigned elsewhere, overwrite later edits or assert a physical connection; such relationships stay unresolved for review. None of these actions records a physical removal, archives an asset, releases an actual port, resolves a property issue or changes a test outcome. Cancellation and correction are history entries, not approval gates. Recompute the current proposed estimate, capacity and checks; fixed revisions, issued designs and closeouts keep their values. Validate the record and its dependencies at save under FR-42; a stale client cannot recreate a deleted record. This requirement does not define deletion of a floor together with its contents.
+Undo restores the deleted draft and its uncontested draft relationships. It cannot reclaim a port or relationship since assigned elsewhere, overwrite later edits or assert a physical connection; such relationships stay unresolved for review. None of these actions records a physical removal, archives an asset, releases an actual port, resolves a property issue or changes a test outcome. Cancellation and correction are history entries, not approval gates. Recompute the current proposed estimate, capacity and checks; fixed revisions, issued designs and closeouts keep their values. Validate the record and its dependencies at save under FR-42; a stale client cannot recreate a deleted record. Deleting or retiring a floor together with its contents follows FR-56.
 
 **Check:** A camera placed by mistake is deleted in one action and returns with undo. Deleting a draft camera with a draft-only route and port reservation previews and removes all three, while a retained cable attached to another draft is detached for review rather than deleted. A proposed reader in the issued design offers Cancel from design, not Delete draft, and the issued package is unchanged. A duplicate surveyed camera with a photo is corrected with a reason and keeps the photo. Undo after another editor has taken the port restores the device without that assignment.
+
+### Deleting and retiring floors, and moving records between floors
+
+**FR-56 — Floor deletion, retirement and moves.** Offer the floor action that matches what the floor holds. Never remove a floor by cascading over records that carry history.
+
+| Floor contents | Action | Treatment |
+| --- | --- | --- |
+| Empty, or holding only items eligible for Delete draft under FR-55, and the floor was never included in an issued design, surveyed baseline or closeout | Delete floor | Preview the counts, then remove the floor and its contents. Guarded own-session undo under FR-21. |
+| Any active record with history: installed, evidenced, issued or in a surveyed baseline | Blocked | List each blocking record with the action it needs: cancel or correct under FR-55, move to another floor, or archive after actual removal under FR-35. |
+| No active records, but history remains: archived devices, floor-level notes/photos, or inclusion in an issued design or closeout | Retire floor | Remove from the active floor list, current analysis and current totals. Keep it read-only with its drawing for historical views. It can be reinstated with the same identity. |
+
+The drawing overlay, zones, obstructions, annotations and analysis settings are removed with a deleted floor and kept with a retired one. A draft cable segment on a deleted floor is removed and its run is marked incomplete under FR-52; a retained or installed run is a record with history and blocks deletion. Issues linked to a retired floor stay open and visible at closeout under FR-46. Removing a building applies these rules to each of its floors. Named revisions, issued designs, closeouts and their retained packages keep their copy of the floor in every case.
+
+Move selected equipment, openings, closets and survey notes to another current floor in the same property, keeping their IDs, evidence and history. Require an explicitly confirmed position on the destination. For a record with history, identify the move as a record correction, with a reason, or as an actual relocation; an item eligible for Delete draft moves without either. A correction keeps existing evidence applicable and triggers documentation review only. An actual relocation preserves the former location and flags affected checks under FR-28/44. A planned future relocation remains a planned action under FR-40. Cable runs and port assignments are not moved or rerouted automatically; affected endpoints, drops and riser references are marked for review under FR-52/53.
+
+Retiring, reinstating or moving is a history entry with actor and time, not an approval gate. None of these actions records a physical removal, archives a device, resolves an issue or changes a test outcome. Restoring an archived device follows FR-54; a retired floor must be reinstated before it can be the destination. Validate the floor, its contents and dependencies at save under FR-42; a stale client cannot recreate a deleted floor or write to a retired one.
+
+**Check:** A floor added by mistake with two draft cameras is deleted after a preview and returns with undo. A floor holding an installed camera cannot be deleted; the camera is listed with its available actions. After that camera’s actual removal is archived, the floor can be retired and still shows the camera’s former location and photo in the historical view. A surveyed camera recorded on a duplicate floor is moved to the correct floor as a correction and keeps its ID, photo and test history without a new retest flag, while its cable endpoint is marked for review. A deferred issue on a retired floor still appears in the closeout’s outstanding items.
 
 ## Experience and cross-cutting quality
 
@@ -557,15 +575,13 @@ Measure timings on the fixture with one mid-range laptop and one mid-range phone
 
 **Confirmed OQ-8 floor-restoration refinement (2026-11-17):** stable floor identity, explicit placement on the current plan, destination selection/creation when missing, preserved historical location/evidence and cancellable per-device restoration are confirmed in FR-1/36/42/54 and related clauses. Draft deletion is subsequently confirmed below.
 
-**Resolved OQ-8 (2026-11-18):** history-based Delete draft, Cancel from design and Correct record actions, removal of eligible draft-only dependents, detachment rather than cascade for retained or shared records, and guarded own-session undo are confirmed in FR-21/35/36/55. Existing-condition records with no baseline or evidence history are deletable as drafts. Deleting a floor together with its contents is not defined by this decision.
+**Resolved OQ-8 (2026-11-18):** history-based Delete draft, Cancel from design and Correct record actions, removal of eligible draft-only dependents, detachment rather than cascade for retained or shared records, and guarded own-session undo are confirmed in FR-21/35/36/55. Existing-condition records with no baseline or evidence history are deletable as drafts. Deleting a floor together with its contents was subsequently confirmed under OQ-10.
 
 **Resolved OQ-9 (2026-11-18):** the acceptance fixture and supported ceiling, browser and screen-size matrix with phones as field-only, WCAG 2.1 AA with a map-canvas exemption, timing targets, resized photo storage, file limits and nightly 7-day backups are confirmed in NFR-2/3/4, A-2 and the acceptance targets. No uptime commitment is made. The targets are unmeasured until the acceptance exercise.
 
-OQ-1 through OQ-9 are resolved. One gap found during the 2026-11-18 review is recorded as a new open question; it has not been discussed and no behavior is assumed. Owners are planning responsibilities; no external person has been assigned or contacted. This draft does not authorize deployment or claim architecture readiness.
+**Resolved OQ-10 (2026-11-18):** Delete floor for empty or draft-only floors, blocking with a list of required actions while active records with history remain, Retire floor with reinstatement when only history remains, removal of floor-level drawing content with a deleted floor, and a Move to another floor action distinguishing corrections from actual relocations are confirmed in FR-1/54/55/56.
 
-| ID | Decision still needed | Owner | Revisit before |
-| --- | --- | --- | --- |
-| OQ-10 | Deleting a floor together with its contents. FR-1 allows floor removal and FR-54 handles restoring onto a missing floor, but no requirement defines what happens to the equipment, routes, evidence and history on a deleted floor. FR-55 explicitly excludes it. | Kevin + architecture | Floor-management implementation. |
+OQ-1 through OQ-10 are resolved and no owned open question remains. This does not make the draft final, authorize deployment or claim architecture readiness. This draft does not authorize deployment or claim architecture readiness.
 
 **Resolved A-1 — Package presentation.** OQ-6 confirms the two presets, evidence/detail choices, photo pagination and cost/capacity defaults in FR-33/34 and the addendum. Detailed visual styling remains UX work; output must preserve visible actual conditions and outstanding work.
 

@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.17](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.18](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -544,7 +544,7 @@ Recalculate supported current/proposed analysis only using the selected location
 
 Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Reopen an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
 
-Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. Detailed floor-deletion policy and accidental draft-placement deletion are not resolved by this model. Draft deletion was subsequently confirmed in FR-55; a general floor-deletion policy remains unspecified. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
+Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. Detailed floor-deletion policy and accidental draft-placement deletion are not resolved by this model. Draft deletion was subsequently confirmed in FR-55; floor deletion was subsequently confirmed in FR-56. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
 
 ## Confirmed draft deletion, cancellation and correction — OQ-8 resolved
 
@@ -562,7 +562,7 @@ An isolated eligible placement is removed in one action with no dialog; a previe
 
 Undo is the guarded own-session undo of FR-21. It restores the draft and its uncontested draft relationships, and leaves any relationship since claimed elsewhere unresolved. No action here records physical removal, releases an actual port, resolves an issue or changes a test outcome, and no approval gate is added. Deleted IDs are not reused.
 
-The current prototype deletes a device together with its routes and converts surviving survey references to floor pins, with no eligibility check, cancellation or correction action. FR-55 does not define deleting a floor together with its contents; that remains unspecified.
+The current prototype deletes a device together with its routes and converts surviving survey references to floor pins, with no eligibility check, cancellation or correction action. FR-55 does not define deleting a floor together with its contents; that was subsequently confirmed in FR-56.
 
 ## Confirmed acceptance targets and limits — OQ-9 resolved
 
@@ -571,6 +571,18 @@ Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its five choice
 These are targets for the future shared application, not measurements. The current prototype differs: 40 session undo steps, 20 named revisions, a 100 MB portable project limit, a 64 MB review-snapshot bound, photo previews capped at 1,600 px and 24 MB per design, and combined analysis capped at 500 cameras. It has no server-held project, so it has no server backup. The 50 MB PDF import limit and six photos per note carry over unchanged. The five-second shared-update figure, previously a suggestion, is now the acceptance target; polling remains a sufficient transport.
 
 Because photos are stored resized, a closeout package is a record of resized evidence images, not an original-resolution archive. Hosting, database, file storage and the backup mechanism remain architecture choices that must meet these targets.
+
+## Confirmed floor deletion, retirement and moves — OQ-10 resolved
+
+Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its four choices, and asked for the move action to be included. FR-56 and linked FR-1/54/55 clauses capture the behavior. It extends the FR-55 principle to floors: the action depends on what the floor holds, and nothing with history is destroyed.
+
+A floor is deleted outright only when it is empty or holds draft-only items and was never in an issued design, surveyed baseline or closeout. While any active record with history remains, removal is blocked and each such record must be handled individually. Kevin rejected a one-step “remove the floor and archive everything on it” because it would record physical removals nobody verified. When only history remains, the floor is retired: out of the active list and current calculations, read-only with its drawing, and reinstatable with the same identity.
+
+Floor-level drawing content (overlay, zones, obstructions, annotations, analysis settings) is removed with a deleted floor and is recoverable only by own-session undo or a named revision. A draft cable segment on a deleted floor is removed and its run becomes incomplete; a retained or installed run blocks deletion.
+
+Move to another floor is new scope added by this decision. It keeps IDs, evidence and history, requires a confirmed position on the destination, and for records with history must be identified as a record correction or an actual relocation. Cables and port assignments are flagged for review, never rerouted automatically.
+
+The current prototype removes a floor together with all its contents in one step, has no retire or reinstate state, cannot remove a building and has no move-between-floors operation.
 
 ## Source and verification boundaries
 
