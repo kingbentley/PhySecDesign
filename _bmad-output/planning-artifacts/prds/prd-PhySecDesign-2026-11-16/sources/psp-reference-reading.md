@@ -140,6 +140,44 @@ The chapter’s reference list names Garcia’s 2nd edition, which Kevin holds, 
 
 Question 2 is partly answered: warranty and repair records are covered above, but the deliverables handed over at completion are not. Search terms to try in Patterson: practical completion, as-built, record drawings, manuals, training, handover, turnover, punch list, final acceptance.
 
+## Public source read in part: DOE assessment guide
+
+Kevin asked for a search for the Department of Energy guide that Patterson’s chapter cites. Searched and read on 2026-11-18.
+
+- **Found, not read:** *Physical Security Systems Inspectors Guide*, cover date November 2007, in a 2009 web-archive capture: <https://webarchive.library.unt.edu/web/20090512221941/http://www.hss.energy.gov/IndepOversight/guidedocs/2008/Physical_Security_Systems_Inspectors_Guide.pdf>. This is probably the document Patterson cites as 2009.
+- **Found and read in part:** its successor, *Physical Security Systems Assessment Guide*, December 2016, 309 pages: <https://www.energy.gov/sites/prod/files/2017/02/f34/PhysicalSecuritySystemsAssessmentGuide_Dec2016.pdf>. Read: the table of contents, Section 7 (Testing and Maintenance) and the perimeter camera test procedure in Appendix A. Not read: everything else, including interior camera, sensor, access control, communications and power tests.
+
+Boundary: the guide tells government assessors how to inspect security at high-security nuclear facilities. It is not a commissioning standard, much of it is specific to that setting, and some criteria date from analog video. It is used here as a source of test structure and field checks, not as a requirement. Whether a newer departmental guide supersedes it was not established.
+
+Findings, in this project’s own words:
+
+- **Two levels of testing.** Simple operability tests run frequently; comprehensive effectiveness tests run infrequently. Results of both are recorded and kept. This matches Patterson’s operational and performance tests.
+- **Written procedures.** A procedure should be detailed enough for a competent technician who does not know the system. This supports the PRD’s rule that each check states its task, method and expected result (FR-29).
+- **Five camera field tests.** A functional test (a clear image at the monitoring point, pan/tilt/zoom functions and recording); a field-of-view test (a person at the far end of the view must still be discernible); an obstruction test (a person hides behind an obstruction or in its shadow); a camouflage test; and a speed-of-response test (an alarm-triggered view or recording is fast enough to see the intruder).
+- **Conditions.** Camera tests are run in daylight and at night, and the functional test also at sunrise or sunset. Zones are sampled, with at least two and a representative mix of lenses.
+- **Site-tour observations.** Obstructions, shadows, uneven terrain, zone length, overlap between cameras, rigidity of the mount, adequacy of lighting and weather housings.
+- **Record items per camera.** Location, make and model, test and calibration frequency and method, acceptance criteria, mounting method, weather protection, tamper protection and maintenance history.
+- **Pan/tilt/zoom.** Limits should stop the camera facing bright light sources, and an alarm should move it to view the alarm area.
+- **Maintenance chain.** A failure is reported, a request is raised, work is assigned and dated, completion is recorded with who did it, and a closing test verifies the repair. Substitute protection is put in place while critical equipment is out of service. Maintenance requests are reviewed for trends that reveal ageing or troublesome equipment. Preventive maintenance has a documented frequency.
+
+Comparison with PRD draft 0.21:
+
+| Finding | PRD position | Assessment |
+| --- | --- | --- |
+| Field-of-view test at the far end | The camera starter checks framing and focus at specified scene points (FR-29). Modeled DORI is explicitly not a field pass (FR-30). | Strong fit. This is the field test that verifies the modeled far-range detail. Candidate starter item linked to the zone or range it verifies. |
+| Obstruction and shadow test | Obstructions are modeled for visibility (FR-11). No field check verifies a modeled shadow. | Gap. Candidate starter item. |
+| Day, night and sunrise or sunset conditions | Each check states its conditions; night checks only where scoped (FR-29/43). | Partial. Candidate optional conditions on camera checks. |
+| Speed of response to an alarm | Integration checks only where scoped (FR-43). | Partial. Same candidate as alarm-to-camera call-up. |
+| Operability versus effectiveness, with a frequency | Checks have no level or recurrence. | Gap. Strengthens the periodic-test candidate. |
+| Sampling of zones | A sampled site check does not pass untested devices (FR-43). | Consistent. |
+| Site-tour observations: lighting, mount rigidity, housings, terrain | Survey notes are free-form; mounting details exist (FR-7/20/39). No lighting analysis; floors are modeled flat. | Partial. Candidate survey prompts, not analysis. |
+| Maintenance chain with closing test | Issue and change records with retest (FR-27/44/46). | Largely consistent; same field gaps as Patterson’s repair log. |
+| Substitute protection while equipment is out of service | A Faulty device is not credited in current coverage (FR-41). No note of what covers the gap. | Gap, small. |
+| Trend review of troublesome equipment | Device history is retained (FR-35/46). No summary across devices. | Partial. |
+| Pan/tilt/zoom limits and alarm positioning | Pan/tilt/zoom cameras are absent from the PRD. | Gap, as already noted. |
+
+The guide mentions an analog-era criterion for the smallest usable image of a person, expressed in scan lines. It is recorded as outdated and is not adopted; reading question 5 (Garcia) and the PRD’s DORI convention cover the same subject.
+
 ## Pending decisions (proposed 2026-11-18, not confirmed)
 
 1. Reclassify the PSP dependency in the PRD: public outline read and mapped; licensed references held but not consulted; no PSP compliance claim.
