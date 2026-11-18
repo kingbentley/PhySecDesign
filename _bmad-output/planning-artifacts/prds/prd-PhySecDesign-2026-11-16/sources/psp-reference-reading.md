@@ -58,11 +58,11 @@ The expected-relevance column is from general knowledge of these titles, not fro
 Ordered by how much the answer could change the PRD. Rough notes or pasted highlights are both fine.
 
 1. **Patterson — acceptance testing (answered; see findings).** Which test stages does he name, in what order, and who performs each? Compare with Installation, Configuration, Testing and site-level checks (FR-29–31/43).
-2. **Patterson — closeout (partly answered; see findings).** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
-3. **Patterson — design package.** Which drawings and schedules does he expect in a design submission? Compare with the Design preset (FR-33a).
-4. **Patterson — estimating.** Which cost components does he list beyond equipment, cable and labour? Compare with FR-17/18.
-5. **Garcia — video assessment.** How does she define levels of image detail, and by what measure? Compare with the DORI convention (FR-14).
-6. **Fischer — security survey.** What does a survey record about existing conditions? Compare with FR-20/39.
+2. **Patterson — closeout (answered; see findings).** What does he list as closeout deliverables? Compare with the Closeout preset (FR-33a), which has no operating manuals, training record or warranty start date.
+3. **Patterson — design package (answered; see findings).** Which drawings and schedules does he expect in a design submission? Compare with the Design preset (FR-33a).
+4. **Patterson — estimating (answered; see findings).** Which cost components does he list beyond equipment, cable and labour? Compare with FR-17/18.
+5. **Garcia — video assessment (closed: Kevin keeps DORI).** How does she define levels of image detail, and by what measure? Compare with the DORI convention (FR-14).
+6. **Fischer — security survey (closed: nothing found).** What does a survey record about existing conditions? Compare with FR-20/39.
 
 ## Findings from the reading task
 
@@ -139,6 +139,54 @@ Source: Patterson, 2nd edition, the pages that close the same chapter, shared by
 The chapter’s reference list names Garcia’s 2nd edition, which Kevin holds, and a United States Department of Energy inspectors guide for physical security systems (2009). The latter is a government publication that may be publicly readable; it has not been looked for or read.
 
 Question 2 is partly answered: warranty and repair records are covered above, but the deliverables handed over at completion are not. Search terms to try in Patterson: practical completion, as-built, record drawings, manuals, training, handover, turnover, punch list, final acceptance.
+
+### Questions 2, 3 and 4 — completion deliverables, design package and estimating (answered, 2026-11-18)
+
+Source: Patterson, 2nd edition, the design chapter (its sample estimate is Figure 5-1), from three screenshots Kevin shared.
+
+**Design package (question 3).** The output of design is a bid package, also called construction documents: instructions to bidders, specifications, drawings with schedules, and hardware schedules.
+
+- Specifications follow a standard construction format in three parts (general, products, execution), with security under its own division.
+- Drawings: plans showing device locations, elevations showing wall or rack mounting, details showing terminations or special mounting, riser diagrams showing each subsystem’s devices and how they connect across a building or campus, and conduit and cable lists with types and quantities. Standard security symbols exist and are expected.
+- Hardware schedules: a panel schedule (type, location, communications); a door schedule (every door with its type, location, access device, lock type, egress method and how it functions); and a camera schedule (number, location and view, camera type, lens type, enclosure type, mounting method and any alarm interface).
+
+**Completion deliverables (question 2).** The model specification’s general part lists what the contractor must provide: pre-assembly and testing before delivery; a certificate of completion after the prescribed testing; operating and technical manuals; as-built wiring and schematic diagrams; training, with its content, duration, place, audience, materials and trainer qualifications; a list of programming, including device names, descriptions, timing and sequences of operation; and upgrades during installation and warranty.
+
+**Estimating (question 4).** Estimates are prepared at stages with decreasing uncertainty, from an early budgetary figure to a preliminary design estimate at the half-way design review. A life-cycle estimate covers engineering and design, hardware with start-up spares, software, installation (labour including inspection, testing and commissioning, plus equipment rental, permits, bonding, supervision and overhead), operation, maintenance, miscellaneous percentages (taxes, profit, bonding, contingency), the cost of service interruption and end-of-life disposal. The detailed procedure groups components by subsystem, prices them, sets crew size, productivity and hourly rates, adds special equipment, and ends with a quality review of quantities, labour and recent price changes. The sample estimate includes a pan/tilt/zoom camera alongside fixed cameras.
+
+| Finding | PRD position | Assessment |
+| --- | --- | --- |
+| Plan drawings and cable lists | Labeled floor plans and cable schedules in the Design preset (FR-33a). | Covered. Conduit and raceway are absent. |
+| Riser diagrams | Risers, continuation labels and connection schedules (FR-51/52/33f). A schedule, not a drawn diagram. | Partial. |
+| Elevation and detail drawings | None. | Not covered; drawing production beyond plans is outside the tool. |
+| Camera schedule | Number, location, bearing, type, lens and mounting details (FR-7/8/10/47). | Mostly covered. No enclosure type or alarm interface field. |
+| Door schedule | Openings with linked reader, lock, exit device and contact, shown in schedules (FR-49). | Mostly covered. Egress method and function are free text or project-defined. |
+| Panel schedule | Controllers and panels grouped by location with port and terminal references (FR-51). | Mostly covered. |
+| Specifications and bidder instructions | None. | Not covered; already listed as a gap. |
+| Standard security symbols | No symbol standard is named. | Gap, small. |
+| Manuals, training, as-built diagrams, programming list, completion certificate | The Closeout preset carries as-built plans, settings and evidence (FR-33a). No record that manuals or training were delivered; no certificate. A project can add site checks (FR-43). | Partial. Candidate site-level starter items. |
+| Pre-assembly and testing before delivery | No stage. | Gap, as noted under question 1. |
+| Equipment, cable, accessories and labour | Covered, with unknown prices shown as unpriced (FR-17/18). | Covered. |
+| Percentage lines: contingency, tax, profit, bonding | Manual lines take a quantity and a rate; no percentage of a subtotal. | Gap. |
+| Design, software, permits, rental, overhead | Possible as manual lines (FR-18); no named categories. | Partial. |
+| Subtotals by subsystem | Subtotals exist; no subsystem grouping. | Gap, small. |
+| Estimate stages with stated uncertainty | Estimates belong to a work scope and are not presented as quotes (FR-17). | Partial. |
+| Operation, maintenance, interruption and disposal costs | None. | Not covered; life-cycle costing is outside the POC. |
+
+### Questions 5 and 6 — closed, 2026-11-18
+
+Question 5: Kevin decided to keep the DORI convention; Garcia’s treatment of image detail was not consulted and is not needed. Question 6: Kevin found nothing relevant in Fischer; closed unanswered. The site-tour observations in the government guide below partly serve the same purpose. The reading task is complete.
+
+## Candidate changes collected (not decided)
+
+Proposed sort, pending Kevin’s decision:
+
+| Group | Candidates |
+| --- | --- |
+| A. Add now as small amendments | Optional camera checks (sun-facing, night with headlights, far-end field of view, obstruction and shadow); optional site checks (alarm-to-camera call-up and its speed; handover of manuals, training, as-built records and programming list); camera fields for enclosure type and alarm interface; survey prompts for lighting, shadows, terrain and mount rigidity; percentage estimate lines and subsystem subtotals; trade-term aliases. |
+| B. Discuss individually as possible new requirements | Pan/tilt/zoom cameras; an optional reliability period with a downtime log; a warranty record with service-visit fields. |
+| C. Candidates for after the POC | Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard symbols; a note of substitute protection for faulty equipment; trend summaries; life-cycle costing; a reason field on zone targets. |
+| D. Out of scope | Risk-assessment records; specifications and bid documents; procurement; personnel; project scheduling; elevation and detail drawings; service levels and spares; backup-power design. |
 
 ## Public source read in part: DOE assessment guide
 
