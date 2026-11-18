@@ -261,7 +261,9 @@ Covers: FR-45. Screens: S-11.
 - The category is preselected from the planned action: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only. (CE-12)
 - Changing a category is recorded with actor and time.
 - The scope panel shows the estimate and the required checks that each category implies, and both update when a category changes.
-- The applicable core checks of story 5.4 are required by default for each Work now device. An Inspect or test only device has no check required until an Editor selects the checks that apply to it. A Reference only device gets no checks. (CE-13)
+- The applicable core checks of story 5.4 are required by default for each Work now device. (CE-13)
+- An Inspect or test only device has no check required until an Editor selects the checks that apply to it.
+- A Reference only device gets no checks.
 - Reference-only equipment still counts in coverage and capacity and creates no purchase line.
 - An Inspect or test only device can have a labour line without an equipment purchase.
 - From this story on, the remaining-work list and the closeout count the Work now devices whose work is not recorded, and the required checks of Work now and Inspect or test only devices.

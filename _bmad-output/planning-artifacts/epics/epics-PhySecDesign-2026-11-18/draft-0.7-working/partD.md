@@ -89,7 +89,7 @@ Notes: Left to later stories: condition on the device sheet (story 6.1); the wor
 
 As a technician, I want to mark a device installed and configured, so that the project shows what work has actually been done.
 
-Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (reversing a mistaken mark; Delete draft eligibility), the device state model (work recorded per device per scope). Screens: S-F4, S-04 Work tab.
+Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (Delete draft eligibility), the device state model (work recorded per device per scope). Screens: S-F4, S-04 Work tab.
 
 **Core behaviour**
 - In this epic a device is in scope when it is Proposed and not cancelled, or became Existing through an Installed mark recorded in the active scope. A device set to Existing by hand or brought in as Existing is not in scope.
@@ -97,9 +97,6 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - Setting a mark records the account's name, the time and the active scope. A device holds at most one Installed and one Configured mark for each work scope.
 - Recording Installed on a Proposed device sets its lifecycle value from story 2.7 to Existing, and it appears in Current installation at its recorded location.
 - Configured can be set before Installed. The device then shows a neutral notice that it is marked configured but not installed, and nothing is blocked. (CD-04)
-- The device menu of story 4.9 gains "Reverse installed mark". A mistaken Installed mark is reversed with a required reason, and the device returns to Proposed and leaves Current installation.
-- After a reversal the device's notes, photos and other evidence stay attached, and the reversal is listed in the device's history with actor, time and reason.
-- A Configured mark can be cleared with a required reason, kept in the device's history.
 - When the first Installed mark of a scope is recorded while nothing is issued for that scope, the mark is saved at once and the project shows the warning "Work started with no issued design".
 - The warning carries a link that takes an Editor to issue a design (story 4.8), and it goes away when a design is issued for the scope.
 - The field shell's filtered lists gain "Not installed": the in-scope devices with no Installed mark in the active scope.
@@ -107,7 +104,6 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 
 **Refusals and edge cases**
 - When a second person sets a mark that is already set in the scope, no second entry is created. The first name and time stay, and the second person sees who set it.
-- "Reverse installed mark" is not offered for a device that was Existing before the scope. A request for one is refused by the server and the device's lifecycle is unchanged.
 
 **Limits and values**
 - The warning is shown on the Overview, beside the frame's issued-design chip and beside the field shell's chip. (CD-05)
@@ -116,12 +112,35 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - A Viewer sees the warning without the link to issue.
 - A revision restore leaves Installed and Configured marks unchanged.
 - Designating a different current issued design leaves the marks unchanged.
-- A device that has, or has had, an Installed or Configured mark is not offered Delete draft.
+- A device with an Installed or Configured mark is not offered Delete draft.
 - A Delete draft sent from a stale view after a mark was set is refused with the reason.
 
-Notes: Left to later stories: flags raised by a reversal (story 5.6a); the rule that a mark changes no phase count (story 5.7); refusing a mark when no scope is active (story 5.12c); marks on existing devices with a planned action, and reversing the mark of a relocated device, which returns it to Existing at its earlier location (story 6.6); a planned Remove, which is completed by the recorded removal and not by an Installed mark (story 6.8); marks in a later scope (story 6.10); a service scope, which needs no issued design and shows no warning (story 6.12).
+Notes: Left to later stories: reversing a mistaken mark (story 5.3b); the rule that a mark changes no phase count (story 5.7); refusing a mark when no scope is active (story 5.12c); marks on existing devices with a planned action (story 6.6); a planned Remove, which is completed by the recorded removal and not by an Installed mark (story 6.8); marks in a later scope (story 6.10); a service scope, which needs no issued design and shows no warning (story 6.12).
 
-### Story 5.3b: Report a change found on site
+### Story 5.3b: Reverse a mistaken mark
+
+As a technician, I want to take back an Installed or Configured mark I set by mistake, so that the record does not claim work that was not done.
+
+Covers: FR-55 (reversing a mistaken Installed or Configured mark), the device state model. Screens: S-04 device menu.
+
+**Core behaviour**
+- The device menu of story 4.9 gains "Reverse installed mark". A mistaken Installed mark is reversed with a required reason.
+- After the reversal the device returns to Proposed and leaves Current installation.
+- The device's notes, photos and other evidence stay attached.
+- The reversal is listed in the device's history with actor, time and reason.
+- A Configured mark can be cleared with a required reason, kept in the device's history.
+
+**Refusals and edge cases**
+- "Reverse installed mark" is not offered for a device that was Existing before the scope. A request for one is refused by the server and the device's lifecycle is unchanged.
+- A reversal based on a stale view of the device is returned as a conflict.
+
+**Access and restore**
+- A device whose mark was reversed or cleared is still not offered Delete draft.
+- A revision restore leaves reversals unchanged.
+
+Notes: Left to later stories: the Needs review flags a reversal raises (story 5.6a); reversing the mark of a relocated device, which returns it to Existing at its earlier location (story 6.6).
+
+### Story 5.3c: Report a change found on site
 
 As a technician, I want to record where the site differs from the drawing, so that the project shows what is actually there without waiting for anyone's review.
 
@@ -375,7 +394,6 @@ Covers: FR-43, FR-60 (a floor with site-check history is not deletable). Screens
 - Optional starters cover alarm-to-camera call-up, including whether the view or recording is available quickly enough for the project's purpose, and handover of manuals, training, as-built records and the programming list. They are off until enabled.
 - A handover check records that an item was delivered. It accepts no file and asks for no judgement of the item.
 - Site checks appear as their own row in progress, not inside any device's counts.
-- A required site check with no attempt appears in the remaining-work list.
 
 **Refusals and edge cases**
 - Passing a sampled site check changes no device's check, and a device with no attempt still reads Not tested.
@@ -399,7 +417,7 @@ Covers: FR-46 (records and dispositions), FR-55 (Delete draft eligibility). Scre
 - An issue's status is Open or Resolved. Its disposition in the active scope is kept separately: none, Include now or Deferred. A deferred issue is Open.
 - Include now lets an Editor select the work, the checks and the estimate lines (story 4.4) added to the active scope for the issue.
 - Defer requires a short reason. Owner and due date are optional.
-- Resolve is available only when a corrective-work entry and a current passing attempt or other current evidence are recorded. (CD-19)
+- Resolve is available only when a corrective-work entry on the issue (what was done, by whom and when) and a current passing attempt or other current evidence are recorded. (CD-19)
 - Resolving keeps the original failure and links the new attempt.
 - A resolved or deferred issue can be reopened with a reason, and its history is kept. (CD-20)
 - A mistaken or duplicate issue is corrected with a reason, actor and time. A duplicate links to the issue kept, and a corrected issue stays listed with its reason.
@@ -500,7 +518,7 @@ Covers: FR-64 (downtime log and availability). Screens: S-17.
 - An uncounted entry stays visible and does not change availability.
 - An entry with no end reads "continuing". It counts up to the present while the run is open and up to the run's end once it has ended.
 - A counted entry counts for its duration multiplied by the share of the run's covered devices it affected.
-- Where counted entries overlap, a device affected by more than one is counted once for the time they overlap.
+- Where counted entries overlap, a device affected by more than one is counted once for the time they overlap. (CD-39)
 - Availability is the time not down divided by the run's elapsed time, as a percentage, shown beside the target and the totals of counted and uncounted downtime.
 - Availability is marked Provisional while the run is open.
 
@@ -601,10 +619,10 @@ Covers: FR-32, FR-42 (stale saves), FR-24 (reviewer links after closing), FR-45 
 - With no active scope, a design edit, an Installed or Configured mark, a test result and a new revision are each refused with "not saved: no active scope — reopen first".
 - Design edits here are changes to buildings, floors, plans, devices, routes, zones, obstructions, analysis settings, checklist and site-check definitions, the reliability definition and the estimate. (CD-31)
 - With no active scope, a field change, a note or photo, a run start, a revision restore and a designation are refused in the same way. (CD-32)
-- Reading, exporting, generating a package and deciding on the closeout record remain available with no active scope.
+- Reading, exporting and generating a Design package remain available with no active scope.
 
 **Refusals and edge cases**
-- A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried.
+- A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried. (CD-38)
 - Once a scope is closed, a reviewer link to one of that scope's design revisions opens its revision read-only and accepts no comment or decision. (CD-33)
 
 Notes: Left to later stories: refusing a removal with no active scope (story 6.8); reopening into a new scope (story 6.10); warranty and service-visit records, which stay editable with no active scope, and Start service visit (story 6.12).
@@ -620,7 +638,7 @@ Covers: FR-23 and FR-24 (final acceptance of a closeout record), FR-25, FR-69 (a
 - An Editor can create a reviewer link to the closeout record under the rules of story 4.7, and the named reviewer comments and decides through it.
 - An Editor can bypass final acceptance. The bypass is recorded on that closeout record as Bypassed, with the account, the time and an optional reason.
 - Decisions, comments and bypasses are separate entries added beside the closeout record. The record's stored file and hash are unchanged by them.
-- Final acceptance is recorded after closing and is never a condition of closing. (CD-34)
+- Final acceptance is recorded after closing, with no active scope needed, and is never a condition of closing. (CD-34)
 
 **Refusals and edge cases**
 - A decision or a bypass changes neither the scope's Completed or Closed with outstanding items state nor any outcome.
