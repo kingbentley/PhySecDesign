@@ -2,13 +2,13 @@
 title: "Site Studio — UX Design Specification"
 status: draft 0.5, aligned with final PRD 1.2 after its review on 2026-11-18; design decisions D1-D14 confirmed by Kevin
 created: 2026-11-18
-inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
+inputs: "final PRD 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
 # Site Studio — UX Design Specification
 
-This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–62, the proposed FR-63–65 and, in section 17, FR-66–72 from proposed amendment 1.2. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
+This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–65 and, in section 17, FR-66–72. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
 
 Three kinds of statement are kept apart throughout:
 
@@ -320,7 +320,7 @@ A site check with its own page.
 - **Records timeline (S-20).** One chronological list of the surveyed baseline, named revisions, issued designs (Current or Superseded), reviews, closeouts, package editions and backups. Each entry opens read-only. The latest backup shows its age and any failure (FR-34).
 - **Compare (S-21).** Two revisions, or the issued design against the working installation, side by side at one scale with a list of changed devices and settings (FR-22, FR-26).
 - **Issue a design (S-22).** Three steps: choose the revision; record approval, request review or bypass (all equal in weight, reason optional for bypass); confirm it becomes the current reference. Saving or exporting a draft never does this (FR-25, FR-61).
-- **Restore a revision.** A guarded dialog states what will change (design content) and what will not (recorded positions, work, evidence, tests, issues), and lists items that cannot be restored (FR-22).
+- **Restore a revision.** A guarded dialog states what will change (design content) and what will not (recorded positions and routes, current connections, work, checklists, evidence, tests, issues), and lists items that cannot be restored (FR-22).
 - **Close out (S-23).** Step one shows the remaining-work list. Step two offers Completed, disabled with the reasons when anything is outstanding, and Closed with outstanding items, which requires a short note. Step three records the warranty. Step four generates the Closeout package. Missing approval never disables either choice (FR-32).
 - **Packages.** Choose Design or Closeout, floors and options (prices off by default). A partial selection is labelled Partial before export. Long jobs show progress and can fail visibly with Retry. Each retained edition lists its source revision and cutoff (FR-33, FR-34).
 
@@ -543,13 +543,13 @@ PRD amendment 1.2 replaced edit links with accounts and added self-hosting, admi
 
 Administration is its own area with a left-hand list: Users, Projects, Reviewer links, Settings, Backups, Software, Activity. It is reached from the account menu and is never shown to standard users.
 
-**Users (S-30).** A table of name, email, role, state (Invited, Active, Deactivated), two-step verification (On, Off, Required but not set up), projects and last sign-in. Invite opens a panel for email, name and role, with optional projects to add them to; it ends with a link to copy and, where email is set up, "Email it". A user's row opens their detail: change role, issue a password reset, reset two-step verification, sign them out everywhere, deactivate. Deactivating explains that their records keep their name. The last administrator's role and Deactivate controls are disabled with the reason.
+**Users (S-30).** A table of name, email, role, state (Invited, Active, Deactivated), two-step verification (On, Off, Required but not set up), projects and last sign-in. Invite opens a panel for email, name and role, with optional projects to add them to; it ends with a link to copy and, where email is set up, "Email it". A user's row opens their detail: change name, change role, issue a password reset, reset two-step verification, sign them out everywhere, deactivate, and reactivate a deactivated user. Deactivating explains that their records keep their name. The last administrator's role and Deactivate controls are disabled with the reason.
 
 **Projects (S-31).** A table of every project with state, members, last activity, stored size and latest backup. A project's row opens its members: add a user as Editor or Viewer, change a role, remove. Removing explains that the person's earlier entries stay. Create project, Archive and Un-archive are here.
 
 **Reviewer links (S-32).** Every active link with project, revision, named reviewer, created by and last used. Revoke on each row. Revoked links move to a history list with their decisions intact.
 
-**Settings (S-33).** Grouped as Installation (name), Sign-in (session length, require two-step verification, who may create projects), Email (off, or server details with Send a test message), Maps (optional provider keys) and Limits (the storage limits, read-only where the host fixes them). A saved secret shows only its last characters. Each group saves on its own and says what changed.
+**Settings (S-33).** Grouped as Installation (name), Sign-in (the period without use before sign-out, how long an invitation lasts, require two-step verification, who may create projects), Email (off, or server details with Send a test message), Maps (optional provider keys) and Limits (the storage limits and current usage, read-only). A saved secret shows only its last characters. Each group saves on its own and says what changed.
 
 **Backups (S-34).** Each project and the installation's own records, with latest backup, age and outcome. A warning appears when the backup location is the same disk as the live data on a self-hosted installation. Back up now starts one. Restoring one project opens a three-step flow: choose a backup and see its date and the loss window; build and check a separate copy, with each check listed; then, only if every check passes, "Make this copy current", which states that this project's reviewer links are cancelled and must be issued again, and that nobody is signed out. Recovering the whole installation after a loss is a separate action. Afterwards everyone is signed out, every reviewer link is cancelled, and a notice names the recovery point and asks the administrator to review users and members changed since then.
 

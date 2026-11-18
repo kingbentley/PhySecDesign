@@ -2,7 +2,7 @@
 title: "Site Studio — Architecture"
 status: 2.1, aligned with final PRD 1.2 after its review on 2026-11-18; decisions K1-K3 and K5-K15 confirmed by Kevin; nothing built or measured
 created: 2026-11-18
-inputs: "PRD 1.0 with proposed amendments 1.1 and 1.2; UX design specification; the site-studio prototype"
+inputs: "final PRD 1.2; UX design specification; the site-studio prototype"
 method: BMAD Create Architecture, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
@@ -211,7 +211,7 @@ Membership is held in the installation store, so removing a member or deactivati
 
 ### AD-17 — The installation store (confirmed)
 
-One small database per installation holds: users, password and recovery-code hashes, sessions, invitations and resets, project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table, and the activity log (FR-71). Secrets entered in settings, such as an email password or a map key, are encrypted with a key supplied to the installation at deployment and are shown only masked.
+One small database per installation holds: users, password and recovery-code hashes, two-step secrets, sessions, invitations and resets, project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table, and the activity log (FR-71). Secrets entered in settings, such as an email password or a map key, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 
 The activity log is append-only and is kept for the life of the installation; administrators can filter and export it. Entries never contain a password, token or code.
 
@@ -227,7 +227,7 @@ As in version 1.0: each day a job exports every project at one consistent point,
 
 Extended by amendment 1.2:
 
-- The installation store is backed up in the same run, so accounts, memberships, settings and the activity log can be recovered (FR-34 as amended, FR-71).
+- The installation store is backed up in the same run, so accounts with their two-step secrets, memberships, settings and the activity log can be recovered (FR-34 as amended, FR-71).
 - Recovering an installation returns accounts, roles and memberships to the recovery point, ends every session and cancels every reviewer link, so that a link revoked after the recovery point cannot come back; Editors issue new links. Administrators are shown the recovery point and asked to review users and members changed since.
 - Restoring one project cancels that project's reviewer links and ends no sessions.
 - Self-hosted, the backup area must be a different disk or a different machine from the live data to count as independent. The installer asks for it and the interface warns when it is the same disk.
@@ -249,20 +249,20 @@ It holds one project's records, snapshots, files and packages, a manifest, and t
 ### AD-20 — Data conversions are ordered, forward-only and run by the core (confirmed)
 
 - Every project store and the installation store record their data-format version.
-- The core carries every conversion step since the first release, so an installation can go from any earlier supported version to the latest in one update (FR-72).
+- The core carries every conversion step since the first release, so an installation can go from any earlier released version to the latest in one update (FR-72).
 - Conversions run per project, each inside a transaction, after the pre-update backup.
 - The server refuses to start against data newer than itself (NFR-8).
 - Going back means restoring the pre-update backup with the earlier version. No reverse conversions are written.
 
 ### AD-21 — How the Update control works on each host (confirmed)
 
-**Checking for a version.** About once a day, and when an administrator asks, the server reads the public release list from GitHub. The request contains nothing about the installation. It can be turned off (FR-72).
+**Checking for a version.** At least once every 24 hours while running, and when an administrator asks, the server reads the public release list from GitHub. The request contains nothing about the installation. It can be turned off (FR-72).
 
 **Self-hosted.** A separate updater container does the work, because the application cannot safely replace itself while running. It is the only part with permission to start and stop containers.
 
 1. An administrator presses Update. The application asks the updater, over a private connection protected by a shared secret, to install a named version.
 2. The updater accepts only versions from the configured repository and verifies the image signature.
-3. The application tells signed-in users an update is starting, then stops accepting saves, and only then takes the pre-update backup, so that nothing is acknowledged after it. Unsaved edits stay in users' pages, as for any lost connection.
+3. The application tells signed-in users an update is starting, then stops accepting changes of every kind, saves and administrative changes alike, and only then takes the pre-update backup, so that nothing is acknowledged after it. Unsaved edits stay in users' pages, as for any lost connection.
 4. The updater stops the application, starts the new version, and the new version runs its data conversions.
 5. The updater calls a health check: the sign-in page is served, a project opens and a test save is acknowledged. On success it reports the new version. On any failure it restores the pre-update backup, starts the earlier version, and reports what happened.
 6. The outcome is written to the activity log after any return, so the record of a failed attempt survives it. If the return itself cannot be completed, the updater says so and shows the manual recovery steps; it never reports success.
@@ -271,9 +271,10 @@ The same steps can be run from a command line on the server, for an operator who
 
 **On Cloudflare.** A Worker cannot sensibly replace its own code, and storing a credential that can would be a standing risk. Each organisation therefore deploys from its own copy of the repository, using a deployment workflow that the repository provides.
 
-- With one-step deployment set up, Update warns users, stops accepting saves, takes the backup and then starts that workflow for the chosen release. The workflow verifies the release's signature before deploying it. The new version runs its conversions on first start and then runs the same health check.
-- If the conversion or the health check fails, the workflow redeploys the earlier version, the earlier version restores the pre-update backup, and the failure is recorded afterwards. Cloudflare keeps earlier versions of a Worker, which is what the return relies on; this is part of experiment R11.
+- With one-step deployment set up, Update first has the release's signature verified, then warns users, stops accepting changes of every kind, takes the backup and starts that workflow for the chosen release. If the signature or the backup fails, nothing is deployed and changes are accepted again. The new version runs its conversions on first start and then runs the same health check.
+- If the deployment, the conversion or the health check fails, the workflow redeploys the earlier version, the earlier version restores the pre-update backup, and the failure is recorded afterwards. Cloudflare keeps earlier versions of a Worker, which is what the return relies on; this is part of experiment R11.
 - Without one-step deployment, Update shows the exact steps to run the workflow by hand, including the backup and the way back.
+- If the return itself cannot be completed, the installation says so and shows the manual deployment steps; it never reports success.
 - The same requirements therefore hold on both hosts (FR-72, NFR-8, SM-6).
 - Which trigger is best (starting a GitHub Actions run, or a Cloudflare build hook) is experiment R10.
 

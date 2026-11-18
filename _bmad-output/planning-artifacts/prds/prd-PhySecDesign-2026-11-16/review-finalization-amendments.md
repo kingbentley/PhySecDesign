@@ -12,7 +12,7 @@ Reviewed 2026-11-18. This is the review that amendments 1.1 and 1.2 had not yet 
 
 ## Verdict
 
-The amendments are a sound basis for finalization once the findings below are applied. The first reader reported 43 findings and the second 31, with overlap. Eleven were high: nine were genuine gaps or contradictions in the amended text, and two were contradictions in downstream documents. None required new product scope. Eight needed a decision from Kevin; the rest were resolved by wording that follows decisions already recorded.
+The amendments are a sound basis for finalization once the findings below are applied. The first reader reported 43 findings and the second 31, with overlap. Ten distinct findings were high: nine were gaps or contradictions in the amended text, one of which also showed in the architecture, and one was a gap in the architecture's Cloudflare update path. None required new product scope. Eight needed a decision from Kevin; the rest were resolved by wording that follows decisions already recorded.
 
 ## Decisions Kevin made during the review
 
@@ -75,4 +75,8 @@ High findings are listed individually. Medium and low findings are grouped.
 
 ## Verification
 
-Pending at the time of writing; completed below.
+A third independent reader checked the revised documents on 2026-11-18.
+
+- **Confirmed.** Every decision R-1 to R-8 and every disposition row is implemented in the PRD, each located by line and quotation. FR-1 to FR-72 each appear once with one Check; NFR-1 to NFR-8, SM-1 to SM-6 and UJ-1 to UJ-5 each appear once. No high contradiction remains between the PRD and the architecture or the UX specification.
+- **Found and then fixed.** One dead in-page link in the PRD, left by renaming the device state model heading. Wording from before decision R-4 in the amendment 1.2 status note and the addendum. "Proposed" still attached to the amendments in the addendum, the amendment 1.1 status note, the source index, and the input lines of the architecture and UX specification. Twelve low-severity ambiguities in the PRD, the main ones being: an update now stops administrative changes as well as saves, a failure before installation stops without a return, and a return is not a recovery; the credential exclusion is worded so that live site-system passwords stay out of every backup; the recovery target covers the installation's data; the first acceptance run on Cloudflare is enough to accept the proof of concept there, and SM-6 is completed with the self-hosted run; FR-26 names the service-scope exception. Five Checks extended again. Nine small differences in the architecture and UX specification aligned.
+- **Not re-verified.** These last fixes were applied after the third reader finished and were checked only by script: requirement and Check counts, and local links.

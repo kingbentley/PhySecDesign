@@ -36,9 +36,9 @@ Asked three questions, he chose:
 | Added SM-6 | Installation, roles, update, failed update and cross-host restore demonstrated from published instructions alone. |
 | Added UJ-5 | Set up and look after an installation. |
 | Amended FR-2 | Accounts and membership replace project edit links. The Check now covers non-members, Viewers and deactivated accounts. |
-| Amended FR-23 | An approval assignee is a user account or a named reviewer-link holder. The phrase "without requiring individual accounts" is removed. |
+| Amended FR-23 | An approval assignee is a user account that is a member or an administrator, or a named reviewer-link holder; an assignment whose account stops qualifying shows as unavailable. The phrase "without requiring individual accounts" is removed. |
 | Amended FR-24 | Reviewer links are for people without accounts; signed-in members can also decide; the two kinds of decision are labelled differently; administrators can see and revoke every link. |
-| Amended FR-34 | Recovering an installation restores accounts, roles and memberships, ends all sessions and keeps revoked links revoked. A portable project backup carries no accounts. The sentence about re-establishing access "under the existing model" is removed. |
+| Amended FR-34 | The installation's own data is backed up on the same schedule as projects. Recovering an installation restores accounts, roles and memberships as at the recovery point, ends every session and cancels every reviewer link. A portable project backup carries no accounts. The sentence about re-establishing access "under the existing model" is removed. |
 | Amended NFR-3 | The device matrix also covers sign-in, two-step verification, invitations and password change, and the administrator screens on desktop. |
 | Amended NFR-5 | From "demo access boundary" to an access boundary based on accounts, roles, membership and link scope, with password and secret handling. |
 | Front matter, opening paragraphs, Users paragraph, decision-status paragraphs | Status and summaries updated; one sentence added on administrators. |
@@ -62,7 +62,7 @@ These details were needed to write the requirements and were not among the three
 | A3 | Two-step verification is optional per user, and an administrator can require it for everyone. | FR-67 |
 | A4 | Administrators create projects, and can allow standard users to create them too. | FR-68 |
 | A5 | An administrator can open every project as an Editor. | FR-68 |
-| A6 | A Viewer can search, export and download packages, and cannot add notes, photos or results. | FR-68 |
+| A6 | A Viewer can search, download packages and files that already exist and export schedules and estimates, and cannot add notes, photos or results. As settled in the review, a Viewer creates no retained package and downloads no portable backup, and can record a decision only as the approval assignee. | FR-68 |
 | A7 | One installation serves one organisation. Several organisations in one installation is out of scope. | FR-66 |
 | A8 | The activity log is kept for the life of the installation; no retention period is set. | FR-71 |
 | A9 | Update checks can be turned off, for servers without internet access. | FR-72 |

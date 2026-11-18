@@ -1,4 +1,4 @@
-# Site Studio — proposed amendment 1.1: status
+# Site Studio — amendment 1.1: status
 
 Prepared 2026-11-18. Amendment 1.1 was reviewed together with amendment 1.2 on the same day and is part of the [final PRD 1.2](prd.md); see the [amendment review](review-finalization-amendments.md). This note tracks what a parallel session added on top of PRD 1.0 and where that session's decisions differ from 1.0. Those differences are not applied, except as listed under Decisions taken on 2026-11-18.
 
@@ -8,7 +8,7 @@ PRD 1.0 was finalized on 2026-11-17. A separate cloud session started minutes ea
 
 The parallel draft, its addendum and its decision-log entries are preserved unedited in [sources/parallel-session-draft-0.28](sources/parallel-session-draft-0.28/prd.md.txt). Requirement numbers in that snapshot above FR-54 do not match this PRD.
 
-## Ported into the PRD as proposed amendment 1.1
+## Ported into the PRD as amendment 1.1
 
 All of these were confirmed by Kevin in the parallel session and were reviewed on 2026-11-18. The table also includes the items adopted later under the decisions below.
 
