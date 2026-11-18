@@ -11,7 +11,7 @@ Run on 2026-11-18 to test decisions in the [architecture](../_bmad-output/planni
 | R1 | Can a full-size PDF package be generated in the browser within 5 minutes? | **Yes for generation (about 13 s per 250 pages). Two findings:** a 250-page volume is about 160 MiB, over the 100 MiB limit, and uploading an edition takes far longer than generating it. |
 | R6 | Minimum R2 upload part size; PDF printing in Cloudflare's browser service. | **Both confirmed.** Parts are at least 5 MiB and must be equal in size; Cloudflare's browser service does produce PDFs. |
 | R10 | Best trigger for a Cloudflare deployment from the interface. | **A deploy hook exists but cannot name a version.** One finding changes the update design: Cloudflare blocks rollback across a Durable Object class change. |
-| R8 | Could Cloudflare's open-source runtime host the same build on a server? | See [r8-workerd-server/RESULTS.md](r8-workerd-server/RESULTS.md). |
+| R8 | Could Cloudflare's open-source runtime host the same build on a server? | **Largely yes.** The same Worker ran on a Linux server with durable per-project SQLite storage. File storage has no built-in equivalent, and the on-disk storage format is marked experimental. |
 
 ## R7 — Cloudflare tooling with the prototype
 
@@ -116,3 +116,38 @@ Consequences for the architecture:
 - Restoring the pre-update backup after a failed data conversion remains the application's job on both hosts, as AD-20 and AD-21 already say.
 
 Not confirmed: a REST rollback endpoint; whether a Worker can read its own version at run time; whether secrets are restored by a rollback.
+
+## R8 — Cloudflare's open-source runtime as the self-hosted server
+
+Folder and full record: [r8-workerd-server/RESULTS.md](r8-workerd-server/RESULTS.md). Run with workerd 1.20261118.1 on Linux x86-64. Nothing was deployed to Cloudflare, so identical behaviour on both hosts is not verified.
+
+What was observed:
+
+| Test | Result |
+| --- | --- |
+| A Worker with a SQLite-backed Durable Object, unmodified, served by `workerd` alone | Works, without any experimental flag. |
+| Data after a normal stop and restart | Kept. One SQLite file per object on local disk. |
+| Data after `kill -9`, 45 times, including mid-burst | Every acknowledged write survived (1,367 of 1,367). The runtime syncs to disk before replying. |
+| A multi-statement change that throws part-way | Rolled back completely. |
+| Alarms (timers on an object) | Fired on time, survived restarts, and fired at start-up when they came due while the process was down. |
+| Speed | About 720 to 830 small writes a second in sequence; about 1,800 a second with 16 in flight. |
+| Password hashing (PBKDF2-SHA256, 600,000 iterations) | 74 to 78 ms. |
+| Writing and reading a 20 MB file through the built-in disk service | Works, with streaming and range reads. No checksum or metadata support. |
+| R2 | No built-in equivalent. |
+| D1, Workflows, Queues, scheduled triggers | Present only behind an `--experimental` flag. Scheduled triggers were tested and worked; the others were not tested. |
+| Packaging | One 162 MB binary for Linux x64 and arm64 (needs glibc 2.35 or later; no Alpine build). No Node.js needed at run time. |
+
+What Cloudflare says:
+
+- The runtime's stated purposes include use "as an application server, to self-host applications designed for Cloudflare Workers", and its documentation describes running it in production under systemd.
+- It is "not a hardened sandbox" for running untrusted code. Site Studio would run only its own code, so this is not the concern it first appears.
+- The on-disk Durable Object storage is labelled, in the configuration schema, "EXPERIMENTAL; SUBJECT TO BACKWARDS-INCOMPATIBLE CHANGE".
+- Miniflare and `wrangler dev` are described only as development and testing tools.
+
+What this means for the architecture:
+
+- A single server build for both hosts is feasible. The Node.js server and its separate storage adapters (story 9.1, most of AD-16) could be dropped.
+- To stay off the experimental flag, the design would use only what ran without it: Durable Objects for project records **and** for the installation's own data (in place of D1), alarms for the daily backup and for long jobs (in place of scheduled triggers and Workflows), and a small file-store interface with two implementations (R2 on Cloudflare, the disk service self-hosted).
+- The main risk is the experimental label on the storage format. An upgrade of the runtime could, in principle, be unable to read older data. That bears directly on safe updates (NFR-8). It can be managed by pinning the runtime version in each release, testing every release against data from the previous one, and keeping the portable backup as a format-independent way out.
+
+Not determined: behaviour on power loss as opposed to process kill; whether the disk service syncs before replying; behaviour under real load and over long runs; whether the storage format survives a runtime upgrade; Docker and arm64 runs.

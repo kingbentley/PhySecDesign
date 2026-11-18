@@ -345,6 +345,21 @@ Language and tests are as confirmed (K6): existing application code stays in Jav
 | R11 | An update that fails half-way must return cleanly on both hosts. | Break an update at each step on a test server and on a test Cloudflare account, and confirm the earlier version and data return and the failure is logged. | Block the release of the Update control until it does. |
 | R12 | SQLite files on network or slow disks can lose durability or lock. | Test on a typical virtual machine disk; document unsupported storage. | Require local disk for records; allow object storage for files only. |
 
+### Results of the experiments run on 2026-11-18
+
+Six experiments were run early in a cloud container on synthetic data. They indicate direction; they are not acceptance results. The record and the code are in [experiments/README.md](../../../../experiments/README.md). No decision in this document has been changed by them yet; the changes they suggest are listed for Kevin.
+
+| # | Result | Suggested change |
+| --- | --- | --- |
+| R7 | Passed. The prototype runs, tests and builds through Cloudflare's Vite plugin. The test package is now named `@cloudflare/vitest-plugin`. | Use the new package name. |
+| R2 | Passed with wide margin once the prototype's fixed work budget is lifted: under 0.5 s for 60 cameras and 20 zones at 0.5 m. As shipped, the budget coarsens sampling to 6 to 12 m on this workload, which does not meet NFR-4. | Replace the fixed work budget with a time-based limit. The listed fallbacks are not needed. |
+| R1 | Generation is fast (about 13 s per 250 pages). A 250-page volume is about 160 MiB, so volumes split at about 150 pages. Uploading an edition of about 480 MiB takes about 13 minutes at the reference uplink. | Keep K3, or reconsider server-side rendering in view of the upload time. Decide JPEG quality or text-as-text for schedule pages. |
+| R6 | Confirmed: R2 parts are at least 5 MiB and equal in size; Cloudflare's browser service renders PDFs. | None. AD-4's 8 MiB parts fit. |
+| R10 | A deploy hook exists but cannot name a version. Cloudflare blocks rollback across a Durable Object class change and never rolls back stored data. | AD-21: choose the trigger; treat releases that change a Durable Object class as a special case. |
+| R8 | The same Worker ran on a Linux server under Cloudflare's open-source runtime with durable storage and working alarms. File storage needs its own adapter. The on-disk storage format is marked experimental. | Consider one server build for both hosts in place of a separate Node.js server (AD-1, AD-16, AD-17), with the installation's data in a Durable Object and alarms in place of scheduled triggers and Workflows. |
+
+Still to run with their stories: R3, R4, R5, R9, R11 and R12.
+
 ## 13. Confirmed decisions
 
 Confirmed in version 1.0 and unchanged: K1 Workers Paid plan; K2 one store per project; K3 packages generated in the desktop browser; K5 Cloudflare backups in the same account; K6 TypeScript for new server and shared code with Vitest; K7 keep the static Sites package for now; K8 polling.
