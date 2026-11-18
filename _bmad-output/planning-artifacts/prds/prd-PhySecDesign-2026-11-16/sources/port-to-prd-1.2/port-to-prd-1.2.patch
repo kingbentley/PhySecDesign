@@ -46,10 +46,10 @@ index 11fc9e1..4c3fa24 100644
  
 diff --git a/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md
 new file mode 100644
-index 0000000..fcdb2b5
+index 0000000..583efac
 --- /dev/null
 +++ b/_bmad-output/planning-artifacts/prds/prd-PhySecDesign-2026-11-16/sources/future-schedule-gantt.md
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,79 @@
 +# Planned future feature — project schedule (Gantt chart)
 +
 +Prepared 2026-11-18 from a party-mode discussion with Kevin (John, Mary, Sally, Winston, Amelia). This is a planned feature for after the POC. It is **not** a requirement of the [final PRD 1.1](../prd.md), which still lists project scheduling among its exclusions. Nothing here has been through PRD review.
@@ -95,6 +95,7 @@ index 0000000..fcdb2b5
 +| Work removed from scope | A row whose work has all left scope stays visible, marked “no work in scope”, with the rows that depend on it flagged, until the manager removes it. Baselines already taken keep their copy. |
 +| Who sets a baseline | Anyone with edit access, recorded with display name and time as unverified attribution, the same as approvals in PRD 1.1 |
 +| Typed task that repeats app work | A hint beside the entry box says typed tasks are for work outside the app. No automatic detection. |
++| Grouping by floor | A different arrangement of the same work and the same dates. Dates and dependencies are set on subsystem rows only and apply to every floor; the floor grouping shows them read-only, with each floor’s own recorded work and state. Typed tasks appear under “not tied to a floor”. Decided 2026-11-18. |
 +
 +## What it can reuse from PRD 1.1
 +

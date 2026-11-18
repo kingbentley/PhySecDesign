@@ -41,6 +41,7 @@ The project manager may be the installer or someone else. The chart covers one p
 | Work removed from scope | A row whose work has all left scope stays visible, marked “no work in scope”, with the rows that depend on it flagged, until the manager removes it. Baselines already taken keep their copy. |
 | Who sets a baseline | Anyone with edit access, recorded with display name and time as unverified attribution, the same as approvals in PRD 1.1 |
 | Typed task that repeats app work | A hint beside the entry box says typed tasks are for work outside the app. No automatic detection. |
+| Grouping by floor | A different arrangement of the same work and the same dates. Dates and dependencies are set on subsystem rows only and apply to every floor; the floor grouping shows them read-only, with each floor’s own recorded work and state. Typed tasks appear under “not tied to a floor”. Decided 2026-11-18. |
 
 ## What it can reuse from PRD 1.1
 
