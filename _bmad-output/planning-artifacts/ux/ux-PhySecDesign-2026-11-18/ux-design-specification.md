@@ -561,6 +561,7 @@ Administration is its own area with a left-hand list: Users, Projects, Reviewer 
 | Up to date | Installed version, when it was installed, when updates were last checked, and Check now. |
 | Checks turned off | Installed version and "Update checks are off", with the manual steps. |
 | Update available | The new version, its release notes, what the update will do in order, how long users will be interrupted, and Update now. |
+| Update available, Cloudflare, release changes a Durable Object class | The same information, a warning that this release cannot be returned from automatically, and numbered manual steps in place of Update now (AD-21). |
 | Cloudflare without one-step deployment | The same, with numbered manual steps in place of the button. |
 | Updating | A full-page progress list: signature checked, backup taken, new version installed, data converted, checked. Each step shows done, in progress or waiting. No other control is available. |
 | Done | The new version and a link to the release notes. |
