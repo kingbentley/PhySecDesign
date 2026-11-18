@@ -179,7 +179,7 @@ Question 5: Kevin decided to keep the DORI convention; Garcia’s treatment of i
 
 ## Candidate changes collected (sort confirmed 2026-11-18)
 
-Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is to be discussed one item at a time, starting with pan/tilt/zoom cameras.
+Kevin accepted this sort. Group A is written into PRD draft 0.22; groups C and D are listed in the PRD; group B is discussed one item at a time. Pan/tilt/zoom cameras were confirmed as FR-57 in draft 0.23; the reliability period and the warranty record remain.
 
 | Group | Candidates |
 | --- | --- |

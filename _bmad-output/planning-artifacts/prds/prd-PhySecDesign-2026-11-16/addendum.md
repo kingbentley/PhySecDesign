@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.22](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.23](prd.md), updated 2026-11-17. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -625,6 +625,14 @@ Amendments written into draft 0.22, all optional or presentational and none chan
 Sources and their limits: the outline is a topic list; the Patterson findings come only from pages Kevin shared; the government guide is assessment guidance for high-security nuclear sites, read in part and partly analog-era. None is adopted as a standard. Kevin kept the DORI convention without consulting Garcia, and found nothing relevant in Fischer.
 
 Three larger candidates are to be discussed individually: pan/tilt/zoom cameras, an optional reliability period with a downtime log, and a warranty record with service-visit fields. The after-POC candidates and the added exclusions are listed in the PRD.
+
+## Confirmed pan/tilt/zoom camera support
+
+Confirmed 2026-11-18 when Kevin accepted the tabled proposal and its six choices. FR-57 and pointers in FR-10/29/47/48 capture the behavior. Three reference sources assumed such cameras while the PRD had none: Patterson’s acceptance items and sample estimate, and the government assessment guide.
+
+The governing choice is that only the home position, the resting view, is counted in combined coverage and zone targets. Reach is shown as a separate reachable-on-demand layer and earns no credit, because the camera views one place at a time. Kevin chose to show best achievable detail within reach, at the narrowest field of view, labeled as one place at a time, over a plain outline. Guard tours, auto-tracking and time-share coverage figures are out of scope. The work is in slice 5 with the other extended camera modelling, and the extended acceptance fixture gains one such camera.
+
+Reach reuses the existing visibility calculation swept across the pan limits from the mounting point; it needs no new optical model. The current prototype gives every camera one bearing and has no stored positions, limits or reach layer. Architecture should allow a view’s direction to be one of several stored positions from slice 1, even though the feature arrives in slice 5.
 
 ## Source and verification boundaries
 

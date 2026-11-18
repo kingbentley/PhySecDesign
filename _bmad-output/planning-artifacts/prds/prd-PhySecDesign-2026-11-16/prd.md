@@ -1,7 +1,7 @@
 ---
 title: "Site Studio — Product Requirements"
 status: draft
-version: "0.22"
+version: "0.23"
 created: 2026-11-16
 updated: 2026-11-18
 phase: guided-refinement
@@ -13,7 +13,7 @@ entry_point: vision-and-features
 
 Site Studio is a web application for physical security professionals to take a property from initial design through installation, commissioning, and later changes. A professional should be able to find a property, align a floor plan, place equipment, analyze coverage, route cables, estimate costs, and share a complete design package. The same project then supports documenting actual installation, configuration, tests, and closeout.
 
-**This is PRD draft 0.22 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
+**This is PRD draft 0.23 for the proof of concept.** It consolidates Kevin's confirmed decisions and the existing prototype capabilities. It is not final approval, a claim that all requirements are implemented, or a compliance specification. One continuing project represents a property; later work reopens that project with new named revisions while preserving its history.
 
 The [source index](source-index.md) distinguishes implementation evidence from product decisions. The [addendum](addendum.md) records technical context, current limits, and evidence boundaries. The confirmed scope includes existing-building workflows, shared demo editing, commissioning checklists, targeted change-to-retest rules, scoped estimates, continuing issue records, design/closeout export packages and reusable camera-model templates with bounded multi-head/panoramic support, additional equipment types, linked door/gate components, site annotations, manual closet/port planning, inter-floor cable routing with explicit allowances and preserved cable connections through device lifecycle changes, with guided restoration onto current floors and history-based draft deletion, cancellation and correction. Open choices are identified below rather than silently resolved.
 
@@ -181,7 +181,7 @@ Requirements use stable, globally numbered IDs. Each check describes observable 
 
 ### Coverage, DORI, and required zones
 
-**FR-10 — Camera controls and visibility.** Adjust bearing, lens/field of view, active sensor dimensions, aspect ratio, image resolution, mounting height, tilt, and analysis range. Apply the selected camera-model/profile limits and maintain a coherent optical basis: sourced field-of-view angles or compatible sensor/focal-length geometry. Keep derived values consistent without silently overwriting manufacturer specifications. Show each supported camera view's visible coverage, obstruction shadows, and near blind area using the selected target height and documented geometry assumptions. Distinguish illustrative panoramic previews under FR-48.
+**FR-10 — Camera controls and visibility.** Adjust bearing, lens/field of view, active sensor dimensions, aspect ratio, image resolution, mounting height, tilt, and analysis range. Apply the selected camera-model/profile limits and maintain a coherent optical basis: sourced field-of-view angles or compatible sensor/focal-length geometry. Keep derived values consistent without silently overwriting manufacturer specifications. Show each supported camera view's visible coverage, obstruction shadows, and near blind area using the selected target height and documented geometry assumptions. Distinguish illustrative panoramic previews under FR-48. Pan/tilt/zoom cameras follow FR-57.
 
 **Check:** Changing aim or optical geometry updates the footprint and affected metrics; changing resolution updates image-detail results without necessarily changing the footprint. Linked optical values stay consistent, and a single-camera percentage identifies its own analysis area.
 
@@ -294,7 +294,7 @@ Each check states its task, method/conditions and expected result, including a p
 | Cabinet / light | Applicable mounting, enclosure/lock or lighting-control behavior meets project criteria; required measurements use specified conditions. |
 | Generic equipment | Define its intended function, test method, observation point and acceptable result. |
 
-Offer these optional camera checks, off by default and enabled where the scene warrants them: a camera facing sunrise or sunset is not degraded by direct sun; the night image stays usable where vehicle headlights or other bright sources occur; a person at the far end of the intended view is discernible to the level the project specifies; and a person behind a named obstruction or in its shadow is visible or hidden as the design assumes. A far-end or obstruction check can reference the zone, range or modeled obstruction it verifies. Its outcome is field evidence shown beside the modeled estimate; it neither changes the modeled result nor is implied by it.
+Offer these optional camera checks, off by default and enabled where the scene warrants them: a camera facing sunrise or sunset is not degraded by direct sun; the night image stays usable where vehicle headlights or other bright sources occur; a person at the far end of the intended view is discernible to the level the project specifies; and a person behind a named obstruction or in its shadow is visible or hidden as the design assumes. A far-end or obstruction check can reference the zone, range or modeled obstruction it verifies. Its outcome is field evidence shown beside the modeled estimate; it neither changes the modeled result nor is implied by it. A pan/tilt/zoom starter follows FR-57.
 
 Detailed examples are in the addendum. Apply the common checklist and project-defined generic starter to added equipment where a dedicated starter is not defined. An opening or component association does not pass a related device or prove the complete sequence works. These starters do not establish a complete PSP/manufacturer/compliance library, universal wiring/fail-state criteria or automated hardware testing.
 
@@ -430,7 +430,7 @@ Allow explained corrections of mistaken/duplicate issue records with actor/time 
 
 ### Camera models and reusable optical templates
 
-**FR-47 — Camera-model templates.** Let users create, edit, duplicate and search reusable camera definitions by manufacturer, model number and lens/variant, then select a definition when placing a camera. Retain the generic camera option and represent physical assets, their optical views and configured streams under FR-48. Record image resolution as width × height in pixels for the selected capture/stream mode, fixed or adjustable/varifocal lens type, focal length or supported focal-length range, and horizontal/vertical field of view in degrees with their applicable mode/focal setting. Store active imaging dimensions in millimeters when known, and distinguish them from nominal sensor-format labels. Preserve specification source and unknown values; incomplete templates must not silently become verified generic specifications.
+**FR-47 — Camera-model templates.** Let users create, edit, duplicate and search reusable camera definitions by manufacturer, model number and lens/variant, then select a definition when placing a camera. Retain the generic camera option and represent physical assets, their optical views and configured streams under FR-48. Pan/tilt/zoom ranges follow FR-57. Record image resolution as width × height in pixels for the selected capture/stream mode, fixed or adjustable/varifocal lens type, focal length or supported focal-length range, and horizontal/vertical field of view in degrees with their applicable mode/focal setting. Store active imaging dimensions in millimeters when known, and distinguish them from nominal sensor-format labels. Preserve specification source and unknown values; incomplete templates must not silently become verified generic specifications.
 
 A fixed-lens profile uses its defined focal length. A varifocal profile supplies supported limits and a selected focal setting for each placed camera; changing it updates the supported coverage/DORI calculations. Require sufficient consistent optical data for the evaluated setting, disclose approximations and flag unsupported/missing input. Selecting a lower-resolution/cropped mode uses that mode’s pixels and framing, not automatically the model maximum. Model FoV angles are distinct from physical scene width/height, which are calculated at a stated distance/plane.
 
@@ -440,7 +440,7 @@ Keep location, mounting height, aim/tilt, selected operating mode/focal setting 
 
 ### Multi-head and panoramic camera support
 
-**FR-48 — Physical cameras, views and streams.** Keep one physical asset with stable child view IDs and associated configured streams. Preserve device cost, mounting/history and actual hardware demand independently of view/stream count. Supported heads retain individual resolution/mode, lens limits/setting, bearing, tilt and condition; a shared mounting point for a compact body is a disclosed approximation. Model templates can preset these views without multiplying purchased bodies.
+**FR-48 — Physical cameras, views and streams.** Keep one physical asset with stable child view IDs and associated configured streams. A pan/tilt/zoom camera is a single-view camera under FR-57, not a multi-view arrangement. Preserve device cost, mounting/history and actual hardware demand independently of view/stream count. Supported heads retain individual resolution/mode, lens limits/setting, bearing, tilt and condition; a shared mounting point for a compact body is a disclosed approximation. Model templates can preset these views without multiplying purchased bodies.
 
 | Arrangement | POC support |
 | --- | --- |
@@ -569,6 +569,22 @@ Retiring, reinstating or moving is a history entry with actor and time, not an a
 
 **Check:** A floor added by mistake with two draft cameras is deleted after a preview and returns with undo. A floor holding an installed camera cannot be deleted; the camera is listed with its available actions. After that camera’s actual removal is archived, the floor can be retired and still shows the camera’s former location and photo in the historical view. A surveyed camera recorded on a duplicate floor is moved to the correct floor as a correction and keeps its ID, photo and test history without a new retest flag, while its cable endpoint is marked for review. A deferred issue on a retired floor still appears in the closeout’s outstanding items.
 
+### Pan/tilt/zoom cameras
+
+**FR-57 — Resting view, stored positions and reach.** Represent a pan/tilt/zoom camera as one physical asset with one view and its configured streams; it is not a multi-view camera under FR-48. Its model template under FR-47 adds the pan range, the tilt range and the zoom range, given as the widest and narrowest field of view or the equivalent focal-length range. Each placed camera can carry its own pan and tilt limits within the model’s range. Unknown ranges and limits stay unknown.
+
+Let each placed camera hold named stored positions, each with pan, tilt and zoom, and mark one as home. The home position is the resting view. Analyze it under FR-10 as a varifocal camera at the home settings; it is the only view of this camera counted in combined coverage, DORI and zone results under FR-12–15. Until a home position is defined, the camera contributes no assessed coverage and is disclosed as unassessed under FR-13. Any other stored position can be previewed with its own coverage and DORI. A preview is labeled as such and changes no counted result.
+
+Show the camera’s reach as a separate layer labeled reachable on demand: the area it could view within its limits, analysis range and modeled obstructions at the selected target height. Reach is never counted as covered or as overlap. Where an area within reach is otherwise uncovered, identify it as reachable on demand instead of as having no camera view. Within reach, show the best detail achievable at the narrowest field of view, labeled as achievable in one place at a time. This is not a DORI coverage result. Without sufficient optical data, show the reach outline alone with detail Not assessed.
+
+A zone shows its counted result as today and, separately, which cameras can reach it on demand, how much of it and at what achievable detail. Judge the zone’s target on the counted result only.
+
+Provide a pan/tilt/zoom starter under FR-29: limits stop where intended; pan, tilt and zoom controls operate; each stored position shows its intended scene; the camera returns to home where that is configured; and limits or positions keep it from facing bright light sources. An alarm-driven position is checked only where scoped under FR-43. Changing a stored position or limit is a meaningful change under FR-27/28 and flags the checks for that position. Changing the home position also changes counted coverage and the zone results that depend on it.
+
+Count one device, its documented power demand and its configured streams under FR-19; stored positions multiply nothing. Preserve positions, limits and the home designation through revisions, evidence, exports and backups, and identify the resting view, previews and reach distinctly in analysis sheets under FR-33f. Guard tours, auto-tracking, time-share coverage figures and live control of a camera are outside the POC.
+
+**Check:** A roof camera with its home position on the car-park entrance contributes only that view to combined coverage and to the entrance zone. The loading-dock zone, within reach but outside every counted view, keeps its counted shortfall and separately shows that the camera can reach it on demand with its achievable detail; that line does not meet the target. Previewing a second stored position changes no totals. Narrowing a pan limit shrinks the reach. Changing the home position changes counted coverage and flags that position’s checks. The camera remains one device with one power demand.
+
 ## Experience and cross-cutting quality
 
 Preserve the selected [white/teal map-first direction](../../../../design-mockups/04-map-overlay-studio.png): project/floors/layers, central map and drawing, contextual properties, and direct placement tools. On smaller screens, prioritize locating a device, viewing its requirements, and recording work/photos/results. Desktop supports detailed design and comparison. These are draft quality targets, not production service commitments.
@@ -600,7 +616,7 @@ Confirmed 2026-11-18 (OQ-9). The fixture is the project actually exercised for a
 | Area | Acceptance fixture | Supported ceiling |
 | --- | --- | --- |
 | Property | 2 buildings, 4 floors and 1 outdoor site plan | 10 floors |
-| Equipment | 60 devices, including 30 cameras (one four-head, one fisheye) | 300 devices; 100 cameras per floor |
+| Equipment | 60 devices, including 30 cameras (one four-head, one fisheye, one pan/tilt/zoom) | 300 devices; 100 cameras per floor |
 | Cabling and network | 40 cable runs (2 inter-floor), 2 closets, 3 switches | 300 cable runs |
 | Evidence and markup | 40 photos, 6 security zones, 10 annotations | 300 photos; 6 per note |
 | History | 3 named revisions, 1 issued design, 1 closeout, 2 work scopes | 50 named revisions |
@@ -633,7 +649,7 @@ Confirmed 2026-11-18. The slices set the build order and the acceptance cut line
 | 2. Design and issue (UJ-1) | A design is estimated, reviewed, issued and exported as a fixed package | FR-17–19, FR-23–26, FR-33b–d, FR-34, FR-47, FR-55; the Design preset of FR-33a; part of FR-7 |
 | 3. Install, test and close out (UJ-2, UJ-3) | A technician records work and tests on a phone, and the scope closes honestly | FR-27–32, FR-43, FR-44; the Closeout preset of FR-33a; the phone field view under NFR-3 |
 | 4. Existing sites and return visits (UJ-4) | An existing building is surveyed, upgraded and later reopened with its history | FR-33e, FR-35–41, FR-45, FR-46, FR-53, FR-54, FR-56 |
-| 5. Extended modelling | Richer design detail | FR-33f, FR-48–52; extension parts of FR-9 and FR-19 |
+| 5. Extended modelling | Richer design detail | FR-33f, FR-48–52, FR-57; extension parts of FR-9 and FR-19 |
 
 Three requirements are delivered in parts, and FR-33 is delivered by its lettered parts:
 
@@ -650,7 +666,7 @@ Slice 1 is largely a port: these capabilities exist in the prototype against loc
 
 | Stage | After | Fixture content |
 | --- | --- | --- |
-| Core | Slice 4 | The confirmed fixture without the four-head and fisheye cameras, closets and port schedules, inter-floor runs, linked openings and annotations. Cameras are conventional single-view models and all routes are same-floor. |
+| Core | Slice 4 | The confirmed fixture without the four-head, fisheye and pan/tilt/zoom cameras, closets and port schedules, inter-floor runs, linked openings and annotations. Cameras are conventional single-view models and all routes are same-floor. |
 | Extended | Slice 5 | The remaining fixture items, plus a recheck that core results, totals and retained packages are unchanged. |
 
 The supported ceiling and all timing, browser, accessibility, storage and backup targets apply at core acceptance. The draft is fully accepted only when both stages pass.
@@ -701,7 +717,7 @@ OQ-1 through OQ-10 are resolved and no owned open question remains. The build or
 
 **After-POC candidates (not requirements).** Test level and frequency with reminders; a pre-delivery test stage; a separate test report; drawn riser diagrams; standard security symbols; a note of substitute protection while equipment is faulty; maintenance trend summaries; life-cycle costing; and a reason field on zone targets.
 
-**Under discussion (nothing assumed).** Pan/tilt/zoom cameras, which the camera model does not yet cover; an optional reliability period with a downtime log; and a warranty record with service-visit fields. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
+**Under discussion (nothing assumed).** An optional reliability period with a downtime log, and a warranty record with service-visit fields. Pan/tilt/zoom cameras were confirmed in FR-57 on 2026-11-18. Limited external references inform discussion but do not impose contractual gates, certify calculations, or override the optional approval policy.
 
 ## Supporting records
 

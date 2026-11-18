@@ -224,3 +224,7 @@ On 2026-11-18 the public ASIS PSP Body of Knowledge outline linked from the road
 ## Confirmed reference-based amendments
 
 On 2026-11-18 Kevin shared further Patterson pages, decided to keep the DORI convention, found nothing in Fischer, and accepted a four-way sort of about twenty candidates. Group A was written into draft0.22: optional camera checks, optional site checks for alarm call-up and handover, camera enclosure and alarm-interface fields, survey prompts, percentage estimate lines with subsystem subtotals, and trade-term equivalents. The PSP dependency is reclassified with no compliance claim. Group B is to be discussed one at a time in this order: pan/tilt/zoom cameras, an optional reliability period, a warranty record. Groups C and D are listed in the PRD as after-POC candidates and exclusions.
+
+## Confirmed pan/tilt/zoom cameras
+
+On 2026-11-18 Kevin accepted the pan/tilt/zoom proposal and all six choices. Such a camera is one asset with one view, named stored positions and a home. Only the home view counts toward combined coverage and zone targets; other positions are previews; reach is a separate reachable-on-demand layer showing best achievable detail at full zoom, with no credit. Guard tours, auto-tracking and time-share figures are out of scope. Draft0.23 adds FR-57 in slice 5 and one such camera in the extended fixture. Remaining group B items: an optional reliability period, then a warranty record.
