@@ -16,7 +16,7 @@ Three kinds of statement are kept apart throughout:
 - **Required** — what the PRD asks for, cited by FR or NFR number.
 - **Proposed** — the design this document sets out to meet the requirement. The nine choices in section 12 are confirmed; the rest of the design detail is open to review on the canvas.
 
-Screens are numbered S-01 to S-36, and S-F1 to S-F7 for the field, so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
+Screens are numbered S-01 to S-37, and S-F1 to S-F7 for the field, so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
 
 ## 1. Summary
 
@@ -322,7 +322,7 @@ A site check with its own page.
 - **Issue a design (S-22).** Three steps: choose the revision; record approval, request review or bypass (all equal in weight, reason optional for bypass); confirm it becomes the current reference. Saving or exporting a draft never does this (FR-25, FR-61).
 - **Restore a revision.** A guarded dialog states what will change (design content) and what will not (recorded positions and routes, current connections, work, checklists, evidence, tests, issues), and lists items that cannot be restored (FR-22).
 - **Close out (S-23).** Step one shows the remaining-work list. Step two offers Completed, disabled with the reasons when anything is outstanding, and Closed with outstanding items, which requires a short note. Step three records the warranty. Step four generates the Closeout package. Missing approval never disables either choice (FR-32).
-- **Packages.** Choose Design or Closeout, floors and options (prices off by default). A partial selection is labelled Partial before export. Long jobs show progress and can fail visibly with Retry. Each retained edition lists its source revision and cutoff (FR-33, FR-34).
+- **Packages (S-37).** Choose Design or Closeout, floors and options (prices off by default). A partial selection is labelled Partial before export. Long jobs show progress and can fail visibly with Retry. Each retained edition lists its source revision and cutoff (FR-33, FR-34).
 
 ### 7.16 Reviewer view (S-24, FR-24)
 
@@ -401,7 +401,7 @@ Each flow lists its screens in order. The PRD's journeys are the source.
 | Start a property and align a plan | UJ-1 | S-01 → S-03 (search, import plan, two-point alignment) |
 | Bring in an inventory and survey it | UJ-1 | S-09 import → S-08 Awaiting placement → S-F6 verify and place → Records: save surveyed baseline |
 | Design changes on an existing site | UJ-1 | S-03 with basis Proposed → S-04 Work tab → S-11 Changes → S-05 coverage → S-12 connections → S-14 estimate |
-| Issue the design | UJ-1 | S-20 save revision → S-22 issue (approve, review link or bypass) → S-21 package |
+| Issue the design | UJ-1 | S-20 save revision → S-22 issue (approve, review link or bypass) → S-37 package |
 | Install and test | UJ-2 | S-F2 find → S-F3 read → S-F4 record → S-F7 if needed → S-15 progress |
 | Record a field change | UJ-2 | S-F4 report a change → flagged checks → S-21 compare with issued |
 | Run a reliability period | UJ-2 | S-17 define → start → log downtime → end → attempt |

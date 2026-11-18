@@ -27,7 +27,7 @@ Created 2026-11-18, and extended the same day after Kevin confirmed decisions D1
 | Records | S-20 | Property history from surveyed baseline to draft revision, the current reference, backups, restore and archive (FR-22, FR-34, FR-37, FR-61). |
 | Issue a design | S-22 | Approval step with review, self-approval and bypass at equal weight; what issuing does and does not do (FR-25, FR-26, FR-61). |
 | Close out | S-23 | Completed unavailable with reasons; Closed with outstanding items and its note; optional final acceptance (FR-32). |
-| Packages | S-21 | Presets, floors with a Partial notice, options with prices off, a visible failed job, kept editions with cutoffs (FR-33, FR-34). |
+| Packages | S-37 (the artboard is still titled S-21) | Presets, floors with a Partial notice, options with prices off, a visible failed job, kept editions with cutoffs (FR-33, FR-34). |
 | Reviewer view | S-24 | A fixed revision with plan comments and two decisions (FR-24). |
 | Sign in; two-step code on a phone | S-26 | Email and password with one failure message; the authenticator step and recovery-code route (FR-67). |
 | First-run set-up | S-25 | Set-up code, installation name, first administrator (FR-66). |
