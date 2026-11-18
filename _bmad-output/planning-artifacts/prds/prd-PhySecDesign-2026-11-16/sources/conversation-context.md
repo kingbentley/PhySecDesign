@@ -240,3 +240,7 @@ On 2026-11-18 Kevin accepted the warranty proposal and all six choices. An insta
 ## Consistency pass and draft0.26
 
 On 2026-11-18 Kevin asked for a fresh read of the whole draft. Mechanical checks were clean; an independent read found 25 inconsistencies, nearly all in that day’s additions. Kevin approved the batch of reconciliations and accepted five suggestions: Cancel from design covers any proposed device with history; whole-revision restore affects design content only; issue records and the Current/Proposed/Changes views move to slice 3; an open reliability run is in progress and a run stopped for a non-failure reason has no outcome; a phone flags a moved device for a plan update while repositioning needs the design workspace. Draft0.26 applies them. Whether a tablet narrower than 1280 px can reposition a device is undecided.
+
+## Window-width rule
+
+On 2026-11-18 Kevin settled the point left open by the consistency pass: window width decides the layout, not the device. At least 1280 px gets the design workspace; narrower gets the field view, which can flag a moved device or route but not reposition it. Draft0.27 applies this to journey 2, FR-27, NFR-3, the Terms note and the screen-size target.

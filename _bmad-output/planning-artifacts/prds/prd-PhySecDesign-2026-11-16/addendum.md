@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.26](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.27](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -680,7 +680,7 @@ Decisions:
 4. An open reliability run is in progress and becomes an attempt when ended; a run stopped for a non-failure reason has no outcome.
 5. A phone flags a moved device or route for a plan update; repositioning is done in the design workspace.
 
-Left open by this pass: the design workspace needs 1280 px, and some supported tablets are narrower, so whether such a tablet can reposition a device is undecided.
+The pass left one point open, which Kevin settled the same day in draft 0.27: window width decides the layout, not the device. A window at least 1280 px wide gets the design workspace; a narrower one gets the field view and can flag a moved device but not reposition it. This applies to phones and to narrow tablets alike.
 
 ## Source and verification boundaries
 
