@@ -1,6 +1,6 @@
 # Site Studio — PRD addendum
 
-Supporting context for [PRD draft 0.27](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
+Supporting context for [PRD draft 0.28](prd.md), updated 2026-11-18. This document preserves implementation detail and evidence boundaries for later UX and architecture work. Current mechanisms and numeric limits are not automatically permanent product requirements.
 
 ## Existing implementation and new work
 
@@ -681,6 +681,28 @@ Decisions:
 5. A phone flags a moved device or route for a plan update; repositioning is done in the design workspace.
 
 The pass left one point open, which Kevin settled the same day in draft 0.27: window width decides the layout, not the device. A window at least 1280 px wide gets the design workspace; a narrower one gets the field view and can flag a moved device but not reposition it. This applies to phones and to narrow tablets alike.
+
+## Second consistency pass on draft 0.27
+
+A second independent read on 2026-11-18 confirmed that both earlier unimplementable findings were closed and rated the lifecycle, removal, status vocabularies and cross-references consistent. It found one new contradiction, 13 ambiguities and 11 wording items, several of them side effects of the first reconciliation and of the window-width rule. Kevin approved a batch of fixes and three decisions, applied in draft 0.28.
+
+Reconciliations:
+
+- Cable runs follow the same history rule as devices: only a run with history blocks floor deletion.
+- FR-56’s table now covers every case, including floors holding only notes, or only cancelled or corrected records.
+- Rules that the state model stated on its own now have requirements behind them: the list of cancelled and corrected records (FR-8, FR-41) and the contradiction warning (FR-30).
+- FR-27’s check distinguishes the design workspace, where a move is saved, from the field view, where only a flag is saved.
+- A reliability period is a set of stages; duration, target and required-or-optional belong to each stage.
+- Delete draft and Delete floor are delivered from slice 1, since floor deletion depends on draft eligibility. Until slice 3, analyses include every placed device.
+- The fixture has three work scopes, so the one-step service visit is exercised.
+
+Decisions:
+
+1. An installation or configuration mark recorded in error can be reversed with a reason, returning the device to Proposed and keeping its history.
+2. A whole-revision restore never changes recorded actual positions; it restores planned positions only.
+3. The field view also supports raising an issue, logging a reliability outage, starting and recording a service visit, and reviewing or approving through a reviewer link. Closeout, device restoration and anything needing a plan position require the design workspace.
+
+Kevin accepted the recommendation to stop whole-document reads after this pass. Remaining edge cases are expected to surface in architecture and story writing. One wording item was left: “return to service” is used both for repairing a faulty device and for restoring a removed one.
 
 ## Source and verification boundaries
 

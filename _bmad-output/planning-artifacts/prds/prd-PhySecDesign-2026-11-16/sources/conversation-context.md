@@ -244,3 +244,7 @@ On 2026-11-18 Kevin asked for a fresh read of the whole draft. Mechanical checks
 ## Window-width rule
 
 On 2026-11-18 Kevin settled the point left open by the consistency pass: window width decides the layout, not the device. At least 1280 px gets the design workspace; narrower gets the field view, which can flag a moved device or route but not reposition it. Draft0.27 applies this to journey 2, FR-27, NFR-3, the Terms note and the screen-size target.
+
+## Second consistency pass and draft0.28
+
+On 2026-11-18 a second independent read of draft0.27 found the earlier contradictions closed, one new contradiction about cable runs, and smaller items. Kevin approved the batch and accepted three suggestions: an installed mark recorded in error can be reversed with a reason; a whole-revision restore never changes recorded actual positions; the field view also supports raising issues, logging outages, service visits and reviewer approval. Draft0.28 applies them. The missing VideoCamera import in the revision comparison was also reproduced and fixed that day. Whole-document reads stop here; the next stages are architecture and UX.
