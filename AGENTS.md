@@ -8,6 +8,7 @@
 
 - BMAD Core and Method 6.12.4 are installed at this workspace root. Use this directory as `{project-root}` for BMAD commands.
 - The current Codex skills are in `.agents/skills/bmad-*/SKILL.md`. Start with `bmad-help` for workflow guidance.
+- In Claude Code cloud sessions, BMAD 6.12.4 is installed at session start by the setup script of the personal cloud environment named "PhySecDesign" (`npx -y bmad-method@6.12.4 install --modules bmm --tools claude-code --yes`). There the skills are in `.claude/skills/bmad-*/`, not `.agents/skills/`. Both locations and `_bmad/` are gitignored, so a cloud install uses BMAD's default configuration and none of the workstation's customizations. A session started on a different environment has no BMAD until the same command is run.
 - Shared configuration is in `_bmad/config.toml`, with personal settings in `_bmad/config.user.toml`. Use the installed configuration resolver to merge these settings.
 - Planning artifacts belong in `_bmad-output/planning-artifacts/`. The existing prototype documents provide the starting context for planning.
 - The requirements baseline is final PRD 1.2 (2026-11-18): PRD 1.0 with amendments 1.1 and 1.2, reviewed together. It covers FR-1–72, NFR-1–8 and SM-1–6, adds self-hosting, user accounts, administrator controls and in-app updates, and withdraws project edit links. `review-finalization-amendments.md` in the PRD workspace records the review and the eight decisions Kevin made during it.
