@@ -149,7 +149,7 @@ This is the centre of the design. Each family below has a fixed set of values, a
 | Value basis | Estimated, Measured, Unknown, Unpriced | Suffix on the value: "46 m est.", "41.2 m measured", "Unknown", "Unpriced". Never a blank or a zero. | FR-17, FR-52 |
 | Provenance | Imported, Old document, Estimate, Site-confirmed | Small chip beside a field, with source detail on demand. | FR-39, FR-56 |
 | Save state | Saving, Saved, Unsaved, Conflict | Frame status plus a mark on the affected item. | FR-21 |
-| Record end state | Deleted draft, Cancelled, Corrected | Listed under Historical with the reason. | FR-55 |
+| Record end state | Cancelled, Corrected | Listed under Historical with the reason. A deleted draft leaves no record and is not listed (FR-8, FR-55; corrected on 2026-11-18, Kevin's decision). | FR-55 |
 | Issue state | Open, Deferred, Resolved | Chip, with the disposition for this scope shown separately. | FR-46 |
 | Warranty status | Not started, In warranty, Expired, Unknown | Chip with "as of" date. No record means Unknown. | FR-65 |
 
