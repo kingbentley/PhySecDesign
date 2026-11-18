@@ -14,7 +14,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 - **Draft 0.6**, 2026-11-18. {{N_EPICS}} epics, {{N_STORIES}} stories. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order (accounts first; the self-hosted image at the end of Epic 2; extended modelling after return visits).
-- **Reconciliation between epics is not finished.** Epics 1, 4 and 8 to 10 have had a second pass to agree shared wording, values and hand-overs with the other epics. Epics 2 and 3, 5, and 6 and 7 were part-way through that pass when this draft was saved. Until it is finished, a criterion in one of those epics may duplicate or disagree with another epic's.
+- **Reconciled between epics.** Each of the six parts the draft was revised in has had a second pass to agree shared wording, values and hand-overs with the others. That pass was done by the same authors; no independent reader has checked the result.
 - **Not confirmed:** the story boundaries and acceptance criteria. Draft 0.6 applies the [independent review](review-epics-draft-0.5.md) of draft 0.5. The revision itself has not been independently reviewed.
 - **For Kevin to confirm:** the choices listed in [Choices made in draft 0.6](#choices-made-in-draft-06), where the PRD, UX specification and architecture gave no value and a criterion needed one.
 - **Not done:** sizing, which belongs to sprint planning.

@@ -7,4 +7,4 @@ The epics document was revised in six parts, one per group of epics, each agains
 - `front06.md`, `back06.md`: the sections before and after the stories
 - `assemble.py`: checks the parts and writes `../epics.md`. Run from the repository root: `python3 <this folder>/assemble.py` to check; add `--write` to write.
 
-State on 2026-11-18: the second pass is complete for parts A, C and F. Parts B, D and E were part-way through it when work stopped. Edit the parts, not `epics.md`, and reassemble. Delete this folder once draft 0.6 is settled.
+State on 2026-11-18: the second pass is complete for all six parts. Edit the parts, not `epics.md`, and reassemble. Delete this folder once draft 0.6 is settled.

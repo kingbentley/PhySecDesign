@@ -87,7 +87,7 @@ Covers: FR-29, FR-33 (Design preset: checklist expectations), FR-42 (checklist d
 - No starter contains a pass threshold supplied by the application; values and tolerances are entered by the project.
 - Each change to a checklist definition is saved as a new version with actor and time, and earlier wording and expected results remain readable.
 - When two Editors change the same check definition, the first save is accepted and the second becomes a conflict.
-- The Design package generated from a revision lists, for each planned device identifier, its scoped checks with task, expected result and required or optional status, using the same device identifiers as the equipment schedule. 
+- The Design package generated from a revision lists, for each planned device identifier, its scoped checks with task, expected result and required or optional status, using the same device identifiers as the equipment schedule.
 - Saving a named revision records, in its snapshot, the checklist definitions in force at that moment. The Design package uses those, so generating it again after the definitions change lists the same expectations.
 - A revision restore leaves the working checklist definitions unchanged; the definitions held in the snapshot are never written back.
 - A Viewer can read checklists and cannot change them.
@@ -274,7 +274,7 @@ Covers: FR-32, FR-33 (Closeout preset), FR-23 and FR-24 (final acceptance of a c
 - After closing, the scope's state reads Completed or Closed with outstanding items in the frame, the field shell chip and the project list.
 - A save of work, results, photos or issues for the closed scope from a tab that was open before closing is refused and kept for review as "not saved: scope closed"; it is not retried.
 - An Editor can create a reviewer link to the closeout record under the rules of story 4.7.
-- From the moment a scope is closed, reviewer links to its design revisions still open their revision and accept no new comment or decision.
+- Once a scope is closed, a reviewer link to one of that scope's design revisions opens its revision read-only and accepts no comment or decision. A link to the closeout record still accepts them.
 - A proposal cancelled during the scope appears in the closeout record and the Closeout package as a change to the scope, with its reason.
 - The final-acceptance assignee (assigned in story 4.6), by account or through a reviewer link, opens the fixed closeout record, comments and records a decision on it. A bypass is recorded as a bypass, with an optional reason. Neither a decision nor a bypass changes the scope's Completed or Closed with outstanding items state, or any outcome.
 - A decision made through a reviewer link is labelled as made by a name that is not verified, in the interface and in the Closeout package.

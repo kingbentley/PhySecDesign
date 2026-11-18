@@ -224,6 +224,8 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 - While the project is archived, a reviewer link opens its revision read-only and accepts no comment or decision.
 - Archiving and un-archiving appear in the activity log with actor and time.
 
+Notes: The list of running jobs that block archiving is extended by story 8.1 with backup and restore jobs.
+
 ### Story 6.12: Warranty and service visits
 
 As a technician, I want to record the warranty on an installation and each visit made to fix a fault, so that anyone can see what is covered and what was done.

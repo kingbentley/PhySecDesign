@@ -35,7 +35,7 @@
 2.13 | Plain HTTP is redirected by the bundled web server and refused by the application itself | FR-66 Check allows either; refusing at the application protects operators' own proxies
 2.13 | Trusted-proxy list defaults to the bundled web server only; forwarded headers from other addresses are ignored; application port not published by default | Conservative default so headers cannot be forged
 2.13 | Smoke suite in 2.13 excludes file cases; 2.14 adds them | Dependency rule: the disk file store is 2.14
-2.14 | Backup location is a separate Compose setting with no default; server refuses to start if it is the same folder as the live files (8.1 adds refusal when unset and the same-disk warning) | Review finding 25: backups must not land in the live folder
+2.14 | Backup location is a separate Compose setting with no default; server refuses to start if it is the same folder as the live files or is left unset (8.1 adds the same-disk warning) | Review finding 25: backups must not land in the live folder
 2.14 | A stored file whose size or hash no longer matches is reported as damaged on request | AD-16 gives the disk store a stored hash and size; this is their use
 2.15 | 50 forced kills | Experiment R8 used 45; rounded up
 2.15 | At least 20 power cuts on the virtual-machine disk; network disk tested on NFS | R12 names the disks but no count; 20 matches the PRD's trial size

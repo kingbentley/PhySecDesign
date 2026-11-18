@@ -229,7 +229,7 @@ Covers: FR-21 (undo and redo), FR-5 (undo of an alignment), FR-55 (Delete draft)
 - Undoing a draft deletion is refused, with the reason, if the device's floor has since been deleted. A floor whose only devices are deleted drafts counts as unused under story 2.5.
 - A retried Delete draft or undo is applied once only.
 
-Notes: Cancelling a proposal that cannot be deleted, and correcting a record, arrive in story 4.9. Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (4.8), an Installed or Configured mark (5.3), a test attempt (5.5), an issue (5.9) and a port assignment (7.5, which also covers "undo cannot reclaim a port reassigned by someone else"). Full revision restore is a separate guarded action in story 4.1.
+Notes: Cancelling a proposal that cannot be deleted, and correcting a record, arrive in story 4.9. Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (4.8), an Installed or Configured mark (5.3), a test attempt (5.5), an issue (5.9) and a Current installation port assignment (7.5, which also covers "undo cannot reclaim a port reassigned by someone else"). Full revision restore is a separate guarded action in story 4.1.
 
 ### Story 2.12: Bring in a project saved by the prototype
 
@@ -287,12 +287,12 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-3, AD-4, AD-16.
 - A stored file whose size or hash no longer matches its record is reported as damaged when it is requested; it is not served as if it were good.
 - A file is stored under its content hash and is never overwritten. The same content uploaded twice is stored once.
 - Every download passes the access gate: a user who is not a member is refused a file even with its exact address.
-- The live files folder and the backup location are two separate settings in the Compose file, and the backup location has no default value. The server refuses to start, with an explanation, if both point to the same folder.
+- The live files folder and the backup location are two separate settings in the Compose file, and the backup location has no default value. The server refuses to start if the backup location is left unset, naming the missing setting, and if both settings point to the same folder, with an explanation.
 - Two installations with separate volumes share no files: a file address from one is refused on the other.
 - One set of file-store tests passes against both the Cloudflare file store and the disk file store.
 - The self-hosted smoke suite gains the file cases (upload a plan and a photo, restart, read back whole and by range) and passes against the image. It now covers everything in Epics 1 and 2.
 
-Notes: The backup location is first written by story 8.1, which also makes the server refuse to start when it is not set and warns when it is on the same disk as the live data. Behaviour when the disk is full is in story 2.15.
+Notes: The backup location is first written by story 8.1, which also warns when it is on the same disk as the live data. Behaviour when the disk is full is in story 2.15.
 
 ### Story 2.15: Records survive crashes and power loss
 

@@ -86,7 +86,7 @@ Covers: FR-17, FR-18, FR-22 (estimate lines in revisions and in the prototype fi
 - Importing a prototype project file brings its costs in as estimate lines. A cost the estimate cannot represent is listed for review, and the import review no longer lists costs as not imported.
 - A Viewer can open and export the estimate and cannot change it.
 
-Notes: Retained equipment is not purchased again; that rule and the "Retained, not purchased" group arrive with planned actions in story 6.6. Cable supply quantity and its basis follow the length ledger in story 7.6. Reusing rates or copying lines into a later scope belongs with later scopes in story 6.7.
+Notes: Retained equipment is not purchased again; that rule and the "Retained, not purchased" group arrive with planned actions in story 6.6. Cable supply quantity and its basis follow the length ledger in story 7.6. Reusing rates or copying lines into a later scope belongs with later scopes in story 6.10.
 
 ### Story 4.5: Capacity estimates
 
@@ -121,7 +121,7 @@ Covers: FR-23, FR-24 (decisions by account), FR-25, FR-69 (approvals and bypasse
 - With no reviewer assigned, or with every approval bypassed, no control in the project is disabled for want of an approval.
 - After the working layout is edited, the reviewed revision and its decisions are unchanged, and a revision saved later shows no decision.
 
-Notes: Decisions by people without accounts are story 4.7. The decision on a closeout record by the final-acceptance assignee is story 5.12; this story delivers the assignment only. Keeping or changing assignments for a later scope is story 6.7.
+Notes: Decisions by people without accounts are story 4.7. The decision on a closeout record by the final-acceptance assignee is story 5.12; this story delivers the assignment only. Keeping or changing assignments for a later scope is story 6.10.
 
 ### Story 4.7: Reviewer links for people without accounts
 
@@ -173,7 +173,7 @@ Covers: FR-25 (issuing without approval), FR-26, FR-55 (an issued device is not 
 - A decision recorded by an account on a superseded revision is kept and labelled as made after it was superseded.
 - A Viewer can open the issued design and cannot issue or designate.
 
-Notes: The issued-design strip where installers start work is stories 5.1 and 5.2, which also prove that field records are untouched by a change of reference. Designation is limited to the active scope's revisions; story 6.10 carries the test that an earlier scope's revision cannot be designated. A later scope starts at Not issued (story 6.7), and a service scope needs no issued design (story 6.12).
+Notes: The issued-design strip where installers start work is stories 5.1 and 5.2, which also prove that field records are untouched by a change of reference. Designation is limited to the active scope's revisions; story 6.10 carries the test that an earlier scope's revision cannot be designated. A later scope starts at Not issued (story 6.10), and a service scope needs no issued design (story 6.12).
 
 ### Story 4.9: Cancel a proposal and correct a record
 

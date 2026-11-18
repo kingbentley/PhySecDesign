@@ -14,7 +14,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 - **Draft 0.6**, 2026-11-18. 10 epics, 89 stories. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order (accounts first; the self-hosted image at the end of Epic 2; extended modelling after return visits).
-- **Reconciliation between epics is not finished.** Epics 1, 4 and 8 to 10 have had a second pass to agree shared wording, values and hand-overs with the other epics. Epics 2 and 3, 5, and 6 and 7 were part-way through that pass when this draft was saved. Until it is finished, a criterion in one of those epics may duplicate or disagree with another epic's.
+- **Reconciled between epics.** Each of the six parts the draft was revised in has had a second pass to agree shared wording, values and hand-overs with the others. That pass was done by the same authors; no independent reader has checked the result.
 - **Not confirmed:** the story boundaries and acceptance criteria. Draft 0.6 applies the [independent review](review-epics-draft-0.5.md) of draft 0.5. The revision itself has not been independently reviewed.
 - **For Kevin to confirm:** the choices listed in [Choices made in draft 0.6](#choices-made-in-draft-06), where the PRD, UX specification and architecture gave no value and a criterion needed one.
 - **Not done:** sizing, which belongs to sprint planning.
@@ -499,7 +499,7 @@ Covers: FR-21 (undo and redo), FR-5 (undo of an alignment), FR-55 (Delete draft)
 - Undoing a draft deletion is refused, with the reason, if the device's floor has since been deleted. A floor whose only devices are deleted drafts counts as unused under story 2.5.
 - A retried Delete draft or undo is applied once only.
 
-Notes: Cancelling a proposal that cannot be deleted, and correcting a record, arrive in story 4.9. Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (4.8), an Installed or Configured mark (5.3), a test attempt (5.5), an issue (5.9) and a port assignment (7.5, which also covers "undo cannot reclaim a port reassigned by someone else"). Full revision restore is a separate guarded action in story 4.1.
+Notes: Cancelling a proposal that cannot be deleted, and correcting a record, arrive in story 4.9. Later stories add their own conditions that make a device ineligible for Delete draft: inclusion in an issued design (4.8), an Installed or Configured mark (5.3), a test attempt (5.5), an issue (5.9) and a Current installation port assignment (7.5, which also covers "undo cannot reclaim a port reassigned by someone else"). Full revision restore is a separate guarded action in story 4.1.
 
 ### Story 2.12: Bring in a project saved by the prototype
 
@@ -557,12 +557,12 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-3, AD-4, AD-16.
 - A stored file whose size or hash no longer matches its record is reported as damaged when it is requested; it is not served as if it were good.
 - A file is stored under its content hash and is never overwritten. The same content uploaded twice is stored once.
 - Every download passes the access gate: a user who is not a member is refused a file even with its exact address.
-- The live files folder and the backup location are two separate settings in the Compose file, and the backup location has no default value. The server refuses to start, with an explanation, if both point to the same folder.
+- The live files folder and the backup location are two separate settings in the Compose file, and the backup location has no default value. The server refuses to start if the backup location is left unset, naming the missing setting, and if both settings point to the same folder, with an explanation.
 - Two installations with separate volumes share no files: a file address from one is refused on the other.
 - One set of file-store tests passes against both the Cloudflare file store and the disk file store.
 - The self-hosted smoke suite gains the file cases (upload a plan and a photo, restart, read back whole and by range) and passes against the image. It now covers everything in Epics 1 and 2.
 
-Notes: The backup location is first written by story 8.1, which also makes the server refuse to start when it is not set and warns when it is on the same disk as the live data. Behaviour when the disk is full is in story 2.15.
+Notes: The backup location is first written by story 8.1, which also warns when it is on the same disk as the live data. Behaviour when the disk is full is in story 2.15.
 
 ### Story 2.15: Records survive crashes and power loss
 
@@ -786,7 +786,7 @@ Covers: FR-17, FR-18, FR-22 (estimate lines in revisions and in the prototype fi
 - Importing a prototype project file brings its costs in as estimate lines. A cost the estimate cannot represent is listed for review, and the import review no longer lists costs as not imported.
 - A Viewer can open and export the estimate and cannot change it.
 
-Notes: Retained equipment is not purchased again; that rule and the "Retained, not purchased" group arrive with planned actions in story 6.6. Cable supply quantity and its basis follow the length ledger in story 7.6. Reusing rates or copying lines into a later scope belongs with later scopes in story 6.7.
+Notes: Retained equipment is not purchased again; that rule and the "Retained, not purchased" group arrive with planned actions in story 6.6. Cable supply quantity and its basis follow the length ledger in story 7.6. Reusing rates or copying lines into a later scope belongs with later scopes in story 6.10.
 
 ### Story 4.5: Capacity estimates
 
@@ -821,7 +821,7 @@ Covers: FR-23, FR-24 (decisions by account), FR-25, FR-69 (approvals and bypasse
 - With no reviewer assigned, or with every approval bypassed, no control in the project is disabled for want of an approval.
 - After the working layout is edited, the reviewed revision and its decisions are unchanged, and a revision saved later shows no decision.
 
-Notes: Decisions by people without accounts are story 4.7. The decision on a closeout record by the final-acceptance assignee is story 5.12; this story delivers the assignment only. Keeping or changing assignments for a later scope is story 6.7.
+Notes: Decisions by people without accounts are story 4.7. The decision on a closeout record by the final-acceptance assignee is story 5.12; this story delivers the assignment only. Keeping or changing assignments for a later scope is story 6.10.
 
 ### Story 4.7: Reviewer links for people without accounts
 
@@ -873,7 +873,7 @@ Covers: FR-25 (issuing without approval), FR-26, FR-55 (an issued device is not 
 - A decision recorded by an account on a superseded revision is kept and labelled as made after it was superseded.
 - A Viewer can open the issued design and cannot issue or designate.
 
-Notes: The issued-design strip where installers start work is stories 5.1 and 5.2, which also prove that field records are untouched by a change of reference. Designation is limited to the active scope's revisions; story 6.10 carries the test that an earlier scope's revision cannot be designated. A later scope starts at Not issued (story 6.7), and a service scope needs no issued design (story 6.12).
+Notes: The issued-design strip where installers start work is stories 5.1 and 5.2, which also prove that field records are untouched by a change of reference. Designation is limited to the active scope's revisions; story 6.10 carries the test that an earlier scope's revision cannot be designated. A later scope starts at Not issued (story 6.10), and a service scope needs no issued design (story 6.12).
 
 ### Story 4.9: Cancel a proposal and correct a record
 
@@ -1021,7 +1021,7 @@ Covers: FR-29, FR-33 (Design preset: checklist expectations), FR-42 (checklist d
 - No starter contains a pass threshold supplied by the application; values and tolerances are entered by the project.
 - Each change to a checklist definition is saved as a new version with actor and time, and earlier wording and expected results remain readable.
 - When two Editors change the same check definition, the first save is accepted and the second becomes a conflict.
-- The Design package generated from a revision lists, for each planned device identifier, its scoped checks with task, expected result and required or optional status, using the same device identifiers as the equipment schedule. 
+- The Design package generated from a revision lists, for each planned device identifier, its scoped checks with task, expected result and required or optional status, using the same device identifiers as the equipment schedule.
 - Saving a named revision records, in its snapshot, the checklist definitions in force at that moment. The Design package uses those, so generating it again after the definitions change lists the same expectations.
 - A revision restore leaves the working checklist definitions unchanged; the definitions held in the snapshot are never written back.
 - A Viewer can read checklists and cannot change them.
@@ -1208,7 +1208,7 @@ Covers: FR-32, FR-33 (Closeout preset), FR-23 and FR-24 (final acceptance of a c
 - After closing, the scope's state reads Completed or Closed with outstanding items in the frame, the field shell chip and the project list.
 - A save of work, results, photos or issues for the closed scope from a tab that was open before closing is refused and kept for review as "not saved: scope closed"; it is not retried.
 - An Editor can create a reviewer link to the closeout record under the rules of story 4.7.
-- From the moment a scope is closed, reviewer links to its design revisions still open their revision and accept no new comment or decision.
+- Once a scope is closed, a reviewer link to one of that scope's design revisions opens its revision read-only and accepts no comment or decision. A link to the closeout record still accepts them.
 - A proposal cancelled during the scope appears in the closeout record and the Closeout package as a change to the scope, with its reason.
 - The final-acceptance assignee (assigned in story 4.6), by account or through a reviewer link, opens the fixed closeout record, comments and records a decision on it. A bypass is recorded as a bypass, with an optional reason. Neither a decision nor a bypass changes the scope's Completed or Closed with outstanding items state, or any outcome.
 - A decision made through a reviewer link is labelled as made by a name that is not verified, in the interface and in the Closeout package.
@@ -1464,6 +1464,8 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 - A revision restore is refused while the project is archived, and no restore changes the archive state or its history.
 - While the project is archived, a reviewer link opens its revision read-only and accepts no comment or decision.
 - Archiving and un-archiving appear in the activity log with actor and time.
+
+Notes: The list of running jobs that block archiving is extended by story 8.1 with backup and restore jobs.
 
 ### Story 6.12: Warranty and service visits
 
@@ -2216,7 +2218,7 @@ The review found criteria that could not be tested because no document gave a va
 | 2.13 | Plain HTTP is redirected by the bundled web server and refused by the application itself | FR-66 Check allows either; refusing at the application protects operators' own proxies |
 | 2.13 | Trusted-proxy list defaults to the bundled web server only; forwarded headers from other addresses are ignored; application port not published by default | Conservative default so headers cannot be forged |
 | 2.13 | Smoke suite in 2.13 excludes file cases; 2.14 adds them | Dependency rule: the disk file store is 2.14 |
-| 2.14 | Backup location is a separate Compose setting with no default; server refuses to start if it is the same folder as the live files (8.1 adds refusal when unset and the same-disk warning) | Review finding 25: backups must not land in the live folder |
+| 2.14 | Backup location is a separate Compose setting with no default; server refuses to start if it is the same folder as the live files or is left unset (8.1 adds the same-disk warning) | Review finding 25: backups must not land in the live folder |
 | 2.14 | A stored file whose size or hash no longer matches is reported as damaged on request | AD-16 gives the disk store a stored hash and size; this is their use |
 | 2.15 | 50 forced kills | Experiment R8 used 45; rounded up |
 | 2.15 | At least 20 power cuts on the virtual-machine disk; network disk tested on NFS | R12 names the disks but no count; 20 matches the PRD's trial size |
