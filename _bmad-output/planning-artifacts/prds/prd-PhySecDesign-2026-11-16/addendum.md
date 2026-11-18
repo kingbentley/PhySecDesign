@@ -702,7 +702,7 @@ Decisions:
 2. A whole-revision restore never changes recorded actual positions; it restores planned positions only.
 3. The field view also supports raising an issue, logging a reliability outage, starting and recording a service visit, and reviewing or approving through a reviewer link. Closeout, device restoration and anything needing a plan position require the design workspace.
 
-Kevin accepted the recommendation to stop whole-document reads after this pass. Remaining edge cases are expected to surface in architecture and story writing. One wording item was left: “return to service” is used both for repairing a faulty device and for restoring a removed one.
+The reviewer of record recommended stopping whole-document reads after this pass and letting remaining edge cases surface in architecture and story writing. Kevin has not explicitly confirmed that recommendation, and draft 0.28 has not been independently re-read. One wording item was left: “return to service” is used both for repairing a faulty device and for restoring a removed one.
 
 ## Source and verification boundaries
 
