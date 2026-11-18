@@ -193,7 +193,8 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 - After the same account signs in, input pending on that page, such as an unsaved name on My account, is still there and can be saved.
 
 **Refusals and edge cases**
-- If a different account signs in on that page, the earlier pending input is shown but is not sent. (CA-20)
+- If a different account signs in on that page, the earlier account's pending input is neither shown to it nor sent. (CA-20)
+- That input stays bound to the earlier account and is offered again only when that account signs in on the same browser. (CA-20)
 
 **Limits and values**
 - The period without use is 24 hours. (CA-18)
@@ -384,7 +385,8 @@ Covers: FR-71. Screens: S-36.
 - Invitation and link events add entries: invitation issued, accepted and cancelled; reset link issued and cancelled.
 - Account and project events add entries: set-up completed, role and membership changes, deactivation and reactivation, and project creation.
 - Issuing and using the recovery code of story 1.8d each add an entry; the issue is recorded as made from the host, with the account it names.
-- A failed sign-in entry records the email entered and the network address, whether or not the email has an account. (CA-32)
+- A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32)
+- When the text entered matches no account, the entry reads "unknown address" and the text entered is not stored. (CA-32)
 - Failed sign-ins and administrative changes are each marked by an icon and a label.
 - An administrator filters by person, kind of event and date, and exports the filtered log as a CSV file. (CA-31)
 

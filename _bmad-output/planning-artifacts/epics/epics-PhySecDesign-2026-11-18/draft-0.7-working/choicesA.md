@@ -1,47 +1,40 @@
-# Choices made in Epic 1 (stories 1.1–1.10), for Kevin to confirm
-
-Format: `story | choice made | why`
-
-1.1 | An object whose recorded data-format version is newer than the build's refuses requests with an explanation | AD-20 conversions are forward-only; this is the base behaviour that story 9.3 extends with the pending-update recovery rule
-1.1 | "Dependency versions are pinned" is tested by a clean install from the lock file in continuous integration | Gives the R7 install problem an observable check
-1.2 | On Cloudflare the deploy command generates the set-up code (random, at least 20 characters), supplies it as a secret and prints it once in the deployment output | Architecture says only "shown in the server output or the deployment output"; a Worker has no server output visible at deploy time
-1.2 | Wrong set-up codes: after 5, attempts from any address are refused for 1 minute, doubling to a 15-minute maximum | Same pattern as sign-in; a fresh install is exposed to guessing (review edge case 4)
-1.2 | Installation name is 1 to 80 characters | Needs a bound; fits a sign-in page heading
-1.3 | Invitation lasts 7 days by default | Conventional; long enough to pass a link on by hand
-1.2 | Password (all accounts, stated in 1.2 and reused by 1.3 and 1.5): 12 to 128 characters, must not equal the email, no composition rules | Follows current published guidance (length over composition); architecture section 15 left it open
-1.3 | Sign-in slowing: 5 failures in a row per email, or 20 per network address in 15 minutes, then a 1-minute wait doubling to 15 minutes; the same wait for unknown emails | AD-12 says "slowed per account and per address"; UX S-26 says the page states how long to wait; the same wait avoids revealing which emails exist
-1.3 | PBKDF2-SHA256 at 600,000 iterations | The count measured in experiment R8 and named in AD-12
-1.3 | R9 passes if the hash is accepted without a platform error and median sign-in is under 1 second over 20 sign-ins | R9 needed a pass condition; R8 measured about 75 ms, so 1 second leaves a wide margin
-1.3 | Session cookie is SameSite=Lax | AD-12 says "only to this site"; Lax lets a person arriving from an emailed link stay signed in, and change requests are separately checked for origin and header
-1.3 | Inviting an email with an existing account is refused with that account's state; re-inviting a pending email replaces the earlier link | One account per email, one live invitation (review edge case 5)
-1.3 | A minimal account menu (name, Sign out) is added to the existing prototype header in this story; My account, Projects and Administration join it in 1.5, 1.6 and 1.8 | Sign-out and later entry points need a place before the project frame of story 3.1
-1.4 | 10 recovery codes | Conventional number
-1.4 | Codes are 6 digits on a 30-second step; one step either side is accepted; an accepted code cannot be reused | Standard authenticator-app behaviour and clock tolerance
-1.4 | Wrong second-step and recovery codes share the limit and wait of wrong passwords | Stops a six-digit code being guessed once the password is known (review edge case 8)
-1.4 | A fresh set of recovery codes needs the password and a current code | Review edge case 9; conventional
-1.4 | The authenticator secret is stored encrypted with a deployment key that the deploy command generates and supplies as a secret | AD-17 states this for settings secrets only; the same protection is applied to two-step secrets, as review edge case 60 assumes
-1.5 | Session ends after 24 hours without use by default | Conservative for accounts that can change project records; a technician signs in once a working day; the administrator can lengthen it in 1.10
-1.5 | Every request that passes sign-in counts as use of the session | So a long upload is not ended by the idle period (review edge case 14)
-1.5 | Sessions list shows device, time of last use and network address, with a country or city only where the host supplies one | UX asks for "place of last use"; a self-hosted server has no location source
-1.5 | Pending input is kept only for the same account; if another account signs in on that page it is shown but not sent | Prevents one person's input being saved under another's name (review edge case 12)
-1.6 | Project name is 1 to 120 characters; duplicate names are allowed | Needs a bound; properties can share names
-1.6 | The administrator who sees exactly one project in the installation is also sent straight to it, with the list reachable from the account menu | UX D11 says "a user with exactly one project" without excluding administrators
-1.6 | Until story 2.1 a project's address loads the existing prototype app with browser-only data | Something must be at the address before the shared project exists
-1.7 | "Last administrator" counts only active accounts that have accepted their invitation, and the check and change happen in one write | Review edge cases 2 and 3
-1.7 | Membership is set through administrator-only server functions in this story; the screens come in 1.8 | Keeps the gate testable before the administration screens exist
-1.8 | Administrator-issued reset link expires after 24 hours | Passed on by hand, so longer than an emailed link, but short
-1.8 | A password reset ends all the account's sessions and never turns two-step verification off | AD-12 ends sessions on password change; review edge case 11
-1.8 | Deactivation cancels the account's unused invitation and reset links; a link opened for a deactivated account is refused | Review edge case 7
-1.8 | After an administrator resets two-step verification, old recovery codes stop working and the user is offered set-up again | A reset should leave nothing of the old set-up usable
-1.8 | Recovery when the only administrator cannot sign in: a documented command run by whoever controls the host prints a one-time code, valid 1 hour, that lets a named administrator account set a new password and resets its two-step verification; logged | Review edge case 1; not in the PRD, so Kevin should confirm this explicitly. Same trust basis as the set-up code (control of the host)
-1.8 | The Projects table in this story shows name, members and creation date only | State, last activity, stored size and latest backup cannot be tested until stories 2.1, 6.11, 8.1 and 8.5
-1.9 | Export is a CSV file of the filtered log | FR-71 says "export" without a format; CSV matches the estimate export
-1.9 | A failed sign-in entry records the email entered and the network address, whether or not an account exists | Needed to investigate guessing; FR-71 forbids only passwords, tokens and codes
-1.10 | Session period accepts 15 minutes to 30 days; invitation life accepts 1 to 30 days | Review edge case 16 asks for bounds
-1.10 | A changed session period applies to existing sessions on their next request; a changed invitation life applies to invitations issued afterwards | FR-70 Check: "changes the session period and sees it take effect"
-1.10 | Emailed reset link expires after 1 hour; at most 3 reset messages per account per hour; same reply for every email | Conventional; review edge case 17
-1.10 | A saved secret shows only its last 4 characters | UX S-33 says "only its last characters"
-1.10 | The activity log records settings changes with earlier and new value, but a secret only as "changed" | FR-71: no secret in the log
-1.10 | SMTP is offered only if R13 passes on both hosts; the self-hosted run uses the self-hosted configuration from story 1.1 | The self-hosted image does not exist until story 2.13
-1.10 | Turning off "standard users may create projects" leaves existing projects and their members unchanged | Edge of FR-68
-1.10 | Settings state beside the Google mapping key that it is visible in signed-in users' browsers; other secrets are never shown in full | Story 2.6 delivers the key to browsers, which a Maps key requires (review finding 12)
+CA-01 | 1.2 | value | Set-up code is random, at least 20 characters, printed once in the deployment output | A shorter code, or one the installer chooses | AD-12 says only that a one-time code is shown in the deployment output; no length is given
+CA-02 | 1.2 | reading | Redeploying to an installation with no users issues a new set-up code and the earlier one stops working | The first code stays valid until set-up is completed | AD-21 forbids regenerating the code only once an administrator exists; a lost code must be replaceable
+CA-03 | 1.2 | value | Password: 12 to 128 characters, not equal to the email, no composition rules | 8-character minimum, or composition rules | Architecture section 15 left the rule open; current published guidance favours length over composition
+CA-04 | 1.2 | value | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading
+CA-05 | 1.2 | value | Wrong set-up codes: after 5, refused from any address for 1 minute, doubling to 15 minutes | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in
+CA-06 | 1.3a | reading | Session cookie is SameSite=Lax | SameSite=Strict | AD-12 says "only to this site"; Lax keeps a person signed in when they arrive from an emailed link, and changes are separately checked for origin and header
+CA-07 | 1.3a | value | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures
+CA-08 | 1.3a | value | R9 passes if the hash is accepted and median sign-in is under 1 second over 20 sign-ins | A different time bound | The architecture gives R9 no pass condition; R8 measured about 75 ms
+CA-09 | 1.3b | value | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default
+CA-10 | 1.3b, 1.8a | decide | Inviting an email that already has an account, active or deactivated, is refused; re-inviting a pending email replaces the earlier link | Allow several live invitations for one email | No source covers a repeated invitation; one account per email is implied by FR-67
+CA-11 | 1.4 | value | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count
+CA-12 | 1.4 | value | Codes are 6 digits on a 30-second step; one step either side is accepted | Accept the current step only | Standard authenticator-app settings; AD-12 says only "time-based codes"
+CA-13 | 1.4 | decide | Turning two-step verification off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open
+CA-14 | 1.4 | reading | The authenticator secret is encrypted with the deployment key | Stored unencrypted in the installation object | AD-17 states the key for settings secrets; the same protection is applied to two-step secrets
+CA-15 | 1.4 | reading | Wrong second-step and recovery codes share the limit and wait of wrong passwords | A separate limit for the second step | AD-12 slows "failed sign-ins"; a failed second step is read as one
+CA-16 | 1.5 | reading | A password change signs out every other session and keeps the current one | End every session, the current one included | AD-12 says sessions end on password change; the person changing it is read as staying signed in
+CA-17 | 1.5 | reading | A session shows a country or city only where the host supplies one | Always show a place, from an address lookup | UX section 17.3 asks for place of last use; a self-hosted server has no location source
+CA-18 | 1.5 | value | A session ends after 24 hours without use by default | 8 hours or 7 days | FR-67 leaves the period to the administrator and names no default
+CA-19 | 1.5 | reading | Every request that passes sign-in counts as use of the session | Only deliberate user actions count | FR-67 says "a period without use" without defining use
+CA-20 | 1.5 | decide | Pending input stays bound to its account: a different account signing in on that page neither sees nor sends it, and it is offered again when the first account signs in on that browser | Discard it when a different account signs in | FR-67 covers only the same user signing in again; FR-69 attributes each action to its own account
+CA-21 | 1.6 | value | Project name is 1 to 120 characters; duplicate names are allowed | Names must be unique | No source gives a bound; properties can share names
+CA-22 | 1.6 | reading | An administrator who sees exactly one project is also sent straight to it | Administrators always land on the list | UX decision D11 says "a user with exactly one project" without excluding administrators
+CA-23 | 1.7b | reading | Only active accounts that have accepted their invitation count as administrators for the last-administrator rule | An invited administrator counts | FR-68 says "the last administrator"; an account nobody can yet sign in to cannot administer
+CA-24 | 1.8b | value | A reset link issued by an administrator expires after 24 hours | 1 hour, as for an emailed link | AD-12 says resets expire and gives no period; a link passed on by hand needs longer
+CA-25 | 1.8b | reading | A password reset ends all the account's sessions and leaves two-step verification on | A reset also turns two-step verification off | AD-12 ends sessions on password change; FR-70 lists two-step reset as a separate control
+CA-26 | 1.8b | reading | After an administrator resets two-step verification, the old recovery codes stop working | Old recovery codes stay valid | FR-70 says "reset"; read as leaving nothing of the old set-up usable
+CA-27 | 1.8b | reading | "Require two-step verification" for one user works as the installation-wide requirement does, and an administrator can remove it | Requirement is installation-wide only | FR-70 lists "require or reset two-step verification" under Users
+CA-28 | 1.8b | decide | Deactivation cancels the account's unused invitation and reset links; a link opened for a deactivated account is refused | Links stay valid and work after reactivation | FR-67 says deactivation prevents sign-in and is silent on outstanding links
+CA-29 | 1.8d | reading | The recovery code lets the named administrator set a new password and resets their two-step verification | The code resets the password only | The confirmed recovery command must cover a lost phone as well as a lost password
+CA-30 | 1.8d | value | The recovery code expires after 1 hour | 15 minutes or 24 hours | No source gives a period; it is used at once by the person who ran the command
+CA-31 | 1.9 | value | The log exports as a CSV file of the filtered entries | JSON, or the whole log regardless of filter | FR-71 says "export" without a format; CSV matches the estimate export
+CA-32 | 1.9 | reading | A failed sign-in entry records the network address, and the email only when it matches an account; otherwise "unknown address" and the text entered is not stored | Record the text entered in every case | FR-71 forbids passwords in entries, and a person may type a password into the email field
+CA-33 | 1.10a | value | Session period accepts 15 minutes to 30 days; invitation life accepts 1 to 30 days | No bounds | FR-70 makes both settable and gives no bounds
+CA-34 | 1.10a | reading | A changed session period applies to existing sessions on their next request; a changed invitation life applies only to invitations issued afterwards | Both apply only to new sessions and invitations | The FR-70 Check says "changes the session period and sees it take effect"
+CA-35 | 1.10a | value | A saved secret shows its last 4 characters | Fully masked | UX S-33 says "only its last characters" without a count
+CA-36 | 1.10a | reading | Turning off project creation by standard users leaves existing projects and their members unchanged | Projects created by standard users lose their Editor | FR-68 states the setting and is silent on turning it off
+CA-37 | 1.10a | decide | Settings states beside the Google mapping key that it is visible in signed-in users' browsers | No notice | FR-70 says secrets are never shown again in full; a browser map key cannot be kept from the browser, so the exception is stated
+CA-38 | 1.10c | value | An emailed reset link expires after 1 hour | 24 hours, as for an administrator's link | AD-12 says resets expire and gives no period
+CA-39 | 1.10c | value | "Forgot password" gives the same reply for every email and sends at most 3 messages per account per hour | No sending limit | NFR-5 forbids revealing whether an email has an account; no source limits sends
+CA-40 | 1.10d | reading | SMTP is offered only if R13 passes on both hosts | Offer SMTP on whichever host passes | AD-18 says SMTP "is not promised until it passes"; NFR-7 asks both hosts to behave the same
