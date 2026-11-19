@@ -4,7 +4,7 @@ CA-03 | 1.2 | value | Password: 12 to 128 characters, not equal to the email, no
 CA-04 | 1.2 | value | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading
 CA-05 | 1.2 | value | Wrong set-up codes: after 5, refused from any address for 1 minute, doubling to 15 minutes | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in
 CA-07 | 1.3a | value | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures
-CA-08 | 1.3a | value | R9 passes if the hash is accepted and median sign-in is under 1 second over 20 sign-ins | A different time bound | The architecture gives R9 no pass condition; R8 measured about 75 ms
+CA-08 | 1.3a | value | Median sign-in on Cloudflare is under 1 second over 20 sign-ins | A different time bound | The architecture gives no time bound for sign-in; experiment R9 measured about 0.36 s for the hash alone
 CA-09 | 1.3b | value | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default
 CA-10 | 1.3b | reading | Inviting an email that already has an account, active or deactivated, is refused; re-inviting a pending email replaces the earlier link | Allow several live invitations for one email | FR-67 gives each person one account, so a second account or a second live link for one email would duplicate it
 CA-11 | 1.4 | value | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count

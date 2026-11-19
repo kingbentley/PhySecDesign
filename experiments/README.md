@@ -12,7 +12,7 @@ Run on 2026-11-18 and 2026-11-19 to test decisions in the [architecture](../_bma
 | R6 | Minimum R2 upload part size; PDF printing in Cloudflare's browser service. | **Both confirmed.** Parts are at least 5 MiB and must be equal in size; Cloudflare's browser service does produce PDFs. |
 | R10 | Best trigger for a Cloudflare deployment from the interface. | **A deploy hook exists but cannot name a version.** One finding changes the update design: Cloudflare blocks rollback across a Durable Object class change. |
 | R14 | Does data written by an older runtime open under a newer one? | **Yes, across almost two years of versions**, forwards, in one jump, and backwards. First run only: it is repeated for every release. |
-| R9 | Does Cloudflare accept the chosen password-hashing cost? | **No.** Cloudflare refuses any PBKDF2 call above 100,000 iterations; the plan was 600,000. Two ways round it worked on both hosts. A decision is needed. |
+| R9 | Does Cloudflare accept the chosen password-hashing cost? | **No.** Cloudflare refuses any PBKDF2 call above 100,000 iterations; the plan was 600,000. Two ways round it worked on both hosts; Kevin chose scrypt (decision K19). |
 | R13 | Can the runtime send email over SMTP? | **Yes on both hosts as far as tested.** On a server a message was delivered with both usual forms of encrypted SMTP. From Cloudflare, encrypted connections to two public mail services were made up to the point of signing in; no message was sent from there. |
 | R8 | Could Cloudflare's open-source runtime host the same build on a server? | **Largely yes.** The same Worker ran on a Linux server with durable per-project SQLite storage. File storage has no built-in equivalent, and the on-disk storage format is marked experimental. |
 

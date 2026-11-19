@@ -172,7 +172,7 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 - The step asks for the set-up code, the installation's name and the first administrator's name, email and password.
 - The page states that it disappears once an administrator exists.
 - On completion exactly one administrator exists, and the page confirms the installation's name and the administrator's email.
-- The password is stored only as a salted PBKDF2-SHA256 hash made through Web Crypto at 600,000 iterations, with the parameters stored beside the hash.
+- The password is stored only as a salted scrypt hash (N = 131,072, r = 8, p = 1, a 32-byte result), with the parameters stored beside the hash.
 
 **Refusals and edge cases**
 - Once any user exists, the set-up page and its request are refused, and the set-up code no longer works.
@@ -227,10 +227,10 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - A revision restore leaves sessions unchanged.
 
 **Evidence to record**
-- Experiment R9 has a recorded result from a deployed Cloudflare test installation: the 600,000-iteration hash is accepted without a platform error and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
-- If R9 does not pass, the fallback taken (a lower count within current published guidance, or Argon2id in WebAssembly) is recorded with the result and used.
+- On a deployed Cloudflare test installation the scrypt hash is accepted without a platform error, and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
+- A password hash made on one host verifies on the other.
 
-Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17). R9 was run early on 2026-11-19 and did not pass: Cloudflare refuses a PBKDF2 call above 100,000 iterations. scrypt at N = 131,072, r = 8, p = 1 and six chained PBKDF2 calls each worked on both hosts with identical results; which replaces the 600,000-iteration hash is not yet decided.
+Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17). Experiment R9 was run on 2026-11-19: Cloudflare refuses a PBKDF2 call above 100,000 iterations, so the 600,000-iteration hash first planned was replaced by scrypt, which worked on both hosts with identical results and added about 0.36 s to a request on Cloudflare.
 
 ### Story 1.4: Invite a person
 
@@ -4565,7 +4565,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | R6 | Done; see the experiments record | 4.17 |
 | R7 | Done; see the experiments record | 1.1 |
 | R8 | Done; see the experiments record | 1.1 |
-| R9 | To run | 1.3 |
+| R9 | Done; see the experiments record | 1.3 |
 | R10 | Done; see the experiments record | 9.12 |
 | R11 | To run | 9.11, 9.15 |
 | R12 | To run | 2.26 |
@@ -4610,7 +4610,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CA-04 | 1.2 | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading | |
 | CA-05 | 1.2 | Wrong set-up codes: after 5, refused from any address for 1 minute, doubling to 15 minutes | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in | |
 | CA-07 | 1.3 | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures | |
-| CA-08 | 1.3 | R9 passes if the hash is accepted and median sign-in is under 1 second over 20 sign-ins | A different time bound | The architecture gives R9 no pass condition; R8 measured about 75 ms | |
+| CA-08 | 1.3 | Median sign-in on Cloudflare is under 1 second over 20 sign-ins | A different time bound | The architecture gives no time bound for sign-in; experiment R9 measured about 0.36 s for the hash alone | |
 | CA-09 | 1.4 | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default | |
 | CA-11 | 1.5 | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count | |
 | CA-12 | 1.5 | Codes are 6 digits on a 30-second step; one step either side is accepted | Accept the current step only | Standard authenticator-app settings; AD-12 says only "time-based codes" | |

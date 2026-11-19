@@ -135,7 +135,7 @@ choices.sort(key=lambda c: (key(c['story']) if re.fullmatch(r'\d+\.\d+', c['stor
 L = lambda xs: ', '.join(sorted(set(xs), key=key))
 esc = lambda s: s.replace('|', '/')
 NFR = {1: 'Record integrity', 2: 'Shared-save clarity', 3: 'Browser, field and accessibility', 4: 'Honest analysis and responsiveness', 5: 'Access boundary', 6: 'Consistent deliverables', 7: 'Same product on either host', 8: 'Safe updates'}
-DONE = {1, 2, 6, 7, 8, 10}
+DONE = {1, 2, 6, 7, 8, 9, 10}
 cov = ['| Requirement | Stories |', '| --- | --- |'] + [f"| FR-{n} | {L(cover['FR'][n])} |" for n in range(1, 73)] + \
       [f"| NFR-{n} {NFR[n]} | {L(cover['NFR'][n])} |" for n in range(1, 9)] + [f"| SM-{n} | {L(cover['SM'][n])} |" for n in range(1, 7)]
 exp = ['| Experiment | Status | Story |', '| --- | --- | --- |'] + [f"| R{n} | {'Done; see the experiments record' if n in DONE else 'To run'} | {L(cover['R'][n])} |" for n in range(1, 17)]
