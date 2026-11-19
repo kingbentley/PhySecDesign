@@ -1,4 +1,4 @@
-"""Check the six parts, renumber stories, and write ../epics.md.
+"""Check the seven parts, renumber stories, and write ../epics.md.
 
 Run from the repository root:
     python3 <this folder>/assemble.py            check only
@@ -12,8 +12,8 @@ SID = r'\d+\.\d+[a-z]?'
 LABELS = ['Core behaviour', 'Refusals and edge cases', 'Limits and values', 'Access and restore', 'Evidence to record']
 problems, notes = [], []
 
-parts = {g: open(W + f'part{g}.md', encoding='utf-8').read().rstrip() + '\n\n' for g in 'ABCDEF'}
-body = ''.join(parts[g] for g in 'ABCDEF')
+parts = {g: open(W + f'part{g}.md', encoding='utf-8').read().rstrip() + '\n\n' for g in 'ABCDEFG'}
+body = ''.join(parts[g] for g in 'ABCDEFG')
 front, back = open(W + 'front.md', encoding='utf-8').read(), open(W + 'back.md', encoding='utf-8').read()
 
 # ---- old ids, in order of appearance, and the renumbering map ----
@@ -50,7 +50,7 @@ for bad in re.findall(r'[Ss]tories \d+\.\d+[^.\n]{0,40}', body + front + back):
     problems.append('plural story reference (write "story N.M" each time): ' + bad)
 
 head_map = lambda t: re.sub(r'(?m)^(### Story )(' + SID + r')(:)', lambda m: m.group(1) + remap[m.group(2)] + m.group(3), t)
-body_new = ''.join(renumber(head_map(parts[g]).replace('### Story ', '### St\0ry '), 'part' + g).replace('St\0ry', 'Story') for g in 'ABCDEF')
+body_new = ''.join(renumber(head_map(parts[g]).replace('### Story ', '### St\0ry '), 'part' + g).replace('St\0ry', 'Story') for g in 'ABCDEFG')
 # headings were protected from the reference pass by the temporary marker
 front_new, back_new = renumber(front, 'front'), renumber(back, 'back')
 
@@ -104,22 +104,22 @@ for sid in ids:
     for p in ('NFR', 'SM', 'AD'):
         for n in expand(p, c): cover[p][n].append(sid)
     for n in re.findall(r'\bR(\d+)\b', c): cover['R'][int(n)].append(sid)
-miss = [f'FR-{n}' for n in range(1, 73) if n not in cover['FR']] + [f'NFR-{n}' for n in range(1, 9) if n not in cover['NFR']] + \
-       [f'SM-{n}' for n in range(1, 7) if n not in cover['SM']] + [f'R{n}' for n in range(1, 17) if n not in cover['R']] + \
-       [f'AD-{n}' for n in list(range(1, 15)) + list(range(16, 22)) if n not in cover['AD']]
+miss = [f'FR-{n}' for n in range(1, 79) if n not in cover['FR']] + [f'NFR-{n}' for n in range(1, 9) if n not in cover['NFR']] + \
+       [f'SM-{n}' for n in range(1, 8) if n not in cover['SM']] + [f'R{n}' for n in range(1, 19) if n not in cover['R']] + \
+       [f'AD-{n}' for n in list(range(1, 15)) + list(range(16, 23)) if n not in cover['AD']]
 if miss: problems.append('not covered: ' + ', '.join(miss))
 
 # ---- choices ----
 crit_lines = [l for l in body_new.split('\n') if l.startswith('- ')]  # criteria only, not Notes
 for l in body_new.split('\n'):
-    if not l.startswith('- ') and re.search(r'\(C[A-F]-\d+\)', l): problems.append('choice ID outside a criterion: ' + l[:70])
+    if not l.startswith('- ') and re.search(r'\(C[A-G]-\d+\)', l): problems.append('choice ID outside a criterion: ' + l[:70])
 choices = []
-for g in 'ABCDEF':
+for g in 'ABCDEFG':
     for ln, line in enumerate(open(W + f'choices{g}.md', encoding='utf-8'), 1):
         line = line.strip().strip('|').strip()
         if not line or line.startswith('#'): continue
         f = [x.strip() for x in line.split('|')]
-        if len(f) not in (6, 7) or not re.fullmatch(r'C[A-F]-\d+', f[0]) or f[2] not in ('decide', 'value', 'reading'):
+        if len(f) not in (6, 7) or not re.fullmatch(r'C[A-G]-\d+', f[0]) or f[2] not in ('decide', 'value', 'reading'):
             problems.append(f'choices{g}.md line {ln}: not "ID | story | class | choice | alternative | why [| decision]": {line[:70]}'); continue
         old = re.split(r'[,; ]+', f[1])[0]
         new = remap.get(old) or (remap[base[old][0]] if len(base.get(old, [])) == 1 else None)
@@ -127,7 +127,7 @@ for g in 'ABCDEF':
         n_in = sum(len(re.findall(r'\(' + f[0] + r'\)', l)) for l in crit_lines)
         if n_in < 1: problems.append(f'{f[0]}: is on no criterion')
         choices.append(dict(id=f[0], story=new or old, cls=f[2], choice=f[3], alt=f[4], why=f[5], decision=f[6] if len(f) == 7 else ''))
-for cid in set(re.findall(r'\((C[A-F]-\d+)\)', '\n'.join(crit_lines))) - {c['id'] for c in choices}:
+for cid in set(re.findall(r'\((C[A-G]-\d+)\)', '\n'.join(crit_lines))) - {c['id'] for c in choices}:
     problems.append(f'{cid} is on a criterion but not in a choices file')
 choices.sort(key=lambda c: (key(c['story']) if re.fullmatch(r'\d+\.\d+', c['story']) else (99, 0), c['id']))
 
@@ -139,10 +139,10 @@ DONE = {1, 2, 6, 7, 8, 9, 10}
 PARTLY = {11, 13, 14}   # run in part on 2026-11-19; the rest is still to run or repeats each release
 EXP_STATE = lambda n: 'Done; see the experiments record' if n in DONE else ('Partly run; see the experiments record' if n in PARTLY else 'To run')
 KIND = {'decide': 'decision', 'value': 'value', 'reading': 'reading'}
-cov = ['| Requirement | Stories |', '| --- | --- |'] + [f"| FR-{n} | {L(cover['FR'][n])} |" for n in range(1, 73)] + \
-      [f"| NFR-{n} {NFR[n]} | {L(cover['NFR'][n])} |" for n in range(1, 9)] + [f"| SM-{n} | {L(cover['SM'][n])} |" for n in range(1, 7)]
-exp = ['| Experiment | Status | Story |', '| --- | --- | --- |'] + [f"| R{n} | {EXP_STATE(n)} | {L(cover['R'][n])} |" for n in range(1, 17)]
-ads = ['| Architecture decision | Stories |', '| --- | --- |'] + [f"| AD-{n} | {L(cover['AD'][n])} |" for n in list(range(1, 15)) + list(range(16, 22))]
+cov = ['| Requirement | Stories |', '| --- | --- |'] + [f"| FR-{n} | {L(cover['FR'][n])} |" for n in range(1, 79)] + \
+      [f"| NFR-{n} {NFR[n]} | {L(cover['NFR'][n])} |" for n in range(1, 9)] + [f"| SM-{n} | {L(cover['SM'][n])} |" for n in range(1, 8)]
+exp = ['| Experiment | Status | Story |', '| --- | --- | --- |'] + [f"| R{n} | {EXP_STATE(n)} | {L(cover['R'][n])} |" for n in range(1, 19)]
+ads = ['| Architecture decision | Stories |', '| --- | --- |'] + [f"| AD-{n} | {L(cover['AD'][n])} |" for n in list(range(1, 15)) + list(range(16, 23))]
 overview = ['| Epic | Outcome | Stories |', '| --- | --- | --- |'] + [f"| {e['n']}. {e['title']} | {e['Outcome']} | {len(e['stories'])} |" for e in epics]
 def table(cls, decision_col, by_epic=False):
     rows = [c for c in choices if c['cls'] == cls]
@@ -167,7 +167,7 @@ for k, v in subs.items():
     front_new = front_new.replace('{{' + k + '}}', str(v)); back_new = back_new.replace('{{' + k + '}}', str(v))
 # show the kind of each choice where it is marked on a criterion: (CA-03) -> (CA-03 · value)
 kind_of = {c['id']: KIND[c['cls']] for c in choices}
-body_out = '\n'.join(re.sub(r'\((C[A-F]-\d+)\)', lambda m: f'({m.group(1)} · {kind_of.get(m.group(1), "?")})', l) if l.startswith('- ') else l
+body_out = '\n'.join(re.sub(r'\((C[A-G]-\d+)\)', lambda m: f'({m.group(1)} · {kind_of.get(m.group(1), "?")})', l) if l.startswith('- ') else l
                      for l in body_new.split('\n'))
 doc = front_new.rstrip() + '\n\n' + body_out.rstrip() + '\n\n' + back_new.rstrip() + '\n'
 for left in set(re.findall(r'\{\{\w+\}\}', doc)): problems.append('unfilled placeholder ' + left)

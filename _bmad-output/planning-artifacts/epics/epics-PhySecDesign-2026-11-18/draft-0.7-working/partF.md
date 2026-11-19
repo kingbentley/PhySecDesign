@@ -818,7 +818,7 @@ Notes: R11's fallback is to hold back the release of the Update control until ev
 
 **Depends on.** Epics 1 to 9 complete. Nothing later.
 
-**Why here.** The PRD's success measures SM-1 to SM-6 can only be shown by one run across everything built, so this verification milestone comes last; it has no story for fixing what it finds, and a miss goes back to the story that owns the behaviour.
+**Why here.** SM-7, agents doing real work, is shown in Epic 11 and is not part of this acceptance (PRD amendment 1.3). The PRD's success measures SM-1 to SM-6 can only be shown by one run across everything built, so this verification milestone comes last; it has no story for fixing what it finds, and a miss goes back to the story that owns the behaviour.
 
 ### Story 10.1: Acceptance fixtures and the workload manifest
 

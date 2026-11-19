@@ -1,8 +1,8 @@
 ---
 title: "Site Studio — Architecture"
-status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); and for updates (K20, AD-20 and AD-21); decisions K1-K3 and K5-K21 confirmed by Kevin, K20 with seven fixes and K21 refining it after the epics review; K22 added on his instruction to proceed with Claude's recommendations; nothing built
+status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); and for updates (K20, AD-20 and AD-21); decisions K1-K3 and K5-K21 confirmed by Kevin, K20 with seven fixes and K21 refining it after the epics review; K22 added on his instruction to proceed with Claude's recommendations; version 3.1 on 2026-11-19 adds agent access (AD-22, K23) for PRD amendment 1.3, and one rule for external tickets (PRD amendment 1.4); nothing built
 created: 2026-11-18
-inputs: "final PRD 1.2; UX design specification; the site-studio prototype; experiments R1, R2, R6, R7, R8 and R10"
+inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification; the site-studio prototype; experiments R1, R2, R6, R7, R8 and R10"
 method: BMAD Create Architecture, followed by hand (the BMAD skills were not installed in the cloud checkout when this was first written)
 ---
 
@@ -17,6 +17,8 @@ This document decides how Site Studio is built, hosted and updated so that it me
 3. **A Cloudflare update is started through a GitHub Actions run**, because it can name the release to install.
 
 Versions 1.0 to 2.1 are in the repository history.
+
+**Version 3.1 (2026-11-19).** PRD amendment 1.3 lets AI agents act for a person. AD-22 adds access tokens, route classes, one declared API and an MCP endpoint; AD-5, AD-9, AD-10, AD-12, AD-16 and AD-17 gain a sentence each, and experiments R17 and R18 are added. Kevin approved the change through the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) (K23).
 
 Nothing here has been built. The experiments ran in a cloud container on synthetic data; they show direction and are not acceptance results. Cloudflare limits are from Cloudflare's documentation as read on 2026-11-18 and are collected in [cloudflare-limits.md](cloudflare-limits.md).
 
@@ -92,6 +94,7 @@ flowchart TB
     Disk[(Disk service: live and backup folders)]
     Updater[Updater container]
   end
+  Agent[AI agent with an access token<br/>HTTP API or MCP endpoint] --> API
   UI --> Store --> API
   Calc --> Store
   Files --> API
@@ -146,6 +149,7 @@ Rules that keep it so:
 - The self-hosted file store adds what R2 provides and the disk service does not: a stored hash and size per file, kept in the project room's records.
 - The test suite runs in Cloudflare's runtime. A smoke suite runs the built bundle under the self-hosted configuration in continuous integration: start, set up, sign in, save, upload a file, restart, read back.
 - The portable backup (AD-14) is the same format on both hosts.
+- The agent interface (AD-22) uses only what is listed here and calls no service outside the installation.
 
 **Fallback kept open.** If the open-source runtime proves unsuitable, a Node.js server remains possible: the project room and installation object are reached through narrow classes whose storage calls are plain SQL against SQLite. Nothing is built for this unless needed.
 
@@ -165,7 +169,7 @@ Uploads above a few megabytes go in equal parts of 8 MiB through the API, which 
 
 ### AD-5 — Saves are small operations with an identifier; conflicts are per item (confirmed)
 
-An operation carries a client-chosen identifier, the session, and changes that each name an item and the version they were based on. The project room returns the stored result for a repeated identifier, checks access and versions, checks the rules that span items, then applies everything and appends one change-log entry. Evidence is append-only and never conflicts. The actor recorded is the signed-in account and its name at that time (FR-69), supplied by the access gate and never by the browser.
+An operation carries a client-chosen identifier, the session, and changes that each name an item and the version they were based on. The project room returns the stored result for a repeated identifier, checks access and versions, checks the rules that span items, then applies everything and appends one change-log entry. Evidence is append-only and never conflicts. The actor recorded is the signed-in account and its name at that time (FR-69), supplied by the access gate and never by the browser, with `via` naming the access token when an agent acted (FR-74, AD-22).
 
 ### AD-6 — Polling for other people's changes (confirmed)
 
@@ -188,10 +192,11 @@ Experiment R2 found that the prototype's fixed work budget coarsens sampling to 
 - The fixed work budget and cell cap are removed. Sampling is 1 m or finer, as NFR-4 requires.
 - The calculation runs in a Web Worker and is cancelled and restarted when inputs change.
 - If a calculation would exceed its time allowance, the result is shown as incomplete with the reason. Sampling is never coarsened silently to finish in time.
+- The calculation itself lives in `shared/`, so that the server can run the same code for an agent (AD-22, FR-77).
 
 ### AD-10 — File processing stays in the browser (confirmed)
 
-PDF opening and passwords, photo previews and spreadsheet parsing happen in the browser. The server enforces limits and types regardless.
+PDF opening and passwords, photo previews and spreadsheet parsing happen in the browser. The server enforces limits and types regardless. The spreadsheet parser lives in `shared/` so that the server can also run it for an agent's import (AD-22, FR-77).
 
 ### AD-11 — PDF packages are generated in the desktop browser and retained on the server (confirmed; revised by K17)
 
@@ -215,14 +220,14 @@ Set aside: rendering on the server. Cloudflare's browser service can produce PDF
 - An account has an email address, a name, a password hash, an installation role and an active flag (FR-67, FR-68).
 - Passwords are hashed with scrypt (N = 131,072, r = 8, p = 1, a 32-byte result) and a per-user salt, through the runtime's Node.js-compatible crypto interface (K19). This replaces PBKDF2-SHA256 at 600,000 iterations: experiment R9, run on 2026-11-19, found that Cloudflare refuses any PBKDF2 call above 100,000 iterations, which is below current published guidance. The scrypt setting is one that guidance lists, worked on both hosts with identical results, and added about 0.36 s to a request on Cloudflare and about 0.43 s under the open-source runtime. Hashes carry their parameters so they can be strengthened later.
 - A successful sign-in creates a session: a long random token held in a cookie that scripts cannot read, sent only over HTTPS and only to this site. Only a hash of the token is stored. Sessions end after the period without use the administrator sets, on sign-out, on "sign out everywhere", on password change and on deactivation.
-- Requests that change anything must come from the application's own origin and carry a header the application adds.
+- Requests that change anything with a session cookie must come from the application's own origin and carry a header the application adds. Requests with an access token are exempt, because a browser never sends one by itself (AD-22).
 - Failed sign-ins are slowed per account and per address, and the reply never reveals whether an email exists.
 - Two-step verification uses time-based codes from an authenticator app, with single-use recovery codes stored as hashes.
 - Invitations and password resets are single-use, expiring tokens, delivered by email when email is configured and always available for an administrator to copy.
 
 **Checking access.** Every request passes one gate before it reaches a project room or a file:
 
-1. Identify the caller: a session, a reviewer link token, or neither.
+1. Identify the caller: a session, a reviewer link token, an access token sent as a bearer header (AD-22), or neither.
 2. For a session: ask the installation object for the account, confirm it is active, and find its role and its membership of the project named in the request.
 3. Decide: an administrator may do anything; an Editor may read and change their project, including archiving it and downloading its portable backup; a Viewer may read, search, download existing packages and files and export schedules and estimates, and may create nothing, with one exception: a Viewer who is the approval assignee for a fixed revision may comment and decide on it (FR-23, FR-68); a reviewer link may read one fixed revision, comment and decide (FR-24). Only administrators change a project's members.
 4. Pass the decision and the actor to the project room. The project room trusts only this gate.
@@ -237,7 +242,7 @@ Removing a member or deactivating an account takes effect on the next request (F
 
 ### AD-17 — The installation object (confirmed; revised by K16)
 
-One Durable Object per installation, addressed by a fixed name, holds: users, password and recovery-code hashes, two-step secrets, sessions, invitations and resets, the project catalogue and memberships, the reviewer-link index, settings, the backup catalogue, the job table and the activity log (FR-71). It replaces the D1 database of version 2.1.
+One Durable Object per installation, addressed by a fixed name, holds: users, password and recovery-code hashes, two-step secrets, sessions, invitations and resets, the project catalogue and memberships, the reviewer-link index, access tokens and the agent-access setting (AD-22), settings, the backup catalogue, the job table and the activity log (FR-71). It replaces the D1 database of version 2.1.
 
 - Secrets entered in settings, such as an email service key, a map key or the GitHub token used for Cloudflare updates, are encrypted with a key supplied to the installation at deployment and are shown only masked.
 - The activity log is append-only and is kept for the life of the installation; administrators can filter and export it. Entries never contain a password, token or code.
@@ -248,6 +253,54 @@ One Durable Object per installation, addressed by a fixed name, holds: users, pa
 The server has an email interface with two implementations: none, and an HTTP email service. With none, every invitation and reset is a link the administrator copies. No feature requires email.
 
 SMTP, which self-hosting organisations often prefer, depends on the runtime's outbound socket interface. Experiment R13 was run on 2026-11-19: a message was delivered on a server, and from Cloudflare encrypted connections reached the point of signing in. A complete delivery from Cloudflare has not been shown.
+
+### AD-22 — Agent access: tokens, one declared API and an MCP endpoint (K23, approved 2026-11-19)
+
+PRD amendment 1.3 (FR-73 to FR-77) lets AI agents act for a person. The design keeps one code path: the browser app and agents use the same API, behind the same gate.
+
+- **Routes declared once.** Every route is under `/api/v1/` and declares, in `shared/`, a schema for its input and its reply, and its class (below). A request that does not match is refused with the field named, and every refusal carries a reason code as well as its wording. The API description (`/api/v1/openapi.json`) and the MCP tool list are generated from these declarations, and a contract test in continuous integration checks the published description against the server.
+- **Route classes.** Each route has exactly one class:
+  - public;
+  - reviewer link;
+  - read;
+  - draft change;
+  - person only: the actions FR-75 reserves for people;
+  - administrator only;
+  - update secret.
+
+  The gate decides from the class and the caller kind. A route that declares no class is refused.
+- **Access tokens.**
+  - **Format and storage.** A token is a long random value with the prefix `ssat_`, sent as `Authorization: Bearer`. The installation object stores its hash with its owner, name, kind (read-only, or read-and-draft), optional project list, expiry and last use.
+  - **What a token may do.** A token never exceeds its owner's current role and membership, which the gate looks up on every request as for a session. A read-only token may use read routes only. A read-and-draft token may also use draft-change routes. Person-only and administrator-only routes are refused to every token with the reason "needs a person" or "administrators only".
+  - **Lifetime.** 90 days by default and at most 1 year, which an administrator may lower.
+  - **Rate limit.** Each token is limited in request rate, counted in the installation object.
+  - **Installation switch.** Agent access is off in a new installation until an administrator turns it on, and turning it off refuses every token.
+- **The origin rule.** The rule that a change must come from the app's own origin and carry the app's header applies to cookie sessions only. A browser never sends a bearer header by itself, so the rule is not needed for tokens.
+- **The actor.** The actor of an action is the account, its name at that time, and `via`: empty for a person, the token's identifier and name for an agent (AD-5).
+- **MCP endpoint.**
+  - **Transport.** `/mcp` speaks MCP's Streamable HTTP transport without server-held session state, on the same Worker. Each tool call is one or more ordinary API calls made with the caller's token.
+  - **Tools.** The tools are generated from the route declarations, and person-only and administrator-only routes are left out.
+  - **Text from outside.** Text that came from reviewer links or imported files is returned inside a field marked as entered text, so that an agent can treat it as data.
+- **During an update.** An agent receives HTTP 503 with a retry time instead of the browser's "updating, try again shortly" (AD-20).
+- **Calculations for agents (FR-77).** The coverage calculation and the spreadsheet parser live in `shared/` and run unchanged on the server when an agent asks; the browser path of AD-9 and AD-10 is unchanged. If experiment R17 shows a calculation can exceed the per-request processing limit at acceptance size, it runs as a resumable job (the AD-13 pattern) and the agent fetches its result. PDF packages stay generated in a browser (AD-11).
+- **Both hosts and private networks.** The agent interface uses only what AD-16 lists:
+  - plain requests and replies on the same Worker;
+  - no Agents SDK, no hosted OAuth provider and no new binding;
+  - no call to any service outside the installation.
+
+  It therefore works identically on Cloudflare and under the open-source runtime, including on a server reachable only inside a private network. There, agents run inside the network. The installation instructions show how to make an agent's machine trust a certificate from a private authority. Cloud-hosted AI services cannot reach such a server, which is a property of the network.
+- **External tickets (PRD amendment 1.4, FR-78).** The server never fetches an external ticket's link. Links are stored and returned as data and are accepted only with the `http` or `https` scheme, so recording them needs no outbound connection on either host.
+- **Refinements from the review of Epic 11 (2026-11-19, applied on Kevin's instruction):**
+  - **Tokens.** A token is stored as the SHA-256 of the whole token, found by that hash and compared in constant time; password hashing is not used, because a token carries at least 256 random bits. It is accepted only in the `Authorization` header, and a token-shaped value in a query string is refused and never logged. An administrator's token reaches only projects the administrator is a member of; "all of my projects" means current membership, checked on each request. Recovering the whole installation revokes every token.
+  - **Route classes and tokens.** A public route ignores a token; reviewer-link and update-secret routes refuse one. Creating a project and downloading a portable backup are person only.
+  - **Rate limits.** Per token, per owner across their tokens, per address for refused tokens, and per address for the public description and the OAuth routes. Calls made inside a tool call count. Over the limit: HTTP 429 with `Retry-After`.
+  - **Writes by agents.** Every draft change from a token carries an AD-5 operation identifier, held per token. A conflict returns the item's current version and value and overwrites nothing. A tool that changes anything is one operation, and its owner can undo it as one action. An agent's change to a verified device clears its verified state.
+  - **Entered text.** The route declarations have an entered-text field type (text, source, reference), used from story 1.1 on for every reply field holding text from outside the members, so that marking it never changes `/api/v1/` after release. A refusal never repeats an entered value.
+  - **The MCP endpoint.** Tool calls run the route handlers in the same process through the gate, never by a request to the server's own address. POST only, JSON replies, no session identifier, the protocol revisions named in the instructions, 405 for GET and DELETE, 403 for a foreign `Origin`, 401 with `WWW-Authenticate` without a token. Tool names are generated within MCP clients' limits, and the tool list follows the token's kind and the owner's role.
+  - **CORS.** Token requests are answered to any origin without credentials; cookie requests to the app's own origin only.
+  - **Versioning.** Continuous integration compares the description with the last published release's, so a removed or renamed field, a narrowed type or a new required input fails the build.
+  - **Jobs for agents.** A job re-checks its token, the switch and the owner's access at each step and when its result is fetched, stops when its target is gone, and restarts when the code version changes.
+- **Optional OAuth (decided later in Epic 11).** For MCP connectors that require OAuth sign-in, the installation can act as its own authorisation server, issuing tokens of the same kinds after the person signs in. It serves the protected-resource and authorisation-server metadata, requires PKCE with S256 and exact redirect matching, binds each token to its connector, never lets a refresh grant outlast the token, and shows the redirect host on the consent page. It is optional and built last.
 
 ## 8. Backups and moving projects
 
@@ -414,9 +467,10 @@ site-studio/
     admin/          sign-in, set-up, account, administrator screens
     sync/           sync store, operation queue, polling, upload in parts
     analysis/       Web Worker wrapper around the calculation modules
-  shared/           record shapes, validation, state model, roles (TypeScript)
+  shared/           record shapes, validation, state model, roles, route declarations, coverage and spreadsheet parsing (TypeScript)
   server/           the one Worker build (TypeScript)
     api/            routes and the access gate
+    mcp/            the MCP endpoint, generated from the route declarations
     auth/           accounts, sessions, two-step verification, invitations
     project-room/   the project Durable Object: operations, change log, snapshots
     installation/   the installation Durable Object: users, settings, activity log, job table
@@ -440,7 +494,7 @@ Rules for implementers:
 - Times are stored as UTC and shown in local time. Lengths are stored in metres with their basis; money as integer minor units with a currency. Unknown is an explicit value.
 - Nothing in file storage is overwritten. No secret enters records or logs.
 - The actor of any action comes from the access gate, never from the request body.
-- A route that is not explicitly marked as public, reviewer-link or signed-in is refused.
+- Every route is under `/api/v1/` and declares its input, reply and class in `shared/` (AD-22). A route that declares no class is refused.
 - Only `server/files/` and `server/update/` contain host-specific code. No platform feature outside the list in AD-16 is used.
 - No Durable Object class is added, renamed or removed after the first release without Kevin's decision.
 - Every new table or record shape comes with its conversion step and a test that converts data from the previous release.
@@ -460,6 +514,7 @@ Language and tests (K6): existing application code stays in JavaScript; `shared/
 | Same product on either host | One build (AD-16). Full acceptance on Cloudflare first; self-hosting is not called supported until the same run passes there. | SM-6. |
 | Safe updates | AD-20, AD-21. | R11, R14. |
 | Fixed records never change | Hash-named files; no update path. | Hash tests after later edits. |
+| Agents act only within their person's access, and people decide | Token kinds and route classes in the gate (AD-22). | Gate tests for every route class with each caller kind; R18. |
 
 ## 12. Risks and experiments
 
@@ -500,6 +555,8 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | R14 | The runtime's on-disk storage format across a runtime upgrade. | Start a newer runtime against data written by an older one; repeat in every release. First run passed on 2026-11-19. | Hold the runtime version; move data by portable backup. |
 | R15 | The legibility of smaller package pages. | Print plan and photo pages at JPEG quality 0.94, 0.85 and 0.75; have a person compare them. | Keep higher quality and accept more volumes. |
 | R16 | GitHub token permission for starting an update run. | Try a fine-grained token with only the Actions permission. | Document the classic `repo` scope. |
+| R17 | Coverage at acceptance size, and parsing a 5,000-row workbook, inside one request on the server. | Run both on Cloudflare and under the open-source runtime and record processing time against the limits. First story: the agents' coverage story in Epic 11. | Run them as resumable jobs. |
+| R18 | An MCP client using the endpoint on both hosts, including a server reachable only on a private network with a certificate from a private authority. | Connect Claude Code with a token, list the tools, make a draft change, and confirm a person-only call is refused. First story: the agents' set-up story in Epic 11. | Document the client settings each host needs; offer the HTTP API alone. |
 
 ## 13. Confirmed decisions
 
@@ -528,6 +585,7 @@ All confirmed by Kevin on 2026-11-18.
 | K20 | **Updates are carried out object by object**: one version acts at a time, each object converts and returns its own data, an update record with three states replaces the pending-update marker, and deployments replace running objects at once (AD-20, AD-21). Proposed after the first part of experiment R11 and confirmed on 2026-11-19, with seven fixes listed at the end of AD-20's update text. |
 | K21 | **Sixteen refinements to K20** from the independent review of the update stories, listed in AD-20: chiefly a fourth state, *stopping*, before *prepared*; time limits on every waiting state; a step number that never goes back; authenticated machine calls; recovery when the version allowed to act is not deployed; and conversion of restore copies and imports outside an update. Proposed and confirmed on 2026-11-19. |
 | K22 | **Twelve additions to K21 from a second review of the update stories**, listed in AD-20: kept attempt outcomes, deadlines on every state, timers tied to an attempt, a command to clear a stuck record, an update secret shown once, and recovery paths for the self-hosted updater. Claude's recommendations, accepted on Kevin's instruction of 2026-11-19 to proceed with them. |
+| K23 | **AI agents can use Site Studio** (PRD amendment 1.3, AD-22): outside agents act for a person with personal access tokens; agents draft and people decide; one declared API serves the app and agents, with an MCP endpoint generated from it; it works on Cloudflare and on a private network with no outside service; access is settled in Epic 1 and the agent tools come in a later epic. Approved by Kevin on 2026-11-19 through the sprint change proposal, with Claude's recommendations for its five choices. |
 
 K4, the permanent administrator key of version 1.0, was replaced in version 2.0 by administrator accounts and a one-time set-up code.
 
@@ -549,10 +607,11 @@ Input to the epics.
 6. **Recovery.** Backups of projects and the installation, restore, portable backup. Run R3 and R5.
 7. **Self-hosting.** The Docker image, Compose file and install guide. Run R12 and R13. On 2026-11-18 Kevin moved the Docker image and R12 forward, to directly after step 3 (story 2.13 in the epics), so that both hosts are exercised from early on. The install guide and the updater container stay here.
 8. **Releases and updates.** Release workflow, signing, version check, conversions, the updater, the Cloudflare update workflow. Run R11, R14 and R16. Then the cross-host acceptance of SM-6.
+9. **Agents.** Access tokens and route classes come with accounts in step 2. After step 6: the API description, the MCP endpoint, coverage and import for agents, and SM-7. Run R17 and R18.
 
 ## 15. Not decided here
 
-- Exact tables, request formats and error codes.
+- Exact tables, request formats and the list of reason codes (AD-22 fixes that every refusal carries one).
 - Password length, lock-out thresholds and default session length. These follow current published guidance at implementation time and are recorded then.
 - Single sign-on, which the PRD leaves for later. The access gate is the one place it would attach.
 - Monitoring beyond built-in logs, the activity log and visible backup and update status.

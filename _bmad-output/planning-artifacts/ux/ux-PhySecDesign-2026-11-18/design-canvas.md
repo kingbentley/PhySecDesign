@@ -88,3 +88,7 @@ Choices made in drawing these that the note does not settle are listed in this f
 ## Still not drawn
 
 Everything an earlier version of this record listed as not drawn now has an artboard. The map-style variations noted in the specification remain undrawn.
+
+## Not yet drawn (2026-11-19)
+
+Three screens added by section 18 of the UX specification for agent access are not on the canvas: S-38 My account, Access tokens; S-39 Administration, Settings, Agent access; S-40 Administration, Users, a person's tokens.

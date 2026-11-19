@@ -543,6 +543,39 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 **Limits and values**
 - A service scope is named "Service visit" followed by the date, and the name can be changed. (CE-34)
 
+### Story 6.12d: External tickets on issues, visits and warranties
+
+As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Studio to the ticket in the other system.
+
+Covers: FR-78, FR-46, FR-65, FR-33 (package option), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
+
+**Core behaviour**
+- An issue, a service visit and a warranty each gain an "External tickets" list, with the hint "A ticket in another system, such as your customer's service desk or your own tracker". (CE-41)
+- Add asks for a ticket number and an optional link; a record may hold several external tickets. (CE-42)
+- The number is kept exactly as typed. (CE-43)
+- Each entry shows the number and, when it has a link, a link icon that opens the link in a new tab.
+- An external ticket whose number is also on another record shows "also on" with a link to each such record. (CE-45)
+- Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history. (CE-46)
+- The Issues list can be searched by ticket number, and shows the first external ticket of each issue with "+N" for more.
+- Members' CSV exports of issues, visits and warranties include their external tickets.
+- Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text. (CE-47)
+- The field shell's issue and visit forms show and add external tickets as on desktop.
+
+**Refusals and edge cases**
+- A link that does not start with `https://` or `http://` is refused with "Enter a web address starting with https://". (CE-44)
+- The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
+- The reviewer view never shows external tickets. (CE-47)
+- A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
+- Two people adding external tickets to one record at the same moment both keep theirs.
+
+**Limits and values**
+- A ticket number has 1 to 100 characters. (CE-43)
+- A link has at most 2,000 characters. (CE-44)
+
+**Access and restore**
+- A revision restore leaves external tickets unchanged.
+- External tickets travel in the project's portable backup.
+
 ## Epic 7: Extended modelling
 
 **Outcome.** The design can describe multi-view and pan/tilt/zoom cameras, doors with their components, site annotations, closets and ports, and cable that runs between floors.

@@ -89,3 +89,34 @@ Still open:
 | F | Optional structure findings S5 and S7 to S11 and S15 are not applied. | The review of draft 0.7. |
 
 Tracking was regenerated after this run.
+
+## Fourth run of the gate
+
+Run on 2026-11-19 with the same skill, in a local Claude Code session, after Kevin approved the [sprint change proposal](sprint-change-proposal-2026-11-19.md) for agent access. Artifacts read: PRD 1.2 with amendment 1.3, the UX design specification 0.6, the architecture 3.1 with AD-22 and K23, and the epics draft 0.7 as changed for agent access (11 epics, 174 stories, 2,238 criteria).
+
+**Verdict: CONCERNS, unchanged in kind.** Nothing found blocks building story 1.1.
+
+What the change touched and how it was checked:
+
+- The PRD's FR-73 to FR-77, NFR-5 as amended and SM-7 trace to story 1.19 and Epic 11. The architecture's AD-22 and experiments R17 and R18 are cited by stories. The assembler's checks, extended to these IDs, pass with no problem.
+- Story 1.1 now also declares every route under `/api/v1/` with a schema and gives every refusal a reason code. Story 1.3 limits the origin rule to sessions. Story 1.8 adds route classes and the actor's `via` field. These agree with AD-12 and AD-22 as revised, and none depends on a later story.
+- Epic 11 depends on Epics 1 to 8 only. Epic 10's acceptance of the proof of concept does not depend on it, and the PRD says SM-7 is shown in that epic.
+
+Still open, in addition to concerns A to F of the third run:
+
+| # | Concern | Where it lives |
+| --- | --- | --- |
+| G | Amendment 1.3, AD-22, UX section 18, story 1.19 and Epic 11 have not been independently reviewed. | A `bmad-review` of those parts would close it. |
+| H | Choices CG-04 to CG-09 (rate limit, a request with two identities, the token format, how long revoked tokens stay listed, the API versioning rule, and jobs for long calculations) carry no ruling yet. None is needed by story 1.1. | The epics, values and readings tables. |
+| I | Screens S-38 to S-40 are specified but not drawn on the design canvas. | UX `design-canvas.md`. |
+| J | Experiments R17 and R18 are to run, each attached to its story in Epic 11 with a fallback. | Architecture section 12. |
+
+Tracking was regenerated after this run: 11 epics and 174 stories, all in backlog.
+
+### Addendum to the fourth run: external tickets
+
+Later on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](sprint-change-proposal-2026-11-19-external-tickets.md). PRD amendment 1.4 adds FR-78, traced to story 6.20 and to a criterion in story 11.2; AD-22 gains the rule that links are never fetched; UX section 19 extends existing screens. The assembler's checks, extended to FR-78, pass with no problem. The verdict is unchanged: CONCERNS, nothing blocking story 1.1. Concern G now also covers amendment 1.4, UX section 19 and story 6.20, none independently reviewed. Tracking was regenerated: 11 epics and 175 stories, all in backlog.
+
+### Second addendum to the fourth run: review of Epic 11
+
+Later on 2026-11-19 a BMAD review of Epic 11 and story 1.19 ([review](epics/epics-PhySecDesign-2026-11-18/review-epic-11.md)) found 65 problems, all applied on Kevin's instruction. Story 1.1 now also declares an entered-text field type, which standing rule 12 makes every later story use; this is small and blocks nothing. The verdict is unchanged: CONCERNS, nothing blocking story 1.1. Concern G narrows to the revised stories, which have not been reviewed again; concern H now covers CG-04 to CG-09 and CG-13, CG-15, CG-16, CG-19 and CG-26.
