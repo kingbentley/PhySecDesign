@@ -58,8 +58,9 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 
 **Refusals and edge cases**
 - A CORS preflight (`OPTIONS`) to `/mcp` is answered without a token and runs nothing; it allows any origin to send POST with the `Authorization`, `Content-Type` and protocol-version headers, without credentials. (CG-35)
-- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35)
+- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header, carrying `resource_metadata` with the address of the protected-resource metadata wherever that metadata is served, and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35)
 - `/mcp` never accepts a session cookie, so a request without a token runs nothing whatever its origin.
+- The 401 without a token carries `Access-Control-Allow-Origin` for any origin, without credentials, and `Access-Control-Expose-Headers: WWW-Authenticate`, so a browser-based client can read the challenge.
 - A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request to `/api/v1/` with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11)
@@ -84,7 +85,7 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 - Experiment R17 runs the coverage calculation on the acceptance-size test project, inside one request, on a deployed Cloudflare test installation and under the self-hosted configuration, and records CPU time, wall time, peak memory and each host's configured limits.
 - The calculation fits one request on a host when it uses at most half of every configured limit; the shipped self-hosted configuration sets the container's CPU and memory limits equal to Cloudflare's, and those are the limits used there. (CG-18)
 - If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results in its reply. (CG-09)
-- If R17 shows it does not fit on either host, the route starts a job and a second route returns its result when done. (CG-09)
+- If R17 shows it does not fit on one host or on both, the route starts a job on both hosts and a second route returns its result when done, so the two hosts behave alike. (CG-09)
 - A job's first reply gives its identifier and a suggested wait, and the tool's description tells the agent to fetch the result after that wait.
 - An API route returns the estimate of the current design.
 - Both routes use the calculation and estimate code of the shared module, unchanged from the browser's.
@@ -133,7 +134,7 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 
 **Limits and values**
 - An agent's upload may be at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16)
-- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09)
+- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit on one host or on both, parsing runs as a job on both hosts as in story 11.3. (CG-09)
 - When parsing runs as a job, the preview is the job's result: it carries the preview's fingerprint, the apply call names that fingerprint, and applying stays one operation that is refused with "preview out of date" if the project changed since.
 
 ### Story 11.5: Check that text from others reaches agents marked

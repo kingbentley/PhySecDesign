@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2359 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2361 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -697,7 +697,8 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22 · reading)
 - Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33 · value)
-- An operation identifier carries the time it was made, and one more than 24 hours old is refused with "identifier expired", so a retry after the identifier is forgotten never repeats a change. (CG-33 · value)
+- An operation identifier carries the time it was made, and its age is measured on the server's clock: one dated more than 5 minutes ahead of the server is refused with "identifier from the future", and one more than 24 hours old is refused with "identifier expired". (CG-33 · value)
+- A stored result is kept until 24 hours after its identifier's time, so every identifier still accepted finds its result and a late retry never repeats a change. (CG-33 · value)
 - A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
@@ -4278,7 +4279,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 **Core behaviour**
 - If installing, converting or the health check fails, or the time limit passes, the updater asks the installation to return, presenting the attempt identifier and the update secret. Once the installation confirms that the record is returning, the updater stops the new container and starts the earlier image by its recorded digest. The updater restores nothing itself.
 - If the installation answers, by the record or by the attempt's recorded outcome, that the update has succeeded, the updater ends without starting the earlier image.
-- If no container answers the request to return within 60 seconds, the updater stops the new container if it is still running, then starts the earlier image by its recorded digest and repeats the request, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the updater starts the new image again. (CF-47 · value)
+- If no container answers the request to return within 60 seconds, the updater stops the new container if it is still running, then starts the earlier image by its recorded digest and repeats the request, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the updater stops the earlier container, waits for it to exit, and starts the new image again. (CF-47 · value)
 - The earlier version restores what was converted, as in story 9.4, and reports that the data is back. The updater waits for that report.
 - The updater then reports the outcome: S-35 shows which step failed and a plain statement that the earlier version and its data are running again.
 - A conversion failure for any one project fails the update and returns the whole installation; no project is left at the new version.
@@ -4291,7 +4292,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
 - After the server loses power or the updater is killed while the record is stopping, the backup resumes on restart; while the record is prepared, the updater asks on restart for the record to be withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31 · reading)
-- After the server loses power or the updater is killed once the record is installing or returning, the updater decides on restart from its step log and the record: with the record returning, it stops the new container if it is still running and starts the earlier image; with the record installing and the new image started, it starts the new image and the update continues, returning only on failure; with the new image never started, the arrival deadline returns the installation. (CF-31 · reading)
+- After the server loses power or the updater is killed once the record is installing or returning, the updater decides on restart from its step log and the record: with the record returning, it stops the new container if it is still running and starts the earlier image; with the record installing and the new image started, it uses the new container if that is still running and otherwise starts the new image, and the update continues, returning only on failure, a refused start counting as one; with the new image never started, it starts the earlier image by its recorded digest, so that the earlier version is running when the passed arrival deadline returns the installation. (CF-31 · reading)
 - If the updater stops after its yes and never swaps the image, the arrival deadline sets the record to returning and, with its data unchanged, the installation removes the record and accepts changes again.
 - The installation is never left refusing changes with no update running.
 
@@ -4735,8 +4736,9 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 
 **Refusals and edge cases**
 - A CORS preflight (`OPTIONS`) to `/mcp` is answered without a token and runs nothing; it allows any origin to send POST with the `Authorization`, `Content-Type` and protocol-version headers, without credentials. (CG-35 · reading)
-- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
+- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header, carrying `resource_metadata` with the address of the protected-resource metadata wherever that metadata is served, and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
 - `/mcp` never accepts a session cookie, so a request without a token runs nothing whatever its origin.
+- The 401 without a token carries `Access-Control-Allow-Origin` for any origin, without credentials, and `Access-Control-Expose-Headers: WWW-Authenticate`, so a browser-based client can read the challenge.
 - A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request to `/api/v1/` with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11 · decision)
@@ -4761,7 +4763,7 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 - Experiment R17 runs the coverage calculation on the acceptance-size test project, inside one request, on a deployed Cloudflare test installation and under the self-hosted configuration, and records CPU time, wall time, peak memory and each host's configured limits.
 - The calculation fits one request on a host when it uses at most half of every configured limit; the shipped self-hosted configuration sets the container's CPU and memory limits equal to Cloudflare's, and those are the limits used there. (CG-18 · value)
 - If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results in its reply. (CG-09 · decision)
-- If R17 shows it does not fit on either host, the route starts a job and a second route returns its result when done. (CG-09 · decision)
+- If R17 shows it does not fit on one host or on both, the route starts a job on both hosts and a second route returns its result when done, so the two hosts behave alike. (CG-09 · decision)
 - A job's first reply gives its identifier and a suggested wait, and the tool's description tells the agent to fetch the result after that wait.
 - An API route returns the estimate of the current design.
 - Both routes use the calculation and estimate code of the shared module, unchanged from the browser's.
@@ -4810,7 +4812,7 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 
 **Limits and values**
 - An agent's upload may be at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16 · value)
-- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09 · decision)
+- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit on one host or on both, parsing runs as a job on both hosts as in story 11.3. (CG-09 · decision)
 - When parsing runs as a job, the preview is the job's result: it carries the preview's fingerprint, the apply call names that fingerprint, and applying stays one operation that is refused with "preview out of date" if the project changed since.
 
 ### Story 11.5: Check that text from others reaches agents marked
@@ -5096,7 +5098,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working | Yes (Kevin, 2026-11-19) |
 | CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) | Yes (Kevin, 2026-11-19) |
 | CG-14 | 1.19 | 20 refused token requests a minute from one address, then 429 | No limit on failed tokens | Throttles token guessing (review E32) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
-| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused; an identifier carries its time and one older than 24 hours is refused as expired | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused; an identifier carries its time, measured on the server's clock: more than 5 minutes ahead is refused, older than 24 hours is refused as expired, and a result is kept until 24 hours after its identifier's time | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
 
 *Epic 2: One shared project online (12)*
 

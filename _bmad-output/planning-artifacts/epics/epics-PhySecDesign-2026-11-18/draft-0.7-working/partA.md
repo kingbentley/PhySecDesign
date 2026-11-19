@@ -555,7 +555,8 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22)
 - Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33)
-- An operation identifier carries the time it was made, and one more than 24 hours old is refused with "identifier expired", so a retry after the identifier is forgotten never repeats a change. (CG-33)
+- An operation identifier carries the time it was made, and its age is measured on the server's clock: one dated more than 5 minutes ahead of the server is refused with "identifier from the future", and one more than 24 hours old is refused with "identifier expired". (CG-33)
+- A stored result is kept until 24 hours after its identifier's time, so every identifier still accepted finds its result and a late retry never repeats a change. (CG-33)
 - A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.

@@ -290,7 +290,7 @@ Method: version A was deployed; the secret was set to one value and then to a se
 | Observation | Result |
 | --- | --- |
 | Rollback with `--durable-objects-code-update-mode immediate` | Accepted. Entry code answered as A 6.7 s after the command returned; the busy object wrote as A 11.9 s after. |
-| Secret after that rollback | The value held by the version rolled back to (the first value), not the latest (the second). |
+| Secret after that rollback | The hash matched the one read after the first value was set, not the one read after the second; see the limits below. |
 | Rollback with no mode given | Entry code answered as B 6.2 s after the command returned; the busy object was still running A at the end of the 60-second watch, as with the default deferral of a deployment. |
 | Failed requests | 1 of 664. |
 
@@ -304,5 +304,5 @@ Not determined: a rollback across a Durable Object class change; behaviour with 
 
 **Limits of this run, found afterwards by CodeRabbit's review of pull request 3:**
 - **Polling gaps.** The script ran Wrangler synchronously, which paused both polling loops while each rollback command ran (about 14 and 12 seconds). The count of 1 failed request in 664 therefore says nothing about those two intervals.
-- **Secret check.** The secret-restoration result stands: both baseline hashes and the post-rollback hash were real, distinct values, not missing answers. But the script did not confirm the baseline before going on.
+- **Secret check.** The hashes read were real, distinct values, not missing answers, but the script did not confirm that each baseline hash belonged to the value just set, because it neither waited for the change nor compared against a hash of that value. On its own the run therefore supports, but does not establish, that a rollback restores the version's own secrets. Cloudflare's documentation agrees with it: since 2024-06-20, the rollback API asks for confirmation when a secret's value in the version rolled back to differs from the current one (Workers changelog). The plan's rule that no Worker secret may change during an update rests on both. The revised script confirms the baselines, and a rerun would settle it.
 - **The revised script.** It runs Wrangler asynchronously, counts failures during each command, and confirms each secret's hash against one computed locally, stopping as inconclusive if it cannot. It also states the Node 22.12.0 prerequisite of Wrangler 4.165.0. It has not been run again.
