@@ -110,6 +110,9 @@ miss = [f'FR-{n}' for n in range(1, 73) if n not in cover['FR']] + [f'NFR-{n}' f
 if miss: problems.append('not covered: ' + ', '.join(miss))
 
 # ---- choices ----
+crit_lines = [l for l in body_new.split('\n') if l.startswith('- ')]  # criteria only, not Notes
+for l in body_new.split('\n'):
+    if not l.startswith('- ') and re.search(r'\(C[A-F]-\d+\)', l): problems.append('choice ID outside a criterion: ' + l[:70])
 choices = []
 for g in 'ABCDEF':
     for ln, line in enumerate(open(W + f'choices{g}.md', encoding='utf-8'), 1):
@@ -121,10 +124,10 @@ for g in 'ABCDEF':
         old = re.split(r'[,; ]+', f[1])[0]
         new = remap.get(old) or (remap[base[old][0]] if len(base.get(old, [])) == 1 else None)
         if not new: problems.append(f'choices{g}.md {f[0]}: story {old} unknown or split; name the piece')
-        n_in = len(re.findall(r'\(' + f[0] + r'\)', body_new))
+        n_in = sum(len(re.findall(r'\(' + f[0] + r'\)', l)) for l in crit_lines)
         if n_in < 1: problems.append(f'{f[0]}: is on no criterion')
         choices.append(dict(id=f[0], story=new or old, cls=f[2], choice=f[3], alt=f[4], why=f[5]))
-for cid in set(re.findall(r'\((C[A-F]-\d+)\)', body_new)) - {c['id'] for c in choices}:
+for cid in set(re.findall(r'\((C[A-F]-\d+)\)', '\n'.join(crit_lines))) - {c['id'] for c in choices}:
     problems.append(f'{cid} is on a criterion but not in a choices file')
 choices.sort(key=lambda c: (key(c['story']) if re.fullmatch(r'\d+\.\d+', c['story']) else (99, 0), c['id']))
 

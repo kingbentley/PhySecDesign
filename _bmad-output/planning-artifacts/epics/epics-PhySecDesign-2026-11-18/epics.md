@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2055 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2057 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
 - **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
@@ -3923,6 +3923,7 @@ Covers: NFR-8, FR-72 (return), AD-20.
 - An earlier version that restarts and finds the marker with installation recorded as begun restores the pre-update backup, but does not clear the marker and does not accept changes.
 - After a return the marker is cleared, and changes are accepted again, only when every project and the installation's own data are back and the update run is confirmed finished or cancelled.
 - A deployment of the new version that arrives after the restore therefore still finds the marker, converts again and runs its health check.
+- Before it converts anything under the marker, the new version erases the marker's record of which projects and installation data were restored, so a later return restores all of them again.
 - Self-hosted, the updater confirms that the image swap is over, which counts as the run being finished.
 - The restore under the marker ends no session and cancels no reviewer link.
 - The server offers a health check: the sign-in page is served, a project opens and a test save is acknowledged.
@@ -3931,6 +3932,7 @@ Covers: NFR-8, FR-72 (return), AD-20.
 **Refusals and edge cases**
 - No conversion changes the marker store and no restore replaces it: a test restores the installation's data from a backup taken before the marker was set and then reads the marker with its progress intact.
 - A restore stopped part-way resumes at the next start and ends with the same result.
+- A test runs a restore, then a late deployment whose conversion or health check fails, then a second return: every project and the installation's own data end at the pre-update backup, none skipped as already restored.
 - If that restore fails, the server keeps serving nothing, says plainly that the return did not complete, and does not report success.
 - A server that finds the marker with installation not begun restores nothing and keeps changes stopped. (CF-24)
 - A server that finds data newer than itself and no marker refuses to start, and its explanation names both versions.
