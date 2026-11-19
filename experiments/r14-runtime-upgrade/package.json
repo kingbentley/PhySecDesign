@@ -1,0 +1,5 @@
+{
+  "name": "r14-runtime-upgrade",
+  "private": true,
+  "description": "Experiment R14: does data written by an older workerd open under a newer one?"
+}

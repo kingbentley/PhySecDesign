@@ -501,4 +501,4 @@ Covers: AD-18, experiment R13.
 - Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 
-Notes: The self-hosted image is story 2.13a; this experiment uses the configuration of story 1.1 because it comes earlier.
+Notes: The self-hosted image is story 2.13a; this experiment uses the configuration of story 1.1 because it comes earlier. The self-hosted half was run early on 2026-11-19 and passed with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.

@@ -28,3 +28,9 @@ dist/
 
 # Local state written by Cloudflare tooling.
 .wrangler/
+
+# Throwaway files made by the experiments: test certificates and keys, runtime copies, output.
+/experiments/r13-smtp/certs/
+/experiments/r14-runtime-upgrade/runtimes/
+/experiments/*/data*/
+/experiments/**/*.out

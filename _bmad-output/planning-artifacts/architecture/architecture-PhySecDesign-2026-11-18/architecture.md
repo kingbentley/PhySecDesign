@@ -247,7 +247,7 @@ One Durable Object per installation, addressed by a fixed name, holds: users, pa
 
 The server has an email interface with two implementations: none, and an HTTP email service. With none, every invitation and reset is a link the administrator copies. No feature requires email.
 
-SMTP, which self-hosting organisations often prefer, depends on the runtime's outbound socket interface and has not been tried. It is experiment R13 and is not promised until it passes.
+SMTP, which self-hosting organisations often prefer, depends on the runtime's outbound socket interface. The self-hosted half of experiment R13 passed on 2026-11-19; the Cloudflare half has not been run, and SMTP is not promised until it passes.
 
 ## 8. Backups and moving projects
 
@@ -371,6 +371,14 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | R8 | Can Cloudflare's open-source runtime host the same build? | Yes for Durable Objects, alarms and files on disk. No built-in R2. Storage format labelled experimental. | AD-1, AD-16, AD-17 revised (K16). |
 | R10 | Best trigger for a Cloudflare deployment; going back. | Deploy hooks cannot name a version. Rollback is blocked across a class change and never undoes data. | AD-20, AD-21 revised (K18). |
 
+### Run on 2026-11-19
+
+| # | Question | Result | Effect on this document |
+| --- | --- | --- | --- |
+| R14 | Does data written by an older runtime open under a newer one? | Yes, across five versions from January 2025 to November 2026: step by step, in one jump, and going back. | None. The format is still labelled experimental, so R14 stays in the list below as a check repeated for every release. |
+| R13 | SMTP through the runtime's outbound sockets (self-hosted half). | Works with both usual forms of encryption and a user name and password; bad certificates are refused. A mail server on a private network, or one with a private certificate authority, needs a line of runtime configuration. | AD-18 unchanged until the Cloudflare half is run. |
+| R2 | The end-to-end time left unmeasured on 2026-11-18. | 148 to 513 ms median in one run, 569 ms slowest. | None. |
+
 ### Still to run, each with the first story that depends on it
 
 | # | Risk | Experiment | Fallback |
@@ -381,8 +389,8 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | R9 | Does Cloudflare's hosted platform accept the chosen password-hashing cost? | Time PBKDF2 at the chosen count on a deployed Worker. | Lower the count within current guidance, or Argon2id in WebAssembly. |
 | R11 | An update that fails half-way must return cleanly on both hosts. | Break an update at each step on a test server and a test Cloudflare account. Confirm Cloudflare's rollback command behaves as documented. | Block the release of the Update control until it does. |
 | R12 | Durability and locking of the runtime's SQLite files on real server disks, including power loss. | Test on a typical virtual-machine disk and a network disk; document unsupported storage. | Require local disk for records. |
-| R13 | SMTP through the runtime's outbound sockets. | Send a message through a test SMTP server on both hosts. | HTTP email services only. |
-| R14 | The runtime's on-disk storage format across a runtime upgrade. | Start a newer runtime against data written by an older one; repeat in every release. | Hold the runtime version; move data by portable backup. |
+| R13 | SMTP through the runtime's outbound sockets. | Send a message through a test SMTP server on both hosts. Self-hosted half passed on 2026-11-19; the Cloudflare half remains. | HTTP email services only. |
+| R14 | The runtime's on-disk storage format across a runtime upgrade. | Start a newer runtime against data written by an older one; repeat in every release. First run passed on 2026-11-19. | Hold the runtime version; move data by portable backup. |
 | R15 | The legibility of smaller package pages. | Print plan and photo pages at JPEG quality 0.94, 0.85 and 0.75; have a person compare them. | Keep higher quality and accept more volumes. |
 | R16 | GitHub token permission for starting an update run. | Try a fine-grained token with only the Actions permission. | Document the classic `repo` scope. |
 

@@ -1,6 +1,6 @@
 # Architecture experiments
 
-Run on 2026-11-18 to test decisions in the [architecture](../_bmad-output/planning-artifacts/architecture/architecture-PhySecDesign-2026-11-18/architecture.md) before any story is built. Each folder holds the throwaway code that produced its result. Nothing here is part of the application.
+Run on 2026-11-18 and 2026-11-19 to test decisions in the [architecture](../_bmad-output/planning-artifacts/architecture/architecture-PhySecDesign-2026-11-18/architecture.md) before any story is built. Each folder holds the throwaway code that produced its result. Nothing here is part of the application.
 
 **Read the limits first.** These ran in a cloud container (Intel Xeon 2.30 GHz, 4 cores, Node 22.23.5, headless Chromium), not on the reference laptop or real phones, and on synthetic test data. They show whether something is comfortably possible, clearly not, or too close to call. They are not acceptance results.
 
@@ -11,6 +11,8 @@ Run on 2026-11-18 to test decisions in the [architecture](../_bmad-output/planni
 | R1 | Can a full-size PDF package be generated in the browser within 5 minutes? | **Yes for generation (about 13 s per 250 pages). Two findings:** a 250-page volume is about 160 MiB, over the 100 MiB limit, and uploading an edition takes far longer than generating it. |
 | R6 | Minimum R2 upload part size; PDF printing in Cloudflare's browser service. | **Both confirmed.** Parts are at least 5 MiB and must be equal in size; Cloudflare's browser service does produce PDFs. |
 | R10 | Best trigger for a Cloudflare deployment from the interface. | **A deploy hook exists but cannot name a version.** One finding changes the update design: Cloudflare blocks rollback across a Durable Object class change. |
+| R14 | Does data written by an older runtime open under a newer one? | **Yes, across almost two years of versions**, forwards, in one jump, and backwards. First run only: it is repeated for every release. |
+| R13 | Can the runtime send email over SMTP? | **Yes on a server (self-hosted half).** Both usual forms of encrypted SMTP worked and bad certificates were refused. The Cloudflare half is not run. |
 | R8 | Could Cloudflare's open-source runtime host the same build on a server? | **Largely yes.** The same Worker ran on a Linux server with durable per-project SQLite storage. File storage has no built-in equivalent, and the on-disk storage format is marked experimental. |
 
 ## R7 — Cloudflare tooling with the prototype
@@ -61,6 +63,16 @@ The prototype does warn when this happens. But NFR-4 requires sampling no coarse
 Conclusion: the 10-second target has more than twenty times headroom on this machine even at 0.5 m. The fixed work budget is a worst-case estimate that is far too cautious, because most cameras are skipped by a bounding-box test. It should be replaced by a limit based on measured time, with the calculation in a Web Worker as planned (AD-9). The fallbacks listed for R2 (incremental recomputation, several workers, a spatial index) are not needed on this evidence.
 
 Not shown: accuracy against an independent reference, real building geometry, or a phone.
+
+**End to end in one run (added 2026-11-19).** The table above adds two separately measured medians. `bench-unbudgeted.mjs` now also times the floor analysis and all 20 zones together in a single run, nine times per case, on a 2.10 GHz Xeon:
+
+| Fixture | 1 m sampling: median (slowest) | 0.5 m sampling: median (slowest) |
+| --- | --- | --- |
+| 140 × 100 m, 280 edges | 148 ms (166 ms) | 316 ms (352 ms) |
+| 140 × 100 m, 940 edges | 205 ms (220 ms) | 468 ms (569 ms) |
+| 300 × 200 m, 280 edges | 217 ms (235 ms) | 513 ms (556 ms) |
+
+The single-run figures agree with the sums and leave the conclusion unchanged: the slowest run is about one eighteenth of the 10-second target.
 
 Two notes on the R2 scripts. The "total" they once printed was the sum of two separately measured medians (floor, then all zones), not one timed run; the scripts now label it so, and the headroom conclusion does not depend on the difference. The files in `patched/` are copies of the prototype's code with only the work budget and cell cap lifted, so they carry the prototype's behaviour elsewhere, including two points raised in review that story 2.8 now names: the contour mesh has no limit of its own once the cell cap is lifted, and the polygon clipping step tests against a small tolerance but intersects at zero.
 
@@ -155,3 +167,46 @@ What this means for the architecture:
 - The main risk is the experimental label on the storage format. An upgrade of the runtime could, in principle, be unable to read older data. That bears directly on safe updates (NFR-8). It can be managed by pinning the runtime version in each release, testing every release against data from the previous one, and keeping the portable backup as a format-independent way out.
 
 Not determined: behaviour on power loss as opposed to process kill; whether the disk service syncs before replying; behaviour under real load and over long runs; whether the storage format survives a runtime upgrade; Docker and arm64 runs.
+
+## R14 — Data written by an older runtime, opened by a newer one
+
+Folder: [r14-runtime-upgrade](r14-runtime-upgrade). Run on 2026-11-19 with `./install.sh && node run.mjs`. The Worker is the R8 arrangement: a SQLite-backed Durable Object on local disk, started without the experimental flag.
+
+Runtime versions used, oldest first: 1.20250109.0, 1.20250701.0, 1.20260101.0, 1.20260701.1 and 1.20261119.1 (January 2025 to November 2026).
+
+Method: the oldest runtime wrote 2,000 rows to each of three objects (text with non-ASCII characters, numbers and binary values), one entry through the key-value interface, and an alarm set for 2030. Each newer runtime in turn then opened the same folder, and the script compared row counts, a SHA-256 digest of every row, the pending alarm and SQLite's own integrity check with what the previous runtime had reported. Each runtime then added 500 rows, so every version also wrote.
+
+| Step | Result |
+| --- | --- |
+| Open with each of the four newer runtimes, one after another | Identical digests, counts and alarm each time; integrity check `ok`. |
+| The next-to-last runtime killed without warning straight after writing | The newest runtime found every row. |
+| Straight jump from the oldest runtime to the newest | Identical data. |
+| Going back: data last written by the newest runtime, opened by the oldest | Opened and read correctly, with the same digest. |
+
+On disk each object is one ordinary SQLite database file with its write-ahead log, named by the object's identifier.
+
+What this does and does not show. The format did not change in a way that mattered across 22 months of releases, in either direction, for this data. It is still labelled experimental by Cloudflare, so a future release could change it; the plan to pin the runtime version and repeat this check against the previous release's data in every release (story 9.5) stands. Not covered: alarms actually firing after an upgrade, data written while a compatibility flag changed behaviour, very large databases, and the installation's own data once it exists.
+
+## R13 — Email over SMTP from the runtime (self-hosted half)
+
+Folder: [r13-smtp](r13-smtp). Run on 2026-11-19 with `npm install && ./run.sh`, runtime 1.20261119.1. `worker.js` is a small SMTP client written on the runtime's outbound socket interface (`connect()` from `cloudflare:sockets`). `smtp-server.mjs` is a throwaway mail server on the same machine with a certificate from a test authority that the runtime is configured to trust.
+
+| Case | Result |
+| --- | --- |
+| Encrypted from the first byte (the port 465 style), signing in with a user name and password | Message delivered, content intact including a line starting with a dot and non-ASCII text. About 9 ms. |
+| Starting unencrypted and upgrading with STARTTLS (the port 587 style), then signing in | Message delivered. About 50 ms. |
+| Wrong password | Refused by the server; the Worker reports the server's reply. |
+| No encryption | The test server refuses sign-in without encryption; the Worker reports it. Nothing sent. |
+| Server certificate does not name the address used | Connection refused by the runtime, in both styles. |
+| Certificate from an authority the runtime does not trust | Connection refused by the runtime, in both styles. |
+| Nothing listening | Reported as a failed connection. |
+
+Findings that affect the design:
+
+- **It works on a server**, so SMTP can be offered on self-hosted installations as far as this half goes.
+- **Reaching a mail server on a private network needs a line of runtime configuration.** By default the runtime's outbound connections may reach only public addresses. The configuration here allows private ones and lists the test authority as trusted. An organisation whose mail server uses a private certificate authority would need that authority added the same way, which is a deployment setting, not something the Settings screen can do.
+- **Certificate failures reach the Worker as a generic error.** The reason ("not valid for name", "unknown issuer") appears only in the runtime's log. "Send a test message" can say the secure connection failed, but must point the administrator at the server log for why.
+- **`localhost` did not resolve to the address the test server first listened on** (127.0.0.1 only); the connection failed until the server listened on all local addresses. A mail server named by host name must be reachable on whatever address that name resolves to inside the container.
+- The option meant to state the expected server name when upgrading with STARTTLS is not supported by this runtime (it logs a warning), but the certificate was still checked against the host name connected to.
+
+Not run: the same send from a deployed Cloudflare Worker, which is the other half of R13 and decides whether SMTP is offered on both hosts (story 1.18). Also not tried: a real mail provider, other sign-in methods than user name and password, large messages or attachments.

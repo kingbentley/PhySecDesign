@@ -485,7 +485,7 @@ Covers: NFR-8, AD-20, experiment R14.
 **Evidence to record**
 - Before a second release exists, the check is run with a data folder written by an earlier tagged build and a test conversion, and the result is recorded.
 
-Notes: R14's fallback is to hold the runtime version and move data by portable backup.
+Notes: R14's fallback is to hold the runtime version and move data by portable backup. A first run on 2026-11-19 opened data written by a January 2025 runtime under four later versions up to November 2026, step by step, in one jump and going back, with identical content; the check is still repeated for every release.
 
 ### Story 9.4: Installed version and update check
 
