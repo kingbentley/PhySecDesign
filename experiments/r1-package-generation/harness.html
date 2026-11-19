@@ -1,0 +1,59 @@
+<!doctype html><meta charset="utf-8"><title>R1 package generation harness</title>
+<script type="module">
+// R1: generate full-size PDF volumes with the prototype's own page and PDF code.
+import { REPORT_PAPERS, createPaper, encodePaper, textStyle, rule, containedImage } from '/site-studio/src/reportPaper.js';
+import { packPdfPages } from '/site-studio/src/rasterPdf.js';
+
+const paper = REPORT_PAPERS.letter;
+const load = async url => createImageBitmap(await (await fetch(url)).blob());
+
+async function planPage(n, plan) {
+  const page = createPaper(paper, 'Westbrook Campus', 'Building A / Level ' + (n % 3 + 1), 'Labeled floor plan', n, '2026-11-18');
+  containedImage(page.context, plan, page.x, page.top, page.width, page.bottom - page.top);
+  for (let i = 0; i < 60; i++) {           // 60 device markers with labels, as on the busiest plan
+    const x = page.x + 40 + (i * 97 % (page.width - 80)), y = page.top + 30 + (i * 53 % (page.bottom - page.top - 60));
+    page.context.fillStyle = '#086e62'; page.context.beginPath(); page.context.arc(x, y, 5, 0, 7); page.context.fill();
+    textStyle(page.context, 7, 700); page.context.fillText('C-' + String(i + 1).padStart(2, '0'), x + 7, y + 3);
+  }
+  return encodePaper(page);
+}
+async function tablePage(n) {
+  const page = createPaper(paper, 'Westbrook Campus', 'Property-wide', 'Equipment schedule', n, '2026-11-18');
+  for (let r = 0; r < 26; r++) {
+    const y = page.top + 14 + r * 17;
+    textStyle(page.context, 8, r ? 400 : 700);
+    ['CAM-' + String(n * 26 + r).padStart(4, '0'), '4 MP varifocal dome', 'Building A / Level 2 / Room ' + (200 + r), 'Existing', 'Retain', 'SW-02 port ' + (r % 24 + 1), 'Unknown'].forEach((t, c) => page.context.fillText(t, page.x + c * 104, y));
+    rule(page.context, page.x, y + 5, page.x + page.width);
+  }
+  return encodePaper(page);
+}
+async function photoPage(n, photos) {
+  const page = createPaper(paper, 'Westbrook Campus', 'Building A / Level 2', 'Survey photos', n, '2026-11-18');
+  const w = (page.width - 16) / 2, h = page.bottom - page.top - 30;
+  for (let k = 0; k < 2; k++) {
+    containedImage(page.context, photos[(n * 2 + k) % photos.length], page.x + k * (w + 16), page.top, w, h);
+    textStyle(page.context, 8, 400); page.context.fillText('CAM-' + String(n * 2 + k).padStart(4, '0') + ' · mounting and field of view · Sam Rivera · 18 Nov 2026', page.x + k * (w + 16), page.bottom - 8);
+  }
+  return encodePaper(page);
+}
+
+window.runVolume = async ({ plans, tables, photoPages }) => {
+  const plan = await load('/site-studio/public/assets/ground-floor.png');
+  const photos = photoPages ? await Promise.all(['p1048', 'p1067', 'p122', 'p164'].map(p => load('/experiments/r1-package-generation/photos/' + p + '.jpg'))) : [];
+  const pages = [], stats = { plan: { n: 0, ms: 0, bytes: 0 }, table: { n: 0, ms: 0, bytes: 0 }, photo: { n: 0, ms: 0, bytes: 0 } };
+  const t0 = performance.now(); let peak = 0, n = 0;
+  const add = async (kind, make) => {
+    const s = performance.now(); const p = await make(); pages.push(p);
+    stats[kind].n++; stats[kind].ms += performance.now() - s; stats[kind].bytes += p.jpeg.byteLength;
+    if (performance.memory) peak = Math.max(peak, performance.memory.usedJSHeapSize);
+  };
+  for (let i = 0; i < plans; i++) await add('plan', () => planPage(++n, plan));
+  for (let i = 0; i < tables; i++) await add('table', () => tablePage(++n));
+  for (let i = 0; i < photoPages; i++) await add('photo', () => photoPage(++n, photos));
+  const tp = performance.now(); const blob = packPdfPages(pages, paper.width, paper.height); const packMs = performance.now() - tp;
+  const th = performance.now(); const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()); const hashMs = performance.now() - th;
+  return { pages: pages.length, pixel: pages[0].pixelWidth + 'x' + pages[0].pixelHeight, totalMs: performance.now() - t0, packMs, hashMs, pdfBytes: blob.size,
+    peakHeapMB: peak / 1048576, stats, sha256: [...new Uint8Array(digest)].slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('') };
+};
+window.ready = true;
+</script>

@@ -1,0 +1,6 @@
+{
+  "name": "r13-smtp",
+  "private": true,
+  "description": "Experiment R13: can the runtime send email over SMTP through its outbound sockets?",
+  "dependencies": { "workerd": "1.20261119.1" }
+}
