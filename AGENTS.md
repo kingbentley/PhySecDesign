@@ -7,7 +7,7 @@
 ## Pull request review fixes
 
 - When fixing findings from a pull request review (CodeRabbit or a person), collect every open finding from that round, fix them together, and push one commit for the round. Do not push a commit per finding.
-- After pushing, wait until CodeRabbit has finished responding to that commit before starting any further fixes. If its automatic reviews are paused, its replies on the existing threads settling counts as finished.
+- After pushing, wait until CodeRabbit has finished responding to that commit before starting any further fixes. If its automatic reviews are paused, its replies on the existing threads settling counts as finished; if there are no CodeRabbit threads to settle, continue without waiting.
 - Do not trigger a CodeRabbit review or resume its automatic reviews unless Kevin asks.
 
 ## BMAD planning
