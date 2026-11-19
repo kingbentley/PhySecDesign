@@ -4215,7 +4215,7 @@ Covers: FR-72 (return), NFR-8, experiment R11.
 - Cloudflare's rollback command is confirmed to behave as documented, and the result is recorded.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, but Durable Objects in use keep running the previous version for about five minutes when busy, and an object can stop itself to restart on the new version at once. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
 
 ## Epic 10: Acceptance
 

@@ -13,6 +13,7 @@ Run on 2026-11-18 and 2026-11-19 to test decisions in the [architecture](../_bma
 | R10 | Best trigger for a Cloudflare deployment from the interface. | **A deploy hook exists but cannot name a version.** One finding changes the update design: Cloudflare blocks rollback across a Durable Object class change. |
 | R14 | Does data written by an older runtime open under a newer one? | **Yes, across almost two years of versions**, forwards, in one jump, and backwards. First run only: it is repeated for every release. |
 | R9 | Does Cloudflare accept the chosen password-hashing cost? | **No.** Cloudflare refuses any PBKDF2 call above 100,000 iterations; the plan was 600,000. Two ways round it worked on both hosts; Kevin chose scrypt (decision K19). |
+| R11 (part) | On Cloudflare, what happens to running code and data at a deployment and a rollback? | **Data is untouched and nothing fails, but stored-data objects that are in use keep running the old version, for up to about five minutes.** An object can restart itself onto the new version at once. The update design must account for this. The full experiment (breaking a real update at each step) is not run. |
 | R13 | Can the runtime send email over SMTP? | **Yes on both hosts as far as tested.** On a server a message was delivered with both usual forms of encrypted SMTP. From Cloudflare, encrypted connections to two public mail services were made up to the point of signing in; no message was sent from there. |
 | R8 | Could Cloudflare's open-source runtime host the same build on a server? | **Largely yes.** The same Worker ran on a Linux server with durable per-project SQLite storage. File storage has no built-in equivalent, and the on-disk storage format is marked experimental. |
 
@@ -250,3 +251,31 @@ The Worker spoke SMTP to public mail services as far as is possible without an a
 | Port 25 | Refused by Cloudflare: "Connections to port 25 are prohibited". |
 
 So the socket interface and both forms of encryption work from Cloudflare, and port 25 cannot be used. Together with the delivery shown on a server, this is good evidence that SMTP can be offered on both hosts. What remains unproven is a complete delivery from Cloudflare with a real mailbox's user name and password, which needs a mail account to test with.
+
+## R11 (first part) — deployment and rollback on Cloudflare, observed from outside
+
+Folder: [r11-cloudflare-rollback](r11-cloudflare-rollback). Run on 2026-11-19 on the test Cloudflare account, on the Worker `site-studio-experiments` (which these runs replaced; `../cloudflare-probes/deploy.sh` puts the R9 and R13 Worker back). `worker.js` is one Worker with a SQLite-backed Durable Object. It is deployed repeatedly with a different version letter, and every row an object writes records the version of the Worker that called it, the version of the object's own code, and an identifier that changes each time the object is started. `run.py` keeps the Worker and two objects busy (a request every quarter second, an alarm every second, and one request held open for 45 seconds), changes the deployed version after 12 seconds, and reports what ran when.
+
+This is the part of R11 that can be run before the update code exists. It does not break a real update at each step.
+
+| Observation | Result |
+| --- | --- |
+| Time for a new deployment to answer requests | About 0.5 s after the API call returned, in all three runs. No answer came from the old version after the first from the new one, and no request failed. |
+| Rollback to the previous version through Cloudflare's deployments interface | Behaved exactly like a deployment: about 0.5 s, nothing failed. |
+| Stored data across deployment and rollback | Unchanged. 325 rows written before a rollback were identical afterwards. |
+| A request held open for 45 seconds across the change | Completed normally, under the old version. |
+| **Objects that were in use at the change** | **Kept running the old version's code.** In the three one-minute runs they never switched. In a longer run, one object kept busy by an alarm every second and one by a request every half second both ran the old code for between 280 and 320 seconds, then were restarted on the new version within about a second of each other. |
+| An object used 5 seconds before the change and then left alone | Still the old version 3 seconds after; the new version by 15 seconds after. |
+| Objects idle for some minutes, and objects never used before | The new version on their first request. |
+| Mixed versions | For as long as an object stayed on the old code, every request reached it through the new version of the Worker: over a hundred such rows in each one-minute run. |
+| Order of writes inside one object | Never an old-version row after a new-version row. The switch is a restart with a new start identifier. |
+| An object on old code asked to stop itself (`ctx.abort()`) | Restarted on the new version on the next call, and its alarms carried on under the new version. The call that asked for it returned an error, and a row written in that same call was not kept. |
+
+What this means for the update design (AD-20, AD-21):
+
+- **"The new version starts" is not one moment.** The entry code changes in half a second, but each project's object, and the installation's own object, changes only when it is next restarted, which for an object in steady use took about five minutes. A conversion that runs "when the new version starts" therefore runs at a different time for every object, and the health check cannot assume it has happened.
+- **Old code keeps running against live data after a deployment, and after a rollback.** This is the stale-version case recorded as an open point in AD-20, and it is the normal behaviour, not a rare race. Rules that the old version must obey after the change (stop accepting changes, do not restore) have to be enforced by data that the old code already checks, or by making each object restart.
+- **A way to force the change exists.** An object that learns from its caller that a newer version is deployed can stop itself and come back on the new code at once. Since every request reaches an object through the entry code, which switches immediately, the entry code can tell each object which version it should be. This was shown for one object; it is a candidate mechanism, not a design.
+- The five-minute figure is one observation on one account and is not a documented limit. The design should not depend on it.
+
+Not determined: what decides when Cloudflare restarts a busy object; behaviour with users in several regions; a deployment that changes a Durable Object class; whether a rollback is refused in the cases experiment R10 read about; and everything that needs the real update code.
