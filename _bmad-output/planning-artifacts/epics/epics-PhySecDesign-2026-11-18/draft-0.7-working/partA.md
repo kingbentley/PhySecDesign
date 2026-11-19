@@ -62,11 +62,14 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 - The step asks for the set-up code, the installation's name and the first administrator's name, email and password.
 - The page states that it disappears once an administrator exists.
 - On completion exactly one administrator exists, and the page confirms the installation's name and the administrator's email.
+- Set-up records the installation's public address from the address the set-up page was opened on. (CA-57)
 - The password is stored only as a salted scrypt hash (N = 131,072, r = 8, p = 1, a 32-byte result), with the parameters stored beside the hash.
+- The deploy command learns whether set-up is still open from a public read-only route that answers only open or closed, which reveals nothing the set-up page does not already show, and issues a set-up code only when set-up is open. (CA-52)
 
 **Refusals and edge cases**
 - Once any user exists, the set-up page and its request are refused, and the set-up code no longer works.
 - A wrong or missing set-up code is refused.
+- A set-up request from another origin, or without the app's header, is refused (standing rule 13).
 - Two set-up requests sent at the same moment create one administrator; the second is refused.
 - Deploying again to an installation that has an administrator generates no set-up code and does not make set-up available.
 - Deploying again to an installation with no users prints a new set-up code, and the earlier code stops working. (CA-02)
@@ -77,7 +80,10 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 - The set-up code has at least 20 characters. (CA-01)
 - The password must have 12 to 128 characters and must not equal the account's email address; there are no other composition rules. (CA-03)
 - The installation's name must be 1 to 80 characters. (CA-04)
-- After 5 wrong codes, further attempts from any address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05)
+- After 5 wrong codes from one network address, further attempts from that address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05)
+- After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed. (CA-05)
+- The counts of wrong codes are kept in the installation object's storage and are raised before the code is checked, so they hold across every copy of the Worker, across a restart and under requests sent at once. (CA-43)
+- Deploying again with a new set-up code resets the count of wrong codes, and the waiting message says that deploying again issues a fresh code. (CA-45)
 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
@@ -93,19 +99,23 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 **Core behaviour**
 - An installation that has an administrator shows the sign-in page, with the installation's name, to anyone not signed in.
 - The administrator created in story 1.2 signs in with their email and password.
-- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax.
-- The server stores only a hash of the session token.
+- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax, named with the `__Host-` prefix and an identifier of the installation, with no Domain attribute and the path `/`.
+- The server stores only a hash of the session token, and a new token is issued at each sign-in. (CA-47)
 - An account menu in the existing header shows the signed-in user's name and Sign out.
 - Sign out ends the session, and a later request with its cookie is refused.
 
 **Refusals and edge cases**
 - A wrong email or password gives one message, whether or not the email has an account.
+- For an email with no account, the server checks the password against a fixed stand-in hash made with the same parameters, so that a refusal takes the same time whether or not the account exists: a test finds the median times of 20 refusals for each case within 100 ms of each other. (CA-58)
 - After repeated failed sign-ins, further attempts are refused for a wait, and the page says how long to wait. (CA-07)
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
-- The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing.
+- The counts of failed sign-ins, by entered email address and by network address, are kept in the installation object's storage, which is a single instance for the installation on both hosts, and are not read from any log, so they apply equally to an address that has no account. (CA-43)
+- An attempt is counted before its password is checked, and the count is lowered again only when the password proves correct, so attempts sent at once cannot all pass the limit. (CA-43)
+- A browser that has signed in to an account successfully holds a signed marker for that account. While that account's email is in a wait, a sign-in from a browser holding the marker is held only by the per-address count, not the per-email one: a test locks an email from one address, then signs in with the correct password from a browser holding the marker. (CA-44)
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing (standing rule 13).
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
+- Two test installations on one host name with different ports each keep their own session: signing in to one does not sign the person out of the other.
 
 **Limits and values**
 - The failure message reads "That email and password do not match."
@@ -118,6 +128,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 
 **Evidence to record**
 - On a deployed Cloudflare test installation the scrypt hash is accepted without a platform error, and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
+- On a deployed Cloudflare test installation, of 25 wrong sign-ins for one email sent at once over several connections, at most 5 are checked against the password and the other 20 receive the wait. (CA-43)
 - A password hash made on one host verifies on the other.
 
 Notes: Left to later stories: invitations (story 1.3b); the second sign-in step (story 1.4); My account in the account menu (story 1.5); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.9); "Forgot password" (story 1.10c). Experiment R9 was run on 2026-11-19: Cloudflare refuses a PBKDF2 call above 100,000 iterations, so the 600,000-iteration hash first planned was replaced by scrypt, which worked on both hosts with identical results and added about 0.36 s to a request on Cloudflare.
@@ -135,9 +146,11 @@ Covers: FR-67 (invitation), AD-12. Screens: S-27, S-30 invite panel.
 - The person sets a name and a password and is signed in.
 - The password must meet the password rules of story 1.2, and the page shows each rule as it is met.
 - The new password is stored in the form story 1.2 states.
+- The invitation link's secret follows standing rule 14: a test checks its length, finds only its hash stored, and finds the secret absent from the address bar after the page opens and from the runtime log. (CA-55)
 
 **Refusals and edge cases**
 - There is no open registration: no page or request creates an account without an invitation.
+- Accepting an invitation from another origin, or without the app's header, is refused (standing rule 13).
 - An invitation works once.
 - A used or expired link says so and tells the person to ask an administrator for a new one.
 - Inviting an email that already has an account is refused, and the administrator is told so. (CA-10)
@@ -159,9 +172,11 @@ As a designer, I want to protect my account with an authenticator app, so that a
 Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX decision D14. Screens: S-26, S-27, S-29.
 
 **Core behaviour**
-- A user turns it on by scanning a code and confirming with one generated code.
+- A user turns it on by giving their password, scanning a code and confirming with one generated code. (CA-13)
 - The user is then shown recovery codes once, with Copy and Download; the codes cannot be displayed again.
 - With it on, a correct password alone does not sign in; a current code does.
+- After a correct password, an account with it on receives a pending sign-in token, stored only as a hash and bound to that browser, which allows nothing but the second step; it is discarded on success, on expiry, or when the wait of story 1.3a begins. (CA-46)
+- When the second step succeeds, a new session token is issued in place of any earlier one. (CA-47)
 - "Use a recovery code" accepts a recovery code in place of a generated code, once.
 - The account page shows how many recovery codes remain.
 - A user makes a fresh set of recovery codes by giving their password and a current code, and the old set stops working. (CA-13)
@@ -175,18 +190,24 @@ Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX 
 - A code that has been accepted is refused if used again.
 - Wrong codes and wrong recovery codes count toward the same limit and wait as wrong passwords in story 1.3a. (CA-15)
 - Turning it off asks for the password. (CA-13)
+- Turning it on with a wrong password is refused. (CA-13)
+- A pending sign-in token used after it expires, used for anything but the second step, or sent from another browser is refused. (CA-46)
+- A second-step request from another origin, or without the app's header, is refused (standing rule 13).
 - Neither the authenticator secret nor a recovery code appears in any reply after set-up.
 - The deploy command generates the deployment key only when the installation has none: a test deploys again and then signs in with a two-step code set up before.
+- The deploy command finds an existing deployment key in the Worker's list of secrets and never replaces it. (CA-52)
+- The installation stores a fingerprint of its deployment key; started with a key that does not match, it reads and writes no encrypted value and says that the deployment key does not match. (CA-52)
 
 **Limits and values**
 - A set holds 10 recovery codes. (CA-11)
+- A pending sign-in token lasts 5 minutes. (CA-46)
 - Codes are 6 digits and change every 30 seconds; a code from the step just before or just after the current one is accepted. (CA-12)
 - The code field asks for a numeric keypad and offers code autofill on a phone.
 
 **Access and restore**
 - A revision restore leaves two-step set-up and recovery codes unchanged.
 
-Notes: Left to later stories: the two-step controls on the My account page (story 1.5 places them there); reset or requirement by an administrator for one user (story 1.8b); requirement for everyone (story 1.10b); the self-hosted key file (story 2.13c).
+Notes: Showing the second-step page tells the person that the password was right, as is usual; the shared failure count of CA-15 limits guessing. Left to later stories: the two-step controls on the My account page (story 1.5 places them there); reset or requirement by an administrator for one user (story 1.8b); requirement for everyone (story 1.10b); the self-hosted key file (story 2.13c).
 
 ### Story 1.5: My account and sessions
 
@@ -203,6 +224,7 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 - A session shows a country or city where the host supplies one. (CA-17)
 - "Sign out everywhere else" ends the other sessions, and each is refused on its next request.
 - A session ends after a period without use. (CA-19)
+- A session also ends 30 days after its sign-in, whatever its use: a test with a test clock finds a session in daily use refused after that. (CA-47)
 - Only a request that results from something the person does, such as opening a page, saving, uploading or any other deliberate action, counts as use of the session. (CA-19)
 - A request the page sends by itself, such as an automatic check for other people's changes, does not count as use, so a page left open still reaches the idle limit. (CA-19)
 - When a session ends while a page is open, the page asks the user to sign in again in place.
@@ -211,11 +233,14 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 **Refusals and edge cases**
 - If a different account signs in on that page, the earlier account's pending input is neither shown to it nor sent. (CA-20)
 - That input stays bound to the earlier account and is offered again only when that account signs in on the same browser. (CA-20)
+- Signing out deliberately while input is pending warns that it will be removed and, on confirmation, removes it from the browser: a test inspects the browser's storage after sign-out and finds none. (CA-48)
+- Pending input that its account has not reclaimed within 7 days is removed from the browser. (CA-48)
 
 **Limits and values**
 - The period without use is 24 hours. (CA-18)
+- The longest a session lasts is 30 days from its sign-in. (CA-47)
 
-Notes: Left to later stories: ending sessions by deactivation (story 1.7b); the administrator changing the 24-hour period (story 1.10a); pending project edits kept the same way (story 2.2b); an upload in progress counting as use and resuming after sign-in (story 2.6c).
+Notes: The changes on My account (name, password, two-step verification, recovery codes, ending sessions) become person-only routes when story 1.7a gives every route a class (standing rule 2). Left to later stories: ending sessions by deactivation (story 1.7b); the administrator changing the 24-hour period (story 1.10a); pending project edits kept the same way (story 2.2b); an upload in progress counting as use and resuming after sign-in (story 2.6c).
 
 ### Story 1.6: Projects list and creating a project
 
@@ -228,6 +253,8 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 - An administrator creates a project by giving its name; it appears in the list without reloading the page, and its creator is recorded.
 - Each project has its own address, and opening a project from the list goes to that address.
 - A project's address loads the existing app, whose data is still held only in the browser.
+- While project data is held only in the browser, the projects list states that the build is for testing only and is not for real project data. (CA-49)
+- When a different account signs in on a browser, project data that the app holds in that browser is cleared first. (CA-49)
 - A user whose list holds exactly one project, an administrator included, goes straight to it after signing in. (CA-22)
 - The projects list is reachable from the account menu and by its own address, including for a user who was sent straight to a project.
 
@@ -252,6 +279,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 
 **Core behaviour**
 - Every request passes one access gate that identifies the caller and decides from their installation role and project membership.
+- Every route built in story 1.1 to story 1.6 declares its class and is decided by the gate alone, with no access check of its own left in place.
 - An administrator's server functions add a user to a project as Editor or Viewer, change that role and remove the user.
 - A standard user's project list shows only the projects they belong to, each with their role; an administrator's list shows every project.
 - Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project, an Editor may read and change their own project, a Viewer may read their project and is refused any change, and a non-member and an ended session are refused.
@@ -261,7 +289,9 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; a test route that declares none is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; in the test build, the gate refuses a test route that declares none.
+- The build fails if any route declares no class.
+- The test routes of this story exist only in the test build: a deployed installation answers them as not found.
 - A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
@@ -310,11 +340,13 @@ Covers: FR-70 (Users), FR-67 (deactivation), UX decision D10. Screens: S-30.
 - Invite is in Users, and the account-menu action of story 1.3b is removed.
 - When inviting, an administrator optionally chooses projects and a role in each, which apply when the invitation is accepted.
 - A user's detail lets an administrator change the name and installation role, sign the user out everywhere, deactivate and reactivate.
+- A user's detail lets an administrator change the user's email: the change ends all of the user's sessions, cancels the user's unused links, and is recorded in the activity log with the earlier and new address. (CA-50)
 - Deactivating explains that the person's records keep their name.
 
 **Refusals and edge cases**
 - A standard user does not see Administration, cannot open its pages by address and is refused by each of its server functions.
 - Inviting the email of a deactivated account is refused, and the administrator is told the account is deactivated. (CA-10)
+- Changing a user's email to one that another account holds, active or deactivated, is refused with the reason. (CA-50)
 - The last administrator's role and Deactivate controls are disabled, with the reason shown.
 - When an administrator's role is removed while they have an unsaved change open in Administration, the save is refused and shown as "not saved: access changed".
 - What they entered stays on the page and is not retried.
@@ -329,7 +361,11 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Core behaviour**
 - A user's detail lets an administrator issue a password reset link, which the administrator copies.
-- Using the link sets a new password and ends all of that account's sessions. (CA-25)
+- The reset link's secret follows standing rule 14.
+- Issuing a reset link leaves the current password working until the link is used. (CA-54)
+- Issuing a new reset link cancels any earlier unused one for that account. (CA-54)
+- Using the link sets a new password, ends all of that account's sessions and clears the account's sign-in wait. (CA-25, CA-44)
+- At its next sign-in after an administrator's reset, the account is shown once "Your password was reset by ‹administrator› on ‹date›". (CA-54)
 - A password reset leaves two-step verification on. (CA-25)
 - A user's detail lets an administrator reset that user's two-step verification: the user then signs in with the password alone and is offered set-up again.
 - After a reset, the user's old recovery codes no longer work. (CA-26)
@@ -340,6 +376,7 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Refusals and edge cases**
 - A reset link works once.
+- Using a reset link from another origin, or without the app's header, is refused (standing rule 13).
 - A cancelled link says it is no longer valid.
 - Deactivating an account cancels its unused invitation and reset links. (CA-28)
 - An invitation or reset link opened for an account that has since been deactivated is refused. (CA-28)
@@ -377,17 +414,26 @@ As the person who controls my organisation's Cloudflare account, I want a comman
 Covers: FR-70 (administrator recovery, Cloudflare host), AD-12.
 
 **Core behaviour**
-- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account and prints a one-time recovery code.
+- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account, generates a one-time recovery code on that person's machine and prints it. (CA-51)
+- The command supplies the installation with only the code's hash, the account named and the expiry time, as a Worker secret. (CA-51)
+- The entry code passes that hash to the installation object, which records it when it is used, so a code already used is refused even while the secret remains. (CA-51)
 - With the code, that account sets a new password and has its two-step verification reset. (CA-29)
-- Using the code ends all of that account's sessions.
+- Using the code ends all of that account's sessions and clears the account's sign-in wait. (CA-44)
+- Running the command resets the counts of wrong recovery and set-up codes. (CA-51)
 
 **Refusals and edge cases**
 - The code works once.
 - A wrong or expired code is refused.
+- Wrong recovery codes count toward the limit and wait of wrong set-up codes in story 1.2, kept in the installation object. (CA-51)
+- Using the code from another origin, or without the app's header, is refused (standing rule 13).
 - No page or request in the app issues a recovery code.
 
 **Limits and values**
 - The code expires 1 hour after it is printed. (CA-30)
+- The code has at least 20 random characters (standing rule 14).
+
+**Evidence to record**
+- On a deployed Cloudflare test installation, the code works within 60 seconds of the command finishing. (CA-51)
 
 Notes: Left to later stories: the activity-log entries for issuing and using the code (story 1.9); the self-hosted form of the command (story 2.13c); the command in the published instructions (story 9.1).
 
@@ -402,7 +448,7 @@ Covers: FR-71. Screens: S-36.
 - Sign-in events add entries: sign-in, failed sign-in including a failed second step, sign-out and sign out everywhere.
 - Credential events add entries: password change and reset, recovery codes renewed, and two-step verification turned on, turned off, reset, required and no longer required for a user.
 - Invitation and link events add entries: invitation issued, accepted and cancelled, and reset link issued and cancelled.
-- Account and project events add entries: set-up completed, role and membership changes, deactivation and reactivation, and project creation.
+- Account and project events add entries: set-up completed, email changes, role and membership changes, deactivation and reactivation, and project creation.
 - Issuing and using the recovery code of story 1.8d each add an entry; the issue is recorded as made from the host, with the account it names.
 - A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32)
 - When the text entered matches no account, the entry reads "unknown address" and the text entered is not stored. (CA-32)
@@ -413,9 +459,12 @@ Covers: FR-71. Screens: S-36.
 - No entry contains a password, token, code or link: a test signs in, invites, resets and fails a sign-in, then searches the stored log for each secret used and finds none.
 - No page or server function edits or removes an entry.
 - A standard user cannot open Activity or call its functions.
+- Failed sign-ins from one network address within one minute are written as one entry with a count, so that unauthenticated requests cannot grow the log one entry at a time. (CA-56)
+- In the CSV export, a cell that begins with `=`, `+`, `-` or `@` is prefixed with an apostrophe so that a spreadsheet does not run it as a formula. (CA-56)
 
 **Limits and values**
 - Entries are never removed by age: an entry given a date several years in the past in a test is still listed and exported.
+- The export is produced in pages, and an export of 100,000 entries completes on a deployed Cloudflare test installation. (CA-56)
 
 **Access and restore**
 - A revision restore leaves the activity log unchanged.
@@ -432,6 +481,7 @@ Covers: FR-70 (Settings), FR-67 (session period, invitation life), FR-68 (projec
 - Administration's left-hand list gains Settings, grouped as Installation, Sign-in and Maps.
 - Each group saves on its own and says what changed.
 - Installation holds the name, and a changed name shows on the sign-in page.
+- Installation holds the public address used in links the installation sends, recorded at set-up from the address the set-up page was opened on and changeable here. (CA-57)
 - Sign-in holds the period without use after which a session ends, how long an invitation lasts, and whether standard users may create projects.
 - A changed session period applies to existing sessions on their next request. (CA-34)
 - A changed invitation life applies to invitations issued afterwards. (CA-34)
@@ -486,7 +536,12 @@ Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18.
 - With an HTTP email service configured, "Send a test message" reports success or the service's error.
 - With email working, the invite panel offers "Email it" beside the link to copy.
 - With email working, "Forgot password" on the sign-in page sends a reset link.
-- Using the emailed link sets a new password, ends all of that account's sessions and leaves two-step verification on.
+- "Forgot password" replies before any message is sent; the message is sent afterwards by a job of the installation object, so that the reply takes the same time for every email. (CA-58)
+- Emailed links use the installation's public address of story 1.10a, never a request header: a test sends "Forgot password" with a forged host header and finds the emailed link unchanged. (CA-57)
+- The emailed reset link's secret follows standing rule 14.
+- With email working, a reset link issued by an administrator also emails the account's owner that a reset was issued, without the link. (CA-54)
+- An emailed reset link cancels any earlier unused reset link for that account, including one issued by an administrator; only the holder of the account's mailbox can use it. (CA-54)
+- Using the emailed link sets a new password, ends all of that account's sessions, clears the account's sign-in wait and leaves two-step verification on. (CA-44)
 - Without email, "Forgot password" says "Ask an administrator for a reset link".
 - Without email, every invitation and reset is a link the administrator copies, and nothing else stops working.
 - A change to the Email group and each reset link sent are recorded in the activity log, without the link.
@@ -495,10 +550,16 @@ Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18.
 - A failed invitation send is reported with the link still offered.
 - "Forgot password" gives the same reply for every email, and no message is sent for an unknown or deactivated account. (CA-39)
 - An emailed reset link works once.
+- Using an emailed reset link from another origin, or without the app's header, is refused (standing rule 13).
 
 **Limits and values**
 - An emailed reset link expires after 1 hour. (CA-38)
 - At most 3 reset messages are sent to one account in an hour. (CA-39)
+- "Forgot password" requests from one network address are limited to 10 an hour. (CA-53)
+- The installation sends at most 100 messages an hour in total, counting invitations, resets, notices and test messages. (CA-53)
+- A "Forgot password" request over either limit receives the usual reply and sends nothing. (CA-53)
+- An administrator's send over the installation's limit is reported, with the link still offered. (CA-53)
+- The activity log records each time a limit is reached. (CA-53)
 
 Notes: Left to later stories: SMTP (story 1.10d).
 
@@ -577,6 +638,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
 - A request that carries both a session cookie and a token is refused. (CG-05)
 - A token cannot create a project; the request is refused with "needs a person". (CG-24)
+- Creating, renaming or revoking a token, every change on My account (name, password, two-step verification, recovery codes, ending sessions) and changing the agent-access setting are person-only or administrator-only routes: a test calls each with a read-and-draft token and finds it refused with "needs a person" (standing rule 2).
 - An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
 - Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20)
 - When the maximum is below 90 days, Create token offers the maximum as its default.
@@ -590,7 +652,8 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13)
 - Creating an eleventh active token is refused with the limit stated.
 - After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14)
-- Rate counters are kept in memory, last use is written at most once a minute per token, and the per-address check runs before the installation object is consulted.
+- Token request-rate counters are kept in the installation object's memory, which is a single instance for the installation on both hosts; a restart of the object resets them, which is accepted for per-minute rates. Last use is written at most once a minute per token. (CA-43)
+- A per-address check in the Worker's own memory may run first as an extra guard; it is not relied on as the limit. (CA-43)
 - A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
 - An expired or revoked token stays listed, greyed, for 30 days. (CG-07)
 
@@ -599,5 +662,6 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 
 **Evidence to record**
 - The gate's server tests of story 1.7a and story 1.7b are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
+- On a deployed Cloudflare test installation, requests with one token sent at once over several connections above 300 a minute receive HTTP 429. (CA-43)
 
 Notes: Story 1.1 declares every route with its schema, and story 1.7a gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.8a), the activity log (story 1.9) and Settings (story 1.10a), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
