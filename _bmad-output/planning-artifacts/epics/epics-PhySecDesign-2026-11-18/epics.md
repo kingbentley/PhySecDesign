@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2323 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2355 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -21,20 +21,22 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations and remain listed in that review. Leaving them out, and adding any that turn up when the story concerned is built, is Claude's recommendation, accepted on Kevin's instruction of 2026-11-19.
 - **Agent access added (PRD amendment 1.3):** on 2026-11-19 Kevin approved the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) for AI agents. Story 1.1, story 1.3, story 1.8 and story 1.14 gained route declarations, reason codes, route classes and the actor's `via` field; story 1.19 adds personal access tokens; Epic 11 adds the API description, the MCP endpoint, results and import for agents, set-up on both hosts and its acceptance. Standing rule 2 now covers tokens. These additions have not been independently reviewed. Their choices are CG-01 to CG-09: CG-01 to CG-03 were decided by Kevin in the proposal, and CG-04 to CG-09 are open.
 - **External tickets added (PRD amendment 1.4):** on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](../../sprint-change-proposal-2026-11-19-external-tickets.md). Story 6.20 adds external tickets on issues, service visits and warranties, and story 11.2 lets an agent find and add them. Choices CE-41 to CE-47 are Kevin's, made in that proposal. Not independently reviewed.
-- **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. The revised stories have not been reviewed again.
+- **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
 
 Where no source document gave a rule or a value, the stories state one so that they can be built and tested. Each is marked on its criterion with an ID in brackets. Each now has a ruling in its decision column (see Status); the section keeps its name so that links to it still work.
 
-**1. New behaviour or restrictions that no source states (22).** Each needed a yes or a no.
+**1. New behaviour or restrictions that no source states (29).** Each needed a yes or a no.
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
 | CA-13 | 1.5 | Turning two-step verification off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-03 | 1.19 | Agent access is off in a new installation until an administrator turns it on | On by default | Sprint change proposal choice D5 | Yes (Kevin, sprint change proposal, 2026-11-19) |
 | CG-10 | 1.19 | An administrator's token reaches only projects the administrator is a member of | Every project, as the administrator's role allows | A stolen administrator token would otherwise reach every project (review A12) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-27 | 1.19 | Deactivating an account revokes its tokens for good | Suspend them and restore on reactivation | A reactivated account should not silently regain forgotten tokens (second review F14) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-28 | 1.19 | Removing the owner from a project drops it from tokens limited to chosen projects | Restore access when the owner is added back | A forgotten token should not silently regain a project (second review F15) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CB-19 | 2.16 | A saved survey entry cannot be edited or deleted; a correction is a new entry | Let the author edit an entry, keeping its history | NFR-1 keeps prior evidence unchanged and FR-21 protects evidence from undo | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CB-26 | 2.21 | Bundled web server gets and renews its certificate automatically, or uses operator-supplied files | Operator-supplied certificate files only | The architecture leaves the certificate method open; the two ways cover public and private servers | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CB-35 | 2.26 | A storage-full notice naming the volume is shown to administrators in Administration | Show the reason only on the failed save | Only an administrator can free space, and Administration is their one surface at this point | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
@@ -50,14 +52,19 @@ Where no source document gave a rule or a value, the stories state one so that t
 | CE-20 | 6.13 | A label or asset ID now used by another active device must be decided before the restore is confirmed | Allow the duplicate and flag both devices | No source covers a clash on restore. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CE-26 | 6.16 | While a project is archived, every reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision | Keep accepting decisions on fixed records, such as final acceptance of a closeout | FR-37 pauses editing; no source says whether a review decision counts as editing. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CE-47 | 6.20 | Packages include external tickets only when chosen, off by default; the reviewer view never shows them | Always shown, or never | Internal tracker addresses often should not reach a client (E7) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-48 | 6.20 | A link carrying a user name or password is refused | Store it as given | Tracker credentials would otherwise reach exports and backups (second review B30) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CE-49 | 6.20 | "Also on" stays within one project and never appears in exports or packages | Across every project the viewer can read | Keeps one customer's tickets out of another's records and documents (second review F4, F6, B28) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CF-13 | 8.8 | Recovery without the key needs a stated option, resets two-step verification for all and clears stored settings secrets | Refuse recovery without the key | Secrets encrypted with the key cannot be read; accounts must stay usable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-11 | 11.2 | Downloading a project's portable backup is person only | Allowed to read tokens | A misled agent could otherwise take away whole projects (review A15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-12 | 11.2 | An agent's change to a verified device clears its verified state; an agent's import row that would change a verified device goes to Needs review | Keep verified | FR-75: an agent's change never establishes a verified state (review A15, A16) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-29 | 11.2 | Only a person can undo an agent's tool call; an undo is refused if items changed since, and never restores verified | Let the token undo its own change | An undo through a token could re-establish a verified state or overwrite later work (second review B6, F19, F20) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-30 | 11.2 | Deletions made with a token can be reversed by a person; permanently removing files or a project is person only | Deletion by token is person only | Lets agents tidy drafts while keeping every loss recoverable (second review B23) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-31 | 11.2 | An agent may request a review; its assignee must be a person | Requesting a review is person only | A request decides nothing; the decision stays with a person (second review B33) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists |  |
 
-**2. Values nobody specified (84).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
+**2. Values nobody specified (88).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
-**3. Readings of a source (154).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
+**3. Readings of a source (155).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
 
 **4. Open points.**
 
@@ -117,7 +124,7 @@ Each epic's own section states what it depends on.
 ### Standing rules
 
 1. Every change is saved through a versioned operation or an append-only entry (AD-5). No story adds a way to edit a record without a base version.
-2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified. Calls from the update workflow and the updater are a fourth kind of route, checked by the gate with the update secret (AD-20). Every route declares its class (AD-22). From Epic 2 on, each story's write routes are also called with a read-and-draft access token and shown to succeed, unless the route is person only, when the token is refused with "needs a person"; and called with a read-only token and shown to be refused. An action made with a token records its owner with `via` naming the token, and wherever a story shows or exports an actor, such an action shows the owner and "via agent" with the token's name. Approving or deciding a review, bypassing, issuing or designating, closing out or reopening a scope, recording a test outcome, an installed mark or a verified observation, archiving or un-archiving, restoring, creating a reviewer link, creating a project and downloading a portable backup are person-only routes (FR-75).
+2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified. Calls from the update workflow and the updater are a fourth kind of route, checked by the gate with the update secret (AD-20). Every route declares its class (AD-22). From Epic 2 on, each story's write routes are also called with a read-and-draft access token and shown to succeed, unless the route is person only, when the token is refused with "needs a person"; and called with a read-only token and shown to be refused. An action made with a token records its owner with `via` naming the token, and wherever a story shows or exports an actor, such an action shows the owner and "via agent" with the token's name. Approving or deciding a review, bypassing, issuing or designating, closing out or reopening a scope, recording a test outcome, an installed mark or a verified observation, archiving or un-archiving, restoring, creating a reviewer link, creating a project, downloading a portable backup, permanently removing files or a project, and undoing a change are person-only routes (FR-75). An agent may request a review; its assignee is a person. A deletion made with a token can be reversed by a person. A change made with a token to any field of a verified device clears its verified state. Each new administrator-only route is shown to refuse an administrator's token, each new reviewer-link route to refuse any token, and each write route to refuse a read-and-draft token on a project where its owner is a Viewer.
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
@@ -127,7 +134,7 @@ Each epic's own section states what it depends on.
 9. A story that adds a kind of record states, under Access and restore, whether a revision restore replaces it or leaves it unchanged.
 10. Performance criteria are measured against the acceptance-size test project that story 2.11 generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
 11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording. An answer of "updating, try again shortly" is not a refusal: the edit stays unsaved and is sent again automatically, as after a lost connection (AD-20). So are the refusals of data newer or older than the server during or after an update.
-12. A reply field holding text that came from outside the project's members is declared with the entered-text field type of story 1.1, with its source: reviewer-link entries, imported cells (which keep the marking after they are applied), names of uploaded files, text read from PDF plans, and external ticket numbers and links. A refusal names a field but never repeats an entered value (AD-22).
+12. A reply value whose source is not a member of the project, or that an agent added, is returned in the entered-text wrapper of story 1.1 with its source: reviewer-link entries, imported content (which keeps the source "import" after it is applied), names of uploaded files, text read from PDF plans, and anything a token wrote. A value a member edits becomes that member's. Sources and references survive restore and backup. A refusal names a field but never repeats an entered value (AD-22).
 
 ### Definition of done
 
@@ -163,7 +170,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - Every server route other than the application's own pages and files is under `/api/v1/` and declares, in the shared module, a schema for its input and its reply.
 - A request whose input does not match its route's schema is refused with the field named.
 - Every refusal carries a reason code as well as its wording.
-- The shared route declarations offer an entered-text field type, which holds the text, its source and a reference to where it came from; at this point no route uses it.
+- The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
@@ -396,7 +403,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- Every route declares one class: public, reviewer link, read, draft change, person only or administrator only; a test route that declares none is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; a test route that declares none is refused.
 - A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
@@ -682,13 +689,15 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token is accepted only in the `Authorization: Bearer` header.
 - A request with a token is decided by the gate as its owner, limited by the token's kind and projects.
 - "All of my projects" is checked against the owner's membership at each request, so it covers projects joined later and drops projects left.
-- An administrator's token reaches only projects the administrator is a member of, never every project in the installation. (CG-10 · decision)
+- An administrator's token reaches only projects the administrator is a member of, never every project in the installation, and the project list called with it returns only those projects. (CG-10 · decision)
+- An administrator becomes a member of a project as anyone else does, through the project's members.
 - A read-only token is accepted on read routes only; a read-and-draft token also on draft-change routes.
-- A read-and-draft token of a Viewer is accepted on read routes only, as its owner's role allows.
+- A read-and-draft token is decided per project by the owner's role there: it may change a project where its owner is an Editor and only read one where its owner is a Viewer.
 - A test route marked person only refuses every token with the reason code and wording "needs a person", and the same route accepts the owner signed in.
-- An administrator-only route refuses every token, including an administrator's.
+- An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22 · reading)
-- Every draft change made with a token carries an operation identifier, held per token, and a repeated identifier returns the stored result without applying the change again (AD-5).
+- Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33 · value)
+- A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
 - A user's detail in Administration lists that user's tokens with Revoke, and the Users table shows a count of active tokens.
@@ -701,22 +710,28 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token is refused after it expires or is revoked.
 - A token is refused for a project outside its list, and for a project its owner no longer belongs to, from the very next request.
 - A role change, deactivation or removal applies to the owner's tokens on the next request, exactly as to a session.
+- Deactivating an account revokes all its tokens, and reactivating the account does not bring them back. (CG-27 · decision)
+- Removing the owner from a project drops that project from the list of every token limited to chosen projects, and adding the owner back does not restore it. (CG-28 · decision)
 - An unknown, malformed or revoked token is refused with one reason code, "token not accepted", and does not say which.
 - A value starting with `ssat_` in a query string is refused with the reason code "token in address" and is never logged.
 - A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
 - A request that carries both a session cookie and a token is refused. (CG-05 · reading)
 - A token cannot create a project; the request is refused with "needs a person". (CG-24 · reading)
 - An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
-- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation, and the activity log records it. (CG-20 · reading)
-- Recovering the whole installation from a backup revokes every token, as it ends every session. (CG-25 · reading)
+- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20 · reading)
+- When the maximum is below 90 days, Create token offers the maximum as its default.
+- Recovering the whole installation from a backup revokes every token, and revoked tokens stay listed as revoked. (CG-25 · reading)
 - No log entry, record or export contains a token: a test creates and uses one, then searches the stored log and records for it and finds none.
 
 **Limits and values**
 - A token's expiry is 90 days unless changed and at most 1 year, and an administrator can lower the maximum. (CG-02 · value)
 - A token starts with `ssat_` and holds at least 32 random bytes. (CG-06 · value)
 - A token may make 300 requests a minute, counting each API call made inside an MCP tool call; further requests receive HTTP 429 with `Retry-After`. (CG-04 · value)
-- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens. (CG-13 · value)
-- After 20 refused token requests in a minute from one network address, further token requests from it receive HTTP 429 with `Retry-After`. (CG-14 · value)
+- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13 · value)
+- Creating an eleventh active token is refused with the limit stated.
+- After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14 · value)
+- Rate counters are kept in memory, last use is written at most once a minute per token, and the per-address check runs before the installation object is consulted.
+- A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
 - An expired or revoked token stays listed, greyed, for 30 days. (CG-07 · value)
 
 **Access and restore**
@@ -725,7 +740,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 **Evidence to record**
 - The gate's server tests of story 1.8 and story 1.9 are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
 
-Notes: Story 1.1 declares every route with its class and schema, and story 1.8 adds the person-only class and the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.10), the activity log (story 1.14) and Settings (story 1.15), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
+Notes: Story 1.1 declares every route with its schema, and story 1.8 gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.10), the activity log (story 1.14) and Settings (story 1.15), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
 
 ## Epic 2: One shared project online
 
@@ -3302,34 +3317,43 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 
 As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Studio to the ticket in the other system.
 
-Covers: FR-78, FR-46, FR-65, FR-33 (package option), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
+Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
 
 **Core behaviour**
 - An issue, a service visit and a warranty each gain an "External tickets" list, with the hint "A ticket in another system, such as your customer's service desk or your own tracker". (CE-41 · reading)
-- Add asks for a ticket number and an optional link; a record may hold several external tickets. (CE-42 · value)
-- The number is kept exactly as typed. (CE-43 · value)
-- Each entry shows the number and, when it has a link, a link icon that opens the link in a new tab.
-- An external ticket whose number is also on another record shows "also on" with a link to each such record. (CE-45 · reading)
-- Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history. (CE-46 · reading)
-- The Issues list can be searched by ticket number, and shows the first external ticket of each issue with "+N" for more.
-- Members' CSV exports of issues, visits and warranties include their external tickets.
-- Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text. (CE-47 · decision)
-- The field shell's issue and visit forms show and add external tickets as on desktop.
+- Add asks for a ticket number and an optional link, and notes that a link may carry the tracker's own access; a record may hold several external tickets. (CE-42 · value)
+- The number is shown exactly as typed and matched, for search, duplicates and "also on", ignoring case and surrounding spaces. (CE-43 · value)
+- Each entry shows the number and, when it has a link, the link's host beside a link icon that opens the link in a new tab without sending the project's address.
+- An entry an agent added shows the agent mark.
+- An external ticket whose number is also on another record of the same project shows "also on" with a link to each such record; archived records are labelled and deleted ones are left out. (CE-45 · reading)
+- Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history; adding a removed number again is a new entry. (CE-46 · reading)
+- Searching the Issues list by a ticket number finds issues by their own external tickets and those of their service visits.
+- The Issues list shows the first external ticket of each issue with "+N" for more.
+- Members' CSV exports of issues, visits and warranties include their external tickets, separated by "; ", without "also on".
+- Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text and no "also on". (CE-47 · decision)
+- The field shell's issue and visit forms show and add external tickets as on desktop, and a change made without a connection is queued like other field edits.
+- A record after its closeout cutoff still accepts external tickets on its live copy, and the fixed closeout copy never changes.
 
 **Refusals and edge cases**
-- A link that does not start with `https://` or `http://` is refused with "Enter a web address starting with https://". (CE-44 · value)
+- A link is trimmed, and is refused with "Enter a web address starting with https:// or http://" unless its scheme is `https` or `http` (in any case) and it has a host; control characters are refused. (CE-44 · value)
+- A link with a user name or password is refused with "Remove the user name and password from the link". (CE-48 · decision)
+- A number already on the record is refused with "This ticket is already listed", and a number of only spaces is refused.
+- "Also on" never names a record in another project. (CE-49 · decision)
+- A change or removal of an external ticket that changed since it was read is refused with "changed since", showing the current value.
+- A queued change refused when the connection returns, because the record changed or the number is already listed, is shown to the technician with the reason.
+- In a CSV export, a number or link starting with `=`, `+`, `-` or `@` is written so that a spreadsheet does not run it as a formula.
 - The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
 - The reviewer view never shows external tickets. (CE-47 · decision)
 - A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
-- Two people adding external tickets to one record at the same moment both keep theirs.
+- Two people adding different external tickets to one record at the same moment both keep theirs.
 
 **Limits and values**
 - A ticket number has 1 to 100 characters. (CE-43 · value)
-- A link has at most 2,000 characters. (CE-44 · value)
+- A link has at most 2,000 characters, counted after an international host name is converted to its ASCII form, and that form is shown as the host. (CE-44 · value)
 
 **Access and restore**
 - A revision restore leaves external tickets unchanged.
-- External tickets travel in the project's portable backup.
+- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a link that fails is kept as text without a link, and "also on" is worked out again.
 
 ## Epic 7: Extended modelling
 
@@ -4011,6 +4035,7 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 - The installation instructions of story 9.1 name the published image and release.
 - The workflow can also publish to a test channel, marked by a tag prefix and signed by the same workflow; an installation offers and installs test-channel releases only when configured for that channel.
 
+- Each release keeps the route declarations of every route a token may call; a build whose declarations remove or rename a field, narrow a type or add a required input under `/api/v1/` compared with the previous release fails, as does one that removes, renames or changes the inputs of an MCP tool generated from them. (CG-08 · reading)
 **Refusals and edge cases**
 - If the tests or the smoke suite fail, nothing is signed or published.
 - The same verification fails on a build made any other way, and on a published file altered by one byte.
@@ -4665,10 +4690,10 @@ Covers: FR-76 (documented, versioned API), AD-22.
 **Core behaviour**
 - While agent access is on, the server serves an API description at `/api/v1/openapi.json`, generated from the route declarations in the shared module, without the server's version. (CG-23 · reading)
 - The description lists every route an access token may call, with its input, its reply, its class and its reason codes, and lists no person-only or administrator-only route.
-- The description marks every entered-text field with the field type of story 1.1.
+- The description marks every value that can carry the entered-text wrapper of story 1.1.
 - The description states the bearer-token scheme, the HTTP 429 and 503 replies with `Retry-After`, and the reason code `updating`.
 - A contract test in continuous integration calls each described route on the built bundle and fails when a route's behaviour differs from its description.
-- Continuous integration keeps the description of the last published release; a build whose description removes or renames a field, narrows a type, or adds a required input under `/api/v1/` fails. (CG-08 · reading)
+- The description is checked against the previous release's by the same rule as the route declarations, so a field removed or renamed, a type narrowed or a required input added under `/api/v1/` fails the build. (CG-08 · reading)
 - A test that renames one field in a declaration shows the build failing.
 - A reference page generated from the description is published with the installation instructions.
 
@@ -4692,32 +4717,35 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 - The endpoint accepts the same bearer tokens as the API, checked by the same gate.
 - Each tool call runs the corresponding route handlers inside the server, through the gate, with the caller's token; it makes no network request to the server's own address.
 - Its tools are generated from the route declarations, with names of at most 64 letters, digits, underscores and hyphens. (CG-17 · value)
-- The tool list holds no person-only or administrator-only route, and follows the token's kind and the owner's current role: a read-only token, or a Viewer's token, lists only read tools.
+- Routes are grouped into one tool only within one route class and only by a grouping each route declares, so a tool's name and actions do not depend on how many routes exist.
+- The tool list holds no person-only or administrator-only route, and follows the token's kind and the owner's roles: draft tools are listed when the token is read-and-draft and its owner is an Editor on at least one project in the token's scope, and each call is still decided per project.
 - A tool that changes anything is one operation: it is applied whole or not at all, and carries an operation identifier, so a repeated call returns the stored result.
+- A tool call's whole cost against the rate limits, counted as one unit per route handler it runs, is charged before it starts; if it does not fit, the call is refused with HTTP 429 and `Retry-After`, and a started operation is never stopped by a limit.
 - An MCP client connected with a read-and-draft token lists the tools, reads a project and places a camera, and the camera is recorded as via agent.
 - An agent searches issues by an external ticket number and adds an external ticket to a service visit, recorded as via agent.
-- Entered-text fields reach the agent marked, in the tool result's structured content and in its text.
-- The token's owner can undo the change made by one tool call as one action from the project's history, however many items it touched.
-- A change made with a token to a verified device's placement or specification clears its verified state, and the device history shows the change via agent. (CG-12 · decision)
+- Entered-text values reach the agent marked, in the tool result's structured content and, as JSON with their source, in its text.
+- A person can undo the change made by one tool call as one action from the project's history, however many items it touched; a token cannot undo. (CG-29 · decision)
+- An undo is refused, listing the items concerned, when any of them was changed after the tool call, and an undo never brings back a cleared verified state. (CG-29 · decision)
+- A change made with a token to any field of a verified device clears its verified state, and the device history shows the change via agent. (CG-12 · decision)
+- With a read-only token, an agent lists a project's existing Design and Closeout packages and downloads one.
+- An agent may request a review of a revision; the review's assignee must be a person. (CG-31 · decision)
+- A deletion made with a token can be reversed by a person from the project's history, and permanently removing files or a project is refused to a token with "needs a person". (CG-30 · decision)
 
 **Refusals and edge cases**
-- A request without a token receives HTTP 401 with a `WWW-Authenticate: Bearer` header and the reason code "token required".
-- A request with an unsupported protocol revision receives HTTP 400.
-- GET and DELETE on `/mcp` receive HTTP 405.
-- A request whose `Origin` header names another site is refused with HTTP 403, to guard against DNS rebinding.
-- A request with a token is answered to any origin without credentials; a request with a session cookie is answered to the app's own origin only.
+- Refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; a request without a valid token whose `Origin` names another site, or is `null`, receives HTTP 403; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required"; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
+- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11 · decision)
 - A tool call refused by the API returns a tool result marked as an error, with the API's reason code and wording.
 - A refused change returns the item's current version and value with the reason code "changed since", and overwrites nothing.
 - During an update a tool call returns a tool result marked as an error, with the reason code `updating` and the time to retry.
-- With agent access off, every request to the endpoint receives HTTP 403 with "agent access is off".
 
 **Limits and values**
 - The full tool list for an Editor's read-and-draft token holds at most 60 tools; above that, related routes are grouped into one tool with an action field. (CG-17 · value)
 
 **Evidence to record**
-- The endpoint is used from Claude Code and from a second MCP client on a deployed Cloudflare test installation and under the self-hosted configuration, and the tool list, its length and one draft change are recorded.
+- The endpoint is used from Claude Code and from a second, browser-based MCP client on a deployed Cloudflare test installation and under the self-hosted configuration, and the tool list, its length and one draft change are recorded.
+- A contract-test case whose entered text contains the marker syntax shows the text still reaching the agent inside its marked value.
 
 ### Story 11.3: Experiment R17, then coverage and estimates for agents
 
@@ -4727,8 +4755,9 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 
 **Core behaviour**
 - Experiment R17 runs the coverage calculation on the acceptance-size test project, inside one request, on a deployed Cloudflare test installation and under the self-hosted configuration, and records CPU time, wall time, peak memory and each host's configured limits.
-- The calculation fits one request on a host when it uses at most half of every configured limit. (CG-18 · value)
-- If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results; otherwise the route starts a job and a second route returns its result when done. (CG-09 · decision)
+- The calculation fits one request on a host when it uses at most half of every configured limit; the shipped self-hosted configuration sets the container's CPU and memory limits equal to Cloudflare's, and those are the limits used there. (CG-18 · value)
+- If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results in its reply. (CG-09 · decision)
+- If R17 shows it does not fit on either host, the route starts a job and a second route returns its result when done. (CG-09 · decision)
 - A job's first reply gives its identifier and a suggested wait, and the tool's description tells the agent to fetch the result after that wait.
 - An API route returns the estimate of the current design.
 - Both routes use the calculation and estimate code of the shared module, unchanged from the browser's.
@@ -4740,7 +4769,9 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 - A job's result can be fetched only with the token that started it or by its owner, and only while the token and the owner may still read the project.
 - At each step and when its result is fetched, a job checks again that its token is valid, agent access is on and the owner may read the project, and otherwise stops with the reason.
 - A job whose floor or project is deleted or archived stops with the reason code "target gone".
-- A job running when an update changes the code version is restarted under the new version.
+- A job running when an update changes the code version is restarted under the new version with the same identifier, and its result says it was restarted.
+- A job not finished within 1 hour is given up with the reason, and a result is kept for 24 hours. (CG-34 · value)
+- A token may have at most 3 jobs running and a person at most 5; a further job is refused with the limit stated. (CG-34 · value)
 
 **Evidence to record**
 - R17's measurements on both hosts are recorded in the experiments record.
@@ -4753,18 +4784,22 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 
 **Core behaviour**
 - An upload route accepts a CSV or Excel file as the request body and returns a file identifier; the import routes then name that identifier.
-- An MCP client's agent gets a file to the upload route through a short-lived upload address that the import tool returns, so the file never passes through the model.
+- An MCP client's agent gets a file to the upload route through an upload address that the import tool returns, so the file never passes through the model.
+- The upload address is unguessable, scoped to its path, usable once, valid for 10 minutes and bound to the token and project; using it checks the token and agent access again and counts against the rate limits. (CG-32 · value)
+- The upload address is never written to a log.
 - The server parses the file with the shared module's parser.
 - The agent proposes a column mapping, receives the preview grouped as New, Unchanged, Changed and Needs review with the preview's fingerprint, and applies selected valid rows.
 - Applying is one operation: every selected row is applied, or none is and the reply lists each refused row with its reason.
 - The groups, row errors and outcomes equal those the app shows for the same file and mapping.
 - Imported devices are recorded as imported by the token's owner, via agent, with their import provenance.
-- Cell values keep the entered-text marking with the import as their source after they are applied.
+- Imported values keep the source "import" after they are applied, until a member edits them.
 - An MCP client completes an Excel import end to end.
 
 **Refusals and edge cases**
 - Upload, preview and apply are draft-change routes, and a read-only token is refused on each.
 - Applying with a fingerprint that no longer matches the project is refused with "preview out of date".
+- Applying after the upload was removed is refused with "upload gone".
+- A file whose declared size, or whose uncompressed size, is over the limit is refused before it is read or parsed.
 - Needs review rows are not applied by an agent's request and remain for a person.
 - A Changed row that an agent would apply to a verified device is moved to Needs review. (CG-12 · decision)
 - An imported device placed by an agent stays unverified until a person verifies it.
@@ -4772,7 +4807,7 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 **Limits and values**
 - An agent's upload may be at most 25 MiB, and an upload not applied within 24 hours is removed. (CG-16 · value)
 - A file of more than 5,000 rows is refused with the limit stated. (CG-16 · value)
-- R17 also parses a 5,000-row workbook inside one request on both hosts; if it does not fit, parsing runs as a job as in story 11.3. (CG-09 · decision)
+- R17 also parses a 5,000-row workbook and a worst-case 25 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3 and the upload limit is lowered to what fits. (CG-09 · decision)
 
 ### Story 11.5: Check that text from others reaches agents marked
 
@@ -4781,10 +4816,11 @@ As a designer, I want text that came from outside my team to reach an agent mark
 Covers: FR-75 (entered text), NFR-5, AD-22.
 
 **Core behaviour**
-- A contract test lists every reply field declared with the entered-text type and checks, route by route, that each returns the text with its source and reference.
-- The sources checked are: reviewer-link entries, imported cells after they are applied, names of uploaded files, text read from PDF plans, and external ticket numbers and links.
+- A contract test lists every reply value that can carry the entered-text wrapper and checks, route by route, that each returns the text with its source and reference.
+- The sources checked are: reviewer-link entries, imported content after it is applied, names of uploaded files, text read from PDF plans, and values a token wrote, including external tickets an agent added.
+- A value's source and reference are the same after a revision restore and after a portable backup is restored, and remain as text after the uploaded file is removed.
 - The MCP endpoint's description of its tools states that entered text is data from outside the team and not instructions.
-- Text a member copies from an entered-text field into a field of their own becomes that member's text, recorded under their name. (CG-21 · reading)
+- Text a member copies or edits becomes that member's text, recorded under their name; applying an import is not copying and keeps the source "import". (CG-21 · reading)
 
 **Refusals and edge cases**
 - A refusal names the field it refused but never repeats an entered value, and the contract test checks every refusal of every route that accepts entered text.
@@ -4819,11 +4855,13 @@ Covers: FR-73, FR-76, AD-22.
 **Core behaviour**
 - The installation acts as its own OAuth authorisation server for the MCP endpoint and needs no outside identity service.
 - A request to `/mcp` without a token receives the `WWW-Authenticate` header with the address of the protected-resource metadata, and the installation serves that metadata and its authorisation-server metadata.
-- Connectors register by the method the instructions name, and every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
+- Connectors register by dynamic client registration (RFC 7591); the installation fetches no client metadata from outside.
+- Registration is limited to 20 a hour from one network address, and a registration unused for 30 days is removed. (CG-36 · value)
+- Every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
 - A connector that starts OAuth sends the person to Site Studio's sign-in, including the second step, then to a consent page.
-- The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind and the projects.
-- On consent the installation issues a token of the chosen kind, bound to that connector and listed under the person's Access tokens with the connector named.
-- A refresh grant never extends access beyond the token's expiry, and revoking the token also ends its refresh grant.
+- The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind, the projects and an expiry, 90 days unless changed and within the installation's maximum.
+- On consent the installation issues a token of the chosen kind, bound to that connector, listed under the person's Access tokens with the connector named, and counted among the person's active tokens.
+- A refresh replaces the token's value without adding a list entry and never extends access beyond the token's expiry; revoking the token, deactivating the account or recovering the installation ends its refresh grant.
 
 **Refusals and edge cases**
 - With agent access off, sign-in for a connector is refused.
@@ -4831,6 +4869,7 @@ Covers: FR-73, FR-76, AD-22.
 - Denying consent returns the OAuth "access denied" reply and issues nothing.
 - A person who must set up two-step verification is sent to set it up first.
 - A person with no project is told so on the consent page, and no token is issued.
+- A person already holding the maximum number of active tokens is told so on the consent page, and no token is issued.
 - A redirect address that does not match exactly, or an authorisation without PKCE, is refused.
 - Revoking the token from Access tokens ends the connector's access on its next call.
 
@@ -4846,8 +4885,8 @@ As Kevin, I want to see an agent do a real piece of design work on both hosts, s
 Covers: SM-7, FR-73, FR-74, FR-75, FR-76, FR-77.
 
 **Core behaviour**
-- On a deployed Cloudflare test installation, an MCP client acting for an Editor imports an inventory from an Excel file, places a camera, reads its coverage and saves a named draft revision, each recorded as via agent.
-- The agent's attempt to approve the revision, made through the API with the same token, is refused with "needs a person"; a person then approves it.
+- On a deployed Cloudflare test installation, an MCP client acting for an Editor imports an inventory from an Excel file, places a camera, reads its coverage, saves a named draft revision and requests its review with another person as the assignee, each recorded as via agent.
+- The agent's attempt to approve the revision, made through the API with the same token, is refused with "needs a person"; the assignee then approves it.
 - An exported equipment schedule shows the camera's change as made by the Editor via agent.
 - The same run passes on a self-hosted installation reachable only on a private network.
 
@@ -4958,7 +4997,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | NFR-2 Shared-save clarity | 2.2, 2.3, 2.9, 2.17, 2.25, 2.26, 5.11, 5.12, 5.28, 9.8 |
 | NFR-3 Browser, field and accessibility | 3.3, 3.4, 5.1, 5.2, 5.9, 5.11, 5.12, 5.28, 10.6 |
 | NFR-4 Honest analysis and responsiveness | 2.11, 2.12, 2.13, 2.14, 10.1, 10.2, 10.3, 10.4, 11.3 |
-| NFR-5 Access boundary | 1.2, 1.3, 1.8, 1.9, 1.19, 2.16, 2.22, 4.10, 4.11, 5.11, 8.1, 8.7, 8.8, 8.10, 11.5 |
+| NFR-5 Access boundary | 1.2, 1.3, 1.8, 1.9, 1.19, 2.16, 2.22, 4.10, 4.11, 5.11, 6.20, 8.1, 8.7, 8.8, 8.10, 11.5 |
 | NFR-6 Consistent deliverables | 3.6, 4.16, 4.17, 5.27 |
 | NFR-7 Same product on either host | 2.21, 2.23, 2.24, 2.25, 2.26, 8.9, 8.11, 8.13, 9.14, 10.8, 10.9 |
 | NFR-8 Safe updates | 9.3, 9.4, 9.5, 9.7, 9.8, 9.10, 9.11, 9.12, 9.13, 9.15 |
@@ -5021,9 +5060,9 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 ## Values and readings
 
-**Values nobody specified (84).**
+**Values nobody specified (88).**
 
-*Epic 1: Install, sign in and manage people (26)*
+*Epic 1: Install, sign in and manage people (27)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
@@ -5053,6 +5092,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working |  |
 | CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) |  |
 | CG-14 | 1.19 | 20 refused token requests a minute from one address, then 429 | No limit on failed tokens | Throttles token guessing (review E32) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
 
 *Epic 2: One shared project online (12)*
 
@@ -5146,7 +5186,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | --- | --- | --- | --- | --- | --- |
 | CF-36 | 10.1 | The small functional project has about 50 devices | About 20 | PRD asks for a small functional project and gives no size | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 
-*Epic 11: Work with AI agents (6)*
+*Epic 11: Work with AI agents (9)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
@@ -5155,9 +5195,12 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-26 | 11.2 | The MCP endpoint supports the protocol revisions named in the instructions: the current one when built and the one before; JSON replies; no session identifier | Only the newest revision; streamed replies | Clients lag the specification; a stateless endpoint suits both hosts (review A8, A26) |  |
 | CG-18 | 11.3 | A calculation fits one request when it uses at most half of every configured limit | Fits when under the limit | Leaves room for larger floors (review A18) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-19 | 11.3 | Counts and categories equal; areas and percentages within 0.1 percent or 0.1 percentage points | Exactly equal | JavaScript engines may differ in the last digits of maths functions (review A17) |  |
+| CG-34 | 11.3 | Jobs for agents: given up after 1 hour, results kept 24 hours, at most 3 running per token and 5 per person | No limits | One agent must not exhaust alarms or storage (second review F23, F24) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-16 | 11.4 | Agent upload at most 25 MiB, removed if not applied within 24 hours; more than 5,000 rows refused | The app's own file limits | Keeps agent imports within one request's limits and storage tidy (review E13, E14) |  |
+| CG-32 | 11.4 | Upload address: single use, valid 10 minutes, bound to the token and project | A longer life, or reuse | Short enough not to become a standing credential (second review B15, F25) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) |  |
 
-**Readings of a source (154).**
+**Readings of a source (155).**
 
 *Epic 1: Install, sign in and manage people (25)*
 
@@ -5360,12 +5403,13 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CF-37 | 10.2 | "Controls stay usable" is measured as the 250 ms feedback target, 19 of 20, during import, analysis and export | No main-thread task over 200 ms | PRD sets 250 ms for selection and button feedback | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CF-38 | 10.9 | "Same features and rules" is checked against a named list of screens and nine refusals | Repeat every story's criteria on both hosts | NFR-7 needs an observable comparison; the full runs are already repeated on the self-hosted host | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 
-*Epic 11: Work with AI agents (3)*
+*Epic 11: Work with AI agents (4)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
 | CG-08 | 11.1 | Removing or renaming a field of /api/v1/ needs a new version prefix | Allow changes announced in release notes | Agents built against the description break silently otherwise |  |
 | CG-23 | 11.1 | The API description is served only while agent access is on, without the server's version | Always served, with the version | Avoids revealing the route surface and version of an installation that does not use agents (review A24) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-35 | 11.2 | Refusal order on /mcp: 405, foreign or null Origin without a token, access off, 401, protocol 400 | Any order | Makes tests deterministic and lets OAuth discovery see 401 first (second review B11) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-21 | 11.5 | Text a member copies from an entered-text field becomes that member's text | Copied text stays marked | The member who copies it vouches for it (review E15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 
 ## Numbering changes from draft 0.6

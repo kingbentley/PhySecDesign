@@ -28,7 +28,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - Every server route other than the application's own pages and files is under `/api/v1/` and declares, in the shared module, a schema for its input and its reply.
 - A request whose input does not match its route's schema is refused with the field named.
 - Every refusal carries a reason code as well as its wording.
-- The shared route declarations offer an entered-text field type, which holds the text, its source and a reference to where it came from; at this point no route uses it.
+- The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
@@ -261,7 +261,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- Every route declares one class: public, reviewer link, read, draft change, person only or administrator only; a test route that declares none is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; a test route that declares none is refused.
 - A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
@@ -547,13 +547,15 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token is accepted only in the `Authorization: Bearer` header.
 - A request with a token is decided by the gate as its owner, limited by the token's kind and projects.
 - "All of my projects" is checked against the owner's membership at each request, so it covers projects joined later and drops projects left.
-- An administrator's token reaches only projects the administrator is a member of, never every project in the installation. (CG-10)
+- An administrator's token reaches only projects the administrator is a member of, never every project in the installation, and the project list called with it returns only those projects. (CG-10)
+- An administrator becomes a member of a project as anyone else does, through the project's members.
 - A read-only token is accepted on read routes only; a read-and-draft token also on draft-change routes.
-- A read-and-draft token of a Viewer is accepted on read routes only, as its owner's role allows.
+- A read-and-draft token is decided per project by the owner's role there: it may change a project where its owner is an Editor and only read one where its owner is a Viewer.
 - A test route marked person only refuses every token with the reason code and wording "needs a person", and the same route accepts the owner signed in.
-- An administrator-only route refuses every token, including an administrator's.
+- An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22)
-- Every draft change made with a token carries an operation identifier, held per token, and a repeated identifier returns the stored result without applying the change again (AD-5).
+- Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33)
+- A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
 - A user's detail in Administration lists that user's tokens with Revoke, and the Users table shows a count of active tokens.
@@ -566,22 +568,28 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token is refused after it expires or is revoked.
 - A token is refused for a project outside its list, and for a project its owner no longer belongs to, from the very next request.
 - A role change, deactivation or removal applies to the owner's tokens on the next request, exactly as to a session.
+- Deactivating an account revokes all its tokens, and reactivating the account does not bring them back. (CG-27)
+- Removing the owner from a project drops that project from the list of every token limited to chosen projects, and adding the owner back does not restore it. (CG-28)
 - An unknown, malformed or revoked token is refused with one reason code, "token not accepted", and does not say which.
 - A value starting with `ssat_` in a query string is refused with the reason code "token in address" and is never logged.
 - A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
 - A request that carries both a session cookie and a token is refused. (CG-05)
 - A token cannot create a project; the request is refused with "needs a person". (CG-24)
 - An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
-- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation, and the activity log records it. (CG-20)
-- Recovering the whole installation from a backup revokes every token, as it ends every session. (CG-25)
+- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20)
+- When the maximum is below 90 days, Create token offers the maximum as its default.
+- Recovering the whole installation from a backup revokes every token, and revoked tokens stay listed as revoked. (CG-25)
 - No log entry, record or export contains a token: a test creates and uses one, then searches the stored log and records for it and finds none.
 
 **Limits and values**
 - A token's expiry is 90 days unless changed and at most 1 year, and an administrator can lower the maximum. (CG-02)
 - A token starts with `ssat_` and holds at least 32 random bytes. (CG-06)
 - A token may make 300 requests a minute, counting each API call made inside an MCP tool call; further requests receive HTTP 429 with `Retry-After`. (CG-04)
-- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens. (CG-13)
-- After 20 refused token requests in a minute from one network address, further token requests from it receive HTTP 429 with `Retry-After`. (CG-14)
+- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13)
+- Creating an eleventh active token is refused with the limit stated.
+- After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14)
+- Rate counters are kept in memory, last use is written at most once a minute per token, and the per-address check runs before the installation object is consulted.
+- A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
 - An expired or revoked token stays listed, greyed, for 30 days. (CG-07)
 
 **Access and restore**
@@ -590,4 +598,4 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 **Evidence to record**
 - The gate's server tests of story 1.7a and story 1.7b are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
 
-Notes: Story 1.1 declares every route with its class and schema, and story 1.7a adds the person-only class and the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.8a), the activity log (story 1.9) and Settings (story 1.10a), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
+Notes: Story 1.1 declares every route with its schema, and story 1.7a gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.8a), the activity log (story 1.9) and Settings (story 1.10a), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.

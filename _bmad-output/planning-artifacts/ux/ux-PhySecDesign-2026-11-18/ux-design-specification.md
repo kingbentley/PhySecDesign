@@ -619,7 +619,7 @@ PRD amendment 1.3 lets AI agents act for a person through an API and an MCP endp
 - After creation the token is shown once with Copy, the addresses of the API and the MCP endpoint with Copy, and "You will not see this token again." Closing the panel without copying asks for confirmation.
 - The list shows each token's name, kind, projects, expiry, created and last used, with Revoke. An expired or revoked token stays listed, greyed, for 30 days.
 
-- **Connector consent (OAuth, optional).** After sign-in, a page names the connector as "calls itself ‹name›", shows the redirect address's host prominently, and the token kind and projects to grant, with Allow and Deny.
+- **Connector consent (OAuth, optional).** After sign-in, a page names the connector as "calls itself ‹name›", shows the redirect address's host prominently, the token kind, projects and expiry to grant (90 days unless changed), with Allow and Deny.
 
 ### 18.2 Administration: Settings, Agent access (S-39, FR-76)
 
@@ -659,11 +659,12 @@ PRD amendment 1.3 lets AI agents act for a person through an API and an MCP endp
 PRD amendment 1.4 (FR-78) lets issues, service visits and warranties carry references to tickets in other systems, such as a customer's service desk or the organisation's own tracker. Approved with the [sprint change proposal](../../sprint-change-proposal-2026-11-19-external-tickets.md) on 2026-11-19; the layout is proposed and open to review. No new screen is needed.
 
 - **Name.** "External ticket", with the hint "A ticket in another system, such as your customer's service desk or your own tracker".
-- **S-18 Issues and S-19 visits and warranties.** An "External tickets" list with Add. Add asks for the ticket number and an optional link. Each entry shows the number, a link icon that opens the tracker in a new tab, and "also on" naming other records with the same number. Removing one asks for confirmation and leaves it in the record's history.
-- **Issues list (S-18).** Search accepts a ticket number, and a column shows the first external ticket with "+N" for more.
+- **S-18 Issues and S-19 visits and warranties.** An "External tickets" list with Add. Add asks for the ticket number and an optional link. Each entry shows the number, the link's host beside a link icon that opens the tracker in a new tab without sending the project's address, the agent mark when an agent added it, and "also on" naming other records in the same project with the same number (archived ones labelled; never shown in exports or packages). The Add form notes that a link may carry the tracker's own access. Removing one asks for confirmation and leaves it in the record's history.
+- **Issues list (S-18).** A column shows the first external ticket with "+N" for more.
 - **Field shell.** The issue and visit forms on a phone show the same list; the link opens in the phone's browser.
 - **Packages (S-37).** An option "Include external tickets", off by default. Reviewer view (S-24) never shows them.
-- **Refusals.** A link that does not start with `https://` or `http://` is refused with "Enter a web address starting with https://".
+- **Refusals.** A link that is not a web address with a host is refused with "Enter a web address starting with https:// or http://". A link with a user name or password is refused with "Remove the user name and password from the link". A number already on the record is refused with "This ticket is already listed".
+- **Search.** Searching the Issues list by a ticket number also finds issues whose service visits carry it, ignoring case and spaces.
 
 | Screens | Requirements |
 | --- | --- |

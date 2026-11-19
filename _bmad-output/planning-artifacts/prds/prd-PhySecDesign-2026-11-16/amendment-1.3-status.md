@@ -30,3 +30,7 @@ Amendment 1.3 has not been independently reviewed. Nothing in it is built.
 ## After the review of Epic 11 (2026-11-19)
 
 A BMAD review of Epic 11 and story 1.19 (`review-epic-11.md` in the epics workspace) led Kevin to approve three further rules, written into FR-73 and FR-75 the same day: an administrator's token reaches only projects the administrator is a member of; creating a project and downloading a portable backup are refused to tokens; and an agent's change to a verified device clears its verified state.
+
+## After the second review (2026-11-19)
+
+A second BMAD review of the agent-access and external-ticket material (round two in `review-epic-11.md`) was applied in full on Kevin's instruction, with seven new rules. In FR-73: deactivation revokes tokens for good; removal from a project drops it from a token's list; connector tokens count and take an owner-chosen expiry. In FR-75: undo and permanent removal are person only; token deletions are reversible; an agent may request a review whose assignee is a person; the verified rule covers any field, and imports never change a verified device; one definition of text from outside. In FR-78 (amendment 1.4): "also on" stays within one project and out of exports and packages; links with credentials are refused; matching ignores case and spaces; search covers visits' tickets. NFR-5 gains the link warning.

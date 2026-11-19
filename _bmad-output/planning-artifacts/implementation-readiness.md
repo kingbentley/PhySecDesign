@@ -120,3 +120,7 @@ Later on 2026-11-19 Kevin approved the [sprint change proposal on external ticke
 ### Second addendum to the fourth run: review of Epic 11
 
 Later on 2026-11-19 a BMAD review of Epic 11 and story 1.19 ([review](epics/epics-PhySecDesign-2026-11-18/review-epic-11.md)) found 65 problems, all applied on Kevin's instruction. Story 1.1 now also declares an entered-text field type, which standing rule 12 makes every later story use; this is small and blocks nothing. The verdict is unchanged: CONCERNS, nothing blocking story 1.1. Concern G narrows to the revised stories, which have not been reviewed again; concern H now covers CG-04 to CG-09 and CG-13, CG-15, CG-16, CG-19 and CG-26.
+
+### Third addendum to the fourth run: second review of the agent material
+
+Later on 2026-11-19 a second review of the agent-access and external-ticket material found 63 more problems, all applied on Kevin's instruction with seven new rules. Story 1.1's entered-text type is now a per-value wrapper, story 1.8 lists seven route classes, and story 9.2 gains a breaking-change check from the first release; none of these blocks story 1.1. The verdict is unchanged: CONCERNS, nothing blocking story 1.1. Concern G: the material has had two reviews but not a third. Concern H now covers CG-04 to CG-09, CG-13, CG-15, CG-16, CG-19, CG-26 and CG-36.

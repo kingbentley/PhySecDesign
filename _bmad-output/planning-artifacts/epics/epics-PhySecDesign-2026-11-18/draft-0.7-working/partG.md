@@ -15,10 +15,10 @@ Covers: FR-76 (documented, versioned API), AD-22.
 **Core behaviour**
 - While agent access is on, the server serves an API description at `/api/v1/openapi.json`, generated from the route declarations in the shared module, without the server's version. (CG-23)
 - The description lists every route an access token may call, with its input, its reply, its class and its reason codes, and lists no person-only or administrator-only route.
-- The description marks every entered-text field with the field type of story 1.1.
+- The description marks every value that can carry the entered-text wrapper of story 1.1.
 - The description states the bearer-token scheme, the HTTP 429 and 503 replies with `Retry-After`, and the reason code `updating`.
 - A contract test in continuous integration calls each described route on the built bundle and fails when a route's behaviour differs from its description.
-- Continuous integration keeps the description of the last published release; a build whose description removes or renames a field, narrows a type, or adds a required input under `/api/v1/` fails. (CG-08)
+- The description is checked against the previous release's by the same rule as the route declarations, so a field removed or renamed, a type narrowed or a required input added under `/api/v1/` fails the build. (CG-08)
 - A test that renames one field in a declaration shows the build failing.
 - A reference page generated from the description is published with the installation instructions.
 
@@ -42,32 +42,35 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 - The endpoint accepts the same bearer tokens as the API, checked by the same gate.
 - Each tool call runs the corresponding route handlers inside the server, through the gate, with the caller's token; it makes no network request to the server's own address.
 - Its tools are generated from the route declarations, with names of at most 64 letters, digits, underscores and hyphens. (CG-17)
-- The tool list holds no person-only or administrator-only route, and follows the token's kind and the owner's current role: a read-only token, or a Viewer's token, lists only read tools.
+- Routes are grouped into one tool only within one route class and only by a grouping each route declares, so a tool's name and actions do not depend on how many routes exist.
+- The tool list holds no person-only or administrator-only route, and follows the token's kind and the owner's roles: draft tools are listed when the token is read-and-draft and its owner is an Editor on at least one project in the token's scope, and each call is still decided per project.
 - A tool that changes anything is one operation: it is applied whole or not at all, and carries an operation identifier, so a repeated call returns the stored result.
+- A tool call's whole cost against the rate limits, counted as one unit per route handler it runs, is charged before it starts; if it does not fit, the call is refused with HTTP 429 and `Retry-After`, and a started operation is never stopped by a limit.
 - An MCP client connected with a read-and-draft token lists the tools, reads a project and places a camera, and the camera is recorded as via agent.
 - An agent searches issues by an external ticket number and adds an external ticket to a service visit, recorded as via agent.
-- Entered-text fields reach the agent marked, in the tool result's structured content and in its text.
-- The token's owner can undo the change made by one tool call as one action from the project's history, however many items it touched.
-- A change made with a token to a verified device's placement or specification clears its verified state, and the device history shows the change via agent. (CG-12)
+- Entered-text values reach the agent marked, in the tool result's structured content and, as JSON with their source, in its text.
+- A person can undo the change made by one tool call as one action from the project's history, however many items it touched; a token cannot undo. (CG-29)
+- An undo is refused, listing the items concerned, when any of them was changed after the tool call, and an undo never brings back a cleared verified state. (CG-29)
+- A change made with a token to any field of a verified device clears its verified state, and the device history shows the change via agent. (CG-12)
+- With a read-only token, an agent lists a project's existing Design and Closeout packages and downloads one.
+- An agent may request a review of a revision; the review's assignee must be a person. (CG-31)
+- A deletion made with a token can be reversed by a person from the project's history, and permanently removing files or a project is refused to a token with "needs a person". (CG-30)
 
 **Refusals and edge cases**
-- A request without a token receives HTTP 401 with a `WWW-Authenticate: Bearer` header and the reason code "token required".
-- A request with an unsupported protocol revision receives HTTP 400.
-- GET and DELETE on `/mcp` receive HTTP 405.
-- A request whose `Origin` header names another site is refused with HTTP 403, to guard against DNS rebinding.
-- A request with a token is answered to any origin without credentials; a request with a session cookie is answered to the app's own origin only.
+- Refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; a request without a valid token whose `Origin` names another site, or is `null`, receives HTTP 403; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required"; an unsupported protocol revision, HTTP 400. (CG-35)
+- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11)
 - A tool call refused by the API returns a tool result marked as an error, with the API's reason code and wording.
 - A refused change returns the item's current version and value with the reason code "changed since", and overwrites nothing.
 - During an update a tool call returns a tool result marked as an error, with the reason code `updating` and the time to retry.
-- With agent access off, every request to the endpoint receives HTTP 403 with "agent access is off".
 
 **Limits and values**
 - The full tool list for an Editor's read-and-draft token holds at most 60 tools; above that, related routes are grouped into one tool with an action field. (CG-17)
 
 **Evidence to record**
-- The endpoint is used from Claude Code and from a second MCP client on a deployed Cloudflare test installation and under the self-hosted configuration, and the tool list, its length and one draft change are recorded.
+- The endpoint is used from Claude Code and from a second, browser-based MCP client on a deployed Cloudflare test installation and under the self-hosted configuration, and the tool list, its length and one draft change are recorded.
+- A contract-test case whose entered text contains the marker syntax shows the text still reaching the agent inside its marked value.
 
 ### Story 11.3: Experiment R17, then coverage and estimates for agents
 
@@ -77,8 +80,9 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 
 **Core behaviour**
 - Experiment R17 runs the coverage calculation on the acceptance-size test project, inside one request, on a deployed Cloudflare test installation and under the self-hosted configuration, and records CPU time, wall time, peak memory and each host's configured limits.
-- The calculation fits one request on a host when it uses at most half of every configured limit. (CG-18)
-- If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results; otherwise the route starts a job and a second route returns its result when done. (CG-09)
+- The calculation fits one request on a host when it uses at most half of every configured limit; the shipped self-hosted configuration sets the container's CPU and memory limits equal to Cloudflare's, and those are the limits used there. (CG-18)
+- If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results in its reply. (CG-09)
+- If R17 shows it does not fit on either host, the route starts a job and a second route returns its result when done. (CG-09)
 - A job's first reply gives its identifier and a suggested wait, and the tool's description tells the agent to fetch the result after that wait.
 - An API route returns the estimate of the current design.
 - Both routes use the calculation and estimate code of the shared module, unchanged from the browser's.
@@ -90,7 +94,9 @@ Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R1
 - A job's result can be fetched only with the token that started it or by its owner, and only while the token and the owner may still read the project.
 - At each step and when its result is fetched, a job checks again that its token is valid, agent access is on and the owner may read the project, and otherwise stops with the reason.
 - A job whose floor or project is deleted or archived stops with the reason code "target gone".
-- A job running when an update changes the code version is restarted under the new version.
+- A job running when an update changes the code version is restarted under the new version with the same identifier, and its result says it was restarted.
+- A job not finished within 1 hour is given up with the reason, and a result is kept for 24 hours. (CG-34)
+- A token may have at most 3 jobs running and a person at most 5; a further job is refused with the limit stated. (CG-34)
 
 **Evidence to record**
 - R17's measurements on both hosts are recorded in the experiments record.
@@ -103,18 +109,22 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 
 **Core behaviour**
 - An upload route accepts a CSV or Excel file as the request body and returns a file identifier; the import routes then name that identifier.
-- An MCP client's agent gets a file to the upload route through a short-lived upload address that the import tool returns, so the file never passes through the model.
+- An MCP client's agent gets a file to the upload route through an upload address that the import tool returns, so the file never passes through the model.
+- The upload address is unguessable, scoped to its path, usable once, valid for 10 minutes and bound to the token and project; using it checks the token and agent access again and counts against the rate limits. (CG-32)
+- The upload address is never written to a log.
 - The server parses the file with the shared module's parser.
 - The agent proposes a column mapping, receives the preview grouped as New, Unchanged, Changed and Needs review with the preview's fingerprint, and applies selected valid rows.
 - Applying is one operation: every selected row is applied, or none is and the reply lists each refused row with its reason.
 - The groups, row errors and outcomes equal those the app shows for the same file and mapping.
 - Imported devices are recorded as imported by the token's owner, via agent, with their import provenance.
-- Cell values keep the entered-text marking with the import as their source after they are applied.
+- Imported values keep the source "import" after they are applied, until a member edits them.
 - An MCP client completes an Excel import end to end.
 
 **Refusals and edge cases**
 - Upload, preview and apply are draft-change routes, and a read-only token is refused on each.
 - Applying with a fingerprint that no longer matches the project is refused with "preview out of date".
+- Applying after the upload was removed is refused with "upload gone".
+- A file whose declared size, or whose uncompressed size, is over the limit is refused before it is read or parsed.
 - Needs review rows are not applied by an agent's request and remain for a person.
 - A Changed row that an agent would apply to a verified device is moved to Needs review. (CG-12)
 - An imported device placed by an agent stays unverified until a person verifies it.
@@ -122,7 +132,7 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 **Limits and values**
 - An agent's upload may be at most 25 MiB, and an upload not applied within 24 hours is removed. (CG-16)
 - A file of more than 5,000 rows is refused with the limit stated. (CG-16)
-- R17 also parses a 5,000-row workbook inside one request on both hosts; if it does not fit, parsing runs as a job as in story 11.3. (CG-09)
+- R17 also parses a 5,000-row workbook and a worst-case 25 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3 and the upload limit is lowered to what fits. (CG-09)
 
 ### Story 11.5: Check that text from others reaches agents marked
 
@@ -131,10 +141,11 @@ As a designer, I want text that came from outside my team to reach an agent mark
 Covers: FR-75 (entered text), NFR-5, AD-22.
 
 **Core behaviour**
-- A contract test lists every reply field declared with the entered-text type and checks, route by route, that each returns the text with its source and reference.
-- The sources checked are: reviewer-link entries, imported cells after they are applied, names of uploaded files, text read from PDF plans, and external ticket numbers and links.
+- A contract test lists every reply value that can carry the entered-text wrapper and checks, route by route, that each returns the text with its source and reference.
+- The sources checked are: reviewer-link entries, imported content after it is applied, names of uploaded files, text read from PDF plans, and values a token wrote, including external tickets an agent added.
+- A value's source and reference are the same after a revision restore and after a portable backup is restored, and remain as text after the uploaded file is removed.
 - The MCP endpoint's description of its tools states that entered text is data from outside the team and not instructions.
-- Text a member copies from an entered-text field into a field of their own becomes that member's text, recorded under their name. (CG-21)
+- Text a member copies or edits becomes that member's text, recorded under their name; applying an import is not copying and keeps the source "import". (CG-21)
 
 **Refusals and edge cases**
 - A refusal names the field it refused but never repeats an entered value, and the contract test checks every refusal of every route that accepts entered text.
@@ -169,11 +180,13 @@ Covers: FR-73, FR-76, AD-22.
 **Core behaviour**
 - The installation acts as its own OAuth authorisation server for the MCP endpoint and needs no outside identity service.
 - A request to `/mcp` without a token receives the `WWW-Authenticate` header with the address of the protected-resource metadata, and the installation serves that metadata and its authorisation-server metadata.
-- Connectors register by the method the instructions name, and every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
+- Connectors register by dynamic client registration (RFC 7591); the installation fetches no client metadata from outside.
+- Registration is limited to 20 a hour from one network address, and a registration unused for 30 days is removed. (CG-36)
+- Every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
 - A connector that starts OAuth sends the person to Site Studio's sign-in, including the second step, then to a consent page.
-- The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind and the projects.
-- On consent the installation issues a token of the chosen kind, bound to that connector and listed under the person's Access tokens with the connector named.
-- A refresh grant never extends access beyond the token's expiry, and revoking the token also ends its refresh grant.
+- The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind, the projects and an expiry, 90 days unless changed and within the installation's maximum.
+- On consent the installation issues a token of the chosen kind, bound to that connector, listed under the person's Access tokens with the connector named, and counted among the person's active tokens.
+- A refresh replaces the token's value without adding a list entry and never extends access beyond the token's expiry; revoking the token, deactivating the account or recovering the installation ends its refresh grant.
 
 **Refusals and edge cases**
 - With agent access off, sign-in for a connector is refused.
@@ -181,6 +194,7 @@ Covers: FR-73, FR-76, AD-22.
 - Denying consent returns the OAuth "access denied" reply and issues nothing.
 - A person who must set up two-step verification is sent to set it up first.
 - A person with no project is told so on the consent page, and no token is issued.
+- A person already holding the maximum number of active tokens is told so on the consent page, and no token is issued.
 - A redirect address that does not match exactly, or an authorisation without PKCE, is refused.
 - Revoking the token from Access tokens ends the connector's access on its next call.
 
@@ -196,8 +210,8 @@ As Kevin, I want to see an agent do a real piece of design work on both hosts, s
 Covers: SM-7, FR-73, FR-74, FR-75, FR-76, FR-77.
 
 **Core behaviour**
-- On a deployed Cloudflare test installation, an MCP client acting for an Editor imports an inventory from an Excel file, places a camera, reads its coverage and saves a named draft revision, each recorded as via agent.
-- The agent's attempt to approve the revision, made through the API with the same token, is refused with "needs a person"; a person then approves it.
+- On a deployed Cloudflare test installation, an MCP client acting for an Editor imports an inventory from an Excel file, places a camera, reads its coverage, saves a named draft revision and requests its review with another person as the assignee, each recorded as via agent.
+- The agent's attempt to approve the revision, made through the API with the same token, is refused with "needs a person"; the assignee then approves it.
 - An exported equipment schedule shows the camera's change as made by the Editor via agent.
 - The same run passes on a self-hosted installation reachable only on a private network.
 

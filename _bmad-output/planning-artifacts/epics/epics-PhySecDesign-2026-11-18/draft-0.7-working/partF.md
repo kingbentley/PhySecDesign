@@ -402,6 +402,7 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 - The installation instructions of story 9.1 name the published image and release.
 - The workflow can also publish to a test channel, marked by a tag prefix and signed by the same workflow; an installation offers and installs test-channel releases only when configured for that channel.
 
+- Each release keeps the route declarations of every route a token may call; a build whose declarations remove or rename a field, narrow a type or add a required input under `/api/v1/` compared with the previous release fails, as does one that removes, renames or changes the inputs of an MCP tool generated from them. (CG-08)
 **Refusals and edge cases**
 - If the tests or the smoke suite fail, nothing is signed or published.
 - The same verification fails on a build made any other way, and on a published file altered by one byte.
