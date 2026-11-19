@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2361 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2423 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -22,17 +22,23 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 - **Agent access added (PRD amendment 1.3):** on 2026-11-19 Kevin approved the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) for AI agents. Story 1.1, story 1.3, story 1.8 and story 1.14 gained route declarations, reason codes, route classes and the actor's `via` field; story 1.19 adds personal access tokens; Epic 11 adds the API description, the MCP endpoint, results and import for agents, set-up on both hosts and its acceptance. Standing rule 2 now covers tokens. These additions have not been independently reviewed. Their choices are CG-01 to CG-09: CG-01 to CG-03 were decided by Kevin in the proposal, and CG-04 to CG-09 are open.
 - **External tickets added (PRD amendment 1.4):** on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](../../sprint-change-proposal-2026-11-19-external-tickets.md). Story 6.20 adds external tickets on issues, service visits and warranties, and story 11.2 lets an agent find and add them. Choices CE-41 to CE-47 are Kevin's, made in that proposal. Not independently reviewed.
 - **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time. On 2026-11-19 Kevin also ruled on the remaining open choices of agent access: CG-04 to CG-09, CG-13, CG-15, CG-19, CG-26 and CG-36 as written, and CG-16 changed to the PRD's 10 MiB inventory limit with no separate row limit.
+- **Epic 1 reviewed:** on 2026-11-19 Epic 1 was reviewed with the adversarial lens ([review of Epic 1](review-epic-1.md)): 21 findings, mostly on sign-in, set-up, tokens and recovery. Kevin asked for all of them to be applied with Claude's recommendations. Fourteen stories from story 1.2 to story 1.19 were revised (all of Epic 1 except story 1.1, story 1.9, story 1.12, story 1.16 and story 1.18), standing rule 2 extended, standing rules 13 and 14 added, CA-13 widened and CA-43 to CA-58 added, each marked as Claude's recommendation accepted on Kevin's instruction. Not reviewed a second time.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
 
 Where no source document gave a rule or a value, the stories state one so that they can be built and tested. Each is marked on its criterion with an ID in brackets. Each now has a ruling in its decision column (see Status); the section keeps its name so that links to it still work.
 
-**1. New behaviour or restrictions that no source states (29).** Each needed a yes or a no.
+**1. New behaviour or restrictions that no source states (34).** Each needed a yes or a no.
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
-| CA-13 | 1.5 | Turning two-step verification off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-44 | 1.3 | A browser that has signed in to an account before holds a signed marker and is not held by that account's per-email wait, only the per-address one; the recovery code of story 1.8d also clears the wait | The per-email wait applies to every browser | No source states it; without it anyone who knows an email can keep that account locked (review of Epic 1, A6) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-13 | 1.5 | Turning two-step verification on or off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open, which could otherwise enrol its own authenticator (review of Epic 1, A13) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-49 | 1.7 | Until story 2.1, an Epic 1 build is for testing only and says so; project data in the browser is cleared when a different account signs in | Separate the prototype's browser data by installation, account and project | Project data stays in the browser until Epic 2, so the epic's access control cannot cover it; separating storage that Epic 2 replaces would be work thrown away (review of Epic 1, A16) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-50 | 1.10 | An administrator can change a user's email; it ends the user's sessions, cancels unused links, is refused if another account holds that email, and is logged with both addresses | Email fixed for the life of the account | No source lets an email change; with CA-10 a mistyped invitation or a changed mail domain could not be fixed (review of Epic 1, A20) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-54 | 1.11 | Issuing a reset link leaves the current password working until it is used; a new link, including an emailed one, cancels earlier ones (accepted: only the mailbox holder can use an emailed link); the next sign-in shows who reset the password and when; with email working the owner is told | Several live links, and no notice to the owner | FR-70 gives administrators reset links without saying how they combine; FR-69 asks for actions to be attributable to the person who made them (review of Epic 1, A19) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-51 | 1.13 | The recovery command generates the code on the operator's machine and supplies only its hash, account and expiry as a Worker secret; the installation object records it on use; the code works within 60 seconds, wrong codes share the set-up-code limit, and running the command resets those counts | A route signed with the deployment key | Only control of the Cloudflare account is needed, as the story intends; a locked-out administrator may not hold the deployment key (review of Epic 1, A8) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-03 | 1.19 | Agent access is off in a new installation until an administrator turns it on | On by default | Sprint change proposal choice D5 | Yes (Kevin, sprint change proposal, 2026-11-19) |
 | CG-10 | 1.19 | An administrator's token reaches only projects the administrator is a member of | Every project, as the administrator's role allows | A stolen administrator token would otherwise reach every project (review A12) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-27 | 1.19 | Deactivating an account revokes its tokens for good | Suspend them and restore on reactivation | A reactivated account should not silently regain forgotten tokens (second review F14) | Yes (Kevin, applying the second review, 2026-11-19) |
@@ -62,9 +68,9 @@ Where no source document gave a rule or a value, the stories state one so that t
 | CG-31 | 11.2 | An agent may request a review; its assignee must be a person | Requesting a review is person only | A request decides nothing; the decision stays with a person (second review B33) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists | Yes (Kevin, 2026-11-19) |
 
-**2. Values nobody specified (89).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
+**2. Values nobody specified (96).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
-**3. Readings of a source (155).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
+**3. Readings of a source (159).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
 
 **4. Open points.**
 
@@ -124,7 +130,7 @@ Each epic's own section states what it depends on.
 ### Standing rules
 
 1. Every change is saved through a versioned operation or an append-only entry (AD-5). No story adds a way to edit a record without a base version.
-2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified. Calls from the update workflow and the updater are a fourth kind of route, checked by the gate with the update secret (AD-20). Every route declares its class (AD-22). From Epic 2 on, each story's write routes are also called with a read-and-draft access token and shown to succeed, unless the route is person only, when the token is refused with "needs a person"; and called with a read-only token and shown to be refused. An action made with a token records its owner with `via` naming the token, and wherever a story shows or exports an actor, such an action shows the owner and "via agent" with the token's name. Approving or deciding a review, bypassing, issuing or designating, closing out or reopening a scope, recording a test outcome, an installed mark or a verified observation, archiving or un-archiving, restoring, creating a reviewer link, creating a project, downloading a portable backup, permanently removing files or a project, and undoing a change are person-only routes (FR-75). An agent may request a review; its assignee is a person. A deletion made with a token can be reversed by a person. A change made with a token to any field of a verified device clears its verified state. Each new administrator-only route is shown to refuse an administrator's token, each new reviewer-link route to refuse any token, and each write route to refuse a read-and-draft token on a project where its owner is a Viewer.
+2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified. Calls from the update workflow and the updater are a fourth kind of route, checked by the gate with the update secret (AD-20). Every route declares its class (AD-22). From Epic 2 on, each story's write routes are also called with a read-and-draft access token and shown to succeed, unless the route is person only, when the token is refused with "needs a person"; and called with a read-only token and shown to be refused. An action made with a token records its owner with `via` naming the token, and wherever a story shows or exports an actor, such an action shows the owner and "via agent" with the token's name. Approving or deciding a review, bypassing, issuing or designating, closing out or reopening a scope, recording a test outcome, an installed mark or a verified observation, archiving or un-archiving, restoring, creating a reviewer link, creating a project, downloading a portable backup, permanently removing files or a project, undoing a change, creating, renaming or revoking an access token, and every change to one's own account (name, password, two-step verification, recovery codes, ending sessions) are person-only routes (FR-75). An agent may request a review; its assignee is a person. A deletion made with a token can be reversed by a person. A change made with a token to any field of a verified device clears its verified state. Each new administrator-only route is shown to refuse an administrator's token, each new reviewer-link route to refuse any token, and each write route to refuse a read-and-draft token on a project where its owner is a Viewer.
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
@@ -135,6 +141,8 @@ Each epic's own section states what it depends on.
 10. Performance criteria are measured against the acceptance-size test project that story 2.11 generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
 11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording. An answer of "updating, try again shortly" is not a refusal: the edit stays unsaved and is sent again automatically, as after a lost connection (AD-20). So are the refusals of data newer or older than the server during or after an update.
 12. A reply value whose source is not a member of the project, or that an agent added, is returned in the entered-text wrapper of story 1.1 with its source: reviewer-link entries, imported content (which keeps the source "import" after it is applied), names of uploaded files, text read from PDF plans, and anything a token wrote. A value a member edits becomes that member's. Sources and references survive restore and backup. A refusal names a field but never repeats an entered value (AD-22).
+13. Every request that changes anything with a session cookie, and every request made before a session exists that creates a session or changes an account (sign-in, set-up, accepting an invitation, using a reset link, using a recovery code), is refused unless it comes from the app's own origin and carries the header the app adds (AD-12). Each story that adds such a request tests the refusal. Token requests are exempt, as story 1.19 states.
+14. A secret carried in a link (an invitation or a reset link) holds at least 32 random bytes, and the administrator recovery code of story 1.13 at least 20 random characters. The server stores only its SHA-256 hash. The page that opens a link is served with `Referrer-Policy: no-referrer` and removes the secret from the address bar once it is read, and no log, record or export contains it. (CA-55)
 
 ### Definition of done
 
@@ -204,11 +212,14 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 - The step asks for the set-up code, the installation's name and the first administrator's name, email and password.
 - The page states that it disappears once an administrator exists.
 - On completion exactly one administrator exists, and the page confirms the installation's name and the administrator's email.
+- Set-up records the installation's public address from the address the set-up page was opened on. (CA-57 · reading)
 - The password is stored only as a salted scrypt hash (N = 131,072, r = 8, p = 1, a 32-byte result), with the parameters stored beside the hash.
+- The deploy command learns whether set-up is still open from a public read-only route that answers only open or closed, which reveals nothing the set-up page does not already show, and issues a set-up code only when set-up is open. (CA-52 · reading)
 
 **Refusals and edge cases**
 - Once any user exists, the set-up page and its request are refused, and the set-up code no longer works.
 - A wrong or missing set-up code is refused.
+- A set-up request from another origin, or without the app's header, is refused (standing rule 13).
 - Two set-up requests sent at the same moment create one administrator; the second is refused.
 - Deploying again to an installation that has an administrator generates no set-up code and does not make set-up available.
 - Deploying again to an installation with no users prints a new set-up code, and the earlier code stops working. (CA-02 · reading)
@@ -219,7 +230,10 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 - The set-up code has at least 20 characters. (CA-01 · value)
 - The password must have 12 to 128 characters and must not equal the account's email address; there are no other composition rules. (CA-03 · value)
 - The installation's name must be 1 to 80 characters. (CA-04 · value)
-- After 5 wrong codes, further attempts from any address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05 · value)
+- After 5 wrong codes from one network address, further attempts from that address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05 · value)
+- After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed. (CA-05 · value)
+- The counts of wrong codes are kept in the installation object's storage and are raised before the code is checked, so they hold across every copy of the Worker, across a restart and under requests sent at once. (CA-43 · reading)
+- Deploying again with a new set-up code resets the count of wrong codes, and the waiting message says that deploying again issues a fresh code. (CA-45 · reading)
 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
@@ -235,19 +249,23 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 **Core behaviour**
 - An installation that has an administrator shows the sign-in page, with the installation's name, to anyone not signed in.
 - The administrator created in story 1.2 signs in with their email and password.
-- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax.
-- The server stores only a hash of the session token.
+- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax, named with the `__Host-` prefix and an identifier of the installation, with no Domain attribute and the path `/`.
+- The server stores only a hash of the session token, and a new token is issued at each sign-in. (CA-47 · value)
 - An account menu in the existing header shows the signed-in user's name and Sign out.
 - Sign out ends the session, and a later request with its cookie is refused.
 
 **Refusals and edge cases**
 - A wrong email or password gives one message, whether or not the email has an account.
+- For an email with no account, the server checks the password against a fixed stand-in hash made with the same parameters, so that a refusal takes the same time whether or not the account exists: a test finds the median times of 20 refusals for each case within 100 ms of each other. (CA-58 · value)
 - After repeated failed sign-ins, further attempts are refused for a wait, and the page says how long to wait. (CA-07 · value)
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
-- The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing.
+- The counts of failed sign-ins, by entered email address and by network address, are kept in the installation object's storage, which is a single instance for the installation on both hosts, and are not read from any log, so they apply equally to an address that has no account. (CA-43 · reading)
+- An attempt is counted before its password is checked, and the count is lowered again only when the password proves correct, so attempts sent at once cannot all pass the limit. (CA-43 · reading)
+- A browser that has signed in to an account successfully holds a signed marker for that account. While that account's email is in a wait, a sign-in from a browser holding the marker is held only by the per-address count, not the per-email one: a test locks an email from one address, then signs in with the correct password from a browser holding the marker. (CA-44 · decision)
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing (standing rule 13).
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
+- Two test installations on one host name with different ports each keep their own session: signing in to one does not sign the person out of the other.
 
 **Limits and values**
 - The failure message reads "That email and password do not match."
@@ -260,6 +278,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 
 **Evidence to record**
 - On a deployed Cloudflare test installation the scrypt hash is accepted without a platform error, and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08 · value)
+- On a deployed Cloudflare test installation, of 25 wrong sign-ins for one email sent at once over several connections, at most 5 are checked against the password and the other 20 receive the wait. (CA-43 · reading)
 - A password hash made on one host verifies on the other.
 
 Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17). Experiment R9 was run on 2026-11-19: Cloudflare refuses a PBKDF2 call above 100,000 iterations, so the 600,000-iteration hash first planned was replaced by scrypt, which worked on both hosts with identical results and added about 0.36 s to a request on Cloudflare.
@@ -277,9 +296,11 @@ Covers: FR-67 (invitation), AD-12. Screens: S-27, S-30 invite panel.
 - The person sets a name and a password and is signed in.
 - The password must meet the password rules of story 1.2, and the page shows each rule as it is met.
 - The new password is stored in the form story 1.2 states.
+- The invitation link's secret follows standing rule 14: a test checks its length, finds only its hash stored, and finds the secret absent from the address bar after the page opens and from the runtime log. (CA-55 · value)
 
 **Refusals and edge cases**
 - There is no open registration: no page or request creates an account without an invitation.
+- Accepting an invitation from another origin, or without the app's header, is refused (standing rule 13).
 - An invitation works once.
 - A used or expired link says so and tells the person to ask an administrator for a new one.
 - Inviting an email that already has an account is refused, and the administrator is told so. (CA-10 · reading)
@@ -301,9 +322,11 @@ As a designer, I want to protect my account with an authenticator app, so that a
 Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX decision D14. Screens: S-26, S-27, S-29.
 
 **Core behaviour**
-- A user turns it on by scanning a code and confirming with one generated code.
+- A user turns it on by giving their password, scanning a code and confirming with one generated code. (CA-13 · decision)
 - The user is then shown recovery codes once, with Copy and Download; the codes cannot be displayed again.
 - With it on, a correct password alone does not sign in; a current code does.
+- After a correct password, an account with it on receives a pending sign-in token, stored only as a hash and bound to that browser, which allows nothing but the second step; it is discarded on success, on expiry, or when the wait of story 1.3 begins. (CA-46 · value)
+- When the second step succeeds, a new session token is issued in place of any earlier one. (CA-47 · value)
 - "Use a recovery code" accepts a recovery code in place of a generated code, once.
 - The account page shows how many recovery codes remain.
 - A user makes a fresh set of recovery codes by giving their password and a current code, and the old set stops working. (CA-13 · decision)
@@ -317,18 +340,24 @@ Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX 
 - A code that has been accepted is refused if used again.
 - Wrong codes and wrong recovery codes count toward the same limit and wait as wrong passwords in story 1.3. (CA-15 · reading)
 - Turning it off asks for the password. (CA-13 · decision)
+- Turning it on with a wrong password is refused. (CA-13 · decision)
+- A pending sign-in token used after it expires, used for anything but the second step, or sent from another browser is refused. (CA-46 · value)
+- A second-step request from another origin, or without the app's header, is refused (standing rule 13).
 - Neither the authenticator secret nor a recovery code appears in any reply after set-up.
 - The deploy command generates the deployment key only when the installation has none: a test deploys again and then signs in with a two-step code set up before.
+- The deploy command finds an existing deployment key in the Worker's list of secrets and never replaces it. (CA-52 · reading)
+- The installation stores a fingerprint of its deployment key; started with a key that does not match, it reads and writes no encrypted value and says that the deployment key does not match. (CA-52 · reading)
 
 **Limits and values**
 - A set holds 10 recovery codes. (CA-11 · value)
+- A pending sign-in token lasts 5 minutes. (CA-46 · value)
 - Codes are 6 digits and change every 30 seconds; a code from the step just before or just after the current one is accepted. (CA-12 · value)
 - The code field asks for a numeric keypad and offers code autofill on a phone.
 
 **Access and restore**
 - A revision restore leaves two-step set-up and recovery codes unchanged.
 
-Notes: Left to later stories: the two-step controls on the My account page (story 1.6 places them there); reset or requirement by an administrator for one user (story 1.11); requirement for everyone (story 1.16); the self-hosted key file (story 2.23).
+Notes: Showing the second-step page tells the person that the password was right, as is usual; the shared failure count of CA-15 limits guessing. Left to later stories: the two-step controls on the My account page (story 1.6 places them there); reset or requirement by an administrator for one user (story 1.11); requirement for everyone (story 1.16); the self-hosted key file (story 2.23).
 
 ### Story 1.6: My account and sessions
 
@@ -345,6 +374,7 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 - A session shows a country or city where the host supplies one. (CA-17 · reading)
 - "Sign out everywhere else" ends the other sessions, and each is refused on its next request.
 - A session ends after a period without use. (CA-19 · reading)
+- A session also ends 30 days after its sign-in, whatever its use: a test with a test clock finds a session in daily use refused after that. (CA-47 · value)
 - Only a request that results from something the person does, such as opening a page, saving, uploading or any other deliberate action, counts as use of the session. (CA-19 · reading)
 - A request the page sends by itself, such as an automatic check for other people's changes, does not count as use, so a page left open still reaches the idle limit. (CA-19 · reading)
 - When a session ends while a page is open, the page asks the user to sign in again in place.
@@ -353,11 +383,14 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 **Refusals and edge cases**
 - If a different account signs in on that page, the earlier account's pending input is neither shown to it nor sent. (CA-20 · reading)
 - That input stays bound to the earlier account and is offered again only when that account signs in on the same browser. (CA-20 · reading)
+- Signing out deliberately while input is pending warns that it will be removed and, on confirmation, removes it from the browser: a test inspects the browser's storage after sign-out and finds none. (CA-48 · value)
+- Pending input that its account has not reclaimed within 7 days is removed from the browser. (CA-48 · value)
 
 **Limits and values**
 - The period without use is 24 hours. (CA-18 · value)
+- The longest a session lasts is 30 days from its sign-in. (CA-47 · value)
 
-Notes: Left to later stories: ending sessions by deactivation (story 1.9); the administrator changing the 24-hour period (story 1.15); pending project edits kept the same way (story 2.3); an upload in progress counting as use and resuming after sign-in (story 2.9).
+Notes: The changes on My account (name, password, two-step verification, recovery codes, ending sessions) become person-only routes when story 1.8 gives every route a class (standing rule 2). Left to later stories: ending sessions by deactivation (story 1.9); the administrator changing the 24-hour period (story 1.15); pending project edits kept the same way (story 2.3); an upload in progress counting as use and resuming after sign-in (story 2.9).
 
 ### Story 1.7: Projects list and creating a project
 
@@ -370,6 +403,8 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 - An administrator creates a project by giving its name; it appears in the list without reloading the page, and its creator is recorded.
 - Each project has its own address, and opening a project from the list goes to that address.
 - A project's address loads the existing app, whose data is still held only in the browser.
+- While project data is held only in the browser, the projects list states that the build is for testing only and is not for real project data. (CA-49 · decision)
+- When a different account signs in on a browser, project data that the app holds in that browser is cleared first. (CA-49 · decision)
 - A user whose list holds exactly one project, an administrator included, goes straight to it after signing in. (CA-22 · reading)
 - The projects list is reachable from the account menu and by its own address, including for a user who was sent straight to a project.
 
@@ -394,6 +429,7 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 
 **Core behaviour**
 - Every request passes one access gate that identifies the caller and decides from their installation role and project membership.
+- Every route built in story 1.1 to story 1.7 declares its class and is decided by the gate alone, with no access check of its own left in place.
 - An administrator's server functions add a user to a project as Editor or Viewer, change that role and remove the user.
 - A standard user's project list shows only the projects they belong to, each with their role; an administrator's list shows every project.
 - Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project, an Editor may read and change their own project, a Viewer may read their project and is refused any change, and a non-member and an ended session are refused.
@@ -403,7 +439,9 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; a test route that declares none is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; in the test build, the gate refuses a test route that declares none.
+- The build fails if any route declares no class.
+- The test routes of this story exist only in the test build: a deployed installation answers them as not found.
 - A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
@@ -452,11 +490,13 @@ Covers: FR-70 (Users), FR-67 (deactivation), UX decision D10. Screens: S-30.
 - Invite is in Users, and the account-menu action of story 1.4 is removed.
 - When inviting, an administrator optionally chooses projects and a role in each, which apply when the invitation is accepted.
 - A user's detail lets an administrator change the name and installation role, sign the user out everywhere, deactivate and reactivate.
+- A user's detail lets an administrator change the user's email: the change ends all of the user's sessions, cancels the user's unused links, and is recorded in the activity log with the earlier and new address. (CA-50 · decision)
 - Deactivating explains that the person's records keep their name.
 
 **Refusals and edge cases**
 - A standard user does not see Administration, cannot open its pages by address and is refused by each of its server functions.
 - Inviting the email of a deactivated account is refused, and the administrator is told the account is deactivated. (CA-10 · reading)
+- Changing a user's email to one that another account holds, active or deactivated, is refused with the reason. (CA-50 · decision)
 - The last administrator's role and Deactivate controls are disabled, with the reason shown.
 - When an administrator's role is removed while they have an unsaved change open in Administration, the save is refused and shown as "not saved: access changed".
 - What they entered stays on the page and is not retried.
@@ -471,7 +511,11 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Core behaviour**
 - A user's detail lets an administrator issue a password reset link, which the administrator copies.
-- Using the link sets a new password and ends all of that account's sessions. (CA-25 · reading)
+- The reset link's secret follows standing rule 14.
+- Issuing a reset link leaves the current password working until the link is used. (CA-54 · decision)
+- Issuing a new reset link cancels any earlier unused one for that account. (CA-54 · decision)
+- Using the link sets a new password, ends all of that account's sessions and clears the account's sign-in wait. (CA-25, CA-44)
+- At its next sign-in after an administrator's reset, the account is shown once "Your password was reset by ‹administrator› on ‹date›". (CA-54 · decision)
 - A password reset leaves two-step verification on. (CA-25 · reading)
 - A user's detail lets an administrator reset that user's two-step verification: the user then signs in with the password alone and is offered set-up again.
 - After a reset, the user's old recovery codes no longer work. (CA-26 · reading)
@@ -482,6 +526,7 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Refusals and edge cases**
 - A reset link works once.
+- Using a reset link from another origin, or without the app's header, is refused (standing rule 13).
 - A cancelled link says it is no longer valid.
 - Deactivating an account cancels its unused invitation and reset links. (CA-28 · reading)
 - An invitation or reset link opened for an account that has since been deactivated is refused. (CA-28 · reading)
@@ -519,17 +564,26 @@ As the person who controls my organisation's Cloudflare account, I want a comman
 Covers: FR-70 (administrator recovery, Cloudflare host), AD-12.
 
 **Core behaviour**
-- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account and prints a one-time recovery code.
+- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account, generates a one-time recovery code on that person's machine and prints it. (CA-51 · decision)
+- The command supplies the installation with only the code's hash, the account named and the expiry time, as a Worker secret. (CA-51 · decision)
+- The entry code passes that hash to the installation object, which records it when it is used, so a code already used is refused even while the secret remains. (CA-51 · decision)
 - With the code, that account sets a new password and has its two-step verification reset. (CA-29 · reading)
-- Using the code ends all of that account's sessions.
+- Using the code ends all of that account's sessions and clears the account's sign-in wait. (CA-44 · decision)
+- Running the command resets the counts of wrong recovery and set-up codes. (CA-51 · decision)
 
 **Refusals and edge cases**
 - The code works once.
 - A wrong or expired code is refused.
+- Wrong recovery codes count toward the limit and wait of wrong set-up codes in story 1.2, kept in the installation object. (CA-51 · decision)
+- Using the code from another origin, or without the app's header, is refused (standing rule 13).
 - No page or request in the app issues a recovery code.
 
 **Limits and values**
 - The code expires 1 hour after it is printed. (CA-30 · value)
+- The code has at least 20 random characters (standing rule 14).
+
+**Evidence to record**
+- On a deployed Cloudflare test installation, the code works within 60 seconds of the command finishing. (CA-51 · decision)
 
 Notes: Left to later stories: the activity-log entries for issuing and using the code (story 1.14); the self-hosted form of the command (story 2.23); the command in the published instructions (story 9.1).
 
@@ -544,7 +598,7 @@ Covers: FR-71. Screens: S-36.
 - Sign-in events add entries: sign-in, failed sign-in including a failed second step, sign-out and sign out everywhere.
 - Credential events add entries: password change and reset, recovery codes renewed, and two-step verification turned on, turned off, reset, required and no longer required for a user.
 - Invitation and link events add entries: invitation issued, accepted and cancelled, and reset link issued and cancelled.
-- Account and project events add entries: set-up completed, role and membership changes, deactivation and reactivation, and project creation.
+- Account and project events add entries: set-up completed, email changes, role and membership changes, deactivation and reactivation, and project creation.
 - Issuing and using the recovery code of story 1.13 each add an entry; the issue is recorded as made from the host, with the account it names.
 - A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32 · reading)
 - When the text entered matches no account, the entry reads "unknown address" and the text entered is not stored. (CA-32 · reading)
@@ -555,9 +609,12 @@ Covers: FR-71. Screens: S-36.
 - No entry contains a password, token, code or link: a test signs in, invites, resets and fails a sign-in, then searches the stored log for each secret used and finds none.
 - No page or server function edits or removes an entry.
 - A standard user cannot open Activity or call its functions.
+- Failed sign-ins from one network address within one minute are written as one entry with a count, so that unauthenticated requests cannot grow the log one entry at a time. (CA-56 · value)
+- In the CSV export, a cell that begins with `=`, `+`, `-` or `@` is prefixed with an apostrophe so that a spreadsheet does not run it as a formula. (CA-56 · value)
 
 **Limits and values**
 - Entries are never removed by age: an entry given a date several years in the past in a test is still listed and exported.
+- The export is produced in pages, and an export of 100,000 entries completes on a deployed Cloudflare test installation. (CA-56 · value)
 
 **Access and restore**
 - A revision restore leaves the activity log unchanged.
@@ -574,6 +631,7 @@ Covers: FR-70 (Settings), FR-67 (session period, invitation life), FR-68 (projec
 - Administration's left-hand list gains Settings, grouped as Installation, Sign-in and Maps.
 - Each group saves on its own and says what changed.
 - Installation holds the name, and a changed name shows on the sign-in page.
+- Installation holds the public address used in links the installation sends, recorded at set-up from the address the set-up page was opened on and changeable here. (CA-57 · reading)
 - Sign-in holds the period without use after which a session ends, how long an invitation lasts, and whether standard users may create projects.
 - A changed session period applies to existing sessions on their next request. (CA-34 · reading)
 - A changed invitation life applies to invitations issued afterwards. (CA-34 · reading)
@@ -628,7 +686,12 @@ Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18.
 - With an HTTP email service configured, "Send a test message" reports success or the service's error.
 - With email working, the invite panel offers "Email it" beside the link to copy.
 - With email working, "Forgot password" on the sign-in page sends a reset link.
-- Using the emailed link sets a new password, ends all of that account's sessions and leaves two-step verification on.
+- "Forgot password" replies before any message is sent; the message is sent afterwards by a job of the installation object, so that the reply takes the same time for every email. (CA-58 · value)
+- Emailed links use the installation's public address of story 1.15, never a request header: a test sends "Forgot password" with a forged host header and finds the emailed link unchanged. (CA-57 · reading)
+- The emailed reset link's secret follows standing rule 14.
+- With email working, a reset link issued by an administrator also emails the account's owner that a reset was issued, without the link. (CA-54 · decision)
+- An emailed reset link cancels any earlier unused reset link for that account, including one issued by an administrator; only the holder of the account's mailbox can use it. (CA-54 · decision)
+- Using the emailed link sets a new password, ends all of that account's sessions, clears the account's sign-in wait and leaves two-step verification on. (CA-44 · decision)
 - Without email, "Forgot password" says "Ask an administrator for a reset link".
 - Without email, every invitation and reset is a link the administrator copies, and nothing else stops working.
 - A change to the Email group and each reset link sent are recorded in the activity log, without the link.
@@ -637,10 +700,16 @@ Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18.
 - A failed invitation send is reported with the link still offered.
 - "Forgot password" gives the same reply for every email, and no message is sent for an unknown or deactivated account. (CA-39 · value)
 - An emailed reset link works once.
+- Using an emailed reset link from another origin, or without the app's header, is refused (standing rule 13).
 
 **Limits and values**
 - An emailed reset link expires after 1 hour. (CA-38 · value)
 - At most 3 reset messages are sent to one account in an hour. (CA-39 · value)
+- "Forgot password" requests from one network address are limited to 10 an hour. (CA-53 · value)
+- The installation sends at most 100 messages an hour in total, counting invitations, resets, notices and test messages. (CA-53 · value)
+- A "Forgot password" request over either limit receives the usual reply and sends nothing. (CA-53 · value)
+- An administrator's send over the installation's limit is reported, with the link still offered. (CA-53 · value)
+- The activity log records each time a limit is reached. (CA-53 · value)
 
 Notes: Left to later stories: SMTP (story 1.18).
 
@@ -719,6 +788,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
 - A request that carries both a session cookie and a token is refused. (CG-05 · reading)
 - A token cannot create a project; the request is refused with "needs a person". (CG-24 · reading)
+- Creating, renaming or revoking a token, every change on My account (name, password, two-step verification, recovery codes, ending sessions) and changing the agent-access setting are person-only or administrator-only routes: a test calls each with a read-and-draft token and finds it refused with "needs a person" (standing rule 2).
 - An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
 - Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20 · reading)
 - When the maximum is below 90 days, Create token offers the maximum as its default.
@@ -732,7 +802,8 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13 · value)
 - Creating an eleventh active token is refused with the limit stated.
 - After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14 · value)
-- Rate counters are kept in memory, last use is written at most once a minute per token, and the per-address check runs before the installation object is consulted.
+- Token request-rate counters are kept in the installation object's memory, which is a single instance for the installation on both hosts; a restart of the object resets them, which is accepted for per-minute rates. Last use is written at most once a minute per token. (CA-43 · reading)
+- A per-address check in the Worker's own memory may run first as an extra guard; it is not relied on as the limit. (CA-43 · reading)
 - A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
 - An expired or revoked token stays listed, greyed, for 30 days. (CG-07 · value)
 
@@ -741,6 +812,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 
 **Evidence to record**
 - The gate's server tests of story 1.8 and story 1.9 are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
+- On a deployed Cloudflare test installation, requests with one token sent at once over several connections above 300 a minute receive HTTP 429. (CA-43 · reading)
 
 Notes: Story 1.1 declares every route with its schema, and story 1.8 gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.10), the activity log (story 1.14) and Settings (story 1.15), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
 
@@ -5066,9 +5138,9 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 ## Values and readings
 
-**Values nobody specified (89).**
+**Values nobody specified (96).**
 
-*Epic 1: Install, sign in and manage people (27)*
+*Epic 1: Install, sign in and manage people (34)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
@@ -5076,21 +5148,28 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CA-01 | 1.2 | Set-up code is random, at least 20 characters, printed once in the deployment output | A shorter code, or one the installer chooses | AD-12 says only that a one-time code is shown in the deployment output; no length is given | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-03 | 1.2 | Password: 12 to 128 characters, not equal to the email, no composition rules | 8-character minimum, or composition rules | Architecture section 15 left the rule open; current published guidance favours length over composition | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-04 | 1.2 | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
-| CA-05 | 1.2 | Wrong set-up codes: after 5, refused from any address for 1 minute, doubling to 15 minutes | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-05 | 1.2 | Wrong set-up codes: after 5 from one address, that address waits 1 minute, doubling to 15 minutes; after 100 within an hour from all addresses, every attempt waits out the hour | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in; a single count for all addresses would let anyone lock the installer out (review of Epic 1, A5 and its check) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-07 | 1.3 | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-08 | 1.3 | Median sign-in on Cloudflare is under 1 second over 20 sign-ins | A different time bound | The architecture gives no time bound for sign-in; experiment R9 measured about 0.36 s for the hash alone | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-58 | 1.3 | A refusal for an email with no account checks a fixed stand-in hash, and median refusal times for the two cases are within 100 ms; Forgot password replies before sending | Uniform wording only | NFR-5 forbids revealing whether an email has an account; the time taken would otherwise reveal it (review of Epic 1, A1) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-09 | 1.4 | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-55 | 1.4 | Link secrets hold at least 32 random bytes and the administrator recovery code at least 20 random characters; only SHA-256 hashes are stored; link pages send no referrer and clear the secret from the address bar (standing rule 14) | No stated strength or handling | AD-12 states hashing for sessions, recovery codes and tokens only (review of Epic 1, A7) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-11 | 1.5 | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-12 | 1.5 | Codes are 6 digits on a 30-second step; one step either side is accepted | Accept the current step only | Standard authenticator-app settings; AD-12 says only "time-based codes" | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-46 | 1.5 | After a correct password, a pending sign-in token, hashed and bound to the browser, lasts 5 minutes and allows only the second step | No stated lifetime | AD-12 gives the second step without saying what carries the state between steps (review of Epic 1, A12) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-18 | 1.6 | A session ends after 24 hours without use by default | 8 hours or 7 days | FR-67 leaves the period to the administrator and names no default | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-47 | 1.6 | A session ends 30 days after sign-in whatever its use; a new session token is issued at sign-in and after the second step | Idle limit only, and one token for the session's life | FR-67 gives only a period without use; a stolen cookie would otherwise never expire (review of Epic 1, A14) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-48 | 1.6 | A deliberate sign-out warns about and removes pending input; input not reclaimed within 7 days is removed | Pending input is kept indefinitely | CA-20 keeps input for its account with no end; on a shared device it would stay readable (review of Epic 1, A15) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-21 | 1.7 | Project name is 1 to 120 characters; duplicate names are allowed | Names must be unique | No source gives a bound; properties can share names | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-24 | 1.11 | A reset link issued by an administrator expires after 24 hours | 1 hour, as for an emailed link | AD-12 says resets expire and gives no period; a link passed on by hand needs longer | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-30 | 1.13 | The recovery code expires after 1 hour | 15 minutes or 24 hours | No source gives a period; it is used at once by the person who ran the command | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-31 | 1.14 | The log exports as a CSV file of the filtered entries | JSON, or the whole log regardless of filter | FR-71 says "export" without a format; CSV matches the estimate export | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-56 | 1.14 | Failed sign-ins from one address within a minute are logged as one entry with a count; CSV cells beginning with = + - @ are prefixed with an apostrophe; the export is paged and 100,000 entries complete on Cloudflare | One entry per failure and a plain export | FR-71 keeps every entry for the life of the installation; unauthenticated requests could otherwise grow it without limit (review of Epic 1, A18) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-33 | 1.15 | Session period accepts 15 minutes to 30 days; invitation life accepts 1 to 30 days | No bounds | FR-70 makes both settable and gives no bounds | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-35 | 1.15 | A saved secret shows its last 4 characters | Fully masked | UX S-33 says "only its last characters" without a count | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-38 | 1.17 | An emailed reset link expires after 1 hour | 24 hours, as for an administrator's link | AD-12 says resets expire and gives no period | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-39 | 1.17 | "Forgot password" gives the same reply for every email and sends at most 3 messages per account per hour | No sending limit | NFR-5 forbids revealing whether an email has an account; no source limits sends | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-53 | 1.17 | Forgot password limited to 10 requests per network address per hour; the installation sends at most 100 messages an hour in total | Only the per-account limit of CA-39 | CA-39 limits one account only; without more, the installation can be used to flood its own users and get its email service suspended (review of Epic 1, A11) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-42 | 1.18 | SMTP connect times out after 10 seconds and each reply after 30 seconds | 30 seconds to connect, 60 seconds for each reply | No source gives a limit; a mail server that accepts and never replies would otherwise hang the test message until a platform limit ends it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-02 | 1.19 | Token expiry 90 days by default, at most 1 year, maximum lowerable by an administrator | No expiry, or a fixed lifetime | Sprint change proposal choice D2 | Yes (Kevin, sprint change proposal, 2026-11-19) |
 | CG-04 | 1.19 | 300 requests a minute per token, then "too many requests" with the time to wait | A lower or higher limit, or none | NFR-5 under amendment 1.3 asks for a limit and names none; generous for one agent, low enough to stop a runaway loop | Yes (Kevin, 2026-11-19) |
@@ -5207,13 +5286,16 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-32 | 11.4 | Upload address: single use, valid 10 minutes, bound to the token and project | A longer life, or reuse | Short enough not to become a standing credential (second review B15, F25) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) | Yes (Kevin, 2026-11-19) |
 
-**Readings of a source (155).**
+**Readings of a source (159).**
 
-*Epic 1: Install, sign in and manage people (25)*
+*Epic 1: Install, sign in and manage people (29)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
 | CA-02 | 1.2 | Redeploying to an installation with no users issues a new set-up code and the earlier one stops working | The first code stays valid until set-up is completed | AD-21 forbids regenerating the code only once an administrator exists; a lost code must be replaceable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-45 | 1.2 | Deploying again with a new set-up code resets the count of wrong codes, and the waiting message says so | The count survives a new code | CA-02 issues a new code on redeploy; a lock that a new code does not clear leaves the installer no way in (review of Epic 1, A5) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-52 | 1.2 | The deploy command asks a public open-or-closed set-up route before issuing a set-up code, finds an existing deployment key in the Worker's secret list and never replaces it; the installation refuses encrypted values under a key whose fingerprint does not match | The deploy command keeps its own record | AD-21 says both are created only when absent without saying how absence is learned; the set-up page already shows whether set-up is open (review of Epic 1, A9) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-43 | 1.3 | Every rate and failure count is kept in the installation object, one instance per installation on both hosts: sign-in, set-up-code, recovery-code, Forgot-password and email counts in its storage, raised before the check; token request rates in its memory, where a restart resets them; a per-address check in the Worker's own memory is only an extra guard | Counts in each Worker copy's memory | AD-12 and AD-22 say counts are kept but not where; Worker memory is per copy on Cloudflare, so a limit kept there does not hold (review of Epic 1, A4) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-10 | 1.4 | Inviting an email that already has an account, active or deactivated, is refused; re-inviting a pending email replaces the earlier link | Allow several live invitations for one email | FR-67 gives each person one account, so a second account or a second live link for one email would duplicate it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-14 | 1.5 | The authenticator secret is encrypted with the deployment key | Stored unencrypted in the installation object | AD-17 states the key for settings secrets; the same protection is applied to two-step secrets | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-15 | 1.5 | Wrong second-step and recovery codes share the limit and wait of wrong passwords | A separate limit for the second step | AD-12 slows "failed sign-ins"; a failed second step is read as one | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
@@ -5231,6 +5313,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CA-34 | 1.15 | A changed session period applies to existing sessions on their next request; a changed invitation life applies only to invitations issued afterwards | Both apply only to new sessions and invitations | The FR-70 Check says "changes the session period and sees it take effect" | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-36 | 1.15 | Turning off project creation by standard users leaves existing projects and their members unchanged | Projects created by standard users lose their Editor | FR-68 states the setting and is silent on turning it off | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-37 | 1.15 | Settings states beside the Google mapping key that it is visible in signed-in users' browsers | No notice | FR-70 says secrets are never shown again in full; a browser map key cannot be kept from the browser, so the exception is stated | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-57 | 1.17 | Links the installation sends use its public address, recorded at set-up and changeable in Settings, never a request header | Build links from the request's host | No source says which address a link uses; a request's host can be forged (review of Epic 1, A10) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-40 | 1.18 | SMTP is offered only if R13 passes on both hosts | Offer SMTP on whichever host passes | AD-18 says SMTP "is not promised until it passes"; NFR-7 asks both hosts to behave the same | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-01 | 1.19 | Two token kinds, read-only and read-and-draft, each optionally limited to named projects | One kind with per-action permissions | Sprint change proposal choice D1 | Yes (Kevin, sprint change proposal, 2026-11-19) |
 | CG-05 | 1.19 | A request carrying both a session cookie and a token is refused | Prefer the token, or the session | A request with two identities has no single actor to record | Yes (Kevin, 2026-11-19) |
@@ -5594,3 +5677,4 @@ Stories that were split, added or moved down by a split. A story not listed kept
 - **Draft 0.5** settled the epic order with Kevin and moved the self-hosted image into Epic 2.
 - **Draft 0.6** applied the first independent review: user-story sentences and Notes lines throughout, criteria moved to the stories that can test them, missing parts of requirements added, edge-case handling added.
 - **Draft 0.7** applies the second independent review and Kevin's twelve decisions: contradictions between stories removed, hidden dependencies fixed, the update path on Cloudflare corrected, criteria grouped under five labels, large stories split and renumbered, and the choices reduced to those that are really open, each with an ID.
+- **Draft 0.7, revised 2026-11-19 for the review of Epic 1:** an adversarial review of Epic 1 ([review of Epic 1](review-epic-1.md), 21 findings) was applied in full on Kevin's instruction. Sign-in, set-up, two-step verification, sessions, reset and recovery, the activity log, email and tokens were tightened; standing rule 2 gained token and account management as person-only routes; standing rules 13 and 14 were added; and CA-13 was widened and CA-43 to CA-58 added, each Claude's recommendation accepted on Kevin's instruction.

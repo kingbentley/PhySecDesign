@@ -240,6 +240,16 @@ Removing a member or deactivating an account takes effect on the next request (F
 
 **First administrator.** An installation with no users accepts one set-up request that creates the first administrator, protected by a one-time set-up code shown in the server output or the deployment output.
 
+**Refinements from the review of Epic 1 (2026-11-19).** These are Claude's recommendations, accepted on Kevin's instruction. The criteria and choice IDs are in Epic 1 of the epics.
+
+- **Where counts are kept.** Every rate and failure count is kept in the installation object, one instance per installation on both hosts: sign-in failures by email and by address, set-up-code and recovery-code failures, and token request rates. Failure counts are kept in its storage and raised before the check; token request rates are kept in its memory, where a restart resets them. A count kept only in a Worker's own memory is an extra guard, never the limit, because each copy of the Worker has its own memory on Cloudflare. Set-up and recovery codes are limited per address with an installation-wide cap, and running the recovery command resets their counts. (CA-05, CA-43, CA-51)
+- **No disclosure by timing.** A sign-in for an email with no account checks a fixed stand-in hash, and "Forgot password" replies before sending. (CA-58)
+- **Lockouts.** A browser that has signed in to an account before holds a signed marker and is not held by that account's per-email wait. A new set-up code resets the set-up-code count. (CA-44, CA-45)
+- **Sessions.** The cookie uses the `__Host-` prefix and a name that identifies the installation. A new token is issued at sign-in and after the second step. A session also ends 30 days after sign-in, whatever its use. The state between a correct password and the second step is a hashed, browser-bound token lasting 5 minutes. (CA-46, CA-47)
+- **Link secrets.** Invitation and reset secrets hold at least 32 random bytes, and recovery codes at least 20 characters. Only their hashes are stored, and link pages send no referrer and clear the secret from the address bar. Links the installation sends use its recorded public address, never a request header. (CA-55, CA-57)
+- **Recovery.** The recovery command generates the code on the operator's machine and supplies only its hash, the account and the expiry as a Worker secret. The installation object records the code when it is used. (CA-51)
+- **Deployment.** The deploy command learns whether set-up is open from a public read-only route that answers open or closed. It finds an existing deployment key in the Worker's secret list. The installation stores a fingerprint of its key and refuses encrypted values under a key that does not match. (CA-52)
+
 ### AD-17 — The installation object (confirmed; revised by K16)
 
 One Durable Object per installation, addressed by a fixed name, holds: users, password and recovery-code hashes, two-step secrets, sessions, invitations and resets, the project catalogue and memberships, the reviewer-link index, access tokens and the agent-access setting (AD-22), settings, the backup catalogue, the job table and the activity log (FR-71). It replaces the D1 database of version 2.1.
@@ -273,7 +283,7 @@ PRD amendment 1.3 (FR-73 to FR-77) lets AI agents act for a person. The design k
   - **Format and storage.** A token is a long random value with the prefix `ssat_`, sent as `Authorization: Bearer`. The installation object stores its hash with its owner, name, kind (read-only, or read-and-draft), optional project list, expiry and last use.
   - **What a token may do.** A token never exceeds its owner's current role and membership, which the gate looks up on every request as for a session. A read-only token may use read routes only. A read-and-draft token may also use draft-change routes. Person-only and administrator-only routes are refused to every token with the reason "needs a person".
   - **Lifetime.** 90 days by default and at most 1 year, which an administrator may lower.
-  - **Rate limit.** Each token is limited in request rate, counted in the installation object.
+  - **Rate limit.** Each token is limited in request rate, counted in the installation object's memory. A per-address check in the Worker's own memory may run first as an extra guard and is not relied on as the limit (AD-12 refinements, CA-43).
   - **Installation switch.** Agent access is off in a new installation until an administrator turns it on, and turning it off refuses every token.
 - **The origin rule.** The rule that a change must come from the app's own origin and carry the app's header applies to cookie sessions and to the sign-in and account requests that create or change a session (AD-12). A browser never sends a bearer header by itself, so the rule is not needed for tokens.
 - **The actor.** The actor of an action is the account, its name at that time, and `via`: empty for a person, the token's identifier and name for an agent (AD-5).
