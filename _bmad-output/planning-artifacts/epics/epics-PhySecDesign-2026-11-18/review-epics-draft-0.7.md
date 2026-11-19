@@ -4,7 +4,7 @@ Run on 2026-11-19 with the BMAD `bmad-review` skill (6.12.4), installed locally.
 
 This file records what the reviewers reported. The reviewers do not rank findings.
 
-**Applied on 2026-11-19**, at Kevin's direction to fix the update stories first: every finding on the update path, A1 to A19 and A21 to A29, and E1 to E34. Those that change the design are written into the architecture as K21 (AD-20), which awaits Kevin's confirmation. **Not applied:** A20 and E35 to E39 (story 1.10d, SMTP), and S1 to S15 (structure). The findings below are left as reported, with their original line numbers.
+**Applied on 2026-11-19**, at Kevin's direction to fix the update stories first: every finding on the update path, A1 to A19 and A21 to A29, and E1 to E34. Those that change the design are written into the architecture as K21 (AD-20), which awaits Kevin's confirmation. Later the same day, on Kevin's instruction to proceed with Claude's recommendations: A20 and E35 to E39 (story 1.10d, SMTP), and the structure findings that bear on ruling, S1 (the kind in each ID), S2 (a decision column for readings), S3 (tables grouped by epic) and S4 (three experiment states), with S6 (the last-changed date). **Not applied:** S5 and S7 to S11, which are optional reorganisations, and S15 (a separate reviewer view); S12 to S14 asked for no change. The findings below are left as reported, with their original line numbers.
 
 | Lens | What it looked for | Findings |
 | --- | --- | --- |
@@ -284,3 +284,21 @@ The reviewer described the stories as reference material that follows a consiste
 | S15 | Whole document | Question: also generate a short reviewer view for Kevin (Status, decisions, the epics table, each story's sentence and Core behaviour, the choice tables). | How to review already asks Kevin to read only Core behaviour; a generated view would carry that out. |
 
 The reviewer estimated that accepting all recommendations would shorten the file by about 2,400 words (3.3%).
+
+## Second round: the update stories after the fixes
+
+Run on 2026-11-19 on a frozen copy of `epics.md` at commit 5b0dbc9, limited to the standing rules, story 1.1 and Epic 9, with two lenses: adversarial (30 findings: 4 dependency, 7 consistency, 5 fidelity, 10 buildability) and edge-case hunter (21). The structure lens was not repeated, because the first round's structure findings were still being applied. The session checked the critical findings against the frozen copy; they hold.
+
+**All applied on 2026-11-19**, on Kevin's instruction to proceed with Claude's recommendations, except the check for other containers mounting the data folder (part of edge case 14), which removing the old container already makes unnecessary. The design changes are recorded in the architecture as K22 (AD-20). In outline:
+
+| Topic | What the reviewers found | What was applied |
+| --- | --- | --- |
+| A successful update rolled back | Once the record is removed, a late poll or a repeated request to return finds nothing and redeploys the old version | Each attempt's outcome is kept and answered (story 9.3, 9.10, 9.12) |
+| States no version can leave | The arrival deadline runs under a version not allowed to act; the version before cannot accept a request to return while installing; no container answers self-hosted; restarts with the old container running; a hung conversion after arrival; a stuck record in a release build | The version before may end an installing attempt in two named ways; deadlines on every state, including after arrival; a no-container path and restart rules for the updater; a release-build command to clear a stuck record after manual recovery (story 9.3, 9.10, 9.12) |
+| Timers | A timer from an earlier attempt fires in a later one; a return restores the alarm schedule; the schedule arrives after Epic 8 already shares the alarm | Timers carry their attempt and step; the schedule is kept from restores and moved to story 1.1 |
+| Restored state | A return brings ended sessions back; the health-check room is left converted | Ended sessions are re-applied; the return covers the health-check room |
+| Authentication | Machine calls fit no route kind; a Worker secret cannot be read back for the repository | A fourth route kind; the update secret is shown once and can be replaced |
+| Self-hosted swap | The stop time can pass before the warning; the way back is not recorded; a stale updater; two containers on one store | Stop time set after the image is verified and pulled; the running digest stored at the yes; the updater ends on a refused yes; old container removed, no restart policy |
+| Class-changing release | Automatic return paths remain | A class-change flag turns them off |
+| Order and gaps | The first release could be cut before the update path exists; the R14 gate needs a record it may not set; 1.1's notes point at the wrong stories; missing Access and restore lines; a refusal without wording; time limit start differs between hosts | First release gated on story 9.10 and 9.13; R14 split into a release-image check and a test-build conversion; notes, restore lines, wording (CF-46) and limits corrected |
+| Precisions | Health check against a sign-in page that is switched off; alarm-driven conversion; stale lower-step calls; log copy and record removal in separate steps; fixed records against conversions; test data from before the first release | Sign-in check mode; alarm steps convert; lower steps refused first; one transaction; standing rules 2, 8 and 11 extended |

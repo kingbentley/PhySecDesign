@@ -32,6 +32,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - An object stops itself at most once in 30 seconds; a call from a different version within that time after a stop is refused without stopping again. (CA-41)
 - The time of a stop is written to the object's own storage before it stops, so that the limit holds across the restart.
 - A call marked as version-independent is answered whatever the caller's version; at this point no call is so marked.
+- An object that uses its alarm for more than one kind of work keeps a schedule of due times and always sets its one alarm to the earliest; setting one never removes another.
 - Each stop and each such refusal is written to the runtime log with both versions.
 
 **Limits and values**
@@ -43,7 +44,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: moving between released versions (story 9.3a); the update record and its refusals (story 9.3b). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: the update record and its refusals (story 9.3a); conversions and the return (story 9.3b); moving between released versions (story 9.5a self-hosted, story 9.7a on Cloudflare). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -504,16 +505,22 @@ Covers: AD-18, experiment R13.
 **Core behaviour**
 - If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.10a states for secrets, and "Send a test message" works through SMTP. (CA-40)
 - If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40)
-- The self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
+- R13 passes on a host when a message sent from that host by SMTP, signing in with a user name and password, is delivered to a real mailbox; a connection that reaches the point of signing in is not a pass.
+- Where SMTP is offered, the self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
 
 **Refusals and edge cases**
 - Without that setting, a self-hosted installation refuses to connect to a mail server on a private address or one whose certificate comes from an authority the runtime does not trust.
-- When "Send a test message" fails because the secure connection was refused, it says that the secure connection to the mail server failed and that the reason is in the server log; it does not guess a reason.
-- When the connection fails for any other reason, the test message gives the mail server's reply or says that the server could not be reached.
-- The Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
+- On Cloudflare, the Email group states that a mail server on a private address and port 25 cannot be reached, and points to no deployment setting.
+- The SMTP password is sent only over an encrypted connection: a server that offers neither encryption from the first byte nor an upgrade to it is refused, and the test message says that the server does not offer a secure connection.
+- A failure after the connection was made and while encryption was being set up is reported as the secure connection to the mail server failing, with the reason in the server log; the message does not guess a reason.
+- A failure before a connection was made is reported as the server not being reached, and a refusal by the server gives the server's reply.
+- On a self-hosted installation, the Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
+
+**Limits and values**
+- Connecting to the mail server times out after 10 seconds and each reply after 30 seconds, and the test message reports which timed out. (CA-42)
 
 **Evidence to record**
-- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
+- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox, is delivered.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 - Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
 - A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.

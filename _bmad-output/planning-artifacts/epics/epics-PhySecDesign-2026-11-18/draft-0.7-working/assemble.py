@@ -119,14 +119,14 @@ for g in 'ABCDEF':
         line = line.strip().strip('|').strip()
         if not line or line.startswith('#'): continue
         f = [x.strip() for x in line.split('|')]
-        if len(f) != 6 or not re.fullmatch(r'C[A-F]-\d+', f[0]) or f[2] not in ('decide', 'value', 'reading'):
-            problems.append(f'choices{g}.md line {ln}: not "ID | story | class | choice | alternative | why": {line[:70]}'); continue
+        if len(f) not in (6, 7) or not re.fullmatch(r'C[A-F]-\d+', f[0]) or f[2] not in ('decide', 'value', 'reading'):
+            problems.append(f'choices{g}.md line {ln}: not "ID | story | class | choice | alternative | why [| decision]": {line[:70]}'); continue
         old = re.split(r'[,; ]+', f[1])[0]
         new = remap.get(old) or (remap[base[old][0]] if len(base.get(old, [])) == 1 else None)
         if not new: problems.append(f'choices{g}.md {f[0]}: story {old} unknown or split; name the piece')
         n_in = sum(len(re.findall(r'\(' + f[0] + r'\)', l)) for l in crit_lines)
         if n_in < 1: problems.append(f'{f[0]}: is on no criterion')
-        choices.append(dict(id=f[0], story=new or old, cls=f[2], choice=f[3], alt=f[4], why=f[5]))
+        choices.append(dict(id=f[0], story=new or old, cls=f[2], choice=f[3], alt=f[4], why=f[5], decision=f[6] if len(f) == 7 else ''))
 for cid in set(re.findall(r'\((C[A-F]-\d+)\)', '\n'.join(crit_lines))) - {c['id'] for c in choices}:
     problems.append(f'{cid} is on a criterion but not in a choices file')
 choices.sort(key=lambda c: (key(c['story']) if re.fullmatch(r'\d+\.\d+', c['story']) else (99, 0), c['id']))
@@ -136,18 +136,28 @@ L = lambda xs: ', '.join(sorted(set(xs), key=key))
 esc = lambda s: s.replace('|', '/')
 NFR = {1: 'Record integrity', 2: 'Shared-save clarity', 3: 'Browser, field and accessibility', 4: 'Honest analysis and responsiveness', 5: 'Access boundary', 6: 'Consistent deliverables', 7: 'Same product on either host', 8: 'Safe updates'}
 DONE = {1, 2, 6, 7, 8, 9, 10}
+PARTLY = {11, 13, 14}   # run in part on 2026-11-19; the rest is still to run or repeats each release
+EXP_STATE = lambda n: 'Done; see the experiments record' if n in DONE else ('Partly run; see the experiments record' if n in PARTLY else 'To run')
+KIND = {'decide': 'decision', 'value': 'value', 'reading': 'reading'}
 cov = ['| Requirement | Stories |', '| --- | --- |'] + [f"| FR-{n} | {L(cover['FR'][n])} |" for n in range(1, 73)] + \
       [f"| NFR-{n} {NFR[n]} | {L(cover['NFR'][n])} |" for n in range(1, 9)] + [f"| SM-{n} | {L(cover['SM'][n])} |" for n in range(1, 7)]
-exp = ['| Experiment | Status | Story |', '| --- | --- | --- |'] + [f"| R{n} | {'Done; see the experiments record' if n in DONE else 'To run'} | {L(cover['R'][n])} |" for n in range(1, 17)]
+exp = ['| Experiment | Status | Story |', '| --- | --- | --- |'] + [f"| R{n} | {EXP_STATE(n)} | {L(cover['R'][n])} |" for n in range(1, 17)]
 ads = ['| Architecture decision | Stories |', '| --- | --- |'] + [f"| AD-{n} | {L(cover['AD'][n])} |" for n in list(range(1, 15)) + list(range(16, 22))]
 overview = ['| Epic | Outcome | Stories |', '| --- | --- | --- |'] + [f"| {e['n']}. {e['title']} | {e['Outcome']} | {len(e['stories'])} |" for e in epics]
-def table(cls, decision_col):
+def table(cls, decision_col, by_epic=False):
     rows = [c for c in choices if c['cls'] == cls]
     head = '| ID | Story | Choice | Alternative | Why |' + (' Kevin\'s decision |' if decision_col else '')
-    out = [head, '| --- | --- | --- | --- | --- |' + (' --- |' if decision_col else '')]
-    out += [f"| {c['id']} | {c['story']} | {esc(c['choice'])} | {esc(c['alt'])} | {esc(c['why'])} |" + (' |' if decision_col else '') for c in rows]
-    return '\n'.join(out), len(rows)
-t_dec, n_dec = table('decide', True); t_val, n_val = table('value', True); t_read, n_read = table('reading', False)
+    rule = '| --- | --- | --- | --- | --- |' + (' --- |' if decision_col else '')
+    line = lambda c: f"| {c['id']} | {c['story']} | {esc(c['choice'])} | {esc(c['alt'])} | {esc(c['why'])} |" + (f" {esc(c['decision'])} |" if decision_col else '')
+    if not by_epic:
+        return '\n'.join([head, rule] + [line(c) for c in rows]), len(rows)
+    out, groups = [], collections.OrderedDict()
+    for c in rows: groups.setdefault(c['story'].split('.')[0], []).append(c)
+    for e, cs in groups.items():
+        title = next((x['title'] for x in epics if str(x['n']) == e), '')
+        out += [f'*Epic {e}: {title} ({len(cs)})*', '', head, rule] + [line(c) for c in cs] + ['']
+    return '\n'.join(out).rstrip(), len(rows)
+t_dec, n_dec = table('decide', True); t_val, n_val = table('value', True, True); t_read, n_read = table('reading', True, True)
 changed = [(o, n) for o, n in remap.items() if o != n]
 mapt = ['| Draft 0.6 | Draft 0.7 | Title |', '| --- | --- | --- |'] + [f'| {re.sub("[a-z]$", "", o)}{" (part)" if re.search("[a-z]$", o) else ""} | {n} | {old_ids[o]} |' for o, n in changed]
 subs = {'N_EPICS': len(epics), 'N_STORIES': len(ids), 'OVERVIEW': '\n'.join(overview), 'COVERAGE': '\n'.join(cov), 'EXPERIMENTS': '\n'.join(exp),
@@ -155,7 +165,11 @@ subs = {'N_EPICS': len(epics), 'N_STORIES': len(ids), 'OVERVIEW': '\n'.join(over
         'RENUMBER': '\n'.join(mapt), 'N_CRITERIA': sum(n for n, _ in sizes)}
 for k, v in subs.items():
     front_new = front_new.replace('{{' + k + '}}', str(v)); back_new = back_new.replace('{{' + k + '}}', str(v))
-doc = front_new.rstrip() + '\n\n' + body_new.rstrip() + '\n\n' + back_new.rstrip() + '\n'
+# show the kind of each choice where it is marked on a criterion: (CA-03) -> (CA-03 · value)
+kind_of = {c['id']: KIND[c['cls']] for c in choices}
+body_out = '\n'.join(re.sub(r'\((C[A-F]-\d+)\)', lambda m: f'({m.group(1)} · {kind_of.get(m.group(1), "?")})', l) if l.startswith('- ') else l
+                     for l in body_new.split('\n'))
+doc = front_new.rstrip() + '\n\n' + body_out.rstrip() + '\n\n' + back_new.rstrip() + '\n'
 for left in set(re.findall(r'\{\{\w+\}\}', doc)): problems.append('unfilled placeholder ' + left)
 
 print('epics', len(epics), 'stories', len(ids), 'criteria', subs['N_CRITERIA'], 'words', len(doc.split()))

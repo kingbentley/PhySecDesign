@@ -63,3 +63,29 @@ Still open:
 An independent review of the stories was run on 2026-11-18 (concern A) and is recorded in [review-epics-draft-0.5.md](epics/epics-PhySecDesign-2026-11-18/review-epics-draft-0.5.md). It found that draft 0.5 still had criteria needing later stories, parts of requirements in no story, and many unhandled cases, so the "Pass" this report gave on story dependencies was wrong. Epics draft 0.6 was written in response and now has 89 stories; the tracking file was regenerated. Draft 0.6 is not finished (see its Status section), and the gate has not been rerun on it.
 
 A second independent review, of draft 0.6, is recorded in [review-epics-draft-0.6.md](epics/epics-PhySecDesign-2026-11-18/review-epics-draft-0.6.md). Epics draft 0.7 answers it and Kevin's twelve decisions of 2026-11-18: 165 stories after splitting, renumbered, with the tracking file regenerated. The gate has not been rerun on draft 0.7.
+
+## Third run of the gate
+
+Run on 2026-11-19 with the same skill, in a local Claude Code session, on Kevin's instruction to proceed with Claude's recommendations. Artifacts read: final PRD 1.2, the UX design specification 0.5, the architecture 3.0 with K19 to K22, and the epics draft 0.7 as last changed on 2026-11-19 (165 stories, 2,155 criteria).
+
+**Verdict: CONCERNS, narrower again.** Nothing found blocks building story 1.1.
+
+Closed since the second run:
+
+- Concern A, no independent review. Draft 0.7 was reviewed by three lenses ([review-epics-draft-0.7.md](epics/epics-PhySecDesign-2026-11-18/review-epics-draft-0.7.md)), and the update stories by a second round of two. The findings that bear on building were applied; the update design they needed is K21, confirmed by Kevin, and K22, accepted on his instruction.
+- Open choices. Every decision, value and reading now carries a ruling: Kevin's twelve of 2026-11-18, and Claude's recommendations for the rest, accepted on Kevin's instruction of 2026-11-19 and marked as such.
+
+Checked by script and clean: every FR-1–72, NFR-1–8 and SM-1–6 is covered; every architecture decision and experiment R1–R16 is cited; no criterion names a later story; every choice on a criterion is listed and every listed choice is on a criterion.
+
+Still open:
+
+| # | Concern | Where it lives |
+| --- | --- | --- |
+| A | The update stories as revised after the second review round have not been read a third time. Story 1.1 also changed (the version rule and the alarm schedule). | The epics; a narrow `bmad-review` of story 1.1 and Epic 9 would close it. |
+| B | Experiments still to run, each attached to its story with a fallback: R3, R4, R5, R12, R15, R16, the rest of R11, a full delivery for R13, and R14 repeated each release. R11 decides whether the Update control is released. | Architecture section 12. |
+| C | Tables, request formats, error codes, and password, lock-out and session figures are decided in the first stories that need them. | Architecture section 15, by design. |
+| D | Most rulings on open choices are Claude's, accepted on Kevin's instruction rather than made by him item by item. He can overrule any of them; each changes only the criterion that carries its ID. | The epics, decision columns. |
+| E | Epic 10 is a verification milestone, and Epics 4 to 7 extend the same records; both kept deliberately. The eight schedule screens on the design canvas are in no requirement. | The epics, "Order and validation"; UX `design-canvas.md`. |
+| F | Optional structure findings S5 and S7 to S11 and S15 are not applied. | The review of draft 0.7. |
+
+Tracking was regenerated after this run.
