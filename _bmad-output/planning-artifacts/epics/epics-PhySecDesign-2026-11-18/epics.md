@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2069 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2071 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
 - **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
@@ -4207,13 +4207,15 @@ Covers: FR-72 (return), NFR-8, experiment R11.
 **Refusals and edge cases**
 - The answer to the start request is made to be lost while GitHub has accepted the run, in both orders: with the withdrawal reaching the installation before the run's check, and with the run's check reaching it first.
 - In the first order the run deploys nothing and changes are accepted again; in the second the attempt continues as a running update and ends as an update or a return.
+- A stale earlier version is tried: it reads the marker, is held back until the new version has converted a project, and then tries to take the hold and restore. Whether Cloudflare lets it run at all, and what it does, is observed.
+- A project restore that takes more than one write is interrupted by the new version starting, and what the conversion reads is observed.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.12 and story 9.13.
 - Cloudflare's rollback command is confirmed to behave as documented, and the result is recorded.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
 
 ## Epic 10: Acceptance
 

@@ -732,13 +732,15 @@ Covers: FR-72 (return), NFR-8, experiment R11.
 **Refusals and edge cases**
 - The answer to the start request is made to be lost while GitHub has accepted the run, in both orders: with the withdrawal reaching the installation before the run's check, and with the run's check reaching it first.
 - In the first order the run deploys nothing and changes are accepted again; in the second the attempt continues as a running update and ends as an update or a return.
+- A stale earlier version is tried: it reads the marker, is held back until the new version has converted a project, and then tries to take the hold and restore. Whether Cloudflare lets it run at all, and what it does, is observed.
+- A project restore that takes more than one write is interrupted by the new version starting, and what the conversion reads is observed.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.7a and story 9.7b.
 - Cloudflare's rollback command is confirmed to behave as documented, and the result is recorded.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.7b.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.7b. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
 
 ## Epic 10: Acceptance
 
