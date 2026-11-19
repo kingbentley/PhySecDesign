@@ -441,9 +441,12 @@ Covers: NFR-8, FR-72 (return), AD-20.
 
 **Core behaviour**
 - A pending-update marker is kept in its own small store, apart from project data and the installation's own data.
-- The marker records the version being installed, an identifier for the attempt, the pre-update backup, whether installation has begun, whether it has been marked withdrawn, which version currently holds the data to restore or to convert, and which projects have been restored. (CF-24)
-- A server takes the hold on the data in one step at the marker store before it restores or converts anything.
-- Every restore or conversion write checks, in the same transaction as the write, that its own version still holds the data; a write that finds otherwise is not made and that server stops.
+- The marker records the version being installed, an identifier for the attempt, the pre-update backup, whether installation has begun, whether it has been marked withdrawn, which version currently holds the data to restore or to convert, the number of that hold, and which projects have been restored. (CF-24)
+- A server takes the hold on the data in one step at the marker store before it restores or converts anything, and each taking raises the hold number by one.
+- Every restore or conversion write carries the hold number it was made under.
+- Each project, and the installation's own data, keeps the highest hold number it has accepted, and in the same transaction as a write refuses one carrying a lower number.
+- The marker store refuses an update to the restore-progress record that carries a lower hold number.
+- A server whose write is refused stops.
 - A server of any released version reads the marker, whatever the data-format version of the data beside it.
 - A server that starts and finds the marker naming a version other than its own, with installation begun, serves nothing except the restore of the pre-update backup, whether or not the data format changed. (CF-24)
 - That restore is performed before any project is opened, and afterwards every project and the installation's own data are at the server's own version.
@@ -460,7 +463,7 @@ Covers: NFR-8, FR-72 (return), AD-20.
 - No conversion changes the marker store and no restore replaces it: a test restores the installation's data from a backup taken before the marker was set and then reads the marker with its progress intact.
 - A restore stopped part-way resumes at the next start and ends with the same result.
 - A test runs a restore, then a late deployment whose conversion or health check fails, then a second return: every project and the installation's own data end at the pre-update backup, none skipped as already restored.
-- A test starts the new version while an earlier version's restore is part-way: no restore write lands after the new version takes the hold, and every project ends converted or, after a return, at the pre-update backup, never a mixture.
+- A test starts the new version while an earlier version's restore is part-way: no restore write lands on a project after the new version has written to it, no restore-progress update lands after the new version takes the hold, and every project ends converted or, after a return, at the pre-update backup, never a mixture.
 - If that restore fails, the server keeps serving nothing, says plainly that the return did not complete, and does not report success.
 - A server that finds the marker with installation not begun restores nothing and keeps changes stopped. (CF-24)
 - A server that finds data newer than itself and no marker refuses to start, and its explanation names both versions.
@@ -677,8 +680,9 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 - If either check before stopping fails, the reason is shown, no user is warned and changes continue to be accepted.
 - If the backup fails, no marker is written, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
 - If GitHub refuses the request to start the run with an error, the run is confirmed not started: nothing is deployed, the marker is cleared, changes are accepted again, and the attempt is shown and logged.
-- If the answer to that request is lost or unclear, the marker stays set and changes stay stopped until the installation finds, by asking GitHub for the workflow's runs, either that no run carries this attempt's identifier or that the run is cancelled or finished.
-- If GitHub cannot be asked, the attempt is handled as at the time limit.
+- If the answer to that request is lost or unclear, the installation does not treat a run missing from GitHub's list as proof that none exists; it marks the marker withdrawn, which succeeds only if installation has not been recorded as begun.
+- Once the marker is withdrawn, no run for this attempt can deploy, because the check of story 9.7a answers yes only to a standing marker with the same attempt identifier; the marker is then cleared, changes are accepted again, and the attempt is shown and logged as "start not confirmed".
+- If installation has already been recorded as begun when the installation tries to withdraw, a run did start, and the attempt continues as a running update.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
 - When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
 - At the time limit, if installation has not been recorded as begun, the installation marks the marker withdrawn and does not remove it.
