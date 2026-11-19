@@ -15,6 +15,7 @@ Read from Cloudflare's documentation on 2026-11-18; the pages showed last-update
 | Durable Objects | 10 GB of SQLite storage per object on Paid (1 GB on Free, per the page's FAQ) | Records and history per project, estimated near 300 MiB. |
 | Durable Objects | Row, string or blob up to 8 MB | Snapshots are stored in R2, not in a row. |
 | Durable Objects | Point-in-time recovery for 30 days | Extra protection beside the backup job. |
+| Durable Objects | After a deployment, an object in use keeps running its previous code for up to 300 seconds by default ("deferred" code updates, since 30 October 2026); a deployment can ask for `immediate` instead. Read on 2026-11-19 and observed in experiment R11. | Updates deploy in `immediate` mode, and every call carries its version so that an object on other code refuses and restarts (AD-20). |
 | Durable Objects Paid | 1 million requests a month included, then 0.15 US dollars per million | Sets the cost of polling. |
 | D1 | 10 GB per database on Paid; Time Travel restore for 30 days | Used only for the small registry and backup catalogue. |
 | R2 | Objects up to 5 TiB; single upload up to 5 GiB; multipart up to 10,000 parts | Holds every file, including a 10 GiB portable backup. |

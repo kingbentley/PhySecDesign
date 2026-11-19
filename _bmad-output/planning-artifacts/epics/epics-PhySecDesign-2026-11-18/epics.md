@@ -16,6 +16,7 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
 - **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
+- **Out of step with the architecture:** on 2026-11-19 the architecture's update decisions (AD-20 and AD-21) were rewritten as a proposal, K20, after experiment R11. The update stories in Epic 9 still describe the earlier design (the pending-update marker and its hold). They are to be rewritten once Kevin confirms K20, and should not be reviewed or built before then.
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations, they remain listed in that review, and adding them all would grow the document again.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
