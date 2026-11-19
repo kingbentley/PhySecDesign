@@ -684,13 +684,11 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 - Once the marker is withdrawn, no run for this attempt can deploy, because the check of story 9.7a answers yes only to a standing marker with the same attempt identifier; the marker is then cleared, changes are accepted again, and the attempt is shown and logged as "start not confirmed".
 - If installation has already been recorded as begun when the installation tries to withdraw, a run did start, and the attempt continues as a running update.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
-- When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
-- At the time limit, if installation has not been recorded as begun, the installation marks the marker withdrawn and does not remove it.
-- A marker marked withdrawn makes the workflow's check of story 9.7a fail, so the run stops without deploying.
-- Changes stay stopped while the marker is in the withdrawn state.
-- The marker is cleared, and changes are accepted again, only when the run is confirmed cancelled or finished; the attempt is shown and logged as "no result".
+- When the time limit passes with no result, the installation asks GitHub to cancel the run and tries to withdraw the marker.
+- If installation has not been recorded as begun, the withdrawal succeeds: the marker is cleared, changes are accepted again, and the attempt is shown and logged as "no result".
+- A run for a withdrawn attempt fails the check of story 9.7a and stops without deploying, whether or not GitHub cancelled it.
 - If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
-- If neither can be confirmed, the installation stays stopped for changes and shows the warning of story 9.6a with the Cloudflare steps to recover by hand.
+- If installation has begun and neither the update nor the return can be confirmed complete, the installation stays stopped for changes and shows the warning of story 9.6a with the Cloudflare steps to recover by hand.
 
 **Limits and values**
 - The time limit for a result from the run is 30 minutes from starting it. (CF-33)
@@ -715,7 +713,7 @@ Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
 - Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
 
 **Refusals and edge cases**
-- A manual update prepared and not followed by a run can be cancelled by the administrator: the marker is marked withdrawn, so that a run started by hand afterwards stops without deploying, and it is cleared and changes accepted again once the administrator confirms that no run is queued or in progress.
+- A manual update prepared and not followed by a run can be cancelled by the administrator: the marker is withdrawn and cleared and changes are accepted again at once, and a run started by hand for that preparation, queued or later, stops without deploying.
 - A run started for a cancelled preparation deploys nothing after a new preparation for the same release, because the new marker carries a new attempt identifier.
 
 **Evidence to record**
@@ -729,7 +727,11 @@ As Kevin, I want a Cloudflare update broken at each step and the outcome recorde
 Covers: FR-72 (return), NFR-8, experiment R11.
 
 **Core behaviour**
-- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result with the run confirmed cancelled, no result with nothing confirmed, a run that deploys the new version and stops before its health check with the conversions then passing and then failing, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
+- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result at the time limit before installation has begun, no result at the time limit after it has begun, a run that deploys the new version and stops before its health check with the conversions then passing and then failing, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
+
+**Refusals and edge cases**
+- The answer to the start request is made to be lost while GitHub has accepted the run, in both orders: with the withdrawal reaching the installation before the run's check, and with the run's check reaching it first.
+- In the first order the run deploys nothing and changes are accepted again; in the second the attempt continues as a running update and ends as an update or a return.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.7a and story 9.7b.
