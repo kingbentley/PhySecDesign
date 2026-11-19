@@ -12,11 +12,11 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. {{N_EPICS}} epics, {{N_STORIES}} stories, {{N_CRITERIA}} acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. {{N_EPICS}} epics, {{N_STORIES}} stories, {{N_CRITERIA}} acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
-- **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
-- **Out of step with the architecture:** on 2026-11-19 the architecture's update decisions (AD-20 and AD-21) were rewritten as a proposal, K20, after experiment R11. The update stories in Epic 9 still describe the earlier design (the pending-update marker and its hold). They are to be rewritten once Kevin confirms K20, and should not be reviewed or built before then.
+- **Reviewed:** drafts 0.5, 0.6 and 0.7 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md), [review of 0.7](review-epics-draft-0.7.md)). Draft 0.7 applies the second review. From the third, only the findings on the update stories have been applied, on 2026-11-19; its other findings are open.
+- **Updates rewritten for K20 and K21:** on 2026-11-19 Kevin confirmed K20, the redesign of updates (AD-20 and AD-21), with seven fixes. The update stories were rewritten for it, then revised for the review's findings, which also produced K21, sixteen refinements to K20, confirmed by Kevin on 2026-11-19. Story 1.1, story 9.2 and story 9.3a to story 9.7d follow K21. Story 9.3a is now the update record and story 9.3b the conversions and the return. Story 9.1 and story 1.10d gained the two findings of experiment R13. The revised update stories have not been reviewed again.
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations, they remain listed in that review, and adding them all would grow the document again.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
@@ -34,7 +34,7 @@ Where no source document gave a rule or a value, the stories state one so that t
 
 **4. Open points.**
 
-- Whether a second independent review of draft 0.7 is wanted before building starts.
+- Which of the remaining findings of the [review of draft 0.7](review-epics-draft-0.7.md) to apply: those on story 1.10d (SMTP) and on the document's structure.
 - The 30 edge cases left out (see Status): accept leaving them, or name the ones to add.
 
 ## Decisions made
@@ -88,7 +88,7 @@ Each epic's own section states what it depends on.
 8. From the first published release onward, a changed record shape comes with its data conversion (AD-20). Before that release there is no earlier data to convert.
 9. A story that adds a kind of record states, under Access and restore, whether a revision restore replaces it or leaves it unchanged.
 10. Performance criteria are measured against the acceptance-size test project that story 2.7b generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
-11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording.
+11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording. An answer of "updating, try again shortly" is not a refusal: the edit stays unsaved and is sent again automatically, as after a lost connection (AD-20).
 
 ### Definition of done
 

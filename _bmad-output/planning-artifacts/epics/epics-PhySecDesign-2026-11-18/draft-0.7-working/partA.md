@@ -10,7 +10,7 @@
 
 As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
-Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), architecture section 10, experiments R7 and R8.
+Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), architecture section 10, experiments R7 and R8.
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
@@ -18,13 +18,21 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
-- A conversion runner compares the recorded data-format version with the build's version each time an object starts and applies the listed conversions in order.
-- The runner's list is empty, and a test with one sample conversion shows the conversion applied once and the recorded version raised.
+- A conversion runner, when called, applies the listed conversions in order from the recorded data-format version to the build's version. It is never started by an object starting.
+- The runner's list is empty, and a test with one sample conversion called directly shows the conversion applied once and the recorded version raised.
+- Every build carries a release version. The entry code attaches it to every call to an object, and an object attaches its own to every call it makes to another object.
+- An object that receives a call carrying a different version refuses the call and stops itself, so that it starts again on the code now deployed; the caller tries once more and otherwise answers "updating, try again shortly".
+- A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
+- An object whose recorded data-format version is older than the build's refuses requests and says that an update was not completed.
+- An object stops itself at most once in 30 seconds; a call from a different version within that time after a stop is refused without stopping again. (CA-41)
+- The time of a stop is written to the object's own storage before it stops, so that the limit holds across the restart.
+- A call marked as version-independent is answered whatever the caller's version; at this point no call is so marked.
+- Each stop and each such refusal is written to the runtime log with both versions.
 
 **Limits and values**
 - The configuration for each host declares no D1, Workflows, Queues, scheduled-trigger or KV binding.
@@ -35,7 +43,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: Left to later stories: moving between released versions (story 9.3a); the pending-update rule added to the refusal above (story 9.3b). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: moving between released versions (story 9.3a); the update record and its refusals (story 9.3b). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -496,9 +504,18 @@ Covers: AD-18, experiment R13.
 **Core behaviour**
 - If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.10a states for secrets, and "Send a test message" works through SMTP. (CA-40)
 - If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40)
+- The self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
+
+**Refusals and edge cases**
+- Without that setting, a self-hosted installation refuses to connect to a mail server on a private address or one whose certificate comes from an authority the runtime does not trust.
+- When "Send a test message" fails because the secure connection was refused, it says that the secure connection to the mail server failed and that the reason is in the server log; it does not guess a reason.
+- When the connection fails for any other reason, the test message gives the mail server's reply or says that the server could not be reached.
+- The Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
 
 **Evidence to record**
 - Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
+- Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
+- A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
 
 Notes: The self-hosted image is story 2.13a; this experiment uses the configuration of story 1.1 because it comes earlier. R13 was run early on 2026-11-19. From Cloudflare, encrypted connections to two public mail services reached the point of signing in, and port 25 is prohibited there; a complete delivery from Cloudflare was not shown. On a server a message was delivered with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.

@@ -12,11 +12,11 @@ This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2071 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 10 epics, 165 stories, 2129 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
-- **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
-- **Out of step with the architecture:** on 2026-11-19 the architecture's update decisions (AD-20 and AD-21) were rewritten as a proposal, K20, after experiment R11. The update stories in Epic 9 still describe the earlier design (the pending-update marker and its hold). They are to be rewritten once Kevin confirms K20, and should not be reviewed or built before then.
+- **Reviewed:** drafts 0.5, 0.6 and 0.7 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md), [review of 0.7](review-epics-draft-0.7.md)). Draft 0.7 applies the second review. From the third, only the findings on the update stories have been applied, on 2026-11-19; its other findings are open.
+- **Updates rewritten for K20 and K21:** on 2026-11-19 Kevin confirmed K20, the redesign of updates (AD-20 and AD-21), with seven fixes. The update stories were rewritten for it, then revised for the review's findings, which also produced K21, sixteen refinements to K20, confirmed by Kevin on 2026-11-19. Story 1.1, story 9.2 and story 9.3 to story 9.15 follow K21. Story 9.3 is now the update record and story 9.4 the conversions and the return. Story 9.1 and story 1.18 gained the two findings of experiment R13. The revised update stories have not been reviewed again.
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations, they remain listed in that review, and adding them all would grow the document again.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
@@ -45,13 +45,13 @@ Where no source document gave a rule or a value, the stories state one so that t
 | CE-26 | 6.16 | While a project is archived, every reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision | Keep accepting decisions on fixed records, such as final acceptance of a closeout | FR-37 pauses editing; no source says whether a review decision counts as editing. | |
 | CF-13 | 8.8 | Recovery without the key needs a stated option, resets two-step verification for all and clears stored settings secrets | Refuse recovery without the key | Secrets encrypted with the key cannot be read; accounts must stay usable | |
 
-**2. Values nobody specified (62).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
+**2. Values nobody specified (66).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
 **3. Readings of a source (142).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end.
 
 **4. Open points.**
 
-- Whether a second independent review of draft 0.7 is wanted before building starts.
+- Which of the remaining findings of the [review of draft 0.7](review-epics-draft-0.7.md) to apply: those on story 1.18 (SMTP) and on the document's structure.
 - The 30 edge cases left out (see Status): accept leaving them, or name the ones to add.
 
 ## Decisions made
@@ -116,7 +116,7 @@ Each epic's own section states what it depends on.
 8. From the first published release onward, a changed record shape comes with its data conversion (AD-20). Before that release there is no earlier data to convert.
 9. A story that adds a kind of record states, under Access and restore, whether a revision restore replaces it or leaves it unchanged.
 10. Performance criteria are measured against the acceptance-size test project that story 2.11 generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
-11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording.
+11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording. An answer of "updating, try again shortly" is not a refusal: the edit stays unsaved and is sent again automatically, as after a lost connection (AD-20).
 
 ### Definition of done
 
@@ -134,7 +134,7 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
-Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), architecture section 10, experiments R7 and R8.
+Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), architecture section 10, experiments R7 and R8.
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
@@ -142,13 +142,21 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
-- A conversion runner compares the recorded data-format version with the build's version each time an object starts and applies the listed conversions in order.
-- The runner's list is empty, and a test with one sample conversion shows the conversion applied once and the recorded version raised.
+- A conversion runner, when called, applies the listed conversions in order from the recorded data-format version to the build's version. It is never started by an object starting.
+- The runner's list is empty, and a test with one sample conversion called directly shows the conversion applied once and the recorded version raised.
+- Every build carries a release version. The entry code attaches it to every call to an object, and an object attaches its own to every call it makes to another object.
+- An object that receives a call carrying a different version refuses the call and stops itself, so that it starts again on the code now deployed; the caller tries once more and otherwise answers "updating, try again shortly".
+- A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
+- An object whose recorded data-format version is older than the build's refuses requests and says that an update was not completed.
+- An object stops itself at most once in 30 seconds; a call from a different version within that time after a stop is refused without stopping again. (CA-41)
+- The time of a stop is written to the object's own storage before it stops, so that the limit holds across the restart.
+- A call marked as version-independent is answered whatever the caller's version; at this point no call is so marked.
+- Each stop and each such refusal is written to the runtime log with both versions.
 
 **Limits and values**
 - The configuration for each host declares no D1, Workflows, Queues, scheduled-trigger or KV binding.
@@ -159,7 +167,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: Left to later stories: moving between released versions (story 9.3); the pending-update rule added to the refusal above (story 9.4). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: moving between released versions (story 9.3); the update record and its refusals (story 9.4). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -620,10 +628,19 @@ Covers: AD-18, experiment R13.
 **Core behaviour**
 - If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.15 states for secrets, and "Send a test message" works through SMTP. (CA-40)
 - If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40)
+- The self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
+
+**Refusals and edge cases**
+- Without that setting, a self-hosted installation refuses to connect to a mail server on a private address or one whose certificate comes from an authority the runtime does not trust.
+- When "Send a test message" fails because the secure connection was refused, it says that the secure connection to the mail server failed and that the reason is in the server log; it does not guess a reason.
+- When the connection fails for any other reason, the test message gives the mail server's reply or says that the server could not be reached.
+- The Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
 
 **Evidence to record**
 - Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
+- Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
+- A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
 
 Notes: The self-hosted image is story 2.21; this experiment uses the configuration of story 1.1 because it comes earlier. R13 was run early on 2026-11-19. From Cloudflare, encrypted connections to two public mail services reached the point of signing in, and port 25 is prohibited there; a complete delivery from Cloudflare was not shown. On a server a message was delivered with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.
 
@@ -3527,7 +3544,7 @@ Covers: FR-34, AD-13.
 
 **Limits and values**
 - Seven successful daily generations are kept for each project and for the installation's data.
-- The most recent backup marked "before an update or data conversion" is kept in addition to the seven and is not removed by daily rotation. (CF-03)
+- The backup marked "before an update" of the last successful update is kept until the next successful update, and the one of an attempt under way is kept until that attempt ends; neither is removed by daily rotation. (CF-03)
 
 **Access and restore**
 - A revision restore changes no backup generation.
@@ -3835,7 +3852,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 **Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
-**Depends on.** Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1; story 9.4 needs all of Epic 8, story 1.14 and story 4.10; story 9.5 needs story 9.2. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.13 also needs the settings secrets of story 1.15. Nothing later.
+**Depends on.** The version rule that every update relies on is in story 1.1, so that the first release already obeys it. Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1, story 1.14 and all of Epic 8, because the update record follows the pre-update backup; story 9.4 needs story 9.3, all of Epic 8 and story 4.10; story 9.5 needs story 9.2. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.12 and story 9.13 also need the failure warning of story 9.10; story 9.13 also needs the settings secrets of story 1.15. Nothing later.
 
 **Why here.** Updating safely needs the backup and restore of Epic 8, and the instructions can only be written and followed once both hosts and their backups exist.
 
@@ -3850,7 +3867,7 @@ Covers: FR-66 (instructions), SM-6.
 - They state which servers are supported: a Linux machine with Docker, x64 or arm64, virtual or physical.
 - They state which kinds of disk are supported and unsupported, from the R12 results of story 2.26.
 - They state what is not supported (no Docker, Windows Server, Kubernetes) and that Cloudflare needs the Workers Paid plan.
-- The self-hosted instructions cover: getting the image and Compose file, HTTPS by the bundled web server or by the operator's own proxy with the trusted-proxy setting, the live and backup folder settings and why the backup folder should be on another disk or machine, the deployment key file and keeping a copy off the server, and where the one-time set-up code appears.
+- The self-hosted instructions cover: getting the image and Compose file, HTTPS by the bundled web server or by the operator's own proxy with the trusted-proxy setting, the live and backup folder settings and why the backup folder should be on another disk or machine, the deployment key file and keeping a copy off the server, where the one-time set-up code appears, and, for SMTP, the deployment setting of story 1.18 for a mail server on a private network or with a private certificate authority, and where the server log shows why a secure connection failed.
 - The Cloudflare instructions cover: deploying from the organisation's own copy of the repository, the two storage buckets the deployment creates, the deployment key of story 1.5 and keeping it outside the Cloudflare account, and where the one-time set-up code appears.
 - Both sets name the command that issues a one-time recovery code for a locked-out sole administrator (story 1.13 on Cloudflare, story 2.23 self-hosted), and the recovery procedure of story 8.7.
 
@@ -3876,6 +3893,7 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 - Verifying a published bundle or image against this repository's release workflow succeeds.
 - Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class.
 - The installation instructions of story 9.1 name the published image and release.
+- The workflow can also publish to a test channel, marked by a tag prefix and signed by the same workflow; an installation offers and installs test-channel releases only when configured for that channel.
 
 **Refusals and edge cases**
 - If the tests or the smoke suite fail, nothing is signed or published.
@@ -3883,68 +3901,87 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 
 **Evidence to record**
 - A fresh self-hosted install from the published image reaches the sign-in page.
+- The test channel holds fixture releases N, N+1 and N+2, each adding a data conversion, and deliberately broken variants for the failure tests, all signed by the release workflow.
 - Before the repository is made public for the first release (K15), its history is searched for secrets and private files and the result is recorded.
 
 Notes: Signing is keyless (K14).
 
-### Story 9.3: Data conversions between versions
+### Story 9.3: The update record and one version at a time
 
-As an administrator, I want stored data converted safely when a new version needs a different shape, so that an update never leaves projects unreadable or half converted.
+As an administrator, I want the server to keep one record of an update under way and let only one version act on our data, so that old and new code never both change it and an update can always be finished or undone.
 
-Covers: NFR-8, FR-72 (any earlier version to the latest), AD-20.
+Covers: NFR-8, FR-72, FR-21, AD-12, AD-17, AD-20.
 
 **Core behaviour**
-- The server carries every conversion since the first release: a data set written at each earlier data-format version converts directly to the current one.
+- The update record is a table of its own inside the installation object, in a layout every released version reads. It holds the attempt identifier, the version before and the version being installed, how to reach the version before (its image digest or its Cloudflare version), where the pre-update backup is, a state, a step number, the time at which changes stop, when the version being installed first arrived, and the update's step entries.
+- The states are stopping, prepared, installing and returning. Every change of state takes the next number from a step counter kept beside the record, which is never reset, so a new attempt starts above every step number already issued.
+- Stopping is written when an administrator starts an update, with the time at which changes stop. From that time every object refuses changes.
+- Before changes stop, an administrator can cancel, which removes the record.
+- Prepared follows only when the complete pre-update backup has succeeded. A failed backup removes the record and changes are accepted again; a backup interrupted by a restart resumes as a job.
+- Installing is set in one step, in which the installation, asked whether an attempt stands, answers yes only if a prepared record exists whose identifier and version being installed both match the question.
+- Asked again for the same attempt while the record is installing and before the version being installed has arrived, the installation gives the same yes.
+- A prepared record can be withdrawn, which removes it and accepts changes again at once. An installing record cannot be withdrawn.
+- While a record exists, the entry code passes its state and step number with every call.
+- Only one version acts: the version before while the record is stopping, prepared or returning, and the version being installed while it is installing. Entry code of the other version answers "updating", and an object of the other version refuses and stops itself as in story 1.1.
+- The installation object answers a read of the record's state from either version without stopping itself.
+- Entry code that finds a record it may not act on answers "updating" on a public notice that needs no sign-in. When the record is returning, or names neither version, the notice gives the steps to deploy the version allowed to act.
+- The calls that ask whether an attempt stands, read its state, report arrival, report a refused signature and ask for a return carry the update secret: on Cloudflare a secret created at deployment when absent and kept as a Worker secret, and self-hosted the updater's shared secret.
+- The update's step entries are kept in the record's table and copied into the activity log when the attempt ends.
+
+**Refusals and edge cases**
+- From the time changes stop until the record is removed, the only writes accepted are to the record and its counter, to each object's update bookkeeping, conversions and restores, the health check's test save, and the ending of a session.
+- A second update is refused while any record exists.
+- While a record exists, idle time does not count towards a session's expiry.
+- A prepared record not followed by a yes within 30 minutes is withdrawn by the installation itself, and the attempt is logged as "no result". (CF-41)
+- In the step that sets installing, the installation object sets an arrival deadline. If it passes before the version being installed has reached the installation object, by a call or by an alarm, the installation sets the record to returning itself. (CF-40)
+- Each object keeps the highest step number it has acted under, and the time it last stopped itself, in an update-bookkeeping table that no conversion touches and no restore replaces.
+- The installation object keeps a schedule of due times for its alarms (the arrival deadline, update steps, time limits, backups and the version check) and always sets its one alarm to the earliest; setting one never removes another.
+- Alarm-driven work does nothing while a record exists, except the update's own backup, conversion and return steps run by the version allowed to act. Work that cannot read the record treats it as present and only sets its alarm again.
+- A call to an update function without the update secret is refused and logged; a test shows that the attempt identifier alone is refused.
+- Routes that set an update record directly exist only in test builds, and a test fails if a release bundle has one.
+- No restore replaces the update record or its counter: a test restores the installation's data from a backup taken before a record existed and then reads the record and the counter intact.
+- An object running the version being installed converts nothing unless the record is installing; with no record it refuses older data as in story 1.1.
+- A server that finds data newer than itself and no record refuses to open it, and its explanation names both versions.
+
+Notes: In this story the record and the two versions are set up by tests. The design is K20 with its refinements K21 (AD-20), both confirmed by Kevin. It replaces the pending-update marker and its hold of earlier drafts. Left to later stories: conversions, the return and the health check (story 9.4); writing and ending the record in a real update (story 9.7 and story 9.10 self-hosted, story 9.12 and story 9.13 on Cloudflare). That sign-in is not offered during an update is in story 9.8.
+
+### Story 9.4: Data conversions, the health check and the way back to backed-up data
+
+As an administrator, I want stored data converted safely when a new version needs a different shape, and put back by the server itself if the update fails, so that an update never leaves projects unreadable, half converted or lost.
+
+Covers: NFR-8, FR-72 (any earlier version to the latest; return), AD-3, AD-20.
+
+**Core behaviour**
+- The server carries every conversion since the first release: data at any earlier data-format version converts to the current one in one update, by applying each conversion in order.
 - A test for each earlier data-format version compares the converted result with expected records.
-- A project's conversion runs inside one transaction.
-- When asked, the server converts every project and the installation's own data without waiting for each to be opened, and reports the result for each.
-- That conversion is reported as succeeded only when every project and the installation's own data have converted.
+- Each object converts its own data: a project room, or the installation object, records the new data-format version in the same transaction of its own store as the conversion's last write.
+- An object converts only when it runs the version being installed and is called while the update record is installing; no conversion spans two objects.
+- A conversion too large for one transaction builds its result in side tables over several steps and switches to them in one transaction, so the live tables are never part-converted.
+- The installation object drives the conversion: it converts its own data, then calls every project in the catalogue in turn in alarm-driven steps, so that projects nobody opens are converted too, and reports the result for each.
+- Projects recorded as not recovered are skipped and listed in the result.
+- The installation offers a health check: the sign-in page is served by the version being installed, the first active project opens or, with none, a health-check project room that holds no user data, and a test save to a health-check record is acknowledged.
+- An update succeeds only when every project and the installation's own data have converted and the health check has passed. The installation object then removes the record, copies the step entries into the activity log and accepts changes again.
+- An object running the version before, called while the record is returning, restores its own records from the pre-update backup if its data is in the newer format, and does nothing if it is not.
+- A restore is built in side tables over as many steps as it needs and switched in one transaction, which also sets the data-format version back.
+- The installation object drives the return: it restores its own data, calls every project in turn, removes the record, copies the step entries and the failed attempt into the activity log, and accepts changes again.
+- A project restore copy not yet made current, or an imported project, whose data is at an older data-format version converts its own data with the same conversions before it is opened, outside any update record, and is never live while it converts.
 
 **Refusals and edge cases**
-- A conversion made to fail part-way leaves that project's records exactly as they were, at their earlier version.
-- If the conversion of any project or of the installation's data fails, the server reports the conversion as failed, names the project, and opens no project for normal use.
-- A project room whose data is not yet at the server's version refuses every request until its conversion has succeeded.
+- A conversion made to fail part-way leaves that project's live records exactly as they were, at their earlier version.
+- If the conversion of any project or of the installation's data fails, the conversion is reported as failed, names the project, and no project is opened for normal use.
+- An interrupted conversion or restore that uses side tables starts its steps again and ends with the same result.
+- A project that refuses a call because of a version difference is called again after 35 seconds, up to 3 times, before it counts as failed. (CF-43)
+- A conversion or restore switch checks in the same transaction that the record's step number is still the highest the object has seen, and a call carrying a higher one makes the object discard side tables built under a lower one.
+- A test runs a return, then a conversion under a higher step number, then a second return: every project and the installation's own data end at the pre-update backup, none part-restored or part-converted.
+- A test runs two update attempts in a row and finds the second attempt's conversions accepted by every object.
+- A return removes and overwrites no file.
+- If the return cannot be completed, the installation keeps refusing changes, says plainly that the return did not complete, shows the manual steps, and never reports success.
+- An update cannot start while a project restore copy has not been made current, and Update says why.
+- No conversion of the installation's data changes the update record, its counter or any update bookkeeping, and a test fails if one does.
 - The test suite fails if a data-format version has no conversion and conversion test.
-- A test compares the Durable Object classes in the deployment configuration with the two fixed in story 1.1 and fails if a class is added, renamed or removed.
+- A test compares the Durable Object classes in the deployment configuration with the two fixed in story 1.1 and fails if a class is added, renamed or removed, unless the release is marked as changing a class.
 
-Notes: Before a second release exists, these criteria are exercised with test conversions on the runner of story 1.1.
-
-### Story 9.4: The pending-update marker and the way back to backed-up data
-
-As an administrator, I want the server to know that an update was under way and to put the backed-up data back itself, so that a rolled-back version never runs on data it cannot read.
-
-Covers: NFR-8, FR-72 (return), AD-20.
-
-**Core behaviour**
-- A pending-update marker is kept in its own small store, apart from project data and the installation's own data.
-- The marker records the version being installed, an identifier for the attempt, the pre-update backup, whether installation has begun, whether it has been marked withdrawn, which version currently holds the data to restore or to convert, the number of that hold, and which projects have been restored. (CF-24)
-- A server takes the hold on the data in one step at the marker store before it restores or converts anything, and each taking raises the hold number by one.
-- Every restore or conversion write carries the hold number it was made under.
-- Each project, and the installation's own data, keeps the highest hold number it has accepted, and in the same transaction as a write refuses one carrying a lower number.
-- The marker store refuses an update to the restore-progress record that carries a lower hold number.
-- A server whose write is refused stops.
-- A server of any released version reads the marker, whatever the data-format version of the data beside it.
-- A server that starts and finds the marker naming a version other than its own, with installation begun, serves nothing except the restore of the pre-update backup, whether or not the data format changed. (CF-24)
-- That restore is performed before any project is opened, and afterwards every project and the installation's own data are at the server's own version.
-- An earlier version that restarts and finds the marker with installation recorded as begun restores the pre-update backup, but does not clear the marker and does not accept changes.
-- After a return the marker is cleared, and changes are accepted again, only when every project and the installation's own data are back and the update run is confirmed finished or cancelled.
-- A deployment of the new version that arrives after the restore therefore still finds the marker, converts again and runs its health check.
-- In the same step in which it takes the hold to convert, the new version erases the marker's record of which projects and installation data were restored, so a later return restores all of them again.
-- Self-hosted, the updater confirms that the image swap is over, which counts as the run being finished.
-- The restore under the marker ends no session and cancels no reviewer link.
-- The server offers a health check: the sign-in page is served, a project opens and a test save is acknowledged.
-- The marker is cleared as succeeded only after every project and the installation's own data have converted (story 9.3) and the health check has passed.
-
-**Refusals and edge cases**
-- No conversion changes the marker store and no restore replaces it: a test restores the installation's data from a backup taken before the marker was set and then reads the marker with its progress intact.
-- A restore stopped part-way resumes at the next start and ends with the same result.
-- A test runs a restore, then a late deployment whose conversion or health check fails, then a second return: every project and the installation's own data end at the pre-update backup, none skipped as already restored.
-- A test starts the new version while an earlier version's restore is part-way: no restore write lands on a project after the new version has written to it, no restore-progress update lands after the new version takes the hold, and every project ends converted or, after a return, at the pre-update backup, never a mixture.
-- If that restore fails, the server keeps serving nothing, says plainly that the return did not complete, and does not report success.
-- A server that finds the marker with installation not begun restores nothing and keeps changes stopped. (CF-24)
-- A server that finds data newer than itself and no marker refuses to start, and its explanation names both versions.
-
-Notes: In this story the marker and the newer data are set up by tests. Left to later stories: setting the marker in a real update and clearing one whose installation never began (story 9.7 and story 9.10 self-hosted, story 9.12 and story 9.13 on Cloudflare). The pre-update backup is the "before an update" backup of story 8.1.
+Notes: Before a second release exists, these criteria are exercised with test conversions and an update record set by a test build, on the runner of story 1.1. The pre-update backup is the "before an update" backup of story 8.1.
 
 ### Story 9.5: Experiment R14: a new runtime reads the previous release's data
 
@@ -3954,14 +3991,13 @@ Covers: NFR-8, AD-20, experiment R14.
 
 **Core behaviour**
 - The release workflow of story 9.2 starts the new image, with its pinned runtime, against a data folder written by the previous release and confirms that it reads and converts the data correctly.
+- The same check confirms that an alarm set under the previous release fires under the new runtime, and that the installation's own data reads correctly.
 
 **Refusals and edge cases**
 - A release that fails this check is not published.
 
 **Evidence to record**
 - Before a second release exists, the check is run with a data folder written by an earlier tagged build and a test conversion, and the result is recorded.
-
-Notes: R14's fallback is to hold the runtime version and move data by portable backup. A first run on 2026-11-19 opened data written by a January 2025 runtime under four later versions up to November 2026, step by step, in one jump and going back, with identical content; the check is still repeated for every release.
 
 ### Story 9.6: Installed version and update check
 
@@ -3998,46 +4034,54 @@ Notes: Left to later stories: the Update control (story 9.7 self-hosted, story 9
 
 As an administrator of a self-hosted installation, I want to install a new release with one action, so that updating needs no command line and loses no saved work.
 
-Covers: FR-72, NFR-8, FR-71, AD-21. Screens: S-35.
+Covers: FR-72, NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
-- With a newer release available, S-35 shows what the update will do in order, how long users will be interrupted, and Update now; nothing installs without that action.
+- With a newer release available, S-35 shows what the update will do in order, an estimate of how long changes will be stopped, taken from the stored size and the duration of the last backup, and Update now; nothing installs without that action.
 - The Compose file gains the updater container, the only part allowed to start and stop containers.
-- The application reaches the updater over a private connection protected by a shared secret.
-- The steps run in this order: the updater verifies the image's signature; signed-in users are warned; changes of every kind stop; a complete backup of every project and of the installation's data is taken as the "before an update" backup of story 8.1; the pending-update marker is set; the updater records that installation has begun and swaps the image; the new version converts every project and the installation's own data; the health check of story 9.4 runs.
-- The administrator's screen shows the progress list (signature checked, backup taken, new version installed, data converted, checked), each step done, in progress or waiting, with no other control available.
+- The application reaches the updater over a private connection protected by a shared secret, which is also the update secret of story 9.3.
+- On Update now, the installation writes the update record as stopping and gives the updater the attempt identifier and the release. The updater verifies the image's signature and pulls the image by its digest before any user is warned.
+- Then: signed-in users are warned; at the stop time changes of every kind stop; a complete backup of every project and of the installation's data is taken as the "before an update" backup of story 8.1; the record becomes prepared; the updater asks whether the attempt stands, giving its identifier and version, which sets the record to installing; the updater stops the old container and then starts the new one by digest; under the new version the installation converts every project and its own data and runs the health check of story 9.4; the updater waits until the installation reports success or failure.
+- The administrator's S-35 shows the progress list (signature checked, backup taken, new version installed, data converted, checked), each step done, in progress or waiting.
 - After a successful update S-35 shows the new version and a link to its notes, and every project opens with its data intact.
 - An installation two releases behind updates directly to the latest in one update, with its data converted.
 - The update, each step and its outcome are recorded in the activity log with the administrator who started it.
 
 **Refusals and edge cases**
-- The updater refuses a version that is not from the configured repository.
-- A release with a bad signature is refused before users are warned, nothing is installed, and the refusal is shown and logged.
-- If the backup fails, nothing is installed, changes are accepted again, and the failure is shown and logged.
-- The marker is written only after the complete backup has succeeded and before installation changes anything: a failure before that point leaves no marker, and a restart then works normally.
+- The updater refuses a version that is not from the configured repository and channel.
+- A release with a bad signature, or an image that cannot be pulled, is refused before users are warned: the record is removed, nothing is installed, and the refusal is shown and logged.
+- The updater starts exactly the digest it verified; a tag pointed elsewhere after the check is not used.
+- If the backup fails, the record is removed, nothing is installed, changes are accepted again, and the failure is shown and logged.
 - While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason, and a second administrator's request to update is refused by the server. (CF-27)
 - A daily backup that falls due during an update does not start until the update has finished. (CF-27)
+
+**Limits and values**
+- The updater's time limit after the yes is three times the estimate shown on S-35, at least 30 minutes and at most 5 hours. (CF-42)
 
 **Access and restore**
 - Only an administrator can use Update now; a standard user's direct call is refused.
 
-Notes: Left to later stories: what signed-in users and open pages see (story 9.8); the command line and the update instructions (story 9.9); a failure after installation has begun (story 9.10).
+Notes: Left to later stories: what signed-in users and open pages see (story 9.8); the command line and the update instructions (story 9.9); a failure after installation has begun (story 9.10). The releases for "two releases behind" come from the test channel of story 9.2.
 
 ### Story 9.8: What people see while an update runs
 
 As a designer, I want to be warned before an update and to keep my unsaved work through it, so that an update interrupts me without costing me anything.
 
-Covers: FR-72, FR-21, NFR-2, NFR-8, UX decision D13. Screens: S-35, S-26.
+Covers: FR-72, FR-21, NFR-2, NFR-8, AD-20, UX decision D13. Screens: S-35, S-26.
 
 **Core behaviour**
 - Signed-in users see a banner before saving stops.
-- While the update runs, every page shows a full-page "Updating" notice, which clears by itself when the update ends.
+- During the warning an administrator can cancel the update on S-35, which removes the update record and clears the banner.
+- While the update runs, every page shows a full-page "Updating" notice, which clears by itself when the update ends; an administrator's S-35 shows the progress list instead. (CF-45)
 - A page that was open during the update still holds its unsaved edits afterwards and submits them.
+- An edit answered "updating" stays unsaved and is sent again automatically when the update ends, as after a lost connection.
+- A page that was warned shows the Updating notice while the server cannot be reached.
 
 **Refusals and edge cases**
-- No save, upload, administrative change or reviewer-link decision is acknowledged between the start of the backup and the new version starting.
+- No save, upload, administrative change or reviewer-link decision is acknowledged between the time changes stop and the end of the update or of its return.
 - While changes are stopped, sign-in is not offered: the sign-in page shows the Updating notice. (CF-28)
-- While changes are stopped, existing sessions stay valid.
+- While changes are stopped, existing sessions stay valid, and idle time does not count towards their expiry.
+- Signing out during an update ends the session.
 - While changes are stopped, no activity-log entry other than the update's own is written.
 - An edit the new version cannot accept stays listed as not saved with its content readable. (CF-29)
 - After such an edit the page asks the user to reload and does not reload by itself. (CF-29)
@@ -4047,6 +4091,7 @@ Covers: FR-72, FR-21, NFR-2, NFR-8, UX decision D13. Screens: S-35, S-26.
 
 **Evidence to record**
 - A test that sends saves throughout an update finds every acknowledged one present afterwards.
+- A test with a 15-minute session period across a 20-minute update finds the session still valid afterwards.
 
 ### Story 9.9: Self-hosted update from the command line, and the update instructions
 
@@ -4066,24 +4111,25 @@ Covers: FR-72, FR-66 (instructions), AD-21. Screens: S-35.
 
 As an administrator of a self-hosted installation, I want a failed update to put back the earlier version and its data and tell me so, so that a bad release never leaves us without a working system.
 
-Covers: FR-72 (return), NFR-8, FR-71, AD-21. Screens: S-35.
+Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
-- If installing, converting or the health check fails, the updater starts the earlier image and restores nothing itself.
-- The earlier image, finding the marker, restores the pre-update backup as in story 9.4.
+- If installing, converting or the health check fails, or the time limit passes, the updater asks the installation to return, presenting the attempt identifier and the update secret. Once the installation confirms that the record is returning, the updater stops the new container and starts the earlier image by its recorded digest. The updater restores nothing itself.
+- If the installation answers that the update has succeeded, the updater ends without starting the earlier image.
+- The earlier version restores what was converted, as in story 9.4, and reports that the data is back. The updater waits for that report.
 - The updater then reports the outcome: S-35 shows which step failed and a plain statement that the earlier version and its data are running again.
-- A conversion failure for any one project counts as a failed step and returns the whole installation; no project is left at the new version.
-- After a return, every save acknowledged before the update is present.
-- After a return, changes are accepted again.
-- The failed attempt is recorded in the activity log after the return, so that the entry is present in the returned installation.
+- A conversion failure for any one project fails the update and returns the whole installation; no project is left at the new version.
+- After a return, every save acknowledged before the update is present, and changes are accepted again.
+- After a return, the activity log holds the update's step entries and the failed attempt.
 - The published update instructions describe going back by hand after an update that passed its checks and was found broken later: install the earlier version and restore the pre-update backup from the command line, with the statement that changes made since the update are lost. (CF-30)
 
 **Refusals and edge cases**
 - If the return itself fails, S-35 and the sign-in page show a prominent warning that never reads as success.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
-- After the server loses power or the updater is killed before installation had begun, on restart any marker is cleared, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
-- After the server loses power or the updater is killed once installation had begun, on restart the installation returns to the earlier version and the backup. (CF-31)
+- After the server loses power or the updater is killed while the record is stopping, the backup resumes on restart; while the record is prepared, the updater asks on restart for the record to be withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
+- After the server loses power or the updater is killed once the record is installing, the updater reads its step log on restart: if the new container is running, the update continues and returns only on failure; if the earlier container is running, the arrival deadline returns the installation; if neither is running, the updater starts the new image by digest and the update continues. (CF-31)
+- If the updater stops after its yes and never swaps the image, the arrival deadline sets the record to returning and, with its data unchanged, the installation removes the record and accepts changes again.
 - The installation is never left refusing changes with no update running.
 
 **Evidence to record**
@@ -4096,78 +4142,85 @@ As Kevin, I want a self-hosted update broken at each step and the outcome record
 Covers: FR-72 (return), NFR-8, experiment R11.
 
 **Core behaviour**
-- On a test server an update is broken at each step in turn: the signature, the backup, the image swap, the conversion of one project, each part of the health check, the return, and a forced kill between each pair of steps.
+- On a test server an update is broken at each step in turn: the signature, an image that cannot be pulled, a cancel during the warning, the backup, the updater stopped during the backup, the updater stopped after its yes and before the swap, the image swap, the conversion of one project, each part of the health check, the time limit passing just as the update succeeds, the return, and a forced kill between each pair of steps.
+- Two updates are run one after the other, and the second succeeds.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.7 and story 9.10.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
+- On an installation at the acceptance size, how long changes stay stopped is measured for a successful update and for a return, split into backup, conversion and restore, and compared with the estimate shown on S-35.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The Cloudflare part of R11 is story 9.15.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The broken releases come from the test channel of story 9.2. The Cloudflare part of R11 is story 9.15.
 
 ### Story 9.12: The Cloudflare update workflow
 
 As an administrator of a Cloudflare installation, I want our own deployment of a release to check it, install it and roll back by itself, so that updating on Cloudflare is as safe as on our own server.
 
-Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
+Covers: FR-72, NFR-8, FR-71, AD-20, AD-21, experiments R10 and R11.
 
 **Core behaviour**
 - The organisation's copy of the repository contains an update workflow that is started with the name of the release to install and the identifier of the attempt it is started for.
+- The update secret of story 9.3 is also a secret of the organisation's repository, and the workflow presents it on every call to the installation.
 - The workflow, not the Worker, verifies the release's signature, and does so before it deploys anything.
-- Immediately before deploying, the workflow asks the installation whether the marker still stands, presenting its attempt identifier, and in that same step the installation records in the marker that installation has begun. (CF-32)
-- The installation answers yes only when a marker exists, is not withdrawn, names the same release and carries the same attempt identifier; on any other answer the workflow stops without deploying.
-- Once installation is recorded as begun, the marker cannot be withdrawn; only a completed update or a completed return clears it.
-- With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.4.
-- On success the marker is cleared and S-35 shows the new version.
-- If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
-- The earlier version, finding the marker, restores the pre-update backup as in story 9.4. Once the run is confirmed finished, it clears the marker, accepts changes again and records the failed attempt in the activity log.
+- Immediately before deploying, the workflow notes the Cloudflare version now deployed and asks the installation whether its attempt still stands, presenting the identifier, the release and that version. The installation answers yes only for a prepared record with the same identifier and release, and in the same step sets it to installing and stores that version as the way back. (CF-32)
+- With a yes, the workflow deploys the release in Cloudflare's `immediate` code-update mode, so that running Durable Objects are replaced at once.
+- Under the new version the installation object converts every project and its own data and runs the health check of story 9.4. The workflow asks the installation for the state of the update until it reports success or failure, and treats "updating" and version refusals as not finished.
+- On success the record is removed and S-35 shows the new version.
+- If the conversion of any project or the health check fails, or the time limit passes, the workflow asks the installation to return. Once the installation confirms that the record is returning, the workflow redeploys the stored version with Cloudflare's rollback in `immediate` mode or, if the rollback cannot do that, deploys that release's bundle in `immediate` mode.
+- The earlier version restores what was converted, as in story 9.4, removes the record, accepts changes again and records the failed attempt in the activity log.
 
 **Refusals and edge cases**
-- With a bad signature the workflow deploys nothing and reports the refusal; once the run is confirmed finished, the installation clears the marker, accepts changes again, and shows and logs the refusal.
-- If no marker exists, or the marker has been withdrawn or names another release, the workflow deploys nothing and ends. (CF-32)
-- A run started for a cancelled attempt deploys nothing even when a newer marker names the same release, because its attempt identifier does not match.
-- If the run deploys the new version and then stops before its health check, the new version on starting finds the marker naming its own version, completes the conversions and runs the health check itself, and clears the marker on success.
-- If that conversion or health check fails, the new version stays stopped for changes and shows the warning of story 9.10 with the manual return steps, because only the workflow can roll a Cloudflare deployment back.
+- With a bad signature the workflow deploys nothing and reports the refusal to the installation with its identifier; the installation withdraws only a prepared record with that identifier and release, accepts changes again, and shows and logs the refusal.
+- If no prepared record with the same identifier and release exists, the workflow deploys nothing and ends. (CF-32)
+- A run started for a withdrawn attempt deploys nothing even when a newer record names the same release, because its identifier does not match.
+- If the reply to its question is lost, the workflow asks again and receives the same yes.
+- If the installation answers that the update has succeeded when asked to return, the workflow ends without a rollback.
+- If the installation cannot be reached to confirm a return, the workflow redeploys the stored version and repeats the request to return, which the version before accepts while the record is installing; if that version finds no record and data in the newer format, the update had succeeded, and the workflow deploys the release again.
+- If, after deploying, the workflow finds no record or a returning record for its attempt, it redeploys the stored version itself.
+- If the run stops after its yes and before deploying, the arrival deadline makes the installation, still running the version before, set the record to returning, remove it and accept changes again.
+- A deployment of the new version that lands after that finds no record and data in an older format, refuses requests as in story 1.1, and its refusal shows the steps to redeploy the previous release.
+- If the run deploys the new version and then stops, the installation object completes the conversions and the health check by itself under the new version, an alarm under the new version counting as its arrival, and removes the record on success.
+- If that conversion or health check fails with no run left to roll back, the installation sets the record to returning, and the public "updating" notice of story 9.3 gives the steps to redeploy the previous release, after which the earlier version completes the return.
 - If the rollback or the restore cannot be completed, the installation shows the warning of story 9.10 with Cloudflare deployment steps to recover by hand, and never reports success.
+
+**Limits and values**
+- The workflow's time limit after deploying is three times the estimate shown on S-35, at least 30 minutes and at most 5 hours. (CF-42)
 
 **Evidence to record**
 - On a deployed Cloudflare test installation, the redeployment rule of story 1.2 and story 1.5 holds for a deployment by the workflow: after an update a user with two-step verification signs in with a current code, and a settings secret saved before the update still works.
-- All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the marker set by a test function.
+- All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the record set by a test build.
 
-Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14). Experiment R11 in story 9.15 covers the run that stops after deploying and the cases after the time limit.
+Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. The first part of R11 found that a deployment in `immediate` mode replaced a busy object in about 2 seconds; whether a rollback accepts that mode is untried (story 9.15). Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14).
 
 ### Story 9.13: Update a Cloudflare installation with one action
 
 As an administrator of a Cloudflare installation, I want Update to start our own deployment of the new release, so that updating needs one action and no visit to GitHub.
 
-Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Screens: S-35, S-33.
+Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-20, AD-21, experiment R16. Screens: S-35, S-33.
 
 **Core behaviour**
 - An administrator stores a GitHub token for the organisation's copy of the repository in Settings.
 - The token is kept as the other settings secrets of story 1.15 are: encrypted and showing only its last 4 characters.
 - Saving or replacing the token is logged without its value.
 - A recovery without the deployment key (story 8.8) clears the token with the other stored secrets.
-- With a newer release and a stored token, S-35 shows what the update will do in order, how long users will be interrupted, and Update now.
-- Before anything is stopped, Update checks that the token can start the update workflow in the organisation's copy and that the named release exists in the public release list.
-- After those checks the control warns signed-in users as in story 9.8, stops accepting changes of every kind, takes the complete "before an update" backup, sets the pending-update marker once that backup has succeeded, and starts a run of the workflow of story 9.12 through GitHub, naming the release and the marker's attempt identifier.
+- With a newer release and a stored token, S-35 shows what the update will do in order, an estimate of how long changes will be stopped, taken from the stored size and the duration of the last backup, and Update now.
+- Before anything is stopped, Update reads the update workflow in the organisation's copy with the token, confirming that the token reaches it, and checks that the named release exists in the public release list.
+- After those checks the installation writes the update record as stopping, warns signed-in users as in story 9.8, stops accepting changes of every kind at the stop time, takes the complete "before an update" backup, makes the record prepared once that backup has succeeded, and starts a run of the workflow of story 9.12 through GitHub, naming the release and the record's attempt identifier.
 - The release's signature is therefore verified after users are warned, changes stopped and the backup taken; S-35 lists the steps in that order and states that this differs from a self-hosted update, which verifies first.
 - Every attempt and its outcome is recorded in the activity log with the administrator who started it.
 
 **Refusals and edge cases**
 - If either check before stopping fails, the reason is shown, no user is warned and changes continue to be accepted.
-- If the backup fails, no marker is written, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
-- If GitHub refuses the request to start the run with an error, the run is confirmed not started: nothing is deployed, the marker is cleared, changes are accepted again, and the attempt is shown and logged.
-- If the answer to that request is lost or unclear, the installation does not treat a run missing from GitHub's list as proof that none exists; it marks the marker withdrawn, which succeeds only if installation has not been recorded as begun.
-- Once the marker is withdrawn, no run for this attempt can deploy, because the check of story 9.12 answers yes only to a standing marker with the same attempt identifier; the marker is then cleared, changes are accepted again, and the attempt is shown and logged as "start not confirmed".
-- If installation has already been recorded as begun when the installation tries to withdraw, a run did start, and the attempt continues as a running update.
+- If the backup fails, the record is removed, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
+- If GitHub refuses the request to start the run with a client error, the run is confirmed not started: nothing is deployed, the prepared record is withdrawn, changes are accepted again, and the attempt is shown and logged.
+- If GitHub answers with a server error, does not answer in time, or the answer is lost, the installation does not treat a run missing from GitHub's list as proof that none exists; it withdraws the prepared record, which succeeds only while the record is still prepared.
+- Once the record is withdrawn, no run for this attempt can deploy, because the check of story 9.12 answers yes only to a prepared record with the same identifier; changes are accepted again, and the attempt is shown and logged as "start not confirmed".
+- If the record is already installing when the installation tries to withdraw it, a run did start, and the attempt continues as a running update.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
-- When the time limit passes with no result, the installation asks GitHub to cancel the run and tries to withdraw the marker.
-- If installation has not been recorded as begun, the withdrawal succeeds: the marker is cleared, changes are accepted again, and the attempt is shown and logged as "no result".
+- When a prepared record is withdrawn for having no yes in time, as story 9.3 states, the installation also asks GitHub to cancel the run, and the attempt is shown and logged as "no result".
 - A run for a withdrawn attempt fails the check of story 9.12 and stops without deploying, whether or not GitHub cancelled it.
-- If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
-- If installation has begun and neither the update nor the return can be confirmed complete, the installation stays stopped for changes and shows the warning of story 9.10 with the Cloudflare steps to recover by hand.
-
-**Limits and values**
-- The time limit for a result from the run is 30 minutes from starting it. (CF-33)
+- If the record is installing, changes stay stopped until the update or the return has completed, whatever the time; a version being installed that never arrives is returned from as in story 9.12.
+- If the record is installing and neither the update nor the return can be confirmed complete, the installation stays stopped for changes and shows the warning of story 9.10 with the Cloudflare steps to recover by hand.
 
 **Evidence to record**
 - Experiment R16: a fine-grained token with only the Actions permission is tried; the narrowest permission that starts the run is recorded, or the classic `repo` scope is recorded if none narrower works.
@@ -4178,19 +4231,22 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 
 As an administrator of a Cloudflare installation, I want exact steps for updating without one-step deployment and clear warning when a release cannot be returned from, so that I can always update and always know the way back.
 
-Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
+Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
 - Without a stored token, S-35 shows numbered steps to run the workflow by hand in place of Update now, including the backup first and the way back.
-- The first manual step is "Prepare for a manual update" on S-35, which warns users, stops changes, takes the backup and sets the marker exactly as Update now does. (CF-34)
+- The first manual step is "Prepare for a manual update" on S-35, which writes the update record as stopping, warns users, stops changes, takes the backup and makes the record prepared exactly as Update now does. (CF-34)
 - After preparing, S-35 shows the attempt identifier to enter with the release name when starting the run by hand.
-- For a release marked as changing a Durable Object class, S-35 says before starting that an automatic return is not available and shows the manual procedure in place of Update now.
+- For a release marked as changing a Durable Object class, S-35 says before starting that no automatic return is available and shows the manual procedure in place of Update now.
+- That procedure is: prepare as above; start the workflow by hand with its class-change input; the update then installs, converts and runs the health check as any other.
+- If such an update fails, the installation stays stopped for changes and S-35 and the sign-in page give the way back: recover the installation from the pre-update backup into a fresh deployment of the earlier version, as story 8.7 describes.
 - With update checks turned off, S-35 shows the manual steps with a place to name the release.
-- Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
+- Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, adding the update secret to that copy's secrets, turning off any automatic deployment of that copy, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
 
 **Refusals and edge cases**
-- A manual update prepared and not followed by a run can be cancelled by the administrator: the marker is withdrawn and cleared and changes are accepted again at once, and a run started by hand for that preparation, queued or later, stops without deploying.
-- A run started for a cancelled preparation deploys nothing after a new preparation for the same release, because the new marker carries a new attempt identifier.
+- A manual update prepared and not followed by a run can be cancelled by the administrator: the prepared record is withdrawn and changes are accepted again at once, and a run started by hand for that preparation, queued or later, stops without deploying.
+- A manual preparation not followed by a yes in time is withdrawn by the installation, as story 9.3 states.
+- A run started for a cancelled preparation deploys nothing after a new preparation for the same release, because the new record carries a new attempt identifier.
 
 **Evidence to record**
 - A person follows the manual steps on a test Cloudflare account, and both an update and a return work.
@@ -4200,23 +4256,27 @@ Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
 
 As Kevin, I want a Cloudflare update broken at each step and the outcome recorded, so that the Update control is released only when every failure returns cleanly.
 
-Covers: FR-72 (return), NFR-8, experiment R11.
+Covers: FR-72 (return), NFR-8, AD-20, experiment R11.
 
 **Core behaviour**
-- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result at the time limit before installation has begun, no result at the time limit after it has begun, a run that deploys the new version and stops before its health check with the conversions then passing and then failing, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
+- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, a cancel during the warning, the backup, a run that cannot be started, a prepared record with no yes in time, a run that stops after its yes and before deploying, a run that deploys the new version and then stops with the conversions then passing and then failing, a deployment that lands after the installation has returned by itself, a deployment that lands while the record is returning, a third version deployed during an update, a bad signature, the conversion of one project, the health check, the time limit passing just as the update succeeds, and the restore.
+- Two updates are run one after the other, and the second succeeds.
 
 **Refusals and edge cases**
 - The answer to the start request is made to be lost while GitHub has accepted the run, in both orders: with the withdrawal reaching the installation before the run's check, and with the run's check reaching it first.
 - In the first order the run deploys nothing and changes are accepted again; in the second the attempt continues as a running update and ends as an update or a return.
-- A stale earlier version is tried: it reads the marker, is held back until the new version has converted a project, and then tries to take the hold and restore. Whether Cloudflare lets it run at all, and what it does, is observed.
-- A project restore that takes more than one write is interrupted by the new version starting, and what the conversion reads is observed.
+- With objects kept busy across a deployment and a return, the time each object takes to change version is recorded, and no request is found on which old and new code both acted.
+- No object is found to stop itself more often than story 1.1 allows, including while a deployment is still reaching some regions.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.12 and story 9.13.
-- Cloudflare's rollback command is confirmed to behave as documented, and the result is recorded.
+- Cloudflare's rollback command is confirmed to behave as documented, and whether it can redeploy a named version in `immediate` mode is recorded; if it cannot, the return by deploying that release's bundle is the one tested.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
+- People in at least two regions use the installation during an update and during a return, and what each of them sees is recorded.
+- On an installation at the acceptance size, how long changes stay stopped is measured for a successful update and for a return, and compared with the estimate shown on S-35.
+- A release that changes a Durable Object class is installed on a test account by the manual procedure of story 9.14, its failure is followed by the way back that story gives, and the result is recorded, including whether Cloudflare refuses a rollback across it.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, but Durable Objects in use keep running the previous version for about five minutes when busy, and an object can stop itself to restart on the new version at once. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The broken releases come from the test channel of story 9.2. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, Durable Objects in use keep running the previous version for about five minutes when busy, an object asked to stop itself restarted on the new version at once (shown for one object, not yet under load), and a deployment in `immediate` mode replaced a busy object in about 2 seconds. The design that answers this is K20 with its refinements K21 (AD-20).
 
 ## Epic 10: Acceptance
 
@@ -4487,7 +4547,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-18 | 4.5 |
 | FR-19 | 4.6, 7.1, 7.7 |
 | FR-20 | 2.16, 2.17, 2.20, 5.11 |
-| FR-21 | 2.2, 2.3, 2.5, 2.18, 3.1, 5.28, 9.8 |
+| FR-21 | 2.2, 2.3, 2.5, 2.18, 3.1, 5.28, 9.3, 9.8 |
 | FR-22 | 2.20, 4.1, 4.2, 4.5 |
 | FR-23 | 4.7, 5.26 |
 | FR-24 | 4.8, 4.10, 4.11, 4.13, 5.25, 5.26 |
@@ -4568,7 +4628,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | R8 | Done; see the experiments record | 1.1 |
 | R9 | Done; see the experiments record | 1.3 |
 | R10 | Done; see the experiments record | 9.12 |
-| R11 | To run | 9.11, 9.15 |
+| R11 | To run | 9.11, 9.12, 9.15 |
 | R12 | To run | 2.26 |
 | R13 | To run | 1.18 |
 | R14 | To run | 9.5 |
@@ -4581,7 +4641,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | --- | --- |
 | AD-1 | 1.1, 2.21 |
 | AD-2 | 2.1, 2.26 |
-| AD-3 | 2.9, 2.17, 2.25 |
+| AD-3 | 2.9, 2.17, 2.25, 9.4 |
 | AD-4 | 2.9, 2.25, 4.17, 5.10 |
 | AD-5 | 2.1, 2.2 |
 | AD-6 | 2.4 |
@@ -4590,22 +4650,23 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | AD-9 | 2.12, 2.14 |
 | AD-10 | 2.8, 6.2 |
 | AD-11 | 4.16, 4.17 |
-| AD-12 | 1.2, 1.3, 1.4, 1.5, 1.8, 1.9, 1.13, 1.16 |
+| AD-12 | 1.2, 1.3, 1.4, 1.5, 1.8, 1.9, 1.13, 1.16, 9.3 |
 | AD-13 | 8.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.8, 8.9 |
 | AD-14 | 2.20, 8.10, 8.11, 8.12, 8.13 |
 | AD-16 | 1.1, 2.21, 2.24, 2.25 |
-| AD-17 | 1.1, 1.5, 1.8, 1.15, 2.21, 2.22, 2.23, 9.13 |
+| AD-17 | 1.1, 1.5, 1.8, 1.15, 2.21, 2.22, 2.23, 9.3, 9.13 |
 | AD-18 | 1.17, 1.18 |
 | AD-19 | 9.2 |
-| AD-20 | 1.1, 9.3, 9.4, 9.5 |
+| AD-20 | 1.1, 9.3, 9.4, 9.5, 9.7, 9.8, 9.10, 9.12, 9.13, 9.14, 9.15 |
 | AD-21 | 1.2, 1.5, 9.6, 9.7, 9.9, 9.10, 9.12, 9.13, 9.14 |
 
 ## Values and readings
 
-**Values nobody specified (62).**
+**Values nobody specified (66).**
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
+| CA-41 | 1.1 | An object stops itself at most once in 30 seconds; a mismatched call within that time is refused without a further stop | No limit on stops | AD-20 (K20 fix 4) limits stops to one in a short interval so that an object restarted on the same code does not restart over and over, and gives no length | |
 | CA-01 | 1.2 | Set-up code is random, at least 20 characters, printed once in the deployment output | A shorter code, or one the installer chooses | AD-12 says only that a one-time code is shown in the deployment output; no length is given | |
 | CA-03 | 1.2 | Password: 12 to 128 characters, not equal to the email, no composition rules | 8-character minimum, or composition rules | Architecture section 15 left the rule open; current published guidance favours length over composition | |
 | CA-04 | 1.2 | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading | |
@@ -4666,7 +4727,10 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CF-12 | 8.7 | The recovery notice stays until an administrator dismisses it | Hide it after 30 days | FR-34 requires the notice and gives no duration | |
 | CF-16 | 8.10 | A finished portable backup is kept for download for 24 hours | 7 days | No source gives a period; short holding limits unbudgeted storage | |
 | CF-22 | 8.14 | Usage warning at 90% of the 8 GiB budget | 80% | PRD says "warn before exceeding" and gives no threshold | |
-| CF-33 | 9.13 | 30 minutes without a result ends the wait and starts cancellation | 60 minutes | Allows for a queued run and a full deploy; no source gives a limit | |
+| CF-41 | 9.3 | A prepared update record with no yes within 30 minutes is withdrawn by the installation itself | 60 minutes | AD-20 (K21) puts a limit on every waiting state and gives no value; 30 minutes allows for a queued GitHub run, as the earlier limit did | |
+| CF-40 | 9.4 | If the version being installed has not reached the installation 10 minutes after the record is set to installing, the installation returns by itself | 30 minutes | AD-20 (K20 fix 1) gives no period; a deployment normally answers within seconds, and every minute waited is a minute with changes stopped | |
+| CF-43 | 9.4 | A project that refuses a call for a version difference is called again after 35 seconds, up to 3 times, before it counts as failed | Count it as failed at once | Story 1.1 lets an object refuse for 30 seconds after a stop; a refusal then is not a conversion failure | |
+| CF-42 | 9.7 | The time limit after the yes is three times the estimate shown before the update, at least 30 minutes and at most 5 hours | A fixed 60 minutes | AD-20 (K21) derives the limit from the estimate; the maximum stays under GitHub's 6-hour job limit | |
 | CF-36 | 10.1 | The small functional project has about 50 devices | About 20 | PRD asks for a small functional project and gives no size | |
 
 **Readings of a source (142).**
@@ -4790,7 +4854,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CE-40 | 7.9 | A revision restore returns proposed runs with their segments and risers and leaves existing runs unchanged | A restore leaves risers unchanged, like floors | FR-22 restores proposed routes and never changes recorded routes. |
 | CF-01 | 8.1 | "No live site passwords in backups" is tested as: no record shape has a field for one | Scan free-text notes for likely passwords | NFR-5 keeps site credentials out of backups, and free text cannot be policed by a test |
 | CF-02 | 8.2 | A Cloudflare deployment with no second bucket fails, naming it | Start with backups shown as Failed | AD-13 requires a separate backup area on Cloudflare; a deployment without one cannot meet it |
-| CF-03 | 8.2 | Only the most recent "before an update" backup is kept beside the seven | Keep every pre-update backup | AD-13 says seven "plus one" |
+| CF-03 | 8.2 | The "before an update" backup of the last successful update is kept until the next successful update, and the one of an attempt under way until it ends | Keep only the most recent pre-update backup | AD-13 says seven "plus one"; an aborted attempt must not replace the backup that the manual way back after a broken update needs (CF-30) |
 | CF-05 | 8.3 | Archiving and un-archiving are refused while a backup or restore job for the project runs; a due backup waits for an archive | Let them interleave | AD-13 exports a project at one consistent point, so a backup or restore must hold one archive state |
 | CF-07 | 8.5 | A "before restore" backup of the working project is taken before the switch; the most recent one per project is kept in addition to the seven daily generations, is replaced by a later restore of the same project, and can be discarded by an administrator | Switch with no extra backup | FR-34 requires a backup before destructive maintenance |
 | CF-08 | 8.5 | A save from a page open before the switch is refused, shown as "not saved: project was restored", not retried | Apply it to the restored project if the base version matches | NFR-1 and NFR-2: a stale save must not silently mix lost work into the recovery point, and must stay visible |
@@ -4802,16 +4866,16 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CF-19 | 8.12 | A replaced project keeps its identity and its members | Members are cleared and set again | Memberships are installation data and not in a portable backup (AD-14) |
 | CF-20 | 8.12 | Replacement is refused unless the backup's identity is the live project's own | Allow any backup after a typed confirmation | FR-68 separates replacing a live project from importing; the check stops the wrong project being replaced, and import as new remains |
 | CF-21 | 8.14 | A package generation that reaches the remaining budget fails there and its parts are discarded | Estimate the size by a dry run first | Volumes are generated one at a time (AD-11), so no size exists beforehand |
-| CF-24 | 9.4 | The marker records whether installation has begun; an earlier version restores only if it has | Restore whenever the marker names another version | AD-20: the marker records whether installation has begun, and an earlier version restores only when it has |
 | CF-25 | 9.6 | A release is offered only if its version is higher than the installed one | Offer the newest listed release whatever is installed | NFR-8: an installation never runs a version older than its data |
 | CF-26 | 9.6 | A failed or malformed check keeps the last good result and shows the failure time and reason | Clear the result and show "Unknown" | FR-72 shows whether a newer release exists; a failed check must not show a false or stale answer as current |
 | CF-27 | 9.7 | Update, Back up now and Restore are disabled while any of the three runs; a due daily backup waits | Queue them | AD-21 stops changes of every kind and takes one complete backup; a second maintenance job would change what that backup holds |
 | CF-28 | 9.8 | Sign-in is not offered while changes are stopped; existing sessions stay valid | Allow sign-in during the update | FR-72 stops "changes of every kind"; a sign-in writes a session and a log entry that a return would lose |
 | CF-29 | 9.8 | An edit the new version cannot accept stays listed as not saved, and the page asks for a reload without reloading itself | Reload automatically after the update | FR-21 and NFR-2 keep pending input visible; an automatic reload would discard it |
+| CF-45 | 9.8 | During an update an administrator's S-35 shows the progress list instead of the full-page notice | The full-page notice for everyone | The UX full-page notice applies to every page, but FR-72 and story 9.5a show the administrator the progress of the steps |
 | CF-30 | 9.10 | Going back after an update that passed its checks is a documented command-line procedure | A "Return to previous version" control on Software | AD-20 says going back means restoring the pre-update backup with the earlier version, and the UX specifies no control for it |
-| CF-31 | 9.10 | After power loss or a killed updater: accept changes again if installation had not begun, otherwise return | Always restore the backup | AD-21: a failure before installation resumes normal work, and a failure after it returns to the earlier version and the backup |
-| CF-32 | 9.12 | The workflow asks the installation immediately before deploying; a withdrawn or different marker stops it | Rely on cancelling the run through GitHub | AD-20: the workflow asks immediately before deploying whether the marker still stands and stops if it was withdrawn |
-| CF-34 | 9.14 | Manual steps start with "Prepare for a manual update", which stops changes, backs up and sets the marker | Manual steps use Back up now and a hand restore, with no marker | AD-20: a manual Cloudflare update starts with this step so that the manual path has the same way back |
+| CF-31 | 9.10 | After power loss or a killed updater: a stopping record resumes its backup; a prepared one is withdrawn; an installing one continues on the new container, returns by the arrival deadline on the old one, or starts the new image if neither runs | Always restore the backup | AD-21: a failure before installation resumes normal work; AD-20 (K20): once installing, the installation finishes or fails the update by itself |
+| CF-32 | 9.12 | The workflow asks the installation immediately before deploying; with no prepared record for its attempt it stops | Rely on cancelling the run through GitHub | AD-20: the run that will deploy asks whether its attempt still stands, and the installation answers yes only to a prepared record with that identifier |
+| CF-34 | 9.14 | Manual steps start with "Prepare for a manual update", which writes the record as stopping, stops changes, backs up and makes it prepared | Manual steps use Back up now and a hand restore, with no record | AD-20: a manual Cloudflare update starts with this step so that the manual path has the same way back |
 | CF-35 | 10.1 | A fixture change after confirmation makes a new manifest version and affected runs are repeated | Forbid any change | PRD says not to simplify the agreed workload to claim a pass |
 | CF-37 | 10.2 | "Controls stay usable" is measured as the 250 ms feedback target, 19 of 20, during import, analysis and export | No main-thread task over 200 ms | PRD sets 250 ms for selection and button feedback |
 | CF-38 | 10.9 | "Same features and rules" is checked against a named list of screens and nine refusals | Repeat every story's criteria on both hosts | NFR-7 needs an observable comparison; the full runs are already repeated on the self-hosted host |
@@ -4958,8 +5022,8 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 8.4 (part) | 8.12 | Replace a live project from a portable backup |
 | 8.4 (part) | 8.13 | Experiment R5 and moving a project between hosts |
 | 8.5 | 8.14 | Limits and usage |
-| 9.3 (part) | 9.3 | Data conversions between versions |
-| 9.3 (part) | 9.4 | The pending-update marker and the way back to backed-up data |
+| 9.3 (part) | 9.3 | The update record and one version at a time |
+| 9.3 (part) | 9.4 | Data conversions, the health check and the way back to backed-up data |
 | 9.3 (part) | 9.5 | Experiment R14: a new runtime reads the previous release's data |
 | 9.4 | 9.6 | Installed version and update check |
 | 9.5 (part) | 9.7 | Update a self-hosted installation with one action |
