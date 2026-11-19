@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2355 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2354 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -21,7 +21,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 - **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations and remain listed in that review. Leaving them out, and adding any that turn up when the story concerned is built, is Claude's recommendation, accepted on Kevin's instruction of 2026-11-19.
 - **Agent access added (PRD amendment 1.3):** on 2026-11-19 Kevin approved the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) for AI agents. Story 1.1, story 1.3, story 1.8 and story 1.14 gained route declarations, reason codes, route classes and the actor's `via` field; story 1.19 adds personal access tokens; Epic 11 adds the API description, the MCP endpoint, results and import for agents, set-up on both hosts and its acceptance. Standing rule 2 now covers tokens. These additions have not been independently reviewed. Their choices are CG-01 to CG-09: CG-01 to CG-03 were decided by Kevin in the proposal, and CG-04 to CG-09 are open.
 - **External tickets added (PRD amendment 1.4):** on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](../../sprint-change-proposal-2026-11-19-external-tickets.md). Story 6.20 adds external tickets on issues, service visits and warranties, and story 11.2 lets an agent find and add them. Choices CE-41 to CE-47 are Kevin's, made in that proposal. Not independently reviewed.
-- **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time.
+- **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time. On 2026-11-19 Kevin also ruled on the remaining open choices of agent access: CG-04 to CG-09, CG-13, CG-15, CG-19, CG-26 and CG-36 as written, and CG-16 changed to the PRD's 10 MiB inventory limit with no separate row limit.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
@@ -60,7 +60,7 @@ Where no source document gave a rule or a value, the stories state one so that t
 | CG-29 | 11.2 | Only a person can undo an agent's tool call; an undo is refused if items changed since, and never restores verified | Let the token undo its own change | An undo through a token could re-establish a verified state or overwrite later work (second review B6, F19, F20) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-30 | 11.2 | Deletions made with a token can be reversed by a person; permanently removing files or a project is person only | Deletion by token is person only | Lets agents tidy drafts while keeping every loss recoverable (second review B23) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-31 | 11.2 | An agent may request a review; its assignee must be a person | Requesting a review is person only | A request decides nothing; the decision stays with a person (second review B33) | Yes (Kevin, applying the second review, 2026-11-19) |
-| CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists |  |
+| CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists | Yes (Kevin, 2026-11-19) |
 
 **2. Values nobody specified (88).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
@@ -4805,9 +4805,8 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 - An imported device placed by an agent stays unverified until a person verifies it.
 
 **Limits and values**
-- An agent's upload may be at most 25 MiB, and an upload not applied within 24 hours is removed. (CG-16 · value)
-- A file of more than 5,000 rows is refused with the limit stated. (CG-16 · value)
-- R17 also parses a 5,000-row workbook and a worst-case 25 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3 and the upload limit is lowered to what fits. (CG-09 · decision)
+- An agent's upload may be at most 10 MiB, the same limit as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16 · value)
+- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09 · decision)
 
 ### Story 11.5: Check that text from others reaches agents marked
 
@@ -5087,10 +5086,10 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CA-39 | 1.17 | "Forgot password" gives the same reply for every email and sends at most 3 messages per account per hour | No sending limit | NFR-5 forbids revealing whether an email has an account; no source limits sends | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-42 | 1.18 | SMTP connect times out after 10 seconds and each reply after 30 seconds | 30 seconds to connect, 60 seconds for each reply | No source gives a limit; a mail server that accepts and never replies would otherwise hang the test message until a platform limit ends it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-02 | 1.19 | Token expiry 90 days by default, at most 1 year, maximum lowerable by an administrator | No expiry, or a fixed lifetime | Sprint change proposal choice D2 | Yes (Kevin, sprint change proposal, 2026-11-19) |
-| CG-04 | 1.19 | 300 requests a minute per token, then "too many requests" with the time to wait | A lower or higher limit, or none | NFR-5 under amendment 1.3 asks for a limit and names none; generous for one agent, low enough to stop a runaway loop |  |
-| CG-06 | 1.19 | Tokens start with ssat_ and hold at least 32 random bytes | No prefix | A prefix lets secret scanners and people recognise a leaked token |  |
-| CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working |  |
-| CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) |  |
+| CG-04 | 1.19 | 300 requests a minute per token, then "too many requests" with the time to wait | A lower or higher limit, or none | NFR-5 under amendment 1.3 asks for a limit and names none; generous for one agent, low enough to stop a runaway loop | Yes (Kevin, 2026-11-19) |
+| CG-06 | 1.19 | Tokens start with ssat_ and hold at least 32 random bytes | No prefix | A prefix lets secret scanners and people recognise a leaked token | Yes (Kevin, 2026-11-19) |
+| CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working | Yes (Kevin, 2026-11-19) |
+| CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) | Yes (Kevin, 2026-11-19) |
 | CG-14 | 1.19 | 20 refused token requests a minute from one address, then 429 | No limit on failed tokens | Throttles token guessing (review E32) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
 
@@ -5190,15 +5189,15 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
-| CG-15 | 11.1 | Public description and OAuth routes: 60 requests a minute from one address | No limit | Unauthenticated routes reach the installation object (review E34) |  |
+| CG-15 | 11.1 | Public description and OAuth routes: 60 requests a minute from one address | No limit | Unauthenticated routes reach the installation object (review E34) | Yes (Kevin, 2026-11-19) |
 | CG-17 | 11.2 | Tool names at most 64 letters, digits, underscores and hyphens; at most 60 tools, grouped above that | No limit | MCP clients limit tool names and counts (review A9) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
-| CG-26 | 11.2 | The MCP endpoint supports the protocol revisions named in the instructions: the current one when built and the one before; JSON replies; no session identifier | Only the newest revision; streamed replies | Clients lag the specification; a stateless endpoint suits both hosts (review A8, A26) |  |
+| CG-26 | 11.2 | The MCP endpoint supports the protocol revisions named in the instructions: the current one when built and the one before; JSON replies; no session identifier | Only the newest revision; streamed replies | Clients lag the specification; a stateless endpoint suits both hosts (review A8, A26) | Yes (Kevin, 2026-11-19) |
 | CG-18 | 11.3 | A calculation fits one request when it uses at most half of every configured limit | Fits when under the limit | Leaves room for larger floors (review A18) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
-| CG-19 | 11.3 | Counts and categories equal; areas and percentages within 0.1 percent or 0.1 percentage points | Exactly equal | JavaScript engines may differ in the last digits of maths functions (review A17) |  |
+| CG-19 | 11.3 | Counts and categories equal; areas and percentages within 0.1 percent or 0.1 percentage points | Exactly equal | JavaScript engines may differ in the last digits of maths functions (review A17) | Yes (Kevin, 2026-11-19) |
 | CG-34 | 11.3 | Jobs for agents: given up after 1 hour, results kept 24 hours, at most 3 running per token and 5 per person | No limits | One agent must not exhaust alarms or storage (second review F23, F24) | Yes (Kevin, applying the second review, 2026-11-19) |
-| CG-16 | 11.4 | Agent upload at most 25 MiB, removed if not applied within 24 hours; more than 5,000 rows refused | The app's own file limits | Keeps agent imports within one request's limits and storage tidy (review E13, E14) |  |
+| CG-16 | 11.4 | Agent upload at most 10 MiB, the PRD's limit for an inventory file, with no separate row limit; removed if not applied within 24 hours | 25 MiB with a 5,000-row limit | The PRD caps an inventory file at 10 MiB, and a separate row limit would give agents different results from people (FR-77) | Changed to 10 MiB with no row limit (Kevin, 2026-11-19) |
 | CG-32 | 11.4 | Upload address: single use, valid 10 minutes, bound to the token and project | A longer life, or reuse | Short enough not to become a standing credential (second review B15, F25) | Yes (Kevin, applying the second review, 2026-11-19) |
-| CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) |  |
+| CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) | Yes (Kevin, 2026-11-19) |
 
 **Readings of a source (155).**
 
@@ -5226,7 +5225,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CA-37 | 1.15 | Settings states beside the Google mapping key that it is visible in signed-in users' browsers | No notice | FR-70 says secrets are never shown again in full; a browser map key cannot be kept from the browser, so the exception is stated | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CA-40 | 1.18 | SMTP is offered only if R13 passes on both hosts | Offer SMTP on whichever host passes | AD-18 says SMTP "is not promised until it passes"; NFR-7 asks both hosts to behave the same | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CG-01 | 1.19 | Two token kinds, read-only and read-and-draft, each optionally limited to named projects | One kind with per-action permissions | Sprint change proposal choice D1 | Yes (Kevin, sprint change proposal, 2026-11-19) |
-| CG-05 | 1.19 | A request carrying both a session cookie and a token is refused | Prefer the token, or the session | A request with two identities has no single actor to record |  |
+| CG-05 | 1.19 | A request carrying both a session cookie and a token is refused | Prefer the token, or the session | A request with two identities has no single actor to record | Yes (Kevin, 2026-11-19) |
 | CG-20 | 1.19 | Lowering the maximum lifetime shortens existing tokens beyond it, counted from creation | Existing tokens keep their expiry | A policy change should apply at once (review A13, E27) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-22 | 1.19 | A public route ignores a token; reviewer-link and update-secret routes refuse one | Refuse a token everywhere it is not needed | Every route class needs a defined answer (review E31) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-24 | 1.19 | A token cannot create a project | A read-and-draft token may create one | Creating a project adds a membership and a place for data; a person should decide (review A12) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
@@ -5407,7 +5406,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
-| CG-08 | 11.1 | Removing or renaming a field of /api/v1/ needs a new version prefix | Allow changes announced in release notes | Agents built against the description break silently otherwise |  |
+| CG-08 | 11.1 | Removing or renaming a field of /api/v1/ needs a new version prefix | Allow changes announced in release notes | Agents built against the description break silently otherwise | Yes (Kevin, 2026-11-19) |
 | CG-23 | 11.1 | The API description is served only while agent access is on, without the server's version | Always served, with the version | Avoids revealing the route surface and version of an installation that does not use agents (review A24) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-35 | 11.2 | Refusal order on /mcp: 405, foreign or null Origin without a token, access off, 401, protocol 400 | Any order | Makes tests deterministic and lets OAuth discovery see 401 first (second review B11) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-21 | 11.5 | Text a member copies from an entered-text field becomes that member's text | Copied text stays marked | The member who copies it vouches for it (review E15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |

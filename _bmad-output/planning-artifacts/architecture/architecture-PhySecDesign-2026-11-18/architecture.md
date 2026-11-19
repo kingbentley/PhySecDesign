@@ -565,7 +565,7 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | R14 | The runtime's on-disk storage format across a runtime upgrade. | Start a newer runtime against data written by an older one; repeat in every release. First run passed on 2026-11-19. | Hold the runtime version; move data by portable backup. |
 | R15 | The legibility of smaller package pages. | Print plan and photo pages at JPEG quality 0.94, 0.85 and 0.75; have a person compare them. | Keep higher quality and accept more volumes. |
 | R16 | GitHub token permission for starting an update run. | Try a fine-grained token with only the Actions permission. | Document the classic `repo` scope. |
-| R17 | Coverage at acceptance size, and parsing a 5,000-row workbook, inside one request on the server. | Run both on Cloudflare and under the open-source runtime and record processing time against the limits. First story: the agents' coverage story in Epic 11. | Run them as resumable jobs. |
+| R17 | Coverage at acceptance size, and parsing the representative inventory and a worst-case 10 MiB workbook, inside one request on the server. | Run both on Cloudflare and under the open-source runtime and record processing time against the limits. First story: the agents' coverage story in Epic 11. | Run them as resumable jobs. |
 | R18 | An MCP client using the endpoint on both hosts, including a server reachable only on a private network with a certificate from a private authority. | Connect Claude Code with a token, list the tools, make a draft change, and confirm a person-only call is refused. First story: the agents' set-up story in Epic 11. | Document the client settings each host needs; offer the HTTP API alone. |
 
 ## 13. Confirmed decisions

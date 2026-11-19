@@ -124,3 +124,7 @@ Later on 2026-11-19 a BMAD review of Epic 11 and story 1.19 ([review](epics/epic
 ### Third addendum to the fourth run: second review of the agent material
 
 Later on 2026-11-19 a second review of the agent-access and external-ticket material found 63 more problems, all applied on Kevin's instruction with seven new rules. Story 1.1's entered-text type is now a per-value wrapper, story 1.8 lists seven route classes, and story 9.2 gains a breaking-change check from the first release; none of these blocks story 1.1. The verdict is unchanged: CONCERNS, nothing blocking story 1.1. Concern G: the material has had two reviews but not a third. Concern H now covers CG-04 to CG-09, CG-13, CG-15, CG-16, CG-19, CG-26 and CG-36.
+
+### Fourth addendum: rulings on the open agent-access choices
+
+On 2026-11-19 Kevin accepted Claude's recommended rulings on the twelve open agent-access choices: eleven as written, and CG-16 changed to the PRD's 10 MiB inventory limit with no separate row limit. Concern H is closed for agent access. The verdict is unchanged: CONCERNS, nothing blocking story 1.1.

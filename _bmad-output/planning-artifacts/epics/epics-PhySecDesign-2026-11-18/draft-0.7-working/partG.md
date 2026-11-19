@@ -130,9 +130,8 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 - An imported device placed by an agent stays unverified until a person verifies it.
 
 **Limits and values**
-- An agent's upload may be at most 25 MiB, and an upload not applied within 24 hours is removed. (CG-16)
-- A file of more than 5,000 rows is refused with the limit stated. (CG-16)
-- R17 also parses a 5,000-row workbook and a worst-case 25 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3 and the upload limit is lowered to what fits. (CG-09)
+- An agent's upload may be at most 10 MiB, the same limit as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16)
+- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09)
 
 ### Story 11.5: Check that text from others reaches agents marked
 
