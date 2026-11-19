@@ -4,6 +4,12 @@
 - Existing project context is in `site-studio/README.md`, `site-studio/POC-ROADMAP.md`, and `site-studio/design-qa.md`.
 - Design references and mockups are in `design-references/` and `design-mockups/`.
 
+## Pull request review fixes
+
+- When fixing findings from a pull request review (CodeRabbit or a person), collect every open finding from that round, fix them together, and push one commit for the round. Do not push a commit per finding.
+- After pushing, wait until CodeRabbit has finished responding to that commit before starting any further fixes. If its automatic reviews are paused, its replies on the existing threads settling counts as finished.
+- Do not trigger a CodeRabbit review or resume its automatic reviews unless Kevin asks.
+
 ## BMAD planning
 
 - Two planning sessions ran in parallel on 2026-11-18 and were merged. The single working branch is `claude/wonderful-mendel-hmttcb`; `claude/determined-curie-ugawva` was brought level with it at the merge and should not receive new work. Neither is merged to `main`, which still holds an older PRD.
