@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" style="color:#007e73" role="img" aria-label="PhySec">
+<path d="M10 14 L55.82 18.01 A46 46 0 0 1 36.38 51.68 Z" fill="currentColor" opacity=".42"/>
+<path d="M54 50 L8.18 45.99 A46 46 0 0 1 27.62 12.32 Z" fill="currentColor" opacity=".42"/>
+<circle cx="10" cy="14" r="6" fill="currentColor"/><circle cx="54" cy="50" r="6" fill="currentColor"/>
+</svg>

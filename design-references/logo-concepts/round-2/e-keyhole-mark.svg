@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" style="color:#007e73" role="img" aria-label="PhySec">
+<rect x="4" y="4" width="56" height="56" rx="14" fill="currentColor"/>
+<path d="M32 24 L44.71 50.07 A29 29 0 0 1 19.29 50.07 Z" fill="#fff"/>
+<circle cx="32" cy="24" r="10" fill="#fff"/>
+<circle cx="32" cy="24" r="4" fill="currentColor"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" style="color:#007e73" role="img" aria-label="PhySec">
+<path d="M8 23 V15 A7 7 0 0 1 15 8 H23 M41 8 H49 A7 7 0 0 1 56 15 V23 M56 41 V49 A7 7 0 0 1 49 56 H41 M23 56 H15 A7 7 0 0 1 8 49 V41" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M21 21 H35 V31 H43 V43 H21 Z" fill="currentColor" opacity=".38" stroke="currentColor" stroke-opacity="0"/>
+<circle cx="35" cy="31" r="5" fill="currentColor"/>
+</svg>
