@@ -1,0 +1,46 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhySec Logo</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafbf9;--card:#fff;--ink:#182c2c;--muted:#71807d;--line:#e1e6e3;--teal:#007e73;--mint:#e5f3ef}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',Arial,sans-serif;padding:32px 16px}
+main{max-width:1000px;margin:0 auto}h1{font-size:28px;letter-spacing:-.8px;margin:0 0 6px}h2{font-size:15px;margin:0 0 14px;letter-spacing:-.2px}
+.lede{color:var(--muted);margin:0 0 26px;max-width:64ch;line-height:1.55}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}.tile{flex:1 1 280px;border-radius:8px;padding:28px;display:flex;justify-content:center;align-items:center}
+.tile img{max-width:100%;height:auto}.light{background:#fff;border:1px solid var(--line)}.dark{background:#122626}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}figcaption{font-size:12px;color:var(--muted);text-align:center}
+.sizes{background:var(--bg);border-radius:8px;padding:20px;gap:28px}
+.appbar{display:flex;align-items:center;gap:24px;border:1px solid var(--line);border-radius:8px;padding:10px 16px;overflow:hidden}
+.appbar nav{display:flex;gap:16px;font-size:13px;color:var(--muted);white-space:nowrap}.appbar b{color:var(--teal)}
+.tab{display:inline-flex;align-items:center;gap:8px;background:#eef1ef;border-radius:8px 8px 0 0;padding:8px 14px;font-size:12px;min-width:200px}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px;margin:0;font-size:13px;line-height:1.5}dt{color:var(--muted)}dd{margin:0}
+code{font-size:12px;background:var(--bg);padding:1px 5px;border-radius:4px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px;border:1px solid #0001}
+@media(max-width:560px){.appbar nav{display:none}dl{grid-template-columns:1fr}dd{margin-bottom:8px}}
+</style></head><body><main>
+<h1>PhySec logo</h1>
+<p class="lede">Concept A, refined: a room outline with a camera in its corner and the camera's field of view shaded. Every image on this page is one of the files in this folder, so what you see is what ships. The lettering is DM Sans Bold converted to shapes, so it looks the same without the font installed.</p>
+<section><h2>Name and mark</h2><div class="row">
+<div class="tile light"><img src="physec-lockup.svg" width="294" height="96" alt="PhySec logo on a light background"></div>
+<div class="tile dark"><img src="physec-lockup-dark.svg" width="294" height="96" alt="PhySec logo on a dark background"></div></div></section>
+<section><h2>In the app header, at the current size</h2>
+<div class="appbar"><img src="physec-lockup.svg" width="141" height="46" alt="PhySec"><nav><b>Plan</b><span>Equipment</span><span>Coverage</span><span>Materials</span></nav></div></section>
+<section><h2>Mark sizes</h2><div class="row sizes">
+<figure><img src="physec-mark.svg" width="128" height="128" alt=""><figcaption>128 · standard</figcaption></figure>
+<figure><img src="physec-mark.svg" width="64" height="64" alt=""><figcaption>64 · standard</figcaption></figure>
+<figure><img src="physec-mark-small.svg" width="32" height="32" alt=""><figcaption>32 · small</figcaption></figure>
+<figure><img src="physec-mark-small.svg" width="16" height="16" alt=""><figcaption>16 · small</figcaption></figure>
+</div><p class="lede" style="margin:14px 0 0;font-size:13px">The small version has a heavier frame, a larger camera and a stronger field of view, so it holds together at 32 pixels and below.</p></section>
+<section><h2>Icons</h2><div class="row sizes">
+<figure><img src="icon-512.png" width="128" height="128" alt=""><figcaption>icon-512.png · icon-192.png</figcaption></figure>
+<figure><img src="apple-touch-icon.png" width="90" height="90" alt=""><figcaption>apple-touch-icon.png<br>square; iOS rounds it</figcaption></figure>
+<figure><div class="tab"><img src="favicon.ico" width="16" height="16" alt="">PhySec · Site Studio</div><figcaption>favicon.ico (16, 32, 48) and favicon.svg</figcaption></figure>
+</div></section>
+<section><h2>Use</h2><dl>
+<dt>Colours</dt><dd><span class="sw" style="background:#007e73"></span>Teal <code>#007e73</code> mark and <span class="sw" style="background:#122626"></span>ink <code>#122626</code> lettering on light backgrounds. <span class="sw" style="background:#4fc3b2"></span>Light teal <code>#4fc3b2</code> and <span class="sw" style="background:#f2f6f4"></span><code>#f2f6f4</code> on dark.</dd>
+<dt>One colour</dt><dd><code>physec-mark-mono.svg</code> takes the surrounding text colour, for print and single-colour uses.</dd>
+<dt>Clear space</dt><dd>Keep at least a quarter of the mark's height empty around the logo.</dd>
+<dt>Minimum size</dt><dd>Standard mark from 32 pixels up; below that, use the small version. Name and mark from 24 pixels tall.</dd>
+<dt>Favicon</dt><dd><code>favicon.svg</code> switches to light teal in a dark browser theme; <code>favicon.ico</code> covers browsers without SVG favicons.</dd>
+</dl></section>
+</main></body></html>
