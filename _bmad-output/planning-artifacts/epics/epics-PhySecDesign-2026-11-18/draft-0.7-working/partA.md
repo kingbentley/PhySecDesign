@@ -25,7 +25,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
-- Every server route other than the application's own pages and files is under `/api/v1/` and declares, in the shared module, a schema for its input and its reply.
+- Every server route other than the application's own pages and files is under `/api/v1/`, and declares, in the shared module, a schema for its input and its reply; the only other addresses allowed are an MCP endpoint at `/mcp` and standard discovery addresses under `/.well-known/`, which declare their schemas in the same way.
 - A request whose input does not match its route's schema is refused with the field named.
 - Every refusal carries a reason code as well as its wording.
 - The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
@@ -104,7 +104,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
 - The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything with a session cookie is refused unless it comes from the app's own origin and carries the header the app adds.
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing.
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
 
 **Limits and values**
@@ -526,7 +526,7 @@ Covers: AD-18, experiment R13.
 - Connecting to the mail server times out after 10 seconds and each reply after 30 seconds, and the test message reports which timed out. (CA-42)
 
 **Evidence to record**
-- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox, is delivered.
+- Experiment R13 has a recorded result on a deployed Cloudflare test installation for a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox: delivered, which is a pass, or not delivered, with the reason, which leads to the HTTP-only Email group above.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 - Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
 - A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
@@ -555,6 +555,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22)
 - Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33)
+- An operation identifier carries the time it was made, and one more than 24 hours old is refused with "identifier expired", so a retry after the identifier is forgotten never repeats a change. (CG-33)
 - A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.

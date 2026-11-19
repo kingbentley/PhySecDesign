@@ -301,3 +301,8 @@ What this means for the update design (AD-20, AD-21):
 - The times here are longer than the first part's (about 0.5 s for the entry code and 2 s for an object in `immediate` mode) because they are measured from the end of a Wrangler command, not from the REST call, and come from a single run.
 
 Not determined: a rollback across a Durable Object class change; behaviour with users in several regions; everything that needs the real update code. The throwaway Worker was deleted after this run.
+
+**Limits of this run, found afterwards by CodeRabbit's review of pull request 3:**
+- **Polling gaps.** The script ran Wrangler synchronously, which paused both polling loops while each rollback command ran (about 14 and 12 seconds). The count of 1 failed request in 664 therefore says nothing about those two intervals.
+- **Secret check.** The secret-restoration result stands: both baseline hashes and the post-rollback hash were real, distinct values, not missing answers. But the script did not confirm the baseline before going on.
+- **The revised script.** It runs Wrangler asynchronously, counts failures during each command, and confirms each secret's hash against one computed locally, stopping as inconclusive if it cannot. It also states the Node 22.12.0 prerequisite of Wrangler 4.165.0. It has not been run again.

@@ -134,7 +134,7 @@ Kevin asked for every finding to be applied, including the three choices, which 
   - PRD: FR-73 and FR-75;
   - architecture: AD-22, with a list of refinements and the OAuth details;
   - UX: section 18 (token list while access is off, and the consent page).
-- **New choices:** CG-10 to CG-26. Those whose values came from this review's fixes are marked as Kevin's. CG-13, CG-15, CG-16, CG-19 and CG-26 carry figures Claude chose while applying, and are open.
+- **New choices:** CG-10 to CG-26. Those whose values came from this review's fixes are marked as Kevin's. CG-13, CG-15, CG-16, CG-19 and CG-26 carried figures Claude chose while applying, and were open until Kevin ruled on them later that day (CG-16 changed: see the note at the end).
 - **Checks:** the assembler reports 0 problems (175 stories, 2,323 criteria), and tracking was regenerated.
 
 The revised stories have not been reviewed again.
@@ -267,3 +267,9 @@ The new values are CG-32 to CG-36. CG-36 (client registration limits) carries fi
 The assembler reports 0 problems: 175 stories and 2,355 criteria. Tracking was regenerated.
 
 The material has not been reviewed a third time.
+
+## Later changes (2026-11-19)
+
+The figures in this record are those of the day each round was written. After both rounds, two things changed:
+- **CG-16 (E13, E14, B16):** Kevin changed the agent upload limit from 25 MiB to 10 MiB. CodeRabbit's review of pull request 3 then found that people's own 5,000-row limit (CE-01) must apply to agents too. The 25 MiB and the agent-only row limit above are superseded.
+- **CG-35 (B11):** CodeRabbit's review also found that refusing a foreign `Origin` first blocked browser clients' preflight and OAuth sign-in discovery, so that step was removed from the refusal order.

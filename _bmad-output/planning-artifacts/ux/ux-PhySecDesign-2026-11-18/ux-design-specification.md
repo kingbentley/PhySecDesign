@@ -625,7 +625,7 @@ PRD amendment 1.3 lets AI agents act for a person through an API and an MCP endp
 
 - A group in Settings (S-33): Agent access On or Off (Off in a new installation), the maximum token lifetime (1 year unless lowered), and the API and MCP endpoint addresses to give to agents.
 - A line under the switch states where agents can connect from: on a private network, only agents running inside it.
-- Turning access off states that every token stops working at once and is kept, so that turning it on again restores them.
+- Turning access off states that every token stops working at once and is kept, so that turning it on again restores those that have not expired or been revoked meanwhile.
 
 ### 18.3 Administration: Users, a person's tokens (S-40, FR-73)
 

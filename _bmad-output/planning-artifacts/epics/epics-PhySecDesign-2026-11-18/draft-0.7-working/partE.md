@@ -57,6 +57,7 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 **Limits and values**
 - An inventory file can be at most 10 MiB.
 - An inventory file can hold at most 5,000 data rows. (CE-01)
+- The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server, before it parses the workbook. (CE-50)
 
 **Evidence to record**
 - The fixture script of story 2.7b also produces a 600-row inventory as .xlsx and as .csv.
@@ -559,7 +560,7 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 - Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history; adding a removed number again is a new entry. (CE-46)
 - Searching the Issues list by a ticket number finds issues by their own external tickets and those of their service visits.
 - The Issues list shows the first external ticket of each issue with "+N" for more.
-- Members' CSV exports of issues, visits and warranties include their external tickets, separated by "; ", without "also on".
+- Members' CSV exports of issues, visits and warranties include their external tickets in two columns, numbers and links, each listing a record's tickets in the same order with one per line inside the cell, without "also on".
 - Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text and no "also on". (CE-47)
 - The field shell's issue and visit forms show and add external tickets as on desktop, and a change made without a connection is queued like other field edits.
 - A record after its closeout cutoff still accepts external tickets on its live copy, and the fixed closeout copy never changes.
@@ -567,11 +568,11 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 **Refusals and edge cases**
 - A link is trimmed, and is refused with "Enter a web address starting with https:// or http://" unless its scheme is `https` or `http` (in any case) and it has a host; control characters are refused. (CE-44)
 - A link with a user name or password is refused with "Remove the user name and password from the link". (CE-48)
-- A number already on the record is refused with "This ticket is already listed", and a number of only spaces is refused.
+- A number already on the record is refused with "This ticket is already listed", and a number of only spaces, or one containing a line break, a tab or another control character, is refused.
 - "Also on" never names a record in another project. (CE-49)
 - A change or removal of an external ticket that changed since it was read is refused with "changed since", showing the current value.
 - A queued change refused when the connection returns, because the record changed or the number is already listed, is shown to the technician with the reason.
-- In a CSV export, a number or link starting with `=`, `+`, `-` or `@` is written so that a spreadsheet does not run it as a formula.
+- In a CSV export, a number or link starting with `=`, `+`, `-` or `@`, or with the full-width form of any of them, is written so that a spreadsheet does not run it as a formula; the method is checked in Excel, LibreOffice and Google Sheets, with a test for each such leading character.
 - The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
 - The reviewer view never shows external tickets. (CE-47)
 - A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
@@ -583,7 +584,7 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 
 **Access and restore**
 - A revision restore leaves external tickets unchanged.
-- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a link that fails is kept as text without a link, and "also on" is worked out again.
+- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a user name and password are removed from a restored link first and the person restoring is told how many links were changed, a link that still fails is kept as text without a link, and "also on" is worked out again.
 
 ## Epic 7: Extended modelling
 

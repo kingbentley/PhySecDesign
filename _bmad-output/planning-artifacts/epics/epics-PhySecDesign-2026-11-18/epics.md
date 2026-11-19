@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2354 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2359 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -62,7 +62,7 @@ Where no source document gave a rule or a value, the stories state one so that t
 | CG-31 | 11.2 | An agent may request a review; its assignee must be a person | Requesting a review is person only | A request decides nothing; the decision stays with a person (second review B33) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists | Yes (Kevin, 2026-11-19) |
 
-**2. Values nobody specified (88).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
+**2. Values nobody specified (89).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
 **3. Readings of a source (155).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
 
@@ -167,7 +167,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 - A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
-- Every server route other than the application's own pages and files is under `/api/v1/` and declares, in the shared module, a schema for its input and its reply.
+- Every server route other than the application's own pages and files is under `/api/v1/`, and declares, in the shared module, a schema for its input and its reply; the only other addresses allowed are an MCP endpoint at `/mcp` and standard discovery addresses under `/.well-known/`, which declare their schemas in the same way.
 - A request whose input does not match its route's schema is refused with the field named.
 - Every refusal carries a reason code as well as its wording.
 - The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
@@ -246,7 +246,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
 - The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything with a session cookie is refused unless it comes from the app's own origin and carries the header the app adds.
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing.
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
 
 **Limits and values**
@@ -668,7 +668,7 @@ Covers: AD-18, experiment R13.
 - Connecting to the mail server times out after 10 seconds and each reply after 30 seconds, and the test message reports which timed out. (CA-42 · value)
 
 **Evidence to record**
-- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox, is delivered.
+- Experiment R13 has a recorded result on a deployed Cloudflare test installation for a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox: delivered, which is a pass, or not delivered, with the reason, which leads to the HTTP-only Email group above.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 - Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
 - A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
@@ -697,6 +697,7 @@ Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access
 - An administrator-only route refuses every token, including an administrator's, with "needs a person".
 - A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22 · reading)
 - Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33 · value)
+- An operation identifier carries the time it was made, and one more than 24 hours old is refused with "identifier expired", so a retry after the identifier is forgotten never repeats a change. (CG-33 · value)
 - A repeated identifier sent with a different request is refused with "identifier reused".
 - A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
 - My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
@@ -2827,6 +2828,7 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 **Limits and values**
 - An inventory file can be at most 10 MiB.
 - An inventory file can hold at most 5,000 data rows. (CE-01 · value)
+- The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server, before it parses the workbook. (CE-50 · value)
 
 **Evidence to record**
 - The fixture script of story 2.11 also produces a 600-row inventory as .xlsx and as .csv.
@@ -3329,7 +3331,7 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 - Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history; adding a removed number again is a new entry. (CE-46 · reading)
 - Searching the Issues list by a ticket number finds issues by their own external tickets and those of their service visits.
 - The Issues list shows the first external ticket of each issue with "+N" for more.
-- Members' CSV exports of issues, visits and warranties include their external tickets, separated by "; ", without "also on".
+- Members' CSV exports of issues, visits and warranties include their external tickets in two columns, numbers and links, each listing a record's tickets in the same order with one per line inside the cell, without "also on".
 - Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text and no "also on". (CE-47 · decision)
 - The field shell's issue and visit forms show and add external tickets as on desktop, and a change made without a connection is queued like other field edits.
 - A record after its closeout cutoff still accepts external tickets on its live copy, and the fixed closeout copy never changes.
@@ -3337,11 +3339,11 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 **Refusals and edge cases**
 - A link is trimmed, and is refused with "Enter a web address starting with https:// or http://" unless its scheme is `https` or `http` (in any case) and it has a host; control characters are refused. (CE-44 · value)
 - A link with a user name or password is refused with "Remove the user name and password from the link". (CE-48 · decision)
-- A number already on the record is refused with "This ticket is already listed", and a number of only spaces is refused.
+- A number already on the record is refused with "This ticket is already listed", and a number of only spaces, or one containing a line break, a tab or another control character, is refused.
 - "Also on" never names a record in another project. (CE-49 · decision)
 - A change or removal of an external ticket that changed since it was read is refused with "changed since", showing the current value.
 - A queued change refused when the connection returns, because the record changed or the number is already listed, is shown to the technician with the reason.
-- In a CSV export, a number or link starting with `=`, `+`, `-` or `@` is written so that a spreadsheet does not run it as a formula.
+- In a CSV export, a number or link starting with `=`, `+`, `-` or `@`, or with the full-width form of any of them, is written so that a spreadsheet does not run it as a formula; the method is checked in Excel, LibreOffice and Google Sheets, with a test for each such leading character.
 - The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
 - The reviewer view never shows external tickets. (CE-47 · decision)
 - A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
@@ -3353,7 +3355,7 @@ Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links
 
 **Access and restore**
 - A revision restore leaves external tickets unchanged.
-- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a link that fails is kept as text without a link, and "also on" is worked out again.
+- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a user name and password are removed from a restored link first and the person restoring is told how many links were changed, a link that still fails is kept as text without a link, and "also on" is worked out again.
 
 ## Epic 7: Extended modelling
 
@@ -4276,7 +4278,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 **Core behaviour**
 - If installing, converting or the health check fails, or the time limit passes, the updater asks the installation to return, presenting the attempt identifier and the update secret. Once the installation confirms that the record is returning, the updater stops the new container and starts the earlier image by its recorded digest. The updater restores nothing itself.
 - If the installation answers, by the record or by the attempt's recorded outcome, that the update has succeeded, the updater ends without starting the earlier image.
-- If no container answers the request to return within 60 seconds, the updater starts the earlier image by its recorded digest and repeats the request, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the updater starts the new image again. (CF-47 · value)
+- If no container answers the request to return within 60 seconds, the updater stops the new container if it is still running, then starts the earlier image by its recorded digest and repeats the request, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the updater starts the new image again. (CF-47 · value)
 - The earlier version restores what was converted, as in story 9.4, and reports that the data is back. The updater waits for that report.
 - The updater then reports the outcome: S-35 shows which step failed and a plain statement that the earlier version and its data are running again.
 - A conversion failure for any one project fails the update and returns the whole installation; no project is left at the new version.
@@ -4289,7 +4291,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
 - After the server loses power or the updater is killed while the record is stopping, the backup resumes on restart; while the record is prepared, the updater asks on restart for the record to be withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31 · reading)
-- After the server loses power or the updater is killed once the record is installing or returning, the updater decides on restart from its step log and the record: with the record returning, it starts the earlier image; with the record installing and the new image started, it starts the new image and the update continues, returning only on failure; with the new image never started, the arrival deadline returns the installation. (CF-31 · reading)
+- After the server loses power or the updater is killed once the record is installing or returning, the updater decides on restart from its step log and the record: with the record returning, it stops the new container if it is still running and starts the earlier image; with the record installing and the new image started, it starts the new image and the update continues, returning only on failure; with the new image never started, the arrival deadline returns the installation. (CF-31 · reading)
 - If the updater stops after its yes and never swaps the image, the arrival deadline sets the record to returning and, with its data unchanged, the installation removes the record and accepts changes again.
 - The installation is never left refusing changes with no update running.
 
@@ -4732,8 +4734,10 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 - A deletion made with a token can be reversed by a person from the project's history, and permanently removing files or a project is refused to a token with "needs a person". (CG-30 · decision)
 
 **Refusals and edge cases**
-- Refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; a request without a valid token whose `Origin` names another site, or is `null`, receives HTTP 403; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required"; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
-- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request with a session cookie is answered to the app's own origin only.
+- A CORS preflight (`OPTIONS`) to `/mcp` is answered without a token and runs nothing; it allows any origin to send POST with the `Authorization`, `Content-Type` and protocol-version headers, without credentials. (CG-35 · reading)
+- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
+- `/mcp` never accepts a session cookie, so a request without a token runs nothing whatever its origin.
+- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request to `/api/v1/` with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11 · decision)
 - A tool call refused by the API returns a tool result marked as an error, with the API's reason code and wording.
@@ -4799,14 +4803,15 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 - Upload, preview and apply are draft-change routes, and a read-only token is refused on each.
 - Applying with a fingerprint that no longer matches the project is refused with "preview out of date".
 - Applying after the upload was removed is refused with "upload gone".
-- A file whose declared size, or whose uncompressed size, is over the limit is refused before it is read or parsed.
+- A file whose declared size is over 10 MiB is refused before it is read, and a workbook whose uncompressed contents are over the shared parser's limit is refused before it is parsed, exactly as in the app. (CE-50 · value)
 - Needs review rows are not applied by an agent's request and remain for a person.
 - A Changed row that an agent would apply to a verified device is moved to Needs review. (CG-12 · decision)
 - An imported device placed by an agent stays unverified until a person verifies it.
 
 **Limits and values**
-- An agent's upload may be at most 10 MiB, the same limit as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16 · value)
+- An agent's upload may be at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16 · value)
 - R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09 · decision)
+- When parsing runs as a job, the preview is the job's result: it carries the preview's fingerprint, the apply call names that fingerprint, and applying stays one operation that is refused with "preview out of date" if the project changed since.
 
 ### Story 11.5: Check that text from others reaches agents marked
 
@@ -5059,7 +5064,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 
 ## Values and readings
 
-**Values nobody specified (88).**
+**Values nobody specified (89).**
 
 *Epic 1: Install, sign in and manage people (27)*
 
@@ -5091,7 +5096,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working | Yes (Kevin, 2026-11-19) |
 | CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) | Yes (Kevin, 2026-11-19) |
 | CG-14 | 1.19 | 20 refused token requests a minute from one address, then 429 | No limit on failed tokens | Throttles token guessing (review E32) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
-| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused; an identifier carries its time and one older than 24 hours is refused as expired | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
 
 *Epic 2: One shared project online (12)*
 
@@ -5143,11 +5148,12 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CD-36 | 5.28 | Label "not saved: device cancelled or corrected" for a stale mark or attempt onto such a device | Two labels, one for each case | Follows the "not saved: …" form used for other refused saves | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CD-37 | 5.28 | The per-field conflict comparison fits a 360 px wide screen without sideways scrolling | 320 px | The UX asks for a comparison that fits a phone and names no width | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 
-*Epic 6: Existing sites and return visits (10)*
+*Epic 6: Existing sites and return visits (11)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
 | CE-01 | 6.2 | At most 5,000 data rows per inventory file | No row limit, only the 10 MiB size limit | The PRD sets only a file size and says 600 devices is not a ceiling; a row bound keeps browser parsing predictable. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-50 | 6.2 | The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server | No limit on uncompressed size | A small compressed file can expand far beyond memory; one limit keeps people's and agents' imports identical (CodeRabbit, pull request 3) |  |
 | CE-06 | 6.6 | Field list filters named "Awaiting placement" and "Not site-confirmed" | "Unplaced" and "Unverified" | The PRD addendum asks for filtering by verification state and gives no labels. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CE-14 | 6.10 | A planned removal not yet recorded is listed as "Removal not recorded" | "Not removed" | The state model completes a Remove by the recorded removal; no source gives the row's wording. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CE-16 | 6.11 | A refused save onto a removed device is labelled "not saved: device removed" | "not saved: device archived" | Follows the wording pattern of the other refused-save labels. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
@@ -5195,7 +5201,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CG-18 | 11.3 | A calculation fits one request when it uses at most half of every configured limit | Fits when under the limit | Leaves room for larger floors (review A18) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 | CG-19 | 11.3 | Counts and categories equal; areas and percentages within 0.1 percent or 0.1 percentage points | Exactly equal | JavaScript engines may differ in the last digits of maths functions (review A17) | Yes (Kevin, 2026-11-19) |
 | CG-34 | 11.3 | Jobs for agents: given up after 1 hour, results kept 24 hours, at most 3 running per token and 5 per person | No limits | One agent must not exhaust alarms or storage (second review F23, F24) | Yes (Kevin, applying the second review, 2026-11-19) |
-| CG-16 | 11.4 | Agent upload at most 10 MiB, the PRD's limit for an inventory file, with no separate row limit; removed if not applied within 24 hours | 25 MiB with a 5,000-row limit | The PRD caps an inventory file at 10 MiB, and a separate row limit would give agents different results from people (FR-77) | Changed to 10 MiB with no row limit (Kevin, 2026-11-19) |
+| CG-16 | 11.4 | Agent upload at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file (CE-01); removed if not applied within 24 hours | 25 MiB with a 5,000-row limit of its own | The PRD caps an inventory file at 10 MiB, and agents must get the same results as people (FR-77) | Changed to 10 MiB with no row limit of its own (Kevin, 2026-11-19); people's 5,000-row limit (CE-01) applies to agents too, found by CodeRabbit's review of pull request 3 |
 | CG-32 | 11.4 | Upload address: single use, valid 10 minutes, bound to the token and project | A longer life, or reuse | Short enough not to become a standing credential (second review B15, F25) | Yes (Kevin, applying the second review, 2026-11-19) |
 | CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) | Yes (Kevin, 2026-11-19) |
 
@@ -5408,7 +5414,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | --- | --- | --- | --- | --- | --- |
 | CG-08 | 11.1 | Removing or renaming a field of /api/v1/ needs a new version prefix | Allow changes announced in release notes | Agents built against the description break silently otherwise | Yes (Kevin, 2026-11-19) |
 | CG-23 | 11.1 | The API description is served only while agent access is on, without the server's version | Always served, with the version | Avoids revealing the route surface and version of an installation that does not use agents (review A24) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
-| CG-35 | 11.2 | Refusal order on /mcp: 405, foreign or null Origin without a token, access off, 401, protocol 400 | Any order | Makes tests deterministic and lets OAuth discovery see 401 first (second review B11) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-35 | 11.2 | Refusal order on /mcp: preflight answered without a token, then 405, access off, 401 from any origin, protocol 400; no Origin refusal, because /mcp accepts no cookie and runs nothing without a token | Any order | Makes tests deterministic and lets OAuth discovery see 401 first (second review B11) | Yes (Kevin, 2026-11-19); Origin step removed after CodeRabbit's review of pull request 3 found it blocked browser preflight and OAuth discovery |
 | CG-21 | 11.5 | Text a member copies from an entered-text field becomes that member's text | Copied text stays marked | The member who copies it vouches for it (review E15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 
 ## Numbering changes from draft 0.6

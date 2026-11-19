@@ -57,8 +57,10 @@ Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 - A deletion made with a token can be reversed by a person from the project's history, and permanently removing files or a project is refused to a token with "needs a person". (CG-30)
 
 **Refusals and edge cases**
-- Refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; a request without a valid token whose `Origin` names another site, or is `null`, receives HTTP 403; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required"; an unsupported protocol revision, HTTP 400. (CG-35)
-- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request with a session cookie is answered to the app's own origin only.
+- A CORS preflight (`OPTIONS`) to `/mcp` is answered without a token and runs nothing; it allows any origin to send POST with the `Authorization`, `Content-Type` and protocol-version headers, without credentials. (CG-35)
+- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35)
+- `/mcp` never accepts a session cookie, so a request without a token runs nothing whatever its origin.
+- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request to `/api/v1/` with a session cookie is answered to the app's own origin only.
 - A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
 - A token's request to download a project's portable backup is refused with "needs a person". (CG-11)
 - A tool call refused by the API returns a tool result marked as an error, with the API's reason code and wording.
@@ -124,14 +126,15 @@ Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
 - Upload, preview and apply are draft-change routes, and a read-only token is refused on each.
 - Applying with a fingerprint that no longer matches the project is refused with "preview out of date".
 - Applying after the upload was removed is refused with "upload gone".
-- A file whose declared size, or whose uncompressed size, is over the limit is refused before it is read or parsed.
+- A file whose declared size is over 10 MiB is refused before it is read, and a workbook whose uncompressed contents are over the shared parser's limit is refused before it is parsed, exactly as in the app. (CE-50)
 - Needs review rows are not applied by an agent's request and remain for a person.
 - A Changed row that an agent would apply to a verified device is moved to Needs review. (CG-12)
 - An imported device placed by an agent stays unverified until a person verifies it.
 
 **Limits and values**
-- An agent's upload may be at most 10 MiB, the same limit as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16)
+- An agent's upload may be at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16)
 - R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit, parsing runs as a job as in story 11.3. (CG-09)
+- When parsing runs as a job, the preview is the job's result: it carries the preview's fingerprint, the apply call names that fingerprint, and applying stays one operation that is refused with "preview out of date" if the project changed since.
 
 ### Story 11.5: Check that text from others reaches agents marked
 

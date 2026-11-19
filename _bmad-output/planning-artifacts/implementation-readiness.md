@@ -107,7 +107,7 @@ Still open, in addition to concerns A to F of the third run:
 | # | Concern | Where it lives |
 | --- | --- | --- |
 | G | Amendment 1.3, AD-22, UX section 18, story 1.19 and Epic 11 have not been independently reviewed. | A `bmad-review` of those parts would close it. |
-| H | Choices CG-04 to CG-09 (rate limit, a request with two identities, the token format, how long revoked tokens stay listed, the API versioning rule, and jobs for long calculations) carry no ruling yet. None is needed by story 1.1. | The epics, values and readings tables. |
+| H | Choices CG-04 to CG-09 (rate limit, a request with two identities, the token format, how long revoked tokens stay listed, the API versioning rule, and jobs for long calculations) carried no ruling. Closed on 2026-11-19: Kevin ruled on every agent-access choice (fourth addendum below). | The epics, values and readings tables. |
 | I | Screens S-38 to S-40 are specified but not drawn on the design canvas. | UX `design-canvas.md`. |
 | J | Experiments R17 and R18 are to run, each attached to its story in Epic 11 with a fallback. | Architecture section 12. |
 
