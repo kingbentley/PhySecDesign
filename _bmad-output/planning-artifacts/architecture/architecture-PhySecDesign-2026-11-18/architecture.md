@@ -33,7 +33,7 @@ Site Studio is one server build and one browser application. An organisation run
 | Files | An R2 bucket | A folder on disk, through the runtime's disk service |
 | Updates | A GitHub Actions run deploys the chosen release | An updater container installs the chosen release |
 
-Only two things differ between hosts: where files are stored, and how an update is installed.
+Only two things in the application differ between hosts: where files are stored, and how an update is installed. The deployment packaging around it also differs (AD-16).
 
 - People sign in with email and password. Role and project membership are checked on the server for every request, including every file.
 - Clients can still review one fixed revision through a reviewer link, without an account.
@@ -45,7 +45,7 @@ Only two things differ between hosts: where files are stored, and how an update 
 
 | Driver | Source | Consequence |
 | --- | --- | --- |
-| Self-hosted or on Cloudflare, same product | FR-66, NFR-7 | One server build. Host differences confined to file storage and update installation. |
+| Self-hosted or on Cloudflare, same product | FR-66, NFR-7 | One server build. Host differences confined to file storage, update installation and the deployment packaging outside the build. |
 | Accounts, roles and membership, enforced on the server | FR-67–69, NFR-5 | An installation-wide store for users and sessions; an access check in front of every project request and file. |
 | Administrator controls and an activity log | FR-70, FR-71 | An administration interface over the installation store. |
 | Update from the interface, safely | FR-72, NFR-8 | Signed public releases, ordered data conversions, backup first, health check, automatic return. |
