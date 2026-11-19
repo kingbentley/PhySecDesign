@@ -115,11 +115,16 @@ console.log(`   rollback command ${results.immediateAccepted ? "accepted" : "REF
 await sleep(30000);
 results.entrySwitch = switchTime(w.entry, "worker", "A", t1);
 results.objectSwitch = switchTime(w.rows, "object", "A", t1);
-const after = await get("/key");
-results.secretAfterRollback = after.key ?? null;
+// Only an answer served by version A says anything about A's secret, so wait for one (B may still answer for a while).
+let after = null;
+for (const until = now() + 60000; now() < until; await sleep(1000)) {
+  const r = await get("/key");
+  if (r.worker === "A" && r.key) { after = r; break; }
+}
+results.secretAfterRollback = after?.key ?? null;
 console.log(`   entry code on A after ${results.entrySwitch}; busy object on A after ${results.objectSwitch}`);
 if (results.secretAfterRollback == null) {
-  results.secretResult = "inconclusive: /key did not answer after the rollback";
+  results.secretResult = "inconclusive: /key was not answered by version A within 60 s of the checks above";
 } else {
   results.secretResult = results.secretAfterRollback === k1 ? "value one (the rolled-back version's own secret)" : results.secretAfterRollback === k2 ? "value two (the latest secret)" : "neither";
 }
