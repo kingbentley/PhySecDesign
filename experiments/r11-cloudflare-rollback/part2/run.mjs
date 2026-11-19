@@ -55,20 +55,26 @@ async function confirmKey(expected, ms = 60000) {
   return null;
 }
 
-// Keeps one object busy and records, for every write, which object version answered and when.
+// Keeps one object busy and records, for every write, which object version answered, when the request started
+// and when it ended. Requests still in flight are tracked so that a count can wait for them.
 function watch(obj) {
-  const rows = []; let stop = false;
-  (async () => { while (!stop) { const r = await get(`/o/${obj}/write`); rows.push({ at: now(), object: r.object ?? "ERR", instance: r.instance }); await sleep(250); } })();
-  const entry = []; (async () => { while (!stop) { const r = await get("/"); entry.push({ at: now(), worker: r.worker ?? "ERR" }); await sleep(250); } })();
-  return { rows, entry, end: () => { stop = true; } };
+  const rows = [], entry = [], pending = new Set(); let stop = false;
+  const track = (promise) => { pending.add(promise); promise.finally(() => pending.delete(promise)); return promise; };
+  (async () => { while (!stop) { const started = now(); const r = await track(get(`/o/${obj}/write`)); rows.push({ started, at: now(), object: r.object ?? "ERR", instance: r.instance }); await sleep(250); } })();
+  (async () => { while (!stop) { const started = now(); const r = await track(get("/")); entry.push({ started, at: now(), worker: r.worker ?? "ERR" }); await sleep(250); } })();
+  return { rows, entry, settled: () => Promise.all([...pending]), end: () => { stop = true; } };
 }
 function switchTime(series, field, to, from) {
   const first = series.find((s) => s.at >= from && s[field] === to);
   return first ? ((first.at - from) / 1000).toFixed(1) + " s" : "not within the window";
 }
-// Requests that failed while a command was running, which the earlier blocking version could not observe.
-const failedDuring = (w, from, to) =>
-  w.rows.filter((r) => r.at >= from && r.at <= to && r.object === "ERR").length + w.entry.filter((r) => r.at >= from && r.at <= to && r.worker === "ERR").length;
+// Requests started while a command was running that failed, whenever they ended; the earlier blocking version
+// could not observe these. Waits for requests still in flight before counting.
+async function failedDuring(w, from, to) {
+  await w.settled();
+  const failed = (r, field) => r.started >= from && r.started <= to && r[field] === "ERR";
+  return w.rows.filter((r) => failed(r, "object")).length + w.entry.filter((r) => failed(r, "worker")).length;
+}
 
 const results = {};
 console.log("1. Version A, then secret KEY set to value one, then to value two.");
@@ -76,11 +82,15 @@ await deploy("A");
 const v1 = "value-one-" + Math.random().toString(36).slice(2);
 const vA1 = await putSecret(v1);
 const k1 = await confirmKey(hashesOf(v1));
+if (!k1) {
+  console.log("   INCONCLUSIVE: the probe never answered with the hash of value one; stopping before the secret is changed again.");
+  process.exit(2);
+}
 const v2 = "value-two-" + Math.random().toString(36).slice(2);
 const vA2 = await putSecret(v2);
 const k2 = await confirmKey(hashesOf(v2));
-if (!k1 || !k2) {
-  console.log("   INCONCLUSIVE: the probe never answered with the expected hash of each secret; stopping before any rollback.");
+if (!k2) {
+  console.log("   INCONCLUSIVE: the probe never answered with the hash of value two; stopping before any rollback.");
   process.exit(2);
 }
 console.log(`   version with value one ${vA1.slice(0, 8)} (hash ${k1}); with value two ${vA2.slice(0, 8)} (hash ${k2})`);
@@ -100,7 +110,7 @@ let rollbackOutput;
 try { rollbackOutput = await wr(`rollback ${vA1} --message "R11 part 2: immediate rollback" --yes --durable-objects-code-update-mode immediate`); results.immediateAccepted = true; }
 catch (e) { rollbackOutput = String(e.stderr || e).slice(0, 400); results.immediateAccepted = false; }
 const t1 = now();
-results.failedDuringImmediateCommand = failedDuring(w, t0, t1);
+results.failedDuringImmediateCommand = await failedDuring(w, t0, t1);
 console.log(`   rollback command ${results.immediateAccepted ? "accepted" : "REFUSED"} in ${((t1 - t0) / 1000).toFixed(1)} s; ${results.failedDuringImmediateCommand} failed requests while it ran`);
 await sleep(30000);
 results.entrySwitch = switchTime(w.entry, "worker", "A", t1);
@@ -119,13 +129,13 @@ console.log("4. A rollback to B with no mode given, watched for 60 s.");
 const t2 = now();
 await wr(`rollback ${vB} --message "R11 part 2: default rollback" --yes`);
 const t3 = now();
-results.failedDuringDefaultCommand = failedDuring(w, t2, t3);
+results.failedDuringDefaultCommand = await failedDuring(w, t2, t3);
 await sleep(60000);
 results.defaultEntry = switchTime(w.entry, "worker", "B", t3);
 results.defaultObject = switchTime(w.rows, "object", "B", t3);
 console.log(`   rollback took ${((t3 - t2) / 1000).toFixed(1)} s (${results.failedDuringDefaultCommand} failed requests while it ran); entry code on B after ${results.defaultEntry}; busy object on B after ${results.defaultObject}`);
 w.end();
-await sleep(1000);
+await w.settled();
 const errors = w.rows.filter((r) => r.object === "ERR").length + w.entry.filter((r) => r.worker === "ERR").length;
 results.failedRequests = errors;
 console.log(`5. Failed requests during the run: ${errors} of ${w.rows.length + w.entry.length}`);
