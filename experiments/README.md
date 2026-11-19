@@ -280,3 +280,24 @@ What this means for the update design (AD-20, AD-21):
 - **A deployment in `immediate` mode was then tried** on a busy object (an alarm every half second): the object was running the newly deployed version about 2 seconds after the deployment call, with a new start identifier and no old-version row after the first new one. This is what the revised AD-20 and AD-21 use.
 
 Not determined: what decides when Cloudflare restarts a busy object; behaviour with users in several regions; a deployment that changes a Durable Object class; whether a rollback is refused in the cases experiment R10 read about; and everything that needs the real update code.
+
+## R11 (second part) — rollback in `immediate` mode, and secrets across a rollback
+
+Folder: [r11-cloudflare-rollback/part2](r11-cloudflare-rollback/part2). Run on 2026-11-19 from a Windows workstation with `node run.mjs`, on the same throwaway Worker and test account as the first part, deployed with Wrangler 4.165.0 instead of the REST API. `worker.js` is the first part's probe with one added route, `/key`, which returns a short SHA-256 hash of a secret named `KEY`, never the secret itself.
+
+Method: version A was deployed; the secret was set to one value and then to a second (each change makes a new version); version B was deployed and inherited the second value. A Durable Object was kept busy (an alarm every half second and a write request every quarter second). The run then rolled back to the version of A that held the first value, with `wrangler rollback <version> --durable-objects-code-update-mode immediate`, and afterwards rolled back to B with no mode given. Times are measured from when the Wrangler command returned; each command itself took 12 to 14 seconds.
+
+| Observation | Result |
+| --- | --- |
+| Rollback with `--durable-objects-code-update-mode immediate` | Accepted. Entry code answered as A 6.7 s after the command returned; the busy object wrote as A 11.9 s after. |
+| Secret after that rollback | The value held by the version rolled back to (the first value), not the latest (the second). |
+| Rollback with no mode given | Entry code answered as B 6.2 s after the command returned; the busy object was still running A at the end of the 60-second watch, as with the default deferral of a deployment. |
+| Failed requests | 1 of 664. |
+
+What this means for the update design (AD-20, AD-21):
+
+- **A rollback accepts the `immediate` mode**, so the return can use Cloudflare's rollback as planned; redeploying the previous bundle stays as a fallback but is not needed for this reason.
+- **A rollback restores the secrets of the version it returns to.** A Worker secret changed after that version would be undone. The update secret is kept in the installation's storage, not as a Worker secret (K22), and the deployment key is never changed once created, so neither is affected; no Worker secret may be changed while an update is under way.
+- The times here are longer than the first part's (about 0.5 s for the entry code and 2 s for an object in `immediate` mode) because they are measured from the end of a Wrangler command, not from the REST call, and come from a single run.
+
+Not determined: a rollback across a Durable Object class change; behaviour with users in several regions; everything that needs the real update code. The throwaway Worker was deleted after this run.

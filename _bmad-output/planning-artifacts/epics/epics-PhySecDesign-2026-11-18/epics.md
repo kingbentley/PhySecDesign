@@ -4219,7 +4219,7 @@ Covers: FR-72, NFR-8, FR-71, AD-20, AD-21, experiments R10 and R11.
 - On a deployed Cloudflare test installation, the redeployment rule of story 1.2 and story 1.5 holds for a deployment by the workflow: after an update a user with two-step verification signs in with a current code, and a settings secret saved before the update still works.
 - All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the record set by a test build.
 
-Notes: Experiment R10, run on 2026-11-18, found that a deploy hook cannot name a version, so AD-21 chose the workflow run; it also found that Cloudflare's rollback never undoes data changes. The first part of R11 found that a deployment in `immediate` mode replaced a busy object in about 2 seconds; whether a rollback accepts that mode is untried (story 9.15). Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14).
+Notes: Experiment R10, run on 2026-11-18, found that a deploy hook cannot name a version, so AD-21 chose the workflow run; it also found that Cloudflare's rollback never undoes data changes. The first part of R11 found that a deployment in `immediate` mode replaced a busy object in about 2 seconds; the second part found that a rollback accepts that mode too, and that a rollback restores the Worker secrets of the version it returns to. Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14).
 
 ### Story 9.13: Update a Cloudflare installation with one action
 
@@ -4302,7 +4302,7 @@ Covers: FR-72 (return), NFR-8, AD-20, experiment R11.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.12 and story 9.13.
-- Cloudflare's rollback command is confirmed to behave as documented, and whether it can redeploy a named version in `immediate` mode is recorded; if it cannot, the return by deploying that release's bundle is the one tested.
+- Cloudflare's rollback command is confirmed, with the real update code, to redeploy the named version in `immediate` mode, as the second part of R11 showed with a probe.
 - After a rollback, and after a redeployment of a bundle, the update secret and the deployment key are unchanged and the version before accepts the workflow's request to return.
 - The time from the yes to the arrival of the new version is measured, and the arrival deadline is confirmed to exceed it with margin.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
@@ -4310,7 +4310,7 @@ Covers: FR-72 (return), NFR-8, AD-20, experiment R11.
 - On an installation at the acceptance size, how long changes stay stopped is measured for a successful update and for a return, and compared with the estimate shown on S-35.
 - A release that changes a Durable Object class is installed on a test account by the manual procedure of story 9.14, its failure is followed by the way back that story gives, and the result is recorded, including whether Cloudflare refuses a rollback across it.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The releases come from the test channel of story 9.2; any used as the version before are built from a commit that contains story 9.3 to story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, Durable Objects in use keep running the previous version for about five minutes when busy, an object asked to stop itself restarted on the new version at once (shown for one object, not yet under load), and a deployment in `immediate` mode replaced a busy object in about 2 seconds. The design that answers this is K20 with its refinements K21 (AD-20).
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The releases come from the test channel of story 9.2; any used as the version before are built from a commit that contains story 9.3 to story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, Durable Objects in use keep running the previous version for about five minutes when busy, an object asked to stop itself restarted on the new version at once (shown for one object, not yet under load), and a deployment in `immediate` mode replaced a busy object in about 2 seconds. A second part, run on 2026-11-19, showed that a rollback accepts `immediate` mode (a busy object switched about 12 seconds after the command returned) and restores the secrets of the version it returns to. The design that answers this is K20 with its refinements K21 (AD-20).
 
 ## Epic 10: Acceptance
 
