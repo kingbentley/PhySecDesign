@@ -230,7 +230,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - Experiment R9 has a recorded result from a deployed Cloudflare test installation: the 600,000-iteration hash is accepted without a platform error and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
 - If R9 does not pass, the fallback taken (a lower count within current published guidance, or Argon2id in WebAssembly) is recorded with the result and used.
 
-Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17).
+Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17). R9 was run early on 2026-11-19 and did not pass: Cloudflare refuses a PBKDF2 call above 100,000 iterations. scrypt at N = 131,072, r = 8, p = 1 and six chained PBKDF2 calls each worked on both hosts with identical results; which replaces the 600,000-iteration hash is not yet decided.
 
 ### Story 1.4: Invite a person
 
@@ -624,7 +624,7 @@ Covers: AD-18, experiment R13.
 - Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
 
-Notes: The self-hosted image is story 2.21; this experiment uses the configuration of story 1.1 because it comes earlier. The self-hosted half was run early on 2026-11-19 and passed with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.
+Notes: The self-hosted image is story 2.21; this experiment uses the configuration of story 1.1 because it comes earlier. R13 was run early on 2026-11-19. From Cloudflare, encrypted connections to two public mail services reached the point of signing in, and port 25 is prohibited there; a complete delivery from Cloudflare was not shown. On a server a message was delivered with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.
 
 ## Epic 2: One shared project online
 

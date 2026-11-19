@@ -12,7 +12,8 @@ Run on 2026-11-18 and 2026-11-19 to test decisions in the [architecture](../_bma
 | R6 | Minimum R2 upload part size; PDF printing in Cloudflare's browser service. | **Both confirmed.** Parts are at least 5 MiB and must be equal in size; Cloudflare's browser service does produce PDFs. |
 | R10 | Best trigger for a Cloudflare deployment from the interface. | **A deploy hook exists but cannot name a version.** One finding changes the update design: Cloudflare blocks rollback across a Durable Object class change. |
 | R14 | Does data written by an older runtime open under a newer one? | **Yes, across almost two years of versions**, forwards, in one jump, and backwards. First run only: it is repeated for every release. |
-| R13 | Can the runtime send email over SMTP? | **Yes on a server (self-hosted half).** Both usual forms of encrypted SMTP worked and bad certificates were refused. The Cloudflare half is not run. |
+| R9 | Does Cloudflare accept the chosen password-hashing cost? | **No.** Cloudflare refuses any PBKDF2 call above 100,000 iterations; the plan was 600,000. Two ways round it worked on both hosts. A decision is needed. |
+| R13 | Can the runtime send email over SMTP? | **Yes on both hosts as far as tested.** On a server a message was delivered with both usual forms of encrypted SMTP. From Cloudflare, encrypted connections to two public mail services were made up to the point of signing in; no message was sent from there. |
 | R8 | Could Cloudflare's open-source runtime host the same build on a server? | **Largely yes.** The same Worker ran on a Linux server with durable per-project SQLite storage. File storage has no built-in equivalent, and the on-disk storage format is marked experimental. |
 
 ## R7 — Cloudflare tooling with the prototype
@@ -209,4 +210,43 @@ Findings that affect the design:
 - **`localhost` did not resolve to the address the test server first listened on** (127.0.0.1 only); the connection failed until the server listened on all local addresses. A mail server named by host name must be reachable on whatever address that name resolves to inside the container.
 - The option meant to state the expected server name when upgrading with STARTTLS is not supported by this runtime (it logs a warning), but the certificate was still checked against the host name connected to.
 
-Not run: the same send from a deployed Cloudflare Worker, which is the other half of R13 and decides whether SMTP is offered on both hosts (story 1.18). Also not tried: a real mail provider, other sign-in methods than user name and password, large messages or attachments.
+Not tried on a server: a real mail provider, other sign-in methods than user name and password, large messages or attachments. The Cloudflare half is in the next section.
+
+## R9 and the Cloudflare half of R13 — on Cloudflare's hosted platform
+
+Folder: [cloudflare-probes](cloudflare-probes). Run on 2026-11-19 against one throwaway Worker, `site-studio-experiments`, deployed to a test Cloudflare account with `deploy.sh`. `run-local.sh` runs the same `worker.js` under the open-source runtime for comparison. The account's plan could not be read with the token used, so it is not recorded here.
+
+Times on Cloudflare are measured from the calling machine and include the network: a request that does no hashing took about 150 ms (median of 7 to 11 calls). Time measured inside a Worker does not advance during computation on Cloudflare, so it cannot be used.
+
+### R9 — password-hashing cost
+
+| What was tried | On Cloudflare | Under the open-source runtime |
+| --- | --- | --- |
+| PBKDF2-SHA256, 600,000 iterations, through Web Crypto (the plan) | **Refused:** "iteration counts above 100000 are not supported". | Works, about 105 ms. |
+| The same through the Node.js-compatible interface | Refused with the same message. | Works, about 115 ms. |
+| PBKDF2, exactly 100,000 iterations | Works; no measurable time beyond the bare request. 100,001 is refused. | Works, about 17 ms. |
+| PBKDF2-SHA256 called six times in a row, each call 100,000 iterations and salted with the previous result | Works, about 305 ms in all (about 150 ms of work). | Works, about 100 ms. |
+| scrypt (N = 131,072, r = 8, p = 1) through the Node.js-compatible interface | Works, about 510 ms in all (about 360 ms of work). | Works, about 425 ms. |
+| scrypt (N = 65,536, r = 8, p = 1) | Works, about 310 ms in all. | Works, about 185 ms. |
+
+Every method that worked on both hosts produced the same result on both, so a password stored on one host can be checked on the other.
+
+What this means. The planned hash cannot be used on Cloudflare, and 100,000 iterations of PBKDF2-SHA256 is well below the 600,000 that current published guidance (OWASP) gives for it. The architecture named two fallbacks: a lower count within current guidance, which this result rules out, and Argon2id in WebAssembly, which was not tried. Two options that need no extra code both worked:
+
+- **scrypt at N = 131,072, r = 8, p = 1**, which is one of the settings OWASP lists for scrypt. It is a standard algorithm designed to cost memory as well as time, and adds roughly a third of a second to a sign-in.
+- **Six chained PBKDF2 calls**, the same total work as the plan. It is faster, but it is a home-made arrangement that no published guidance describes.
+
+Not determined: Argon2id in WebAssembly; behaviour under many sign-ins at once; whether the account's plan limits computing time per request in a way that matters (none of these runs was cut off).
+
+### R13 on Cloudflare — SMTP over outbound sockets
+
+The Worker spoke SMTP to public mail services as far as is possible without an account: greeting, introduction, upgrade to encryption where that applies, and goodbye. No sign-in was attempted and no message was sent.
+
+| Case | Result |
+| --- | --- |
+| `smtp.gmail.com`, port 465, encrypted from the first byte | Connected; the server offered sign-in. About 150 ms. |
+| `smtp.gmail.com`, port 587, upgraded with STARTTLS | Upgraded; the server then offered sign-in. |
+| `smtp.office365.com`, port 587, upgraded with STARTTLS | Upgraded; the server then offered sign-in. |
+| Port 25 | Refused by Cloudflare: "Connections to port 25 are prohibited". |
+
+So the socket interface and both forms of encryption work from Cloudflare, and port 25 cannot be used. Together with the delivery shown on a server, this is good evidence that SMTP can be offered on both hosts. What remains unproven is a complete delivery from Cloudflare with a real mailbox's user name and password, which needs a mail account to test with.

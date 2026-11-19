@@ -213,7 +213,7 @@ Set aside: rendering on the server. Cloudflare's browser service can produce PDF
 **Signing in.**
 
 - An account has an email address, a name, a password hash, an installation role and an active flag (FR-67, FR-68).
-- Passwords are hashed with PBKDF2-SHA256 through Web Crypto, with a per-user salt and an iteration count that follows current published guidance. Experiment R8 measured 600,000 iterations at about 75 ms under the open-source runtime. Hashes carry their parameters so they can be strengthened later. Whether Cloudflare's hosted platform accepts that count within its limits is still to be confirmed (experiment R9).
+- Passwords are hashed with PBKDF2-SHA256 through Web Crypto, with a per-user salt and an iteration count that follows current published guidance. Experiment R8 measured 600,000 iterations at about 75 ms under the open-source runtime. Experiment R9, run on 2026-11-19, found that Cloudflare refuses more than 100,000 iterations in one call, so this choice cannot be used as written on Cloudflare; the replacement is not yet decided (see section 12). Hashes carry their parameters so they can be strengthened later. Whether Cloudflare's hosted platform accepts that count within its limits is still to be confirmed (experiment R9).
 - A successful sign-in creates a session: a long random token held in a cookie that scripts cannot read, sent only over HTTPS and only to this site. Only a hash of the token is stored. Sessions end after the period without use the administrator sets, on sign-out, on "sign out everywhere", on password change and on deactivation.
 - Requests that change anything must come from the application's own origin and carry a header the application adds.
 - Failed sign-ins are slowed per account and per address, and the reply never reveals whether an email exists.
@@ -247,7 +247,7 @@ One Durable Object per installation, addressed by a fixed name, holds: users, pa
 
 The server has an email interface with two implementations: none, and an HTTP email service. With none, every invitation and reset is a link the administrator copies. No feature requires email.
 
-SMTP, which self-hosting organisations often prefer, depends on the runtime's outbound socket interface. The self-hosted half of experiment R13 passed on 2026-11-19; the Cloudflare half has not been run, and SMTP is not promised until it passes.
+SMTP, which self-hosting organisations often prefer, depends on the runtime's outbound socket interface. Experiment R13 was run on 2026-11-19: a message was delivered on a server, and from Cloudflare encrypted connections reached the point of signing in. A complete delivery from Cloudflare has not been shown.
 
 ## 8. Backups and moving projects
 
@@ -376,7 +376,8 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | # | Question | Result | Effect on this document |
 | --- | --- | --- | --- |
 | R14 | Does data written by an older runtime open under a newer one? | Yes, across five versions from January 2025 to November 2026: step by step, in one jump, and going back. | None. The format is still labelled experimental, so R14 stays in the list below as a check repeated for every release. |
-| R13 | SMTP through the runtime's outbound sockets (self-hosted half). | Works with both usual forms of encryption and a user name and password; bad certificates are refused. A mail server on a private network, or one with a private certificate authority, needs a line of runtime configuration. | AD-18 unchanged until the Cloudflare half is run. |
+| R13 | SMTP through the runtime's outbound sockets. | On a server: a message delivered with both usual forms of encryption and a user name and password; bad certificates refused. A mail server on a private network, or one with a private certificate authority, needs a line of runtime configuration. On Cloudflare: encrypted connections to two public mail services reached the point of signing in; port 25 is prohibited; no message was sent. | AD-18 unchanged. A complete delivery from Cloudflare still needs a test mailbox. |
+| R9 | Does Cloudflare accept the chosen password-hashing cost? | **No.** Cloudflare refuses PBKDF2 above 100,000 iterations per call; the plan was 600,000. scrypt (N = 131,072, r = 8, p = 1) and six chained PBKDF2 calls both worked on both hosts with identical results. | **AD-12's hashing choice cannot stand as written and awaits Kevin's decision.** Not changed here. |
 | R2 | The end-to-end time left unmeasured on 2026-11-18. | 148 to 513 ms median in one run, 569 ms slowest. | None. |
 
 ### Still to run, each with the first story that depends on it
@@ -386,10 +387,10 @@ The record and the code are in [experiments/README.md](../../../../experiments/R
 | R3 | Restoring 8 GiB within 60 minutes. | Time a full-size restore on each host. | Restore by reference first, copy in the background. |
 | R4 | Large photo uploads on phones over poor connections. | Test on a real iPhone and Android phone, throttled. | Smaller parts; resume; warn before very large files. |
 | R5 | Building and validating a 10 GiB ZIP in alarm-driven steps. | Build, validate and restore one on each host. | Numbered parts with a manifest. |
-| R9 | Does Cloudflare's hosted platform accept the chosen password-hashing cost? | Time PBKDF2 at the chosen count on a deployed Worker. | Lower the count within current guidance, or Argon2id in WebAssembly. |
+| R9 | Does Cloudflare's hosted platform accept the chosen password-hashing cost? | Time PBKDF2 at the chosen count on a deployed Worker. Run on 2026-11-19: refused above 100,000 iterations. The replacement is to be decided. | Lower the count within current guidance, or Argon2id in WebAssembly. |
 | R11 | An update that fails half-way must return cleanly on both hosts. | Break an update at each step on a test server and a test Cloudflare account. Confirm Cloudflare's rollback command behaves as documented. | Block the release of the Update control until it does. |
 | R12 | Durability and locking of the runtime's SQLite files on real server disks, including power loss. | Test on a typical virtual-machine disk and a network disk; document unsupported storage. | Require local disk for records. |
-| R13 | SMTP through the runtime's outbound sockets. | Send a message through a test SMTP server on both hosts. Self-hosted half passed on 2026-11-19; the Cloudflare half remains. | HTTP email services only. |
+| R13 | SMTP through the runtime's outbound sockets. | Send a message through a test SMTP server on both hosts. Run on 2026-11-19 on both hosts; a complete delivery from Cloudflare remains. | HTTP email services only. |
 | R14 | The runtime's on-disk storage format across a runtime upgrade. | Start a newer runtime against data written by an older one; repeat in every release. First run passed on 2026-11-19. | Hold the runtime version; move data by portable backup. |
 | R15 | The legibility of smaller package pages. | Print plan and photo pages at JPEG quality 0.94, 0.85 and 0.75; have a person compare them. | Keep higher quality and accept more volumes. |
 | R16 | GitHub token permission for starting an update run. | Try a fine-grained token with only the Actions permission. | Document the classic `repo` scope. |
