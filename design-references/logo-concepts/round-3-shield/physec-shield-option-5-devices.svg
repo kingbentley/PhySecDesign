@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="PhySec">
+<defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a9d6a"/><stop offset="1" stop-color="#1f6f5c"/></linearGradient>
+<clipPath id="ps"><path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 C178 180 192 110 188 44 C156 40 122 28 100 8 Z"/></clipPath><clipPath id="pi"><path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 C178 180 192 110 188 44 C156 40 122 28 100 8 Z" transform="translate(100 120) scale(.82) translate(-100 -120)"/></clipPath>
+<clipPath id="pl"><rect x="0" y="0" width="100" height="240"/></clipPath><clipPath id="pr"><rect x="100" y="0" width="100" height="240"/></clipPath></defs><g clip-path="url(#ps)"><rect x="0" y="0" width="100" height="240" fill="#0b6f72"/><rect x="100" y="0" width="100" height="240" fill="#1d3557"/></g>
+<g clip-path="url(#pr)"><path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 C178 180 192 110 188 44 C156 40 122 28 100 8 Z" transform="translate(100 120) scale(.82) translate(-100 -120)" fill="url(#pg)"/></g>
+<g clip-path="url(#pl)"><g clip-path="url(#pi)"><g fill="none" stroke="#fff" stroke-width="3.2" transform="rotate(-7 100 120)"><path d="M46 0 V240 M72 0 V240 M0 74 H110 M0 100 H110 M0 162 H110 M0 190 H110"/></g></g>
+<path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 C178 180 192 110 188 44 C156 40 122 28 100 8 Z" transform="translate(100 120) scale(.82) translate(-100 -120)" fill="none" stroke="#fff" stroke-width="5"/></g>
+<g clip-path="url(#ps)" stroke="#fff" stroke-width="5"><path d="M100 0 V240 M0 126 H200"/></g>
+<g clip-path="url(#pr)"><g clip-path="url(#pi)"><path d="M151 62 V160 H127 V190" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/></g></g><g fill="#fff"><circle cx="151" cy="62" r="6.5"/><circle cx="151" cy="160" r="5.5"/><circle cx="127" cy="190" r="6.5"/></g>
+<path d="M100 184 C87 166 62 148 62 118 A38 38 0 0 1 138 118 C138 148 113 166 100 184 Z" fill="#0b6f72" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+<circle cx="100" cy="118" r="25" fill="#17324d" stroke="#4a9d6a" stroke-width="3.5"/>
+<g stroke="#4a9d6a" stroke-width="2.6" stroke-linecap="round"><path d="M109 118 L112.8 135.9"/><path d="M104.5 125.79 L90.9 138.03"/><path d="M95.5 125.79 L78.1 120.13"/><path d="M91 118 L87.2 100.1"/><path d="M95.5 110.21 L109.1 97.97"/><path d="M104.5 110.21 L121.9 115.87"/></g>
+<circle cx="100" cy="118" r="8.5" fill="#fff"/>
+</svg>
