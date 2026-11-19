@@ -565,7 +565,9 @@ Covers: FR-32 (the two closing states), FR-25 (approval never gates closing), FR
 
 **Core behaviour**
 - Close out starts by showing the remaining-work list for the active scope.
-- Completed is available only when nothing is outstanding: no in-scope device without an Installed mark, no required check Not tested or at Pass pending evidence, no unresolved Fail, no required retest, no open issue, and no required reliability stage without a current Pass.
+- Completed is available only when nothing is outstanding: every in-scope device has an Installed mark, every required applicable check has a qualifying current Pass, no issue is open, and every required reliability stage has a current Pass.
+- A required applicable check at Needs definition, Not tested, Pass pending evidence, Fail or Retest required blocks Completed. A check is at Needs definition, for example, when its expected result was removed after it passed (story 5.6b).
+- A required reliability stage with a run still open blocks Completed until that run is ended, even when the stage already has a current Pass.
 - Otherwise Completed is disabled and lists the reasons.
 - Closed with outstanding items is always available and requires a short note. A follow-up owner and due date are optional.
 - A scope whose own work is finished but which has a deferred issue can be closed only as Closed with outstanding items.
@@ -622,7 +624,8 @@ Covers: FR-32, FR-42 (stale saves), FR-24 (reviewer links after closing), FR-45 
 
 **Refusals and edge cases**
 - A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried. (CD-38)
-- Closing a scope changes no reviewer link: a link to one of its design revisions still opens and accepts comments and decisions until it expires, is replaced or is revoked. (CD-33)
+- Closing a scope does not by itself change a reviewer link to one of that scope's design revisions. (CD-33)
+- Every other restriction on a reviewer link still applies after closing: a link whose revision is superseded, whose review is bypassed or whose assignment was reassigned stays read-only under story 4.7b and story 4.8b. (CD-33)
 
 Notes: Left to later stories: refusing a removal (story 6.8a) and a restore of a removed device (story 6.9a) with no active scope; reopening into a new scope (story 6.10); warranty records (story 6.12a) and service-visit records (story 6.12b), which stay editable with no active scope; Start service visit (story 6.12c).
 

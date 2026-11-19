@@ -303,6 +303,8 @@ Covers: FR-24 (revocable, replaceable links), FR-70 (Reviewer links), FR-71, NFR
 - After a link is revoked or replaced, its next request is refused. Text already typed stays on the page and nothing is recorded.
 - A request through an expired link is refused and nothing is recorded.
 - When the assignment a link serves is reassigned, or the review of its revision is bypassed, the link still shows the revision and accepts no new comment or decision. (CC-21)
+- Reassigning an approval assignment does not revoke an existing reviewer link for the previous reviewer. The link stays read-only until it expires or an Editor revokes or replaces it. (CC-21)
+- The administrator's list of links shows such a link as "Read-only: reviewer reassigned", with the previously named reviewer. (CC-21)
 - A standard user cannot open the installation's list of links.
 
 **Limits and values**

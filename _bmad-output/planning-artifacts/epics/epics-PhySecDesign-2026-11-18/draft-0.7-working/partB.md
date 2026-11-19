@@ -98,6 +98,8 @@ Covers: FR-2, FR-69, AD-6, AD-7.
 - While a form is being filled in or an item is being dragged, an incoming change to that item does not replace the local input.
 - The user is told that the item was updated and by whom.
 - A hidden tab does not check for changes.
+- The automatic check for changes, including the one made when a tab regains focus, does not extend the session.
+- When the session ends, the page stops checking for changes and shows the sign-in prompt of story 1.5.
 - A change-log entry cannot be edited or removed through any route.
 **Access and restore**
 - A revision restore adds entries to the change log and removes none.
@@ -524,7 +526,7 @@ Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 - A start while no administrator exists prints a new set-up code, and the earlier code stops working.
 - Once an administrator exists, no start generates or prints a set-up code.
 
-Notes: Left to later stories: an operator's own proxy (story 2.13b); the deployment key and administrator recovery (story 2.13c); the smoke suite (story 2.13d); files on disk (story 2.14); durability (story 2.15); the published installation instructions (story 9.1); the updater container (story 9.5a).
+Notes: Left to later stories: an operator's own proxy (story 2.13b); the deployment key and administrator recovery (story 2.13c); the smoke suite (story 2.13d); files on disk (story 2.14); durability (story 2.15); the published installation instructions (story 9.1); the updater container (story 9.5a). The Compose file, the bundled web server, certificate handling, the HTTP-to-HTTPS redirect and the unpublished application port are deployment packaging outside the application build, a host difference that the architecture's AD-16 lists.
 
 ### Story 2.13b: Run behind your own HTTPS proxy
 

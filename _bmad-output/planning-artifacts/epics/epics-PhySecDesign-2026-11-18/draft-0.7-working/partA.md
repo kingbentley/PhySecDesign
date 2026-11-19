@@ -90,6 +90,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - After repeated failed sign-ins, further attempts are refused for a wait, and the page says how long to wait. (CA-07)
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
+- The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
 - A request that changes anything is refused unless it comes from the app's own origin and carries the header the app adds.
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
 
@@ -106,7 +107,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - Experiment R9 has a recorded result from a deployed Cloudflare test installation: the 600,000-iteration hash is accepted without a platform error and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
 - If R9 does not pass, the fallback taken (a lower count within current published guidance, or Argon2id in WebAssembly) is recorded with the result and used.
 
-Notes: Left to later stories: invitations (story 1.3b); the second sign-in step (story 1.4); My account in the account menu (story 1.5); "Forgot password" (story 1.10c).
+Notes: Left to later stories: invitations (story 1.3b); the second sign-in step (story 1.4); My account in the account menu (story 1.5); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.9); "Forgot password" (story 1.10c).
 
 ### Story 1.3b: Invite a person
 
@@ -188,7 +189,9 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 - A user sees each signed-in session with its device (browser and system), time of last use and network address, with the current session marked.
 - A session shows a country or city where the host supplies one. (CA-17)
 - "Sign out everywhere else" ends the other sessions, and each is refused on its next request.
-- A session ends after a period without use; every request that passes sign-in counts as use. (CA-19)
+- A session ends after a period without use. (CA-19)
+- Only a request that results from something the person does, such as opening a page, saving, uploading or any other deliberate action, counts as use of the session. (CA-19)
+- A request the page sends by itself, such as an automatic check for other people's changes, does not count as use, so a page left open still reaches the idle limit. (CA-19)
 - When a session ends while a page is open, the page asks the user to sign in again in place.
 - After the same account signs in, input pending on that page, such as an unsaved name on My account, is still there and can be saved.
 
@@ -263,7 +266,9 @@ Covers: FR-67 (deactivation), FR-68 (installation role, last administrator), NFR
 
 **Core behaviour**
 - An administrator's server functions change a user's installation role, deactivate an account and reactivate it.
-- A deactivated account cannot sign in, and its sessions are refused on their next request.
+- A deactivated account cannot sign in.
+- Deactivating an account ends all of its sessions at that moment, and each is refused on its next request.
+- After the account is reactivated, a cookie from a session that existed before the deactivation is still refused, and the person must sign in again.
 - A reactivated user can sign in again with the same password.
 - A role change takes effect on that person's next request.
 - Records a deactivated user made earlier, such as invitations sent and projects created, still show their name.

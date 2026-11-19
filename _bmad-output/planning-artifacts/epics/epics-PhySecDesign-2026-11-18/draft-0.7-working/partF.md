@@ -33,7 +33,7 @@ Notes: Left to later stories: where backups are written and how many are kept (s
 
 ### Story 8.1b: Backup area, kept generations and rotation
 
-As an administrator, I want backups kept apart from live data and seven days of them retained, so that losing the live store or one bad backup does not lose the project.
+As an administrator, I want backups kept apart from live data and seven successful daily backups retained, so that losing the live store or one bad backup does not lose the project.
 
 Covers: FR-34, AD-13.
 
@@ -138,6 +138,11 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 - If the "before restore" backup fails or the administrator cancels the switch, the switch does not happen, the working project is unchanged and writes to it resume.
 - A save sent from a page that was open before the switch is refused and changes nothing in the restored project. (CF-08)
 - That save stays visible on its page as "not saved: project was restored" and is not retried. (CF-08)
+
+**Limits and values**
+- The most recent "before restore" backup of each project is kept in addition to the seven daily generations. (CF-07)
+- A later restore of the same project replaces it. (CF-07)
+- An administrator can discard it. (CF-07)
 
 **Access and restore**
 - Only an administrator can make a copy current; a standard user's request is refused by the server.
@@ -278,7 +283,8 @@ Covers: FR-34, FR-68, FR-71, FR-51 and FR-63 (kept through a portable backup), N
 
 **Refusals and edge cases**
 - A file that is corrupt, truncated or not a portable backup is refused with the reason, and no project appears in any list.
-- A container over 10 GiB or a project payload over 8 GiB is refused with the limit named.
+- A container over 10 GiB is refused with the limit named.
+- A container within that limit whose uncompressed project payload is over 8 GiB is refused during validation with the limit named.
 - A backup written at a newer data-format version than the installation is refused with an explanation naming both versions.
 - An import that fails or is interrupted after validation leaves no partial project; the importer sees Failed and can start again.
 - A PDF or CSV export chosen at import is refused with the reason, and neither is offered as a backup anywhere.
@@ -333,7 +339,10 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 - The count excludes backups, portable backup files held for download, unfinished uploads that are later discarded, and the stored parts of a package edition that failed or was abandoned.
 - The Projects table in Administration (S-31) shows each project's stored size.
 - Settings gains a Limits group showing each storage limit and current usage as read-only values, with no control to raise them.
-- Before an upload, an inventory import or a portable-backup import starts, the server compares its declared size with the remaining budget; if it would exceed the budget, the user sees a warning naming the limit and the amount over, and nothing is sent.
+- Before an upload or an inventory import starts, the server compares its declared size with the remaining budget; if it would exceed the budget, the user sees a warning naming the limit and the amount over, and nothing is sent.
+- When a portable-backup import is admitted, its declared container size is checked against the 10 GiB container limit, not against the 8 GiB project budget. Over that limit the user sees a warning naming the limit and the amount over, and nothing is sent.
+- The uncompressed project payload of a portable backup is checked against the 8 GiB project budget during validation (story 8.4b).
+- A valid 8 GiB project in a container between 8 GiB and 10 GiB is not refused at admission.
 - A package generation, which has no size until it has run, fails with the limit named when it reaches the remaining budget, and its stored parts are discarded. (CF-21)
 - A warning is shown on Records, and to administrators on S-31, when a project's usage reaches 90% of the budget. (CF-22)
 
@@ -432,11 +441,14 @@ Covers: NFR-8, FR-72 (return), AD-20.
 
 **Core behaviour**
 - A pending-update marker is kept in its own small store, apart from project data and the installation's own data.
-- The marker records the version being installed, the pre-update backup, whether installation has begun, and which projects have been restored. (CF-24)
+- The marker records the version being installed, the pre-update backup, whether installation has begun, whether it has been marked withdrawn, and which projects have been restored. (CF-24)
 - A server of any released version reads the marker, whatever the data-format version of the data beside it.
 - A server that starts and finds the marker naming a version other than its own, with installation begun, serves nothing except the restore of the pre-update backup, whether or not the data format changed. (CF-24)
 - That restore is performed before any project is opened, and afterwards every project and the installation's own data are at the server's own version.
-- The marker is cleared after a return only when every project and the installation's own data are back.
+- An earlier version that restarts and finds the marker with installation recorded as begun restores the pre-update backup, but does not clear the marker and does not accept changes.
+- After a return the marker is cleared, and changes are accepted again, only when every project and the installation's own data are back and the update run is confirmed finished or cancelled.
+- A deployment of the new version that arrives after the restore therefore still finds the marker, converts again and runs its health check.
+- Self-hosted, the updater confirms that the image swap is over, which counts as the run being finished.
 - The restore under the marker ends no session and cancels no reviewer link.
 - The server offers a health check: the sign-in page is served, a project opens and a test save is acknowledged.
 - The marker is cleared as succeeded only after every project and the installation's own data have converted (story 9.3a) and the health check has passed.
@@ -448,7 +460,7 @@ Covers: NFR-8, FR-72 (return), AD-20.
 - A server that finds the marker with installation not begun restores nothing and keeps changes stopped. (CF-24)
 - A server that finds data newer than itself and no marker refuses to start, and its explanation names both versions.
 
-Notes: In this story the marker and the newer data are set up by tests. Left to later stories: setting the marker in a real update and withdrawing one whose installation never began (story 9.5a and story 9.6a self-hosted, story 9.7a and story 9.7b on Cloudflare). The pre-update backup is the "before an update" backup of story 8.1a.
+Notes: In this story the marker and the newer data are set up by tests. Left to later stories: setting the marker in a real update and clearing one whose installation never began (story 9.5a and story 9.6a self-hosted, story 9.7a and story 9.7b on Cloudflare). The pre-update backup is the "before an update" backup of story 8.1a.
 
 ### Story 9.3c: Experiment R14: a new runtime reads the previous release's data
 
@@ -586,7 +598,7 @@ Covers: FR-72 (return), NFR-8, FR-71, AD-21. Screens: S-35.
 - If the return itself fails, S-35 and the sign-in page show a prominent warning that never reads as success.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
-- After the server loses power or the updater is killed before installation had begun, on restart any marker is withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
+- After the server loses power or the updater is killed before installation had begun, on restart any marker is cleared, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
 - After the server loses power or the updater is killed once installation had begun, on restart the installation returns to the earlier version and the backup. (CF-31)
 - The installation is never left refusing changes with no update running.
 
@@ -623,10 +635,10 @@ Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
 - With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.3b.
 - On success the marker is cleared and S-35 shows the new version.
 - If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
-- The earlier version, finding the marker, restores the pre-update backup as in story 9.3b, then accepts changes again and records the failed attempt in the activity log.
+- The earlier version, finding the marker, restores the pre-update backup as in story 9.3b. Once the run is confirmed finished, it clears the marker, accepts changes again and records the failed attempt in the activity log.
 
 **Refusals and edge cases**
-- With a bad signature the workflow deploys nothing and reports the refusal; the installation withdraws the marker, accepts changes again, and shows and logs the refusal.
+- With a bad signature the workflow deploys nothing and reports the refusal; once the run is confirmed finished, the installation clears the marker, accepts changes again, and shows and logs the refusal.
 - If the installation answers that the marker has been withdrawn or names another release, the workflow deploys nothing and ends. (CF-32)
 - If the run deploys the new version and then stops before its health check, the new version on starting finds the marker naming its own version, completes the conversions and runs the health check itself, and clears the marker on success.
 - If that conversion or health check fails, the new version stays stopped for changes and shows the warning of story 9.6a with the manual return steps, because only the workflow can roll a Cloudflare deployment back.
@@ -658,11 +670,13 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 **Refusals and edge cases**
 - If either check before stopping fails, the reason is shown, no user is warned and changes continue to be accepted.
 - If the backup fails, no marker is written, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
-- If the run cannot be started, nothing is deployed, the marker is withdrawn, changes are accepted again, and the attempt is shown and logged.
+- If the run cannot be started, nothing is deployed, the marker is cleared because no run exists, changes are accepted again, and the attempt is shown and logged.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
 - When the time limit passes with no result, the installation asks GitHub to cancel the run, and neither clears the marker nor accepts changes yet.
-- At the time limit, if installation has not been recorded as begun, the installation withdraws the marker, so the run can no longer deploy, and asks GitHub to cancel the run.
-- Changes are accepted again only after the marker is withdrawn and the run is confirmed cancelled or finished; the attempt is shown and logged as "no result".
+- At the time limit, if installation has not been recorded as begun, the installation marks the marker withdrawn and does not remove it.
+- A marker marked withdrawn makes the workflow's check of story 9.7a fail, so the run stops without deploying.
+- Changes stay stopped while the marker is in the withdrawn state.
+- The marker is cleared, and changes are accepted again, only when the run is confirmed cancelled or finished; the attempt is shown and logged as "no result".
 - If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
 - If neither can be confirmed, the installation stays stopped for changes and shows the warning of story 9.6a with the Cloudflare steps to recover by hand.
 
@@ -688,7 +702,7 @@ Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
 - Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
 
 **Refusals and edge cases**
-- A manual update prepared and not followed by a run can be cancelled by the administrator, which withdraws the marker and accepts changes again.
+- A manual update prepared and not followed by a run can be cancelled by the administrator: the marker is marked withdrawn, so that a run started by hand afterwards stops without deploying, and it is cleared and changes accepted again once the administrator confirms that no run is in progress.
 
 **Evidence to record**
 - A person follows the manual steps on a test Cloudflare account, and both an update and a return work.
@@ -926,6 +940,7 @@ Covers: NFR-7, SM-6.
 - A project backed up on each host is restored on the other and passes the checks of story 8.4b.
 - Every item on the comparison list gives the same result on both hosts.
 - Each difference that hosting makes unavoidable is stated in the interface and in the instructions: how an update is triggered, when the signature is verified, where the set-up code and the deployment key appear, and where backups are kept.
+- Deployment packaging, meaning how HTTPS is provided and how the application is started, is an expected, documented difference between the hosts and is listed in the instructions of story 9.1.
 - On each host an administrator reviews the activity log and confirms that backups are succeeding.
 
 **Refusals and edge cases**

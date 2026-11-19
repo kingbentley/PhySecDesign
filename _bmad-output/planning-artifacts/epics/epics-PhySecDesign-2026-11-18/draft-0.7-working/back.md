@@ -9,7 +9,7 @@
 | Every story has a user-story sentence, a Covers line, grouped criteria and at most one Notes line | Pass, by script. |
 | No criterion names a later story | Pass, by script. |
 | No criterion silently needs a later story | Revised after the second review found 14 that did. A script cannot check this; only another independent read can. |
-| Every choice ID on a criterion is listed, and every listed choice is on exactly one criterion | Pass, by script. |
+| Every choice ID on a criterion is listed, and every listed choice is on at least one criterion | Pass, by script. |
 | Starter template | Not applicable. The architecture names none; story 1.1 sets up the project around the existing prototype. |
 | Epics deliver user value | Pass for Epics 1 to 9. Epic 10 is a verification milestone, kept deliberately. |
 | Repeated changes to the same files across epics | Considered. Epics 4 to 7 all extend the device record and the plan workspace. They are kept separate because each ends in a different demonstrable outcome. |
