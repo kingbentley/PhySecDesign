@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Cube, CaretDown, CaretRight, Buildings, TreeStructure, Stack, Eye, EyeSlash, LockKey, LockKeyOpen, FileImage, UploadSimple, DownloadSimple, VideoCamera, CreditCard, Lightbulb, Cursor, Ruler, MagnifyingGlass, Crosshair, Plus, Minus, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, X, Check, CheckCircle, WarningCircle, Trash, MapTrifold, MapPin, ArrowSquareOut, ShieldCheck, ArrowsOut, NavigationArrow, DotsThree, Info, GearSix, Door, BellRinging, Phone, Network, HardDrives, Path, Package, PlusCircle, Wall, Polygon, NotePencil, ArrowUUpLeft, ArrowUUpRight } from '@phosphor-icons/react';
+import { BrandMark } from './BrandMark.jsx';
 import MapCanvas from './MapCanvas.jsx';
 import AddressSearch from './AddressSearch.jsx';
 import AlignmentGuide from './AlignmentGuide.jsx';
@@ -637,10 +638,10 @@ export function App(){
   function undoAlignment(){if(!alignmentUndo||plan.locked)return;setPlan(p=>({...p,...alignmentUndo}));setAlignmentUndo(null);setChanged(true);toast('Previous plan alignment restored.');}
   const displayPlan=!alignment?plan:alignment.phase==='source'?{...alignment.originalPlan,visible:true,opacity:1,locked:true}:alignment.phase==='target'?{...alignment.originalPlan,visible:false,locked:true}:{...alignment.originalPlan,...alignment.result,visible:true,opacity:alignment.previewOpacity,locked:true};
   const toolText=tool==='survey'?'Pin a survey note · click the location on this floor':tool==='zone'?'Draw security zone · click each corner, then save':tool==='coverage-area'?'Draw analysis boundary · click each corner, then finish the area':tool==='wall'?'Draw wall · click each corner, then save':tool==='obstacle'?'Outline obstruction · click its corners, then save':tool==='route'?'Cable route · click the map to add path points':tool==='select'?(selected.kind==='plan'&&!plan.locked&&plan.visible?'Align plan · drag the center or resize with the corners':null):tool==='ruler'?'Measure · click two points on the map':('Place '+(TYPE_META[tool]?.singular||'device').toLowerCase()+' · click a location on the map');
-  if(!ready)return <div className="project-loading"><Cube size={40}/><h1>Opening your workspace</h1><p>Restoring your local project…</p></div>;
+  if(!ready)return <div className="project-loading"><BrandMark size={40}/><h1>Opening your workspace</h1><p>Restoring your local project…</p></div>;
   return <div className={'app'+(alignment?' alignment-active':'')}>
     <header className="app-header" inert={alignment?true:undefined}>
-      <a href="#" className="brand" onClick={e=>{e.preventDefault();mapApi.current?.fitPlan();choose({kind:'plan'})}}><Cube weight="duotone" size={30}/><span>PhySec</span></a>
+      <a href="#" className="brand" onClick={e=>{e.preventDefault();mapApi.current?.fitPlan();choose({kind:'plan'})}}><BrandMark size={30}/><span>PhySec</span></a>
       <span className="studio-label">Site Studio</span>
       <div className="breadcrumb"><span>Projects</span><span className="slash">/</span><strong>{project.name}</strong><CaretDown size={13}/></div>
       <span className="stage-badge">Concept design</span>

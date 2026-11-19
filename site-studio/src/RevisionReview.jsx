@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, CheckCircle, ClockCounterClockwise, Copy, Cube, LinkSimple, MapPin, UsersThree } from '@phosphor-icons/react';
+import { ArrowLeft, CheckCircle, ClockCounterClockwise, Copy, LinkSimple, MapPin, UsersThree } from '@phosphor-icons/react';
+import { BrandMark } from './BrandMark.jsx';
 import RevisionLayout from './RevisionLayout.jsx';
 import { comparisonFrame } from './revisionComparison.js';
 import { COMMENT_MAX_LENGTH, DECISION_LABELS, prepareReviewRevision, REVIEWER_LIMIT } from './reviewModel.js';
@@ -297,7 +298,7 @@ export function RevisionReviewPage({ access }) {
   const invalid = !access.id;
 
   return <main className="shared-review-page">
-    <header className="shared-review-page-header"><Cube size={29} weight="duotone"/><strong>PhySec</strong><span>Revision review</span></header>
+    <header className="shared-review-page-header"><BrandMark size={29}/><strong>PhySec</strong><span>Revision review</span></header>
     <div className="shared-review-page-content">
       {!room ? <div className="shared-review-start" role={loadError || invalid ? 'alert' : 'status'}>
         <div><h1>{invalid ? 'Invalid review link' : loadError ? 'Review unavailable' : 'Opening revision review'}</h1>

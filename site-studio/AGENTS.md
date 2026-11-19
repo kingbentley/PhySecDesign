@@ -44,3 +44,5 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Keep recent project edits undoable during the browser session. Named revisions capture the full local project, round-trip in portable backups, and compare floor layouts at the same scale. Restoring a revision must leave the saved versions intact and support undo.
 
 - Keep shared reviews tied to immutable named revisions. The local review API uses separate revocable bearer links for each invited reviewer, records floor-pin comments and timestamped decisions, and keeps owner keys out of portable project files. Keep review files out of static routes.
+
+- The PhySec logo is the room-and-camera mark chosen on 2026-11-19 (concept A in `../design-references/logo-concepts/`). Its source files and usage notes are in `../design-references/logo/`. In the app, draw it with `BrandMark` from `src/BrandMark.jsx` in teal, not a stock icon; the favicons in `public/` are copies of the files in that folder.
