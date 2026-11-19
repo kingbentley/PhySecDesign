@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-18-2026 17:30
-last_updated: 11-18-2026 20:26
+last_updated: 11-19-2026 11:43
 project: PhySecDesign
 project_key: NOKEY
 tracking_system: file-system
@@ -54,6 +54,7 @@ development_status:
   1-16-require-two-step-verification-for-everyone: backlog
   1-17-optional-email-and-forgotten-passwords: backlog
   1-18-experiment-r13-email-by-smtp-on-both-hosts: backlog
+  1-19-personal-access-tokens-for-agents: backlog
   epic-1-retrospective: optional
 
   epic-2: backlog
@@ -167,6 +168,7 @@ development_status:
   6-17-warranty-records: backlog
   6-18-service-visits: backlog
   6-19-start-a-service-visit-when-no-scope-is-active: backlog
+  6-20-external-tickets-on-issues-visits-and-warranties: backlog
   epic-6-retrospective: optional
 
   epic-7: backlog
@@ -203,8 +205,8 @@ development_status:
   epic-9: backlog
   9-1-published-installation-instructions: backlog
   9-2-signed-public-releases: backlog
-  9-3-data-conversions-between-versions: backlog
-  9-4-the-pending-update-marker-and-the-way-back-to-backed-up-data: backlog
+  9-3-the-update-record-and-one-version-at-a-time: backlog
+  9-4-data-conversions-the-health-check-and-the-way-back-to-backed: backlog
   9-5-experiment-r14-a-new-runtime-reads-the-previous-release-s-da: backlog
   9-6-installed-version-and-update-check: backlog
   9-7-update-a-self-hosted-installation-with-one-action: backlog
@@ -229,3 +231,14 @@ development_status:
   10-8-repeat-the-acceptance-run-on-a-self-hosted-installation: backlog
   10-9-show-both-hosts-are-one-product: backlog
   epic-10-retrospective: optional
+
+  epic-11: backlog
+  11-1-api-description: backlog
+  11-2-mcp-endpoint: backlog
+  11-3-experiment-r17-then-coverage-and-estimates-for-agents: backlog
+  11-4-inventory-import-for-agents: backlog
+  11-5-check-that-text-from-others-reaches-agents-marked: backlog
+  11-6-experiment-r18-and-setting-up-an-agent-on-either-host: backlog
+  11-7-oauth-sign-in-for-mcp-connectors: backlog
+  11-8-acceptance-an-agent-does-real-work-on-both-hosts: backlog
+  epic-11-retrospective: optional

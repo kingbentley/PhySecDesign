@@ -218,7 +218,7 @@ Covers: FR-4 (retained original), FR-6 (retained source PDF), NFR-2, AD-3, AD-4.
 - A floor that holds a stored plan cannot be deleted, and the refusal lists the plan.
 **Limits and values**
 - An unfinished upload is discarded after 7 days. (CB-06)
-- A completed file that no record references is removed by a daily clean-up once it is 24 hours old. (CB-07)
+- A completed file that no record references is removed by a daily clean-up once it is 7 days old. (CB-07)
 **Access and restore**
 - A revision restore deletes no stored file.
 
@@ -343,7 +343,7 @@ Covers: NFR-4, AD-9, experiment R2. Screens: S-05.
 - A calculation that would exceed its time allowance is shown as Incomplete with the reason.
 - Sampling is never coarsened to finish in time.
 **Limits and values**
-- The time allowance for one calculation is 10 seconds. (CB-17)
+- The time allowance for one calculation is 30 seconds; 10 seconds remains the target that is measured. (CB-17)
 **Access and restore**
 - A revision restore does not bring back saved summaries; they are recalculated from the restored inputs.
 **Evidence to record**

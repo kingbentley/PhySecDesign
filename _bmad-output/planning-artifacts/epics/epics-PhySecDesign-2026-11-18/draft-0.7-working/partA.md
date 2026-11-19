@@ -10,7 +10,7 @@
 
 As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
-Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), architecture section 10, experiments R7 and R8.
+Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), AD-22 (route declarations, reason codes), architecture section 10, experiments R7 and R8.
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
@@ -18,13 +18,26 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
-- A conversion runner compares the recorded data-format version with the build's version each time an object starts and applies the listed conversions in order.
-- The runner's list is empty, and a test with one sample conversion shows the conversion applied once and the recorded version raised.
+- A conversion runner, when called, applies the listed conversions in order from the recorded data-format version to the build's version. It is never started by an object starting.
+- The runner's list is empty, and a test with one sample conversion called directly shows the conversion applied once and the recorded version raised.
+- Every build carries a release version. The entry code attaches it to every call to an object, and an object attaches its own to every call it makes to another object.
+- An object that receives a call carrying a different version refuses the call and stops itself, so that it starts again on the code now deployed; the caller tries once more and otherwise answers "updating, try again shortly".
+- A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
+- Every server route other than the application's own pages and files is under `/api/v1/`, and declares, in the shared module, a schema for its input and its reply; the only other addresses allowed are an MCP endpoint at `/mcp` and standard discovery addresses under `/.well-known/`, which declare their schemas in the same way.
+- A request whose input does not match its route's schema is refused with the field named.
+- Every refusal carries a reason code as well as its wording.
+- The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
+- An object whose recorded data-format version is older than the build's refuses requests and says that an update was not completed.
+- An object stops itself at most once in 30 seconds; a call from a different version within that time after a stop is refused without stopping again. (CA-41)
+- The time of a stop is written to the object's own storage before it stops, so that the limit holds across the restart.
+- A call marked as version-independent is answered whatever the caller's version; at this point no call is so marked.
+- An object that uses its alarm for more than one kind of work keeps a schedule of due times and always sets its one alarm to the earliest; setting one never removes another.
+- Each stop and each such refusal is written to the runtime log with both versions.
 
 **Limits and values**
 - The configuration for each host declares no D1, Workflows, Queues, scheduled-trigger or KV binding.
@@ -35,7 +48,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: Left to later stories: moving between released versions (story 9.3a); the pending-update rule added to the refusal above (story 9.3b). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: the update record and its refusals (story 9.3a); conversions and the return (story 9.3b); moving between released versions (story 9.5a self-hosted, story 9.7a on Cloudflare). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -91,7 +104,7 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
 - The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything is refused unless it comes from the app's own origin and carries the header the app adds.
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing.
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
 
 **Limits and values**
@@ -235,7 +248,7 @@ Notes: Left to later stories: membership, so until then every standard user sees
 
 As an administrator, I want access decided by role and project membership on the server, so that people see and change only what they should.
 
-Covers: FR-68, FR-69, NFR-5, AD-12, AD-17.
+Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via field).
 
 **Core behaviour**
 - Every request passes one access gate that identifies the caller and decides from their installation role and project membership.
@@ -244,10 +257,12 @@ Covers: FR-68, FR-69, NFR-5, AD-12, AD-17.
 - Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project, an Editor may read and change their own project, a Viewer may read their project and is refused any change, and a non-member and an ended session are refused.
 - Removing a member or changing a role takes effect on that person's next request: a test changes a role and shows that the very next request is decided by the new role, with no delay from any held lookup.
 - The actor recorded on every action is the signed-in account and its name at the time, supplied by the gate.
+- The actor record has a `via` field, empty for a signed-in person.
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- A test route not marked public, reviewer-link, signed-in or administrator-only is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; a test route that declares none is refused.
+- A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
 - A change refused because access changed (no longer a member, or role too low) returns a reason distinct from "not signed in".
@@ -405,7 +420,7 @@ Covers: FR-71. Screens: S-36.
 **Access and restore**
 - A revision restore leaves the activity log unchanged.
 
-Notes: Left to later stories, which add their own events: settings changes (story 1.10a); reviewer links and link decisions (story 4.7a and story 4.7b); archiving (story 6.11); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
+Notes: Left to later stories, which add their own events: settings changes (story 1.10a); access tokens and actions made with them (story 1.10e); reviewer links and link decisions (story 4.7a and story 4.7b); archiving (story 6.11); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
 
 ### Story 1.10a: Settings: installation, sign-in and maps
 
@@ -496,9 +511,93 @@ Covers: AD-18, experiment R13.
 **Core behaviour**
 - If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.10a states for secrets, and "Send a test message" works through SMTP. (CA-40)
 - If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40)
+- R13 passes on a host when a message sent from that host by SMTP, signing in with a user name and password, is delivered to a real mailbox; a connection that reaches the point of signing in is not a pass.
+- Where SMTP is offered, the self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
+
+**Refusals and edge cases**
+- Without that setting, a self-hosted installation refuses to connect to a mail server on a private address or one whose certificate comes from an authority the runtime does not trust.
+- On Cloudflare, the Email group states that a mail server on a private address and port 25 cannot be reached, and points to no deployment setting.
+- The SMTP password is sent only over an encrypted connection: a server that offers neither encryption from the first byte nor an upgrade to it is refused, and the test message says that the server does not offer a secure connection.
+- A failure after the connection was made and while encryption was being set up is reported as the secure connection to the mail server failing, with the reason in the server log; the message does not guess a reason.
+- A failure before a connection was made is reported as the server not being reached, and a refusal by the server gives the server's reply.
+- On a self-hosted installation, the Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
+
+**Limits and values**
+- Connecting to the mail server times out after 10 seconds and each reply after 30 seconds, and the test message reports which timed out. (CA-42)
 
 **Evidence to record**
-- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
+- Experiment R13 has a recorded result on a deployed Cloudflare test installation for a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox: delivered, which is a pass, or not delivered, with the reason, which leads to the HTTP-only Email group above.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
+- Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
+- A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
 
 Notes: The self-hosted image is story 2.13a; this experiment uses the configuration of story 1.1 because it comes earlier. R13 was run early on 2026-11-19. From Cloudflare, encrypted connections to two public mail services reached the point of signing in, and port 25 is prohibited there; a complete delivery from Cloudflare was not shown. On a server a message was delivered with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.
+
+### Story 1.10e: Personal access tokens for agents
+
+As a designer, I want to give an AI agent its own token that acts for me, so that it can prepare work in my projects while I keep the decisions and can cut it off at any time.
+
+Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access switch), NFR-5 (tokens), AD-5, AD-12, AD-17, AD-22. Screens: S-29, S-30, S-33, S-36, S-38, S-39, S-40.
+
+**Core behaviour**
+- Settings gains an Agent access group with an on/off switch, off in a new installation, and the maximum token lifetime. (CG-03)
+- My account gains Access tokens. While agent access is on, Create token asks for a name, the kind (Read only, or Read and draft), all of my projects or chosen ones, and an expiry. (CG-01)
+- The created token is shown once with Copy, beside the addresses of the API and the MCP endpoint, and "You will not see this token again."
+- The installation object stores only the SHA-256 hash of the token, with its owner, name, kind, projects, expiry and last use; a request's token is found by its hash and compared in constant time.
+- A token is accepted only in the `Authorization: Bearer` header.
+- A request with a token is decided by the gate as its owner, limited by the token's kind and projects.
+- "All of my projects" is checked against the owner's membership at each request, so it covers projects joined later and drops projects left.
+- An administrator's token reaches only projects the administrator is a member of, never every project in the installation, and the project list called with it returns only those projects. (CG-10)
+- An administrator becomes a member of a project as anyone else does, through the project's members.
+- A read-only token is accepted on read routes only; a read-and-draft token also on draft-change routes.
+- A read-and-draft token is decided per project by the owner's role there: it may change a project where its owner is an Editor and only read one where its owner is a Viewer.
+- A test route marked person only refuses every token with the reason code and wording "needs a person", and the same route accepts the owner signed in.
+- An administrator-only route refuses every token, including an administrator's, with "needs a person".
+- A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22)
+- Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33)
+- An operation identifier carries the time it was made, and its age is measured on the server's clock: one dated more than 5 minutes ahead of the server is refused with "identifier from the future", and one more than 24 hours old is refused with "identifier expired". (CG-33)
+- A stored result is kept until 24 hours after its identifier's time, so every identifier still accepted finds its result and a late retry never repeats a change. (CG-33)
+- A repeated identifier sent with a different request is refused with "identifier reused".
+- A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
+- My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
+- A user's detail in Administration lists that user's tokens with Revoke, and the Users table shows a count of active tokens.
+- The activity log records token creation, revocation and expiry; an expiry is recorded by an alarm at the expiry time.
+- Each activity entry made with a token shows "via agent" and the token's name, and Activity gains an "Agent actions" filter.
+
+**Refusals and edge cases**
+- With agent access off, every token request is refused with HTTP 403 and the reason code "agent access is off".
+- Turning agent access on again restores the tokens that are neither expired nor revoked.
+- A token is refused after it expires or is revoked.
+- A token is refused for a project outside its list, and for a project its owner no longer belongs to, from the very next request.
+- A role change, deactivation or removal applies to the owner's tokens on the next request, exactly as to a session.
+- Deactivating an account revokes all its tokens, and reactivating the account does not bring them back. (CG-27)
+- Removing the owner from a project drops that project from the list of every token limited to chosen projects, and adding the owner back does not restore it. (CG-28)
+- An unknown, malformed or revoked token is refused with one reason code, "token not accepted", and does not say which.
+- A value starting with `ssat_` in a query string is refused with the reason code "token in address" and is never logged.
+- A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
+- A request that carries both a session cookie and a token is refused. (CG-05)
+- A token cannot create a project; the request is refused with "needs a person". (CG-24)
+- An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
+- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20)
+- When the maximum is below 90 days, Create token offers the maximum as its default.
+- Recovering the whole installation from a backup revokes every token, and revoked tokens stay listed as revoked. (CG-25)
+- No log entry, record or export contains a token: a test creates and uses one, then searches the stored log and records for it and finds none.
+
+**Limits and values**
+- A token's expiry is 90 days unless changed and at most 1 year, and an administrator can lower the maximum. (CG-02)
+- A token starts with `ssat_` and holds at least 32 random bytes. (CG-06)
+- A token may make 300 requests a minute, counting each API call made inside an MCP tool call; further requests receive HTTP 429 with `Retry-After`. (CG-04)
+- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13)
+- Creating an eleventh active token is refused with the limit stated.
+- After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14)
+- Rate counters are kept in memory, last use is written at most once a minute per token, and the per-address check runs before the installation object is consulted.
+- A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
+- An expired or revoked token stays listed, greyed, for 30 days. (CG-07)
+
+**Access and restore**
+- A revision restore leaves tokens and the agent-access setting unchanged.
+
+**Evidence to record**
+- The gate's server tests of story 1.7a and story 1.7b are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
+
+Notes: Story 1.1 declares every route with its schema, and story 1.7a gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.8a), the activity log (story 1.9) and Settings (story 1.10a), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
