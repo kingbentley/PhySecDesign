@@ -28,7 +28,7 @@ context:
 **Always:**
 - Routes under `/api/v1/`, declared with input and reply schemas; refusals never echo a value. Sign-in and sign-out `appOriginOnly`. Routes that read the session cookie carry a declaration flag.
 - Order of a sign-in: origin → schema → queue not full (else `signin_busy`, uncounted) → `signInAttempt` → verify in the Worker (queued) → `completeSignIn(ticket, outcome)` → cookies.
-- The session read is read-only. It answers a dead cookie (ended, unknown, foreign, expired, malformed) as `{ signedIn: false, … }` and clears it (D-7 amended). Sign-out always succeeds after the origin check and always clears the session cookie (D-13).
+- The session read is read-only. It answers a dead cookie under this installation's own name (ended, expired, unknown token, malformed; "foreign" here means another installation's token presented under this name) as `{ signedIn: false, … }` and clears it (D-7 amended). Only a cookie under this installation's own name is ever cleared, by any route; a cookie named with another installation's identifier is ignored and never gets a `Set-Cookie` (criterion 17, CAP-10). Sign-out always succeeds after the origin check and always clears the session cookie (D-13).
 - Cookies appended one by one with `headers.append("set-cookie", …)` (A-9). Session `__Host-<prefix>-<id>=…; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`; marker `__Host-<prefix>-m-<id>=…; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`; no `Domain`; clearing with the full attributes and `Max-Age=0` (D-1, D-3, D-4, A-5, E-15). The marker is set at sign-in and never in the sign-out reply.
 - The Worker passes every cookie with the session prefix to the object; no isolate caches the identifier (A-18).
 - Story 1.2's D-2 as amended: the session read and `endSession` `idempotent` and retried once after a bare reset; counting and completing not retried (V-16, E-6).
@@ -58,7 +58,8 @@ context:
 | Marker exempts | email locked from address P; correct sign-in from address Q with the marker | signs in (CA-44) | N/A |
 | Sign out | valid cookie, app origin and header | session row gone, cookie cleared with full attributes, no marker `Set-Cookie` | N/A |
 | After sign out | the exact old cookie replayed on the session read and on sign-out | session read 200 `{ signedIn: false }` with a clearing cookie; sign-out 200 with a clearing cookie; the sessions row gone (V-5) | N/A |
-| Dead cookie | expired (30 days), unknown, foreign-identifier or malformed cookie on the session read | 200 `{ signedIn: false }`, cleared with full attributes (D-7 amended, A-2, E-5) | N/A |
+| Dead cookie | under this installation's own name: expired (30 days), unknown token (including another installation's token under this name) or malformed, on the session read | 200 `{ signedIn: false }`, cleared with full attributes (D-7 amended, A-2, E-5) | N/A |
+| Other installation's cookie | session read, sign-in or sign-out carrying a cookie named with another identifier, with or without this installation's own cookie | answered by this installation's own cookie alone; no `Set-Cookie` for the other name (criterion 17, CAP-10) | N/A |
 | Sign out, no session | sign-out with an ended cookie or none, app origin and header | 200, session cookie cleared (D-13) | N/A |
 | Read-only read | session read after sign-in | last use unchanged (D-4 amended) | N/A |
 | Simultaneous | 25 wrong attempts for one email, no cookies | at most 5 hashed, 20 waits (A-6) | `signin_wait` |
