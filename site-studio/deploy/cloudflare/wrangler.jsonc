@@ -8,6 +8,8 @@
   "name": "site-studio",
   "main": "../../server/index.ts",
   "compatibility_date": "2026-11-01",
+  // Node.js-compatible APIs, for scrypt password hashing (K19). Keep equal to the self-hosted flags.
+  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "assets": {
     "directory": "../../dist/client",

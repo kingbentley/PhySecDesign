@@ -26,6 +26,8 @@ const config :Workerd.Config = (
 const siteStudio :Workerd.Worker = (
   modules = [(name = "index.js", esModule = embed "../../dist/worker/index.js")],
   compatibilityDate = "2026-11-01",
+  # Node.js-compatible APIs, for scrypt password hashing (K19). Keep equal to the Cloudflare flags.
+  compatibilityFlags = ["nodejs_compat"],
   bindings = [
     (name = "ASSETS", service = "assets"),
     (name = "PROJECT_ROOM", durableObjectNamespace = "ProjectRoom"),
