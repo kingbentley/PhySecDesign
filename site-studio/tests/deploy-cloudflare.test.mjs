@@ -4,12 +4,14 @@ import { describe, it } from "node:test";
 import {
   chooseAddress,
   generateSetupCode,
+  parseDeployArgs,
   parseSetupState,
   readDeployOutput,
   runDeploy,
   SETUP_CODE_ALPHABET,
   SETUP_CODE_SECRET,
   waitForSetupState,
+  wranglerDeployArgs,
 } from "../scripts/deploy-cloudflare.mjs";
 
 function harness({ state, targets = ["https://site-studio.example.workers.dev"], workerName = "site-studio" }) {
@@ -186,5 +188,22 @@ describe("deploy helpers", () => {
       retryMs: 1_000,
     });
     assert.equal(never, null);
+  });
+});
+
+describe("the deploy command's options", () => {
+  it("deploys under --name when given, and under the configured name otherwise", () => {
+    assert.deepEqual(parseDeployArgs([]), { url: undefined, name: undefined });
+    assert.deepEqual(wranglerDeployArgs(undefined), ["deploy"]);
+    const named = parseDeployArgs(["--name", "site-studio-test-b"]);
+    assert.deepEqual(named, { url: undefined, name: "site-studio-test-b" });
+    assert.deepEqual(wranglerDeployArgs(named.name), ["deploy", "--name", "site-studio-test-b"]);
+    assert.deepEqual(parseDeployArgs(["--url", "https://survey.example.com", "--name", "w"]), { url: "https://survey.example.com", name: "w" });
+  });
+
+  it("refuses an option without a value or an unknown option, so nothing is deployed", () => {
+    for (const argv of [["--name"], ["--name", "--url", "https://a.test"], ["--url"], ["--name", " "], ["--nmae", "w"], ["w"]]) {
+      assert.ok(typeof parseDeployArgs(argv).error === "string", argv.join(" "));
+    }
   });
 });

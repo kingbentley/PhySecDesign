@@ -15,7 +15,8 @@
 // and it is printed once, on this command's own output.
 //
 // Options: --url <https address> asks that address instead of the first one Wrangler reports
-// (for a custom domain).
+// (for a custom domain). --name <worker> deploys under that Worker name instead of the one in the
+// configuration (for a test installation); the secret goes to whatever name Wrangler reports.
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -142,6 +143,29 @@ export async function runDeploy({ deploy, askState, putSecret, print, printError
   return 0;
 }
 
+/**
+ * Reads the command's options. Resolves to `{ url, name }` (each undefined when not given), or to
+ * `{ error }` when an option is given without a value or an option is unknown.
+ */
+export function parseDeployArgs(argv) {
+  const options = { url: undefined, name: undefined };
+  for (let index = 0; index < argv.length; index += 1) {
+    const flag = argv[index];
+    const key = flag === "--url" ? "url" : flag === "--name" ? "name" : null;
+    if (!key) return { error: `Unknown option ${flag}. Use --url <https address> or --name <worker>.` };
+    const value = argv[index + 1];
+    if (value === undefined || value.startsWith("--") || value.trim() === "") return { error: `${flag} needs a value.` };
+    options[key] = value;
+    index += 1;
+  }
+  return options;
+}
+
+/** Wrangler's deploy arguments, with the Worker name when one was given. */
+export function wranglerDeployArgs(name) {
+  return name === undefined ? ["deploy"] : ["deploy", "--name", name];
+}
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -163,16 +187,20 @@ function runWrangler(root, args, { env = process.env, input } = {}) {
 
 async function main() {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-  const args = process.argv.slice(2);
-  const urlIndex = args.indexOf("--url");
-  const url = urlIndex === -1 ? undefined : args[urlIndex + 1];
+  const options = parseDeployArgs(process.argv.slice(2));
+  if (options.error) {
+    console.error(options.error);
+    process.exitCode = 1;
+    return;
+  }
+  const { url, name } = options;
   const outputDir = mkdtempSync(path.join(tmpdir(), "site-survey-deploy-"));
   try {
     process.exitCode = await runDeploy({
       url,
       deploy: async () => {
         const outputFile = path.join(outputDir, "wrangler-output.json");
-        await runWrangler(root, ["deploy"], { env: { ...process.env, WRANGLER_OUTPUT_FILE_PATH: outputFile } });
+        await runWrangler(root, wranglerDeployArgs(name), { env: { ...process.env, WRANGLER_OUTPUT_FILE_PATH: outputFile } });
         return readDeployOutput(readFileSync(outputFile, "utf8"));
       },
       askState: (address) => waitForSetupState(address),

@@ -60,3 +60,11 @@
 - source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/3-playwright-and-the-set-up-page.md`
   summary: The new `browser` CI job, and with it the `webkit-iphone` Playwright project, has not run yet; the Chromium project passed locally, but the job's browser install, the WebKit run and the trace upload are unverified until the branch is pushed.
   evidence: Unverified (medium if it fails). This session has no WebKit browser and may not push. Check the first CI run of `story/1.2`: the `browser` job should pass both projects, and a failing run should upload `playwright-traces`.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/4-acceptance-on-cloudflare.md`
+  summary: Story 1.2's deployed acceptance (spec 4 checks 1–11: CAP-1, CAP-2, CAP-4, CAP-7, CAP-8, CAP-9, CAP-10, the D-2 reason check, two scrypt hashes at once, the plan and item (d)) has not run, so the deployed-check items above (item 1, the scrypt-memory item, item (d) and the deploy-command wiring item) all stay open.
+  evidence: Real. From the cloud session of 2026-11-20 no deployment reached Cloudflare: the proxy's injected API token most likely overwrites Wrangler's asset-upload token (every `workers/assets/upload` call answered 401), and the `site-studio-test*.physec-site-studio.workers.dev` hosts are not allowed. Run the checks from Kevin's workstation (`npm run deploy:cloudflare -- --name site-studio-test`, then `-- --name site-studio-test-b`), or from a session whose network allows those hosts and does not inject into the asset upload; the spec lists what to run.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/4-acceptance-on-cloudflare.md`
+  summary: Whether the "PhySec Site Studio" test account is on Workers Paid is still unconfirmed.
+  evidence: Unverified. The session's token gets `Authentication error` from the subscriptions and billing endpoints; `usage_model: standard` and SQLite Durable Objects exist on the free plan too. Check the dashboard (Workers & Pages, Plans), or infer it from a deployed set-up: a free-plan Worker's CPU limit would likely stop a 128 MiB scrypt hash.
