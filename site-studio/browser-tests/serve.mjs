@@ -52,7 +52,24 @@ const child = spawn(
     env: { ...process.env, SETUP_CODE_FOR_TESTS: undefined, WRANGLER_SEND_METRICS: "false" },
   },
 );
-const stop = () => child.kill("SIGTERM");
-process.on("SIGINT", stop);
-process.on("SIGTERM", stop);
-child.on("exit", (status, signal) => process.exit(status ?? (signal ? 0 : 1)));
+// Exit 0 only when Wrangler ended on the signal this script sent it on being asked to stop. Any
+// other signal, a crash, or Wrangler ending by itself is a failure, so Playwright reports it.
+let sent = null;
+const stop = (signal) => {
+  sent = signal;
+  child.kill(signal);
+};
+process.on("SIGINT", () => stop("SIGINT"));
+process.on("SIGTERM", () => stop("SIGTERM"));
+child.on("error", (error) => {
+  console.error(`wrangler dev could not start: ${error.message}`);
+  process.exit(1);
+});
+// A process that handles the signal may instead exit with 0 or with 128 plus the signal's number.
+const SIGNAL_STATUS = { SIGINT: 130, SIGTERM: 143 };
+child.on("exit", (status, signal) => {
+  const stoppedByUs = sent !== null && (signal === sent || (signal === null && (status === 0 || status === SIGNAL_STATUS[sent])));
+  if (stoppedByUs) process.exit(0);
+  console.error(`wrangler dev ended unexpectedly (${signal ?? `exit status ${status}`}).`);
+  process.exit(status !== null && status !== 0 ? status : 1);
+});

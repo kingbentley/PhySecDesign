@@ -89,9 +89,21 @@ describe("set-up code helpers", () => {
   });
 
   it("matches only the configured code, and never an empty configured code", async () => {
-    expect(await setupCodesMatch("k7Qm-2xVb-9TsR-4nLp-Wz", "k7Qm-2xVb-9TsR-4nLp-Wz")).toBe(true);
-    expect(await setupCodesMatch("k7Qm-2xVb-9TsR-4nLp-Wy", "k7Qm-2xVb-9TsR-4nLp-Wz")).toBe(false);
-    expect(await setupCodesMatch("k7Qm", "k7Qm-2xVb-9TsR-4nLp-Wz")).toBe(false);
+    // A code as the deploy command makes it: 24 symbols, upper-case letters and digits.
+    const code = "K7QM2XVB9TSR4NLPWZ8HJ3CD";
+    expect(await setupCodesMatch(code, code)).toBe(true);
+    expect(await setupCodesMatch("K7QM2XVB9TSR4NLPWZ8HJ3CE", code)).toBe(false);
+    expect(await setupCodesMatch("K7QM", code)).toBe(false);
     expect(await setupCodesMatch("", "")).toBe(false);
+    expect(await setupCodesMatch(" - ", " -- ")).toBe(false);
+  });
+
+  it("ignores letter case, spaces and dashes on both sides before comparing", async () => {
+    const code = "K7QM2XVB9TSR4NLPWZ8HJ3CD";
+    for (const entered of ["k7qm2xvb9tsr4nlpwz8hj3cd", "  K7QM 2XVB 9TSR 4NLP WZ8H J3CD ", "k7qm-2xvb-9tsr-4nlp-wz8h-j3cd", "K7QM\u20132XVB9TSR4NLPWZ8HJ3CD"]) {
+      expect(await setupCodesMatch(entered, code), entered).toBe(true);
+    }
+    expect(await setupCodesMatch(code, " k7qm-2xvb-9tsr-4nlp-wz8h-j3cd ")).toBe(true);
+    expect(await setupCodesMatch("k7qm-2xvb-9tsr-4nlp-wz8h-j3ce", code)).toBe(false);
   });
 });

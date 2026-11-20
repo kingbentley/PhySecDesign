@@ -2,7 +2,7 @@ import type { z } from "zod";
 import { RELEASE } from "../../shared/release";
 import { refusalBody, type RefusalBody, type RefusalCode, REFUSALS } from "../../shared/refusal";
 import { ROUTES } from "../../shared/routes";
-import type { SetupState } from "../../shared/setup";
+import { normaliseSetupCode, type SetupState } from "../../shared/setup";
 import { hashPassword } from "../auth/password";
 import { setupCodeFingerprint, setupCodesMatch } from "../auth/setupCode";
 import { INSTALLATION_NAME, type Env } from "../env";
@@ -62,7 +62,7 @@ export const HANDLERS: RouteHandlers = {
   async setup(input, env, context) {
     const { namespace, id } = installation(env);
     const configured = env.SETUP_CODE ?? "";
-    if (configured.length === 0) {
+    if (normaliseSetupCode(configured).length === 0) {
       // Without a code nobody can complete set-up; say "closed" rather than "not issued" once a user exists.
       const state = await callObject<{ state: SetupState }>(namespace, id, "setupState", null, { idempotent: true });
       if (!state.ok) return state;
@@ -77,8 +77,10 @@ export const HANDLERS: RouteHandlers = {
     });
     if (!attempt.ok) return attempt;
 
+    // Both codes are normalised first: spaces and dashes removed, upper case (setupCodesMatch).
     if (!(await setupCodesMatch(input.code, configured))) return refused("setup_code_wrong");
 
+    // The schema has already normalised the password to NFKC (D-9, shared/setup.ts).
     const passwordHash = await hashPassword(input.password);
     const created = await callObject<FirstAdministratorCreated>(namespace, id, "createFirstAdministrator", {
       fingerprint,

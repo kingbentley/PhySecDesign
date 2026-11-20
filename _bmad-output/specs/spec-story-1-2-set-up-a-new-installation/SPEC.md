@@ -30,7 +30,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
 
 - **CAP-1**
   - **intent:** The Cloudflare deploy command issues a set-up code only while set-up is open, so the installer alone holds it.
-  - **success:** Deploying to an installation with no users prints a random code of at least 20 characters once, supplied as a Worker secret. Deploying again with no users prints a new code: the earlier one is refused and the wrong-code counts are reset. Deploying to an installation that has an administrator prints no code and does not reopen set-up. The command decides from CAP-2's route (CA-01, CA-02, CA-45, CA-52).
+  - **success:** Deploying to an installation with no users prints a random code of at least 20 characters once, supplied as a Worker secret. Deploying again with no users prints a new code: the earlier one is refused and the wrong-code counts are reset, and the command says to wait about a minute before using it. While Worker copies with the earlier code still run, a request they handle is refused with `setup_code_replaced` and counts nothing (D-7). Deploying to an installation that has an administrator prints no code and does not reopen set-up. The command decides from CAP-2's route (CA-01, CA-02, CA-45, CA-52).
 - **CAP-2**
   - **intent:** Anyone can learn whether set-up is open, and nothing else.
   - **success:** A public read-only route answers only "open" or "closed". A schema test shows the reply has no other field.
@@ -42,7 +42,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
   - **success:** Exactly one administrator exists afterwards. The installation's name and its public address are recorded, the address taken from where the set-up page was opened (CA-57). The page confirms the name and the administrator's email. Of two set-up requests sent at the same moment, one creates the administrator and the other is refused.
 - **CAP-5**
   - **intent:** Set-up input meets the account and naming rules.
-  - **success:** A password of 11 or 129 characters, or one equal to the email, is refused, with no other composition rule (CA-03). An installation name of 0 or 81 characters is refused (CA-04). An administrator name of 0 or 81 characters, an email failing a light format check or over 254 characters, and a password equal to the email in any letter case are refused; the email is stored lower-cased (D-4). A missing code is refused.
+  - **success:** A password of 11 or 129 characters, or one equal to the email, is refused, with no other composition rule (CA-03). An installation name of 0 or 81 characters is refused (CA-04). An administrator name of 0 or 81 characters, an email failing a light format check or over 254 characters, and a password equal to the email in any letter case are refused; the email is stored lower-cased (D-4). Passwords are measured and hashed after NFKC, names measured and stored after NFC, the same on the page and the server (D-9). A missing code is refused; the code is compared after removing spaces and dashes and upper-casing, on both sides.
 - **CAP-6**
   - **intent:** The password is never stored in recoverable form.
   - **success:** Storage holds only a salted scrypt hash (N = 131,072, r = 8, p = 1, 32-byte result) with its parameters beside it. A test reads the stored row and finds no password (K19, AD-12, NFR-5).
@@ -53,12 +53,13 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
     - After 5 wrong codes from one address, that address waits 1 minute, doubling after each further failure up to 15 minutes. After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed (CA-05). A per-address count clears 15 minutes after its wait has ended; attempts during a wait are refused and not counted; the cap is a rolling 60 minutes (D-3).
     - Counts are kept in the installation object's storage and raised before the code is checked. They hold across Worker copies, across a restart and under simultaneous requests (CA-43).
     - The page states the wait and that deploying again issues a fresh code (CA-45).
+    - Only a never-seen code fingerprint resets the counts and tickets; a replaced one is refused with `setup_code_replaced` and changes nothing (D-7).
 - **CAP-8**
   - **intent:** Another site cannot drive set-up from a visitor's browser.
   - **success:** A set-up request from another origin, or without the app's header, is refused (standing rule 13).
 - **CAP-9**
   - **intent:** The deployed installation is reached only over HTTPS.
-  - **success:** On a deployed Cloudflare test installation, a plain HTTP request is redirected to HTTPS (FR-66 check). The Worker redirects only when Cloudflare's request metadata marks the request as plain HTTP, so a self-hosted Worker behind its web server never redirects (D-1).
+  - **success:** On a deployed Cloudflare test installation, a plain HTTP page request is redirected to HTTPS and a plain HTTP request under `/api/`, `/mcp` or `/.well-known/` is refused with `https_required` (FR-66 check, D-8). Responses to HTTPS requests carry `Strict-Transport-Security: max-age=31536000`. The Worker acts only when Cloudflare's request metadata marks the request, so a self-hosted Worker behind its web server never redirects, refuses or sends HSTS (D-1, D-8).
 - **CAP-10**
   - **intent:** Installations deployed from one build are independent.
   - **success:** Two test installations are deployed from the same build. Completing set-up on one leaves the other still offering set-up with its own code.
@@ -85,7 +86,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
 - The new screen meets UX section 10: 4.5:1 text contrast, a visible 2 px focus ring, labelled 16 px fields, and usability at 200% zoom. It follows the white and teal direction and the `BrandMark` logo (standing rule 5, `site-studio/AGENTS.md`).
 - Browser tests cover the flows and on-screen refusals. Rules and edge cases stay in server tests that run in Cloudflare's runtime (standing rule 15).
 - Criteria that name a deployed Cloudflare test installation are checked there (definition of done).
-- `callObject` retries only on the version-stop reason, once a deployed installation shows that reason reaches the caller; if it cannot be told apart, write operations are never retried (D-2).
+- `callObject` retries a write only on the version-stop reason, once a deployed installation shows that reason reaches the caller; if it cannot be told apart, write operations are never retried. A read (an idempotent call) may be retried once after any reset (D-2 as amended).
 - The set-up page ships with its own browser tests in Chromium, WebKit with an iPhone viewport and axe; no page check is manual-only (D-6, standing rule 15).
 
 ## Non-goals
@@ -106,7 +107,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
 
 ## Assumptions
 
-- R11 showed that running Durable Objects keep old code for minutes after a deployment. So the code is checked in the Worker entry against the current secret, and the installation object receives only a fingerprint of the code; counts reset when the fingerprint changes. Confirm this on a deployed installation.
+- R11 showed that running Durable Objects keep old code for minutes after a deployment. So the code is checked in the Worker entry against the current secret, and the installation object receives only a fingerprint of the code; counts reset when a never-seen fingerprint arrives, and a replaced one is refused (D-7). Confirm this on a deployed installation.
 - The password is hashed only after the count is raised and the code verified. Wrong codes therefore cost no scrypt work, and at most one 128 MiB hash runs per accepted attempt.
 - The no-users check and the administrator insert run in one synchronous installation-object step after hashing, because input gates do not cover non-storage awaits.
 - The public address is the origin of the accepted set-up request. Standing rule 13 already requires that origin to equal the request URL's origin.
@@ -125,3 +126,10 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
 - **D-4** (was OQ-4) The administrator's name has 1–80 characters. The email passes a light format check, has at most 254 characters and is stored lower-cased. "Password not equal to the email" ignores case.
 - **D-5** (was OQ-5) After set-up the app shows the prototype as today. The set-up address shows "set-up is already complete", and its request is refused.
 - **D-6** Spec order: Playwright is set up together with the set-up page, so the page's implementation spec ships its own browser and axe tests.
+- **D-2 amended** (Kevin, 2026-11-20, code review) Reads (idempotent calls) may be retried once after any reset; writes only on the shown version-stop reason, as before.
+- **D-7** (Kevin, 2026-11-20, code review: rollout window) The installation object remembers replaced set-up code fingerprints. An attempt carrying one is refused with `setup_code_replaced` ("A new set-up code was issued. Try again in a minute.") and touches no count or ticket; only a never-seen fingerprint resets counts and tickets. A create whose ticket a newer fingerprint dropped gets the same refusal, not `setup_code_wrong`. The deploy command tells the installer to wait about a minute before using a new code. Known cost: after a Cloudflare rollback restores an older secret, set-up refuses until the next deploy.
+- **D-8** (Kevin, 2026-11-20, code review: transport) Requests under `/api/`, `/mcp` and `/.well-known/` that Cloudflare marks as plain HTTP are refused (`https_required`), not redirected; page requests keep the D-1 308. Responses to requests Cloudflare marks as HTTPS carry `Strict-Transport-Security: max-age=31536000`, without includeSubDomains or preload; never self-hosted (the same `request.cf` signal as D-1).
+- **D-9** (Kevin, 2026-11-20, code review: Unicode) In `shared/setup.ts`, passwords are normalised with NFKC and names with NFC before measuring and before hashing or storing, so page and server agree. **Story 1.3 must hash and check passwords the same way** (`normalisePassword`).
+- **D-10** (Kevin, 2026-11-20, code review: next step) The "Set-up is complete" page adds: "Signing in arrives in a coming update; until then the app opens as before."
+
+Not a decision of Kevin's: grouping IPv6 client addresses by their /64 (spec 2) came from an orchestrator instruction in spec 2's brief. The set-up code comparison (spaces and dashes removed, upper case, on both sides) is a code-review fix applied in spec 5.

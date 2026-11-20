@@ -10,6 +10,8 @@ import {
   PERSON_NAME_MAX,
   emailField,
   installationNameField,
+  normalisePassword,
+  normaliseSetupCode,
   passwordEqualsEmail,
   passwordField,
   personNameField,
@@ -23,7 +25,7 @@ const SETUP_URL = '/api/v1/setup';
 export const SETUP_FIELDS = ['code', 'installationName', 'name', 'email', 'password', 'passwordAgain'];
 
 export const FIELD_MESSAGES = {
-  code: 'Enter the set-up code exactly as it was shown.',
+  code: 'Enter the set-up code from the end of the deployment. Letter case, spaces and dashes do not matter.',
   installationName: `Enter a name of 1 to ${INSTALLATION_NAME_MAX} characters.`,
   name: `Enter your name, 1 to ${PERSON_NAME_MAX} characters.`,
   email: `Enter an email address, such as name@example.com, of at most ${EMAIL_MAX} characters.`,
@@ -45,16 +47,21 @@ export const FIELD_HINTS = {
  */
 export function checkSetupFields(values) {
   const errors = {};
-  const code = values.code.trim();
+  // The server compares codes the same way: spaces and dashes removed, upper case.
+  const code = normaliseSetupCode(values.code);
   if (!setupCodeField.safeParse(code).success) errors.code = FIELD_MESSAGES.code;
   if (!installationNameField.safeParse(values.installationName).success) {
     errors.installationName = FIELD_MESSAGES.installationName;
   }
   if (!personNameField.safeParse(values.name).success) errors.name = FIELD_MESSAGES.name;
   if (!emailField.safeParse(values.email).success) errors.email = FIELD_MESSAGES.email;
+  // Measured after NFKC, as the server measures it (D-9).
   if (!passwordField.safeParse(values.password).success) errors.password = FIELD_MESSAGES.password;
   else if (passwordEqualsEmail(values.password, values.email)) errors.password = FIELD_MESSAGES.passwordIsEmail;
-  if (!errors.password && values.passwordAgain !== values.password) errors.passwordAgain = FIELD_MESSAGES.passwordAgain;
+  // Checked whatever the password's own fault, so one submit names both problems.
+  if (normalisePassword(values.passwordAgain) !== normalisePassword(values.password)) {
+    errors.passwordAgain = FIELD_MESSAGES.passwordAgain;
+  }
   const input = {
     code,
     installationName: values.installationName,
@@ -65,9 +72,11 @@ export function checkSetupFields(values) {
   return { errors, input };
 }
 
-/** "1 minute", "2 minutes 30 seconds", "45 seconds". */
+/** "1 minute", "2 minutes 30 seconds", "45 seconds"; "a few minutes" when the wait is unknown. */
 export function waitWording(seconds) {
-  const whole = Math.max(1, Math.ceil(Number(seconds) || 0));
+  const number = Number(seconds);
+  if (seconds === undefined || seconds === null || !Number.isFinite(number) || number <= 0) return 'a few minutes';
+  const whole = Math.ceil(number);
   const minutes = Math.floor(whole / 60);
   const rest = whole % 60;
   const part = (count, unit) => `${count} ${unit}${count === 1 ? '' : 's'}`;
@@ -81,6 +90,16 @@ const GENERAL = {
     'Set-up is not available yet: no set-up code has been issued for this installation. Deploy again to get one.',
   origin_refused: "Set-up must be sent from this installation's own page. Open the set-up page from its address and try again.",
   updating: 'Site Survey Design is updating. Try again in a moment.',
+  // D-7: the request reached a copy of the server that still has the earlier code.
+  setup_code_replaced: 'A new set-up code was issued moments ago. Wait about a minute, then try again with the newest code.',
+  // D-8: only over HTTPS.
+  https_required: "Set-up must be sent over HTTPS. Open this installation's https:// address and set up from there.",
+  // Not fixed by trying again.
+  data_newer_than_build:
+    'This installation holds data from a newer release of Site Survey Design than the one running here. Install that release or a newer one, then open this page again.',
+  update_not_completed:
+    "An update of this installation was not completed, so set-up cannot run. Complete the update, then open this page again.",
+  not_found: "This server does not offer set-up at this address. Check that you opened this installation's own address.",
   invalid_input: 'Some of the details were not accepted. Check each field and try again.',
   network: 'The server could not be reached. Check the connection and try again.',
   other: 'Set-up could not be completed. Try again.',
@@ -121,9 +140,11 @@ export async function submitSetup(input, fetcher = fetch) {
       return { kind: 'closed' };
     case 'setup_code_wrong':
       return { kind: 'refused', message: GENERAL.setup_code_wrong, focus: 'code' };
+    case 'setup_code_replaced':
+      return { kind: 'refused', message: GENERAL.setup_code_replaced, focus: 'code' };
     case 'setup_wait': {
-      const header = Number(response.headers.get('retry-after'));
-      const seconds = Number.isFinite(error.retryAfterSeconds) ? error.retryAfterSeconds : header;
+      const header = response.headers.get('retry-after');
+      const seconds = Number.isFinite(error.retryAfterSeconds) ? error.retryAfterSeconds : header === null ? undefined : Number(header);
       return {
         kind: 'refused',
         message: `Too many wrong set-up codes. Wait ${waitWording(seconds)} before trying again, or deploy again to get a fresh set-up code, which starts the count again.`,
@@ -139,7 +160,14 @@ export async function submitSetup(input, fetcher = fetch) {
     case 'setup_code_not_configured':
     case 'origin_refused':
     case 'updating':
+    case 'https_required':
+    case 'data_newer_than_build':
+    case 'update_not_completed':
+    case 'not_found':
       return { kind: 'refused', message: GENERAL[error.code], focus: null };
+    case 'method_not_allowed':
+    case 'not_available':
+      return { kind: 'refused', message: GENERAL.not_found, focus: null };
     default:
       return { kind: 'refused', message: GENERAL.other, focus: null };
   }

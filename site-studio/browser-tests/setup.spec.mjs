@@ -115,6 +115,49 @@ test("a field refused by the server is explained and focused", async ({ page }) 
   await send(page);
   await expect(page.getByLabel("Email")).toBeFocused();
   await expect(page.getByLabel("Email")).toHaveAccessibleDescription(/Enter an email address/);
+  await expectAccessible(page);
+});
+
+test("a password refused by the server is explained on the password field and focused", async ({ page }) => {
+  await page.route("**/api/v1/setup", (route) => route.fulfill(refusalReply("invalid_input", { field: "password" })));
+  await openSetup(page);
+  await fill(page, {});
+  await send(page);
+  const password = page.getByLabel("Password", { exact: true });
+  await expect(password).toBeFocused();
+  await expect(password).toHaveAttribute("aria-invalid", "true");
+  await expect(password).toHaveAccessibleDescription(/Use 12 to 128 characters, not the same as your email\./);
+  await expectAccessible(page);
+});
+
+test("the passwords' mismatch is named on the first submit, even when the password also breaks a rule", async ({ page }) => {
+  await openSetup(page);
+  await fill(page, { password: "short", passwordAgain: "different" });
+  await send(page);
+  await expect(page.getByLabel("Password", { exact: true })).toBeFocused();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAccessibleDescription(/Use 12 to 128 characters\./);
+  await expect(page.getByLabel("Password again")).toHaveAccessibleDescription("The two passwords do not match.");
+});
+
+test("a second press while the first set-up request is on its way sends nothing more", async ({ page }) => {
+  let sent = 0;
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  await page.route("**/api/v1/setup", async (route) => {
+    sent += 1;
+    await held;
+    await route.fulfill(refusalReply("setup_code_wrong", {}, 403));
+  });
+  await openSetup(page);
+  await fill(page, {});
+  const form = page.locator("form.setup-form");
+  // Two submits in the same moment, before React has re-rendered the button.
+  await form.evaluate((element) => { element.requestSubmit(); element.requestSubmit(); });
+  await expect(page.getByRole("button", { name: "Creating administrator…" })).toBeVisible();
+  await expect.poll(() => sent).toBe(1);
+  release();
+  await expect(page.getByLabel("Set-up code")).toHaveAccessibleDescription(/That set-up code is not correct\./);
+  expect(sent).toBe(1);
 });
 
 test("a wrong code is refused with its message and the code field is focused", async ({ page }) => {
@@ -146,7 +189,8 @@ test("wrong codes are counted: after five from one address the page states the w
   expect((await reply).status()).toBe(429);
   const code = page.getByLabel("Set-up code");
   await expect(code).toBeFocused();
-  await expect(code).toHaveAccessibleDescription(/Wait 1 minute before trying again/);
+  // The wait is counted from the fifth failure, so a second may pass before the reply.
+  await expect(code).toHaveAccessibleDescription(/Wait (1 minute|59 seconds) before trying again/);
   await expect(code).toHaveAccessibleDescription(/deploy again to get a fresh set-up code/);
   await expectAccessible(page);
 });
@@ -157,6 +201,9 @@ test("other refusals each show their own message", async ({ page }) => {
     [refusalReply("setup_code_not_configured", {}, 503), "no set-up code has been issued"],
     [refusalReply("invalid_input", { field: "somethingElse" }), "Some of the details were not accepted."],
     [refusalReply("internal_error", {}, 500), "Set-up could not be completed. Try again."],
+    [refusalReply("updating", {}, 503), "Site Survey Design is updating. Try again in a moment."],
+    [refusalReply("https_required", {}, 403), "Set-up must be sent over HTTPS."],
+    [refusalReply("data_newer_than_build", {}, 503), "from a newer release of Site Survey Design"],
     [null, "The server could not be reached."],
   ];
   let next = 0;
@@ -171,8 +218,48 @@ test("other refusals each show their own message", async ({ page }) => {
     const alert = page.getByRole("alert");
     await expect(alert).toContainText(message);
     await expect(alert).toBeFocused();
+    if (next === 0) await expectAccessible(page);
     next += 1;
   }
+});
+
+test("a request that reached a copy with the earlier code says a new code was issued, on the code field (D-7)", async ({ page }) => {
+  await page.route("**/api/v1/setup", (route) => route.fulfill(refusalReply("setup_code_replaced", {}, 409)));
+  await openSetup(page);
+  await fill(page, {});
+  await send(page);
+  const code = page.getByLabel("Set-up code");
+  await expect(code).toBeFocused();
+  await expect(code).toHaveAccessibleDescription(/A new set-up code was issued moments ago\. Wait about a minute/);
+  await expectAccessible(page);
+});
+
+test("the set-up address also works with a trailing slash", async ({ page }) => {
+  await page.goto("/setup/");
+  await expect(page.getByRole("heading", { name: "Set up this installation" })).toBeVisible();
+});
+
+test("if the set-up page's code cannot be loaded, the page says so and offers a reload", async ({ page }) => {
+  await page.route(/\/assets\/SetupPage-[^/]*\.js$/, (route) => route.abort("connectionrefused"));
+  await page.goto("/setup");
+  await expect(page.getByRole("heading", { name: "The set-up page could not be loaded" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reload" })).toBeVisible();
+  await expectAccessible(page);
+});
+
+test("at 200% zoom (640 px wide) the form is one column, with no sideways scroll and no clipped label", async ({ page }) => {
+  await page.setViewportSize({ width: 640, height: 900 });
+  await openSetup(page);
+  const left = async (label) => (await page.getByLabel(label, { exact: true }).boundingBox()).x;
+  const columns = new Set([await left("Your name"), await left("Email"), await left("Password"), await left("Password again")]);
+  expect(columns.size, "the administrator's fields share one column").toBe(1);
+  await expectNoSidewaysScroll(page);
+  const clipped = await page.evaluate(() =>
+    [...document.querySelectorAll(".setup-page label, .setup-page legend, .setup-page h1, .setup-page button")]
+      .filter((element) => element.scrollWidth > element.clientWidth + 1 || element.getBoundingClientRect().right > window.innerWidth)
+      .map((element) => element.textContent));
+  expect(clipped).toEqual([]);
+  await expectAccessible(page);
 });
 
 test("when the state cannot be read, the prototype opens and the set-up address offers to try again", async ({ page }) => {
@@ -182,6 +269,7 @@ test("when the state cannot be read, the prototype opens and the set-up address 
   await expect(page).not.toHaveURL(/\/setup$/);
   await page.goto("/setup");
   await expect(page.getByRole("heading", { name: "Set-up cannot be checked" })).toBeVisible();
+  await expectAccessible(page);
   await page.unroute("**/api/v1/setup/state");
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByRole("heading", { name: "Set up this installation" })).toBeVisible();
@@ -189,11 +277,13 @@ test("when the state cannot be read, the prototype opens and the set-up address 
 
 test("completes set-up and confirms the installation's name and the administrator's email", async ({ page }, testInfo) => {
   await openSetup(page);
-  await fill(page, { code: setupCode(testInfo) });
+  // Typed in lower case with surrounding spaces: the code still matches.
+  await fill(page, { code: `  ${setupCode(testInfo).toLowerCase()}  ` });
   await send(page);
   await expect(page.getByRole("heading", { name: "Set-up is complete" })).toBeFocused();
   await expect(page.getByTestId("setup-done-installation")).toHaveText(ADMIN.installationName);
   await expect(page.getByTestId("setup-done-email")).toHaveText(ADMIN.email.toLowerCase());
+  await expect(page.getByTestId("setup-done-next")).toHaveText("Signing in arrives in a coming update; until then the app opens as before.");
   await expectNoSidewaysScroll(page);
   await expectAccessible(page);
 });
@@ -220,4 +310,5 @@ test("a set-up sent after another has finished is refused and the page says set-
   await send(page);
   expect((await reply).status()).toBe(409);
   await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeFocused();
+  await expectAccessible(page);
 });

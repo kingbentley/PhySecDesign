@@ -40,3 +40,13 @@
   invoke_dev_with: >-
     Deploy only to the 'PhySec Site Studio' test account; delete the extra Worker afterwards unless
     the spec says to keep it.
+- id: "5"
+  title: Code review fixes
+  description: >-
+    Apply the independent code review of story 1.2 in one round: Kevin's decisions D-7 (rollout
+    window), D-8 (transport), D-9 (Unicode), D-10 (next step) and the D-2 amendment, the set-up
+    code comparison, the Windows deploy spawn, and the set-up page's robustness, wording and test
+    gaps (patches 1-14).
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: ""

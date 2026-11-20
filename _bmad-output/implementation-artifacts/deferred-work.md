@@ -68,3 +68,14 @@
 - source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/4-acceptance-on-cloudflare.md`
   summary: Whether the "PhySec Site Studio" test account is on Workers Paid is still unconfirmed.
   evidence: Unverified. The session's token gets `Authentication error` from the subscriptions and billing endpoints; `usage_model: standard` and SQLite Durable Objects exist on the free plan too. Check the dashboard (Workers & Pages, Plans), or infer it from a deployed set-up: a free-plan Worker's CPU limit would likely stop a 128 MiB scrypt hash.
+
+## Deferred from: code review of story 1.2 (2026-11-20)
+
+- Not verified: two concurrent correct-code set-up requests each running a 128 MiB scrypt hash, or a hash that fails, against the 128 MB Worker memory limit. Until spec 4's deployed check 9 runs, such a failure surfaces as a 500 (`internal_error`) after the attempt was already counted.
+- The WebKit (iPhone) browser project and the CI `browser` job have never run (CI minutes exhausted on 2026-11-20; WebKit not installed in the cloud session). Criterion 28 and the WebKit side of criteria 2–4, 9, 18 and 25–27 remain "not run".
+- The set-up page and its refusal wording assume a Cloudflare deployment ("Shown once at the end of the Cloudflare deployment", "deploy again to get a fresh set-up code"), which is wrong for a self-hosted installation; reword in stories 2.21/2.22 with the self-hosted set-up code.
+- The code review re-found four items already recorded above (self-hosted origin and public address behind a TLS proxy; a spoofable `CF-Connecting-IP` self-hosted; the deploy command's untested `main()` wiring; tables created before the data-format guard); they stay as recorded.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/5-code-review-fixes.md`
+  summary: D-7 and D-8 are checked only in the local runtime; when spec 4's deployed checks run, add three: a plain `http://` request to `/api/v1/setup/state` answers 403 `https_required` while `http://.../` answers 308; an `https://` response carries `Strict-Transport-Security: max-age=31536000`; and, right after a redeploy, a set-up request answered by an old copy gets 409 `setup_code_replaced` (note how long that lasts, to confirm the "about a minute" the deploy command prints).
+  evidence: Real (verification gap): the server tests simulate `request.cf`, and R11 showed old copies keep running for minutes, so the length of the window and Cloudflare's real `tlsVersion` values are unobserved.

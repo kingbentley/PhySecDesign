@@ -61,6 +61,7 @@ function Finished({ installationName, email }) {
         <div><dt>Installation</dt><dd data-testid="setup-done-installation">{installationName}</dd></div>
         <div><dt>Administrator</dt><dd data-testid="setup-done-email">{email}</dd></div>
       </dl>
+      <p className="setup-lead" data-testid="setup-done-next">Signing in arrives in a coming update; until then the app opens as before.</p>
       <a className="setup-button" href="/">Open Site Survey Design</a>
     </Frame>
   );
@@ -95,6 +96,9 @@ function SetupForm({ onDone, onClosed }) {
   // (a new object each time, so the same message shown twice is focused again).
   const [general, setGeneral] = useState({ message: '' });
   const [sending, setSending] = useState(false);
+  // Set before the request is sent, so a second submit in the same moment (before the re-render
+  // that `sending` causes) sends nothing.
+  const inFlight = useRef(false);
   const refs = useRef({});
   const generalRef = useRef(null);
   const focusField = (field) => refs.current[field]?.focus();
@@ -113,15 +117,21 @@ function SetupForm({ onDone, onClosed }) {
 
   async function submit(event) {
     event.preventDefault();
-    if (sending) return;
+    if (inFlight.current) return;
     setGeneral({ message: '' });
     const { errors: found, input } = checkSetupFields(values);
     const first = SETUP_FIELDS.find((field) => found[field]);
     setErrors(found);
     if (first) { focusField(first); return; }
+    inFlight.current = true;
     setSending(true);
-    const result = await submitSetup(input);
-    setSending(false);
+    let result;
+    try {
+      result = await submitSetup(input);
+    } finally {
+      inFlight.current = false;
+      setSending(false);
+    }
     if (result.kind === 'done') return onDone(result);
     if (result.kind === 'closed') return onClosed();
     if (result.kind === 'field') {

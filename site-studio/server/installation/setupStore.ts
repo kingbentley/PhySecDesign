@@ -29,6 +29,15 @@ import { OperationRefusal } from "../objects/ObjectBase";
 //   the oldest of them leaves the window. Refused attempts are not counted.
 // - A new code fingerprint (a redeploy issued a fresh code) clears every count and every ticket.
 //
+// Rollout window (D-7, Kevin 2026-11-20): for minutes after a deploy, Worker copies with the old
+// secret and copies with the new one run side by side (experiment R11). The object therefore
+// remembers every fingerprint it has replaced. An attempt or a create carrying a replaced
+// fingerprint is refused with `setup_code_replaced` and changes nothing: no count, no ticket. Only
+// a fingerprint never seen before replaces the current one and resets counts and tickets, so
+// alternating copies cannot reset the counts and the old code stops working at once. Known cost:
+// after a Cloudflare rollback restores an older secret, set-up is refused until the next deploy
+// issues a new code.
+//
 // Tickets: each counted attempt returns a one-time ticket, kept with the fingerprint it was issued
 // under for 5 minutes. Creating the first administrator consumes one, so no create happens without
 // a counted attempt before it.
@@ -81,6 +90,10 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS setup_code (
      id INTEGER PRIMARY KEY CHECK (id = 1),
      fingerprint TEXT NOT NULL
+   )`,
+  `CREATE TABLE IF NOT EXISTS setup_code_replaced (
+     fingerprint TEXT PRIMARY KEY,
+     replaced_at INTEGER NOT NULL
    )`,
   `CREATE TABLE IF NOT EXISTS setup_failures_by_address (
      address TEXT PRIMARY KEY,
@@ -202,6 +215,37 @@ export class SetupStore {
     return rows[0]?.fingerprint ?? null;
   }
 
+  /** True when this fingerprint was the current one once and has since been replaced (D-7). */
+  private isReplaced(fingerprint: string): boolean {
+    return this.sql.exec("SELECT 1 FROM setup_code_replaced WHERE fingerprint = ?", fingerprint).toArray().length > 0;
+  }
+
+  /**
+   * Makes `fingerprint` the current one if it is new, remembering the one it replaces; refuses a
+   * replaced fingerprint with `setup_code_replaced`, changing nothing (D-7).
+   */
+  private acceptFingerprint(fingerprint: string, now: number): void {
+    const current = this.storedFingerprint();
+    if (current === fingerprint) return;
+    if (this.isReplaced(fingerprint)) throw new OperationRefusal("setup_code_replaced");
+    // A fresh code: every count starts again (CA-45), and tickets issued under the old code lapse.
+    this.storage.transactionSync(() => {
+      if (current !== null) {
+        this.sql.exec(
+          "INSERT INTO setup_code_replaced (fingerprint, replaced_at) VALUES (?, ?) ON CONFLICT (fingerprint) DO NOTHING",
+          current,
+          now,
+        );
+      }
+      this.clearCounts();
+      this.sql.exec("DELETE FROM setup_tickets");
+      this.sql.exec(
+        "INSERT INTO setup_code (id, fingerprint) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET fingerprint = excluded.fingerprint",
+        fingerprint,
+      );
+    });
+  }
+
   private clearCounts(): void {
     this.sql.exec("DELETE FROM setup_failures_by_address");
     this.sql.exec("DELETE FROM setup_failures");
@@ -231,22 +275,15 @@ export class SetupStore {
   /**
    * Raises the wrong-code counts for one attempt before its code is checked, or refuses it.
    * `fingerprint` is that of the configured code (the current secret), never of the entered code.
-   * Refuses with `setup_closed` once a user exists, and with `setup_wait` (carrying the seconds)
-   * while the address or the installation must wait; a refused attempt is not counted. A counted
+   * Refuses with `setup_closed` once a user exists, with `setup_code_replaced` when the fingerprint
+   * is one a newer code replaced (D-7), and with `setup_wait` (carrying the seconds) while the
+   * address or the installation must wait; a refused attempt is not counted. A counted
    * attempt returns a one-time ticket that `createFirstAdministrator` requires.
    */
   attempt(address: string, fingerprint: string, now: number): SetupAttemptCounted {
     if (this.hasUsers()) throw new OperationRefusal("setup_closed");
 
-    if (this.storedFingerprint() !== fingerprint) {
-      // A fresh code: every count starts again (CA-45), and tickets issued under the old code lapse.
-      this.clearCounts();
-      this.sql.exec("DELETE FROM setup_tickets");
-      this.sql.exec(
-        "INSERT INTO setup_code (id, fingerprint) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET fingerprint = excluded.fingerprint",
-        fingerprint,
-      );
-    }
+    this.acceptFingerprint(fingerprint, now);
 
     this.deleteClearedAddresses(now);
     this.sql.exec("DELETE FROM setup_tickets WHERE expires_at <= ?", now);
@@ -292,6 +329,8 @@ export class SetupStore {
   createFirstAdministrator(input: z.output<typeof createFirstAdministratorInput>, now: number): FirstAdministratorCreated {
     return this.storage.transactionSync(() => {
       if (this.hasUsers()) throw new OperationRefusal("setup_closed");
+      // A newer code replaced the one this request was accepted under, dropping its ticket (D-7).
+      if (this.isReplaced(input.fingerprint)) throw new OperationRefusal("setup_code_replaced");
       if (this.storedFingerprint() !== input.fingerprint) throw new OperationRefusal("setup_code_wrong");
       const consumed = this.sql
         .exec("DELETE FROM setup_tickets WHERE ticket = ? AND fingerprint = ? AND expires_at > ? RETURNING ticket", input.ticket, input.fingerprint, now)
@@ -328,6 +367,14 @@ export class SetupStore {
       this.sql.exec("DELETE FROM setup_tickets");
       return { userId, installationName: input.installationName, email: input.email };
     });
+  }
+
+  /** The replaced fingerprints, oldest first, for tests and diagnostics (D-7). */
+  replacedFingerprints(): string[] {
+    return this.sql
+      .exec<{ fingerprint: string }>("SELECT fingerprint FROM setup_code_replaced ORDER BY replaced_at ASC, fingerprint ASC")
+      .toArray()
+      .map((row) => row.fingerprint);
   }
 
   /** The stored counts, for tests and diagnostics. Holds no code, only its fingerprint. */

@@ -8,7 +8,13 @@ import { z } from "zod";
 //
 // Lengths count characters as people see them in the simplest sense, Unicode code points, so an
 // emoji counts once. Names and the email are trimmed of surrounding spaces before they are
-// measured and stored; a password is taken exactly as typed.
+// measured and stored; a password is otherwise taken exactly as typed.
+//
+// Unicode (D-9, Kevin 2026-11-20): before anything is measured, compared, hashed or stored, a
+// password is normalised to NFKC and a name (the installation's or a person's) to NFC, so that the
+// page and the server count the same characters and "é" typed as one code point or as "e" plus an
+// accent gives the same password hash. Every later check of a password (sign-in, story 1.3; any
+// password change) must hash `normalisePassword(password)` the same way.
 
 export const INSTALLATION_NAME_MAX = 80;
 export const PERSON_NAME_MAX = 80;
@@ -25,10 +31,29 @@ export function characterCount(value: string): number {
   return count;
 }
 
+/** A name as measured and stored: trimmed, then NFC (D-9). */
+export function normaliseName(value: string): string {
+  return value.trim().normalize("NFC");
+}
+
+/** A password as measured, compared and hashed: NFKC, nothing else (D-9). */
+export function normalisePassword(value: string): string {
+  return value.normalize("NFKC");
+}
+
+/**
+ * A set-up code as compared: surrounding and inner spaces and dashes removed, upper case. The
+ * generated code uses only upper-case letters and digits, so someone who types it in lower case,
+ * or in groups separated by spaces or dashes, still enters the same code.
+ */
+export function normaliseSetupCode(value: string): string {
+  return value.replace(/[\s\-\u2010-\u2015\u2212]/gu, "").toUpperCase();
+}
+
 function trimmedText(max: number) {
   return z
     .string()
-    .transform((value) => value.trim())
+    .transform(normaliseName)
     .refine((value) => {
       const count = characterCount(value);
       return count >= 1 && count <= max;
@@ -57,15 +82,18 @@ export function isLightlyValidEmail(normalised: string): boolean {
 /** An email address: trimmed, lower-cased, at most 254 characters, light format check (D-4). */
 export const emailField = z.string().transform(normaliseEmail).refine(isLightlyValidEmail);
 
-/** A password's own rule: 12 to 128 characters, nothing else (CA-03). */
-export const passwordField = z.string().refine((value) => {
-  const count = characterCount(value);
-  return count >= PASSWORD_MIN && count <= PASSWORD_MAX;
-});
+/** A password's own rule: 12 to 128 characters after NFKC, nothing else (CA-03, D-9). */
+export const passwordField = z
+  .string()
+  .transform(normalisePassword)
+  .refine((value) => {
+    const count = characterCount(value);
+    return count >= PASSWORD_MIN && count <= PASSWORD_MAX;
+  });
 
-/** True when the password equals the email, ignoring letter case (CA-03, D-4). */
+/** True when the password equals the email, ignoring letter case (CA-03, D-4), after NFKC (D-9). */
 export function passwordEqualsEmail(password: string, email: string): boolean {
-  return password.toLowerCase() === normaliseEmail(email);
+  return normalisePassword(password).toLowerCase() === normaliseEmail(email);
 }
 
 /** The set-up code as sent: present and bounded. Its value is checked by the server, never here. */

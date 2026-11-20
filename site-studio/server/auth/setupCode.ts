@@ -1,3 +1,4 @@
+import { normaliseSetupCode } from "../../shared/setup";
 import { bytesEqual } from "./password";
 
 // The set-up code (story 1.2). The Worker entry compares the entered code with the current Worker
@@ -19,11 +20,13 @@ export async function setupCodeFingerprint(code: string): Promise<string> {
 }
 
 /**
- * Compares an entered code with the configured one in constant time. Both are hashed first, so the
- * comparison takes the same time whatever their lengths. An empty configured code never matches.
+ * Compares an entered code with the configured one in constant time. Both are first normalised
+ * (spaces and dashes removed, upper case: `normaliseSetupCode`), then hashed, so the comparison
+ * takes the same time whatever their lengths. An empty configured code never matches.
  */
 export async function setupCodesMatch(entered: string, configured: string): Promise<boolean> {
-  if (configured.length === 0) return false;
-  const [a, b] = await Promise.all([sha256(entered), sha256(configured)]);
+  const expected = normaliseSetupCode(configured);
+  if (expected.length === 0) return false;
+  const [a, b] = await Promise.all([sha256(normaliseSetupCode(entered)), sha256(expected)]);
   return bytesEqual(a, b);
 }

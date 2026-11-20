@@ -178,10 +178,11 @@ describe("the first administrator's stored row", () => {
 
     const name = "create-stale-fingerprint";
     const ticket = await ticketFor(name, "198.51.100.4", first);
-    // A redeploy issued a new code, seen by another attempt in the meantime.
+    // A redeploy issued a new code, seen by another attempt in the meantime: the earlier code's
+    // fingerprint is now a replaced one (D-7).
     await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.5", fingerprint: second });
     const stale = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, ticket));
-    expect(stale.ok ? null : stale.body.error.code).toBe("setup_code_wrong");
+    expect(stale.ok ? null : stale.body.error.code).toBe("setup_code_replaced");
     expect(await callObject(env.INSTALLATION, idFor(name), "setupState")).toEqual({ ok: true, value: { state: "open" } });
   });
 });
@@ -299,13 +300,17 @@ describe("the one-time ticket from a counted attempt", () => {
     await ticketFor(name, "198.51.100.12", second);
     const withOld = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(second, old));
     expect(withOld.ok ? null : withOld.body.error.code).toBe("setup_code_wrong");
+    // The create from the copy that accepted the old code: its ticket was dropped by the newer
+    // fingerprint, so it gets the replaced-code refusal, not "wrong code" (D-7).
     const staleBoth = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, old));
-    expect(staleBoth.ok ? null : staleBoth.body.error.code).toBe("setup_code_wrong");
+    expect(staleBoth.ok ? null : staleBoth.body.error.code).toBe("setup_code_replaced");
 
-    // The old code's fingerprint coming back (copies alternating during a deploy) does not revive it.
-    await ticketFor(name, "198.51.100.13", first);
+    // The old code's fingerprint coming back (copies alternating during a deploy) is refused and
+    // does not revive the ticket.
+    const back = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.13", fingerprint: first });
+    expect(back.ok ? null : back.body.error.code).toBe("setup_code_replaced");
     const revived = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, old));
-    expect(revived.ok ? null : revived.body.error.code).toBe("setup_code_wrong");
+    expect(revived.ok ? null : revived.body.error.code).toBe("setup_code_replaced");
     expect(await storedRows(name)).toEqual({ users: 0, settings: 0 });
   });
 });
@@ -508,6 +513,57 @@ describe("wrong-code counts", () => {
     expect(counts.fingerprint).toBe(second);
     expect(counts.byAddress).toEqual([{ address, failures: 1, lastFailureAt: T0 + 2000 }]);
     expect(counts.recent).toEqual([T0 + 2000]);
+  });
+
+  it("survive an A to B to A flip of fingerprints: the replaced A is refused and changes nothing (D-7)", async () => {
+    const name = "counts-flip";
+    const [first, second] = await codeFingerprints();
+    const address = "203.0.113.17";
+    for (let attempt = 0; attempt < 3; attempt += 1) expect((await attemptAt(name, address, first, T0)).outcome).toBe("counted");
+    // B is new: it replaces A and resets counts and tickets.
+    expect((await attemptAt(name, address, second, T0 + 1000)).outcome).toBe("counted");
+    expect((await attemptAt(name, address, second, T0 + 2000)).outcome).toBe("counted");
+    const before = await countsOf(name);
+    expect(before.byAddress).toEqual([{ address, failures: 2, lastFailureAt: T0 + 2000 }]);
+    const tickets = () => runInDurableObject(stubFor(name), (_instance, state) => state.storage.sql.exec("SELECT * FROM setup_tickets").toArray().length);
+    const ticketsBefore = await tickets();
+    expect(ticketsBefore).toBe(2);
+
+    // A again, from a copy still running with the earlier secret: refused, nothing counted or reset.
+    for (const at of [T0 + 3000, T0 + 4000]) {
+      const replaced = await attemptAt(name, address, first, at);
+      expect(replaced).toEqual({ outcome: "setup_code_replaced", retryAfterSeconds: undefined });
+    }
+    // And B again still counts on top of the earlier two.
+    expect((await attemptAt(name, address, second, T0 + 5000)).outcome).toBe("counted");
+    const after = await countsOf(name);
+    expect(after.fingerprint).toBe(second);
+    expect(after.byAddress).toEqual([{ address, failures: 3, lastFailureAt: T0 + 5000 }]);
+    expect(after.recent).toEqual([T0 + 1000, T0 + 2000, T0 + 5000]);
+    expect(await tickets()).toBe(3);
+    expect(await runInDurableObject(stubFor(name), (instance: Installation) => instance.setup.replacedFingerprints())).toEqual([first]);
+  });
+
+  it("refuse a replaced fingerprint with the new refusal, leaving counts, tickets and the current fingerprint untouched (D-7)", async () => {
+    const name = "counts-replaced-untouched";
+    const [first, second] = await codeFingerprints();
+    await ticketFor(name, "203.0.113.18", first);
+    await ticketFor(name, "203.0.113.19", second);
+    const snapshot = await countsOf(name);
+    const result = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "203.0.113.20", fingerprint: first });
+    expect(result.ok ? null : result.body).toEqual({
+      error: { code: "setup_code_replaced", message: "A new set-up code was issued. Try again in a minute." },
+    });
+    expect(result.ok ? null : result.status).toBe(409);
+    expect(await countsOf(name)).toEqual(snapshot);
+    // A third, never-seen code replaces B in turn; both earlier ones stay refused.
+    const third = await setupCodeFingerprint("third-code-abcdefghijk");
+    await ticketFor(name, "203.0.113.21", third);
+    for (const replaced of [first, second]) {
+      const again = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "203.0.113.21", fingerprint: replaced });
+      expect(again.ok ? null : again.body.error.code).toBe("setup_code_replaced");
+    }
+    expect((await countsOf(name)).byAddress).toEqual([expect.objectContaining({ address: "203.0.113.21", failures: 1 })]);
   });
 
   it("are cleared when set-up completes", async () => {

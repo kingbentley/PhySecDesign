@@ -5,7 +5,11 @@ import {
   EMAIL_MAX,
   emailField,
   installationNameField,
+  normaliseName,
+  normalisePassword,
+  normaliseSetupCode,
   passwordEqualsEmail,
+  passwordField,
   personNameField,
   setupInput,
 } from "../shared/setup";
@@ -133,5 +137,45 @@ describe("set-up input: code and shape", () => {
     const secret = "my-secret-password-equal@example.com";
     const result = check({ email: secret, password: secret });
     expect(JSON.stringify(result)).not.toContain(secret);
+  });
+});
+
+describe("Unicode normalisation (D-9)", () => {
+  it("measures a password after NFKC: decomposed accents count once, compatibility forms fold", () => {
+    // Eleven letters, each "e" plus a combining accent: 22 code points as typed, 11 after NFKC.
+    const elevenAccented = "e\u0301".repeat(11);
+    expect(characterCount(elevenAccented)).toBe(22);
+    expect(characterCount(normalisePassword(elevenAccented))).toBe(11);
+    expect(passwordField.safeParse(elevenAccented).success).toBe(false);
+    expect(passwordField.safeParse("e\u0301".repeat(12)).success).toBe(true);
+    // 128 composed characters pass; 128 decomposed ones are the same password.
+    expect(passwordField.safeParse("\u00e9".repeat(128)).success).toBe(true);
+    expect(passwordField.safeParse("e\u0301".repeat(128)).success).toBe(true);
+    expect(passwordField.safeParse("\u00e9".repeat(129)).success).toBe(false);
+    // NFKC folds a ligature and full-width letters.
+    expect(normalisePassword("\ufb01\uff21")).toBe("fiA");
+  });
+
+  it("gives the same password, as parsed for hashing, for composed and decomposed spellings", () => {
+    const composed = check({ password: "caf\u00e9 cr\u00e8me br\u00fbl\u00e9e" });
+    const decomposed = check({ password: "caf\u00e9 cr\u00e8me br\u00fbl\u00e9e".normalize("NFD") });
+    expect(composed.ok && decomposed.ok).toBe(true);
+    if (composed.ok && decomposed.ok) expect(decomposed.value.password).toBe(composed.value.password);
+  });
+
+  it("compares the password with the email after NFKC", () => {
+    expect(passwordEqualsEmail("\uff44\uff41\uff4e\uff41@example.com", "dana@example.com")).toBe(true);
+  });
+
+  it("stores names in NFC and measures them after NFC", () => {
+    expect(normaliseName("  Zoe\u0301 ")).toBe("Zo\u00e9");
+    const eighty = "e\u0301".repeat(80);
+    expect(installationNameField.safeParse(eighty)).toMatchObject({ success: true, data: "\u00e9".repeat(80) });
+    expect(personNameField.safeParse(eighty)).toMatchObject({ success: true, data: "\u00e9".repeat(80) });
+    expect(personNameField.safeParse("e\u0301".repeat(81)).success).toBe(false);
+  });
+
+  it("normalises a set-up code: no spaces or dashes, upper case", () => {
+    expect(normaliseSetupCode(" ab-cd ef\u2014gh ")).toBe("ABCDEFGH");
   });
 });

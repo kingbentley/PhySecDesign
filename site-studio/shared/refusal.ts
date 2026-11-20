@@ -33,6 +33,10 @@ export const REFUSALS = {
     message: "Set-up is not available yet: no set-up code has been issued for this installation.",
   },
   origin_refused: { status: 403, message: "This request must come from Site Survey Design's own page." },
+  // D-7: a Worker copy still running with a replaced code's secret (the minutes after a deploy).
+  setup_code_replaced: { status: 409, message: "A new set-up code was issued. Try again in a minute." },
+  // D-8: a server request that reached Cloudflare over plain HTTP is refused, never redirected.
+  https_required: { status: 403, message: "This address must be reached over HTTPS: use https:// instead of http://." },
 } as const satisfies Record<string, { status: number; message: string }>;
 
 export type RefusalCode = keyof typeof REFUSALS;

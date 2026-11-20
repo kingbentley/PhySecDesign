@@ -9,10 +9,13 @@ import {
   readDeployOutput,
   runDeploy,
   SETUP_CODE_ALPHABET,
+  SETTLE_NOTICE,
   SETUP_CODE_SECRET,
   waitForSetupState,
   wranglerDeployArgs,
+  wranglerSpawn,
 } from "../scripts/deploy-cloudflare.mjs";
+import path from "node:path";
 
 function harness({ state, targets = ["https://site-studio.example.workers.dev"], workerName = "site-studio" }) {
   const calls = { deploy: 0, asked: [], secrets: [], out: [], err: [] };
@@ -78,6 +81,16 @@ describe("the deploy command", () => {
     const printed = calls.out.join("\n");
     assert.equal(printed.split(value).length - 1, 1, "the code is printed exactly once");
     assert.deepEqual(calls.err, []);
+  });
+
+  it("tells the installer to wait about a minute before using a new code (D-7)", async () => {
+    const { calls, options } = harness({ state: "open" });
+    await runDeploy(options);
+    assert.equal(calls.out.at(-1), SETTLE_NOTICE);
+    assert.match(SETTLE_NOTICE, /^Wait about a minute before using it/);
+    const closed = harness({ state: "closed" });
+    await runDeploy(closed.options);
+    assert.ok(!closed.calls.out.includes(SETTLE_NOTICE));
   });
 
   it("issues a new code on each deploy while set-up stays open", async () => {
@@ -205,5 +218,28 @@ describe("the deploy command's options", () => {
     for (const argv of [["--name"], ["--name", "--url", "https://a.test"], ["--url"], ["--name", " "], ["--nmae", "w"], ["w"]]) {
       assert.ok(typeof parseDeployArgs(argv).error === "string", argv.join(" "));
     }
+  });
+});
+
+describe("starting Wrangler", () => {
+  it("runs Wrangler's entry script with Node and no shell, on every platform", () => {
+    const root = path.join(path.sep, "Users", "Kevin Smith", "My Projects", "site-studio");
+    const spawned = wranglerSpawn(root, ["deploy"], { execPath: "/usr/bin/node" });
+    assert.equal(spawned.command, "/usr/bin/node");
+    assert.deepEqual(spawned.args, [path.join(root, "node_modules", "wrangler", "bin", "wrangler.js"), "deploy"]);
+    assert.equal(spawned.options.shell, false);
+    assert.equal(spawned.options.cwd, root);
+    assert.ok(!spawned.command.endsWith(".cmd"));
+  });
+
+  it("passes a path with spaces and a Worker name with shell characters as single, unchanged arguments", () => {
+    const root = path.join(path.sep, "Users", "Kevin Smith", "site studio");
+    const hostile = 'w & calc.exe | "x" %PATH% ^ > out';
+    const spawned = wranglerSpawn(root, wranglerDeployArgs(hostile));
+    assert.deepEqual(spawned.args.slice(1), ["deploy", "--name", hostile]);
+    assert.ok(spawned.args[0].startsWith(root), "the repository path stays one argument");
+    assert.equal(spawned.options.shell, false);
+    const secret = wranglerSpawn(root, ["secret", "put", SETUP_CODE_SECRET, "--name", hostile]);
+    assert.deepEqual(secret.args.slice(1), ["secret", "put", "SETUP_CODE", "--name", hostile]);
   });
 });

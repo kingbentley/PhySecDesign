@@ -36,6 +36,12 @@ export const STATE_RETRY_MS = 3_000;
 /** How long one request to the state route may take. */
 export const STATE_REQUEST_TIMEOUT_MS = 10_000;
 
+/**
+ * For a minute or so after a deploy, some copies of the Worker still run with the earlier code
+ * and set-up answers that a new code was issued (D-7), so the command says to wait.
+ */
+export const SETTLE_NOTICE = "Wait about a minute before using it: until every copy of the Worker has the new code, set-up answers that a new code was issued.";
+
 /** A set-up code from a cryptographic random source. */
 export function generateSetupCode(random = randomBytes) {
   const bytes = random(SETUP_CODE_LENGTH);
@@ -140,6 +146,7 @@ export async function runDeploy({ deploy, askState, putSecret, print, printError
   print("");
   print(`Open ${address} and enter this code to create the first administrator. It is shown only`);
   print("this once. Deploying again before set-up is complete issues a new code and the old one stops working.");
+  print(SETTLE_NOTICE);
   return 0;
 }
 
@@ -170,14 +177,27 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * How Wrangler is started: this Node binary running Wrangler's own entry script, with every
+ * argument passed as its own entry and no shell on any platform. On Windows this avoids
+ * `wrangler.cmd`, which needs `cmd.exe`: there an unquoted repository path with spaces would split
+ * and a Worker name containing `&` or `|` would run as a command.
+ */
+export function wranglerSpawn(root, args, { execPath = process.execPath } = {}) {
+  return {
+    command: execPath,
+    args: [path.join(root, "node_modules", "wrangler", "bin", "wrangler.js"), ...args],
+    options: { cwd: root, shell: false, windowsHide: true },
+  };
+}
+
 function runWrangler(root, args, { env = process.env, input } = {}) {
-  const binary = path.join(root, "node_modules", ".bin", process.platform === "win32" ? "wrangler.cmd" : "wrangler");
+  const { command, args: spawnArgs, options } = wranglerSpawn(root, args);
   return new Promise((resolve, reject) => {
-    const child = spawn(binary, args, {
-      cwd: root,
+    const child = spawn(command, spawnArgs, {
+      ...options,
       env,
       stdio: [input === undefined ? "inherit" : "pipe", "inherit", "inherit"],
-      shell: process.platform === "win32",
     });
     child.once("error", reject);
     child.once("exit", (code) => (code === 0 ? resolve() : reject(new Error(`wrangler ${args[0]} exited with ${code}.`))));

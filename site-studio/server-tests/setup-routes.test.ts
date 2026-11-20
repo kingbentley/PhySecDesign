@@ -7,6 +7,8 @@ import type { Env } from "../server/env";
 import { handleRequest } from "../server/index";
 import type { Installation } from "../server/installation/Installation";
 import { SETTINGS_TABLE, USERS_TABLE } from "../server/installation/setupStore";
+import { verifyPassword, type PasswordHash } from "../server/auth/password";
+import { normalisePassword } from "../shared/setup";
 
 // The set-up state and set-up routes (story 1.2: CAP-2, CAP-4, the route half of CAP-7, CAP-8).
 // Each test gets its own installation object through a namespace that prefixes the fixed name,
@@ -229,6 +231,96 @@ describe("POST /api/v1/setup", () => {
     // The new fingerprint cleared the three earlier failures; only the old-code attempt counts.
     expect((await readStored(stub)).counts.byAddress[0]?.failures).toBe(1);
     expect((await postSetup(after, validInput(second), { address: "198.51.100.8" })).status).toBe(200);
+  });
+
+  it("refuses the earlier code's copies with setup_code_replaced once a new code arrived, counting nothing (D-7)", async () => {
+    const first = randomCode();
+    const second = randomCode();
+    const { env: oldCopy, stub } = installation("rollout", first);
+    const { env: newCopy } = installation("rollout", second);
+    // Copies with the earlier secret, then the new one, then the earlier one again (R11).
+    expect((await postSetup(oldCopy, validInput("wrong-" + randomCode()), { address: "198.51.100.30" })).status).toBe(403);
+    expect((await postSetup(newCopy, validInput("wrong-" + randomCode()), { address: "198.51.100.30" })).status).toBe(403);
+    const before = (await readStored(stub)).counts;
+    expect(before.byAddress).toEqual([expect.objectContaining({ address: "198.51.100.30", failures: 1 })]);
+
+    // The installer already holds the new code, but the request reaches an old copy.
+    const replaced = await postSetup(oldCopy, validInput(second), { address: "198.51.100.30" });
+    expect(replaced.status).toBe(409);
+    expect(await refusalOf(replaced, [first, second, "correct horse battery"])).toEqual({
+      code: "setup_code_replaced",
+      message: REFUSALS.setup_code_replaced.message,
+    });
+    // Even the earlier code itself no longer works there.
+    expect((await refusalOf(await postSetup(oldCopy, validInput(first)), [first])).code).toBe("setup_code_replaced");
+    expect((await readStored(stub)).counts).toEqual(before);
+    expect((await postSetup(newCopy, validInput(second), { address: "198.51.100.30" })).status).toBe(200);
+  });
+
+  it("gives setup_code_replaced to a create whose ticket a newer code dropped while it was hashing (D-7)", async () => {
+    const first = randomCode();
+    const second = randomCode();
+    let newCopy: Env | null = null;
+    // Between the old copy's counted attempt and its create, a request reaches a new copy.
+    const { env: oldCopy, stub, calls } = installation("dropped-ticket", first, async (operation, send) => {
+      if (operation === "createFirstAdministrator" && newCopy) {
+        await postSetup(newCopy, validInput("wrong-" + randomCode()), { address: "198.51.100.32" });
+      }
+      return send();
+    });
+    newCopy = installation("dropped-ticket", second).env;
+    const response = await postSetup(oldCopy, validInput(first), { address: "198.51.100.31" });
+    expect(response.status).toBe(409);
+    expect((await refusalOf(response, [first, second, "correct horse battery"])).code).toBe("setup_code_replaced");
+    expect(calls.get("createFirstAdministrator")).toBe(1);
+    expect((await readStored(stub)).users).toEqual([]);
+  });
+
+  it("accepts the code typed in lower case, with spaces or dashes, or with surrounding spaces", async () => {
+    const code = "K7QM2XVB9TSR4NLPWZ8HJ3CD";
+    for (const [index, entered] of [
+      "k7qm2xvb9tsr4nlpwz8hj3cd",
+      "  K7QM 2XVB 9TSR 4NLP WZ8H J3CD  ",
+      "k7qm-2xvb-9tsr-4nlp-wz8h-j3cd",
+    ].entries()) {
+      const { env: target } = installation(`code-forms-${index}`, code);
+      const response = await postSetup(target, validInput(entered));
+      expect(response.status, entered).toBe(200);
+    }
+    const { env: wrong } = installation("code-forms-wrong", code);
+    expect((await postSetup(wrong, validInput("k7qm-2xvb-9tsr-4nlp-wz8h-j3cE"))).status).toBe(403);
+  });
+
+  it("hashes the password after NFKC, so a composed and a decomposed accent give the same password (D-9)", async () => {
+    const code = randomCode();
+    const composed = "caf\u00e9 cr\u00e8me br\u00fbl\u00e9e";
+    const decomposed = composed.normalize("NFD");
+    expect(decomposed).not.toBe(composed);
+    const { env: target, stub } = installation("nfkc", code);
+    expect((await postSetup(target, validInput(code, { password: decomposed, name: "Zo\u0065\u0301 Admin" }))).status).toBe(200);
+    const stored = await runInDurableObject(stub, (_instance: Installation, state) =>
+      state.storage.sql
+        .exec<{ name: string; password_algorithm: string; password_n: number; password_r: number; password_p: number; password_key_length: number; password_salt: string; password_hash: string }>(
+          `SELECT * FROM ${USERS_TABLE}`,
+        )
+        .one(),
+    );
+    const hash: PasswordHash = {
+      algorithm: stored.password_algorithm,
+      n: stored.password_n,
+      r: stored.password_r,
+      p: stored.password_p,
+      keyLength: stored.password_key_length,
+      salt: stored.password_salt,
+      hash: stored.password_hash,
+    } as PasswordHash;
+    // Story 1.3 checks sign-in the same way: the NFKC form of what was typed, either spelling.
+    expect(await verifyPassword(normalisePassword(composed), hash)).toBe(true);
+    expect(await verifyPassword(normalisePassword(decomposed), hash)).toBe(true);
+    // The hash is of the NFKC form, not of the code points as sent.
+    expect(await verifyPassword(decomposed, hash)).toBe(false);
+    // The name is stored in NFC.
+    expect(stored.name).toBe("Zo\u00e9 Admin");
   });
 
   it("counts IPv6 addresses by their /64", async () => {
