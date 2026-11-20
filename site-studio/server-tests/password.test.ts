@@ -1,4 +1,4 @@
-import { scryptSync } from "node:crypto";
+import { scrypt, scryptSync } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
   fromBase64,
@@ -53,6 +53,26 @@ describe("password hashing", () => {
     const stored = { algorithm: "scrypt" as const, n: 1024, r: 8, p: 1, keyLength: 32, salt: toBase64(salt), hash: toBase64(new Uint8Array(weaker)) };
     expect(await verifyPassword("older password", stored)).toBe(true);
     expect(await verifyPassword("other password", stored)).toBe(false);
+  });
+
+  it("matches RFC 7914's known-answer vector, through the code's derive path and through node:crypto.scrypt", async () => {
+    // RFC 7914 section 12: P = "pleaseletmein", S = "SodiumChloride", N = 16384, r = 8, p = 1, dkLen = 64.
+    const expectedHex =
+      "7023bdcb3afd7348461c06cd81fd38ebfda8fbba904f8e3ea9b543f6545da1f2" +
+      "d5432955613f0fcf62d49705242a9af9e61e85dc0d651e40dfcf017b45575887";
+    const expected = new Uint8Array(expectedHex.match(/../g)!.map((pair) => parseInt(pair, 16)));
+    const salt = new TextEncoder().encode("SodiumChloride");
+    const stored = { algorithm: "scrypt" as const, n: 16_384, r: 8, p: 1, keyLength: 64, salt: toBase64(salt), hash: toBase64(expected) };
+    expect(await verifyPassword("pleaseletmein", stored)).toBe(true);
+    expect(await verifyPassword("pleaseletmeim", stored)).toBe(false);
+
+    // The same call the code makes: async scrypt over UTF-8 bytes with maxmem raised.
+    const key = await new Promise<Uint8Array>((resolve, reject) =>
+      scrypt(new TextEncoder().encode("pleaseletmein"), salt, 64, { N: 16_384, r: 8, p: 1, maxmem: SCRYPT_MAXMEM }, (error, derived) =>
+        error ? reject(error) : resolve(new Uint8Array(derived)),
+      ),
+    );
+    expect([...key].map((byte) => byte.toString(16).padStart(2, "0")).join("")).toBe(expectedHex);
   });
 
   it("round-trips base64", () => {

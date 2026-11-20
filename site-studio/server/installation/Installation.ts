@@ -7,6 +7,7 @@ import {
   setupAttemptInput,
   SetupStore,
   type FirstAdministratorCreated,
+  type SetupAttemptCounted,
 } from "./setupStore";
 
 // The installation object: one per installation, always named "installation" (AD-2). It holds
@@ -41,15 +42,16 @@ export class Installation extends ObjectBase<Env> {
 
     // Raises the wrong-code counts for one set-up attempt, before the Worker checks its code. The
     // fingerprint is the configured code's (see server/auth/setupCode.ts), never the entered code's.
+    // Answers a one-time ticket, valid 5 minutes, that the create below requires.
     this.ops.set("setupAttempt", {
-      run: (raw): { counted: true } => {
+      run: (raw): SetupAttemptCounted => {
         const input = parseOperationInput(setupAttemptInput, raw);
-        this.setup.attempt(input.address, input.fingerprint, Date.now());
-        return { counted: true };
+        return this.setup.attempt(input.address, input.fingerprint, Date.now());
       },
     });
 
-    // Creates the first administrator after the Worker accepted the code and hashed the password.
+    // Creates the first administrator after the Worker accepted the code and hashed the password,
+    // consuming the ticket from that request's counted attempt.
     // Synchronous from check to insert, so two requests at once leave one administrator.
     this.ops.set("createFirstAdministrator", {
       run: (raw): FirstAdministratorCreated => {

@@ -52,8 +52,16 @@ function derive(password: string, salt: Uint8Array, n: number, r: number, p: num
   });
 }
 
+/** A hash made with the current parameters: what the installation object accepts at set-up. */
+export interface CurrentPasswordHash extends PasswordHash {
+  n: typeof SCRYPT_N;
+  r: typeof SCRYPT_R;
+  p: typeof SCRYPT_P;
+  keyLength: typeof SCRYPT_KEY_LENGTH;
+}
+
 /** Hashes a password with a fresh random salt and the current parameters. */
-export async function hashPassword(password: string): Promise<PasswordHash> {
+export async function hashPassword(password: string): Promise<CurrentPasswordHash> {
   const salt = crypto.getRandomValues(new Uint8Array(SCRYPT_SALT_BYTES));
   const key = await derive(password, salt, SCRYPT_N, SCRYPT_R, SCRYPT_P, SCRYPT_KEY_LENGTH);
   return {

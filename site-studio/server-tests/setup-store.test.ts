@@ -6,13 +6,18 @@ import { setupCodeFingerprint } from "../server/auth/setupCode";
 import { Installation } from "../server/installation/Installation";
 import {
   ADDRESS_CLEAR_MS,
+  addressClearsAt,
   addressWaitMs,
   CAP_WINDOW_MS,
   INSTALLATION_CAP,
+  MAX_WAIT_MS,
   SETTINGS_TABLE,
+  createFirstAdministratorInput,
+  TICKET_TTL_MS,
   USERS_TABLE,
   type CreateFirstAdministratorInput,
 } from "../server/installation/setupStore";
+import { toBase64 } from "../server/auth/password";
 import { callObject } from "../server/objects/call";
 import type { ObjectBase } from "../server/objects/ObjectBase";
 import { tableExists } from "./helpers";
@@ -37,6 +42,14 @@ function codeFingerprints(): Promise<[string, string]> {
   return fingerprints;
 }
 
+/** Makes one counted attempt through the object and answers its one-time ticket. */
+async function ticketFor(name: string, address: string, fingerprint: string): Promise<string> {
+  const result = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address, fingerprint });
+  if (!result.ok) throw new Error(`attempt refused: ${result.body.error.code}`);
+  const { ticket } = result.value as { counted: true; ticket: string };
+  return ticket;
+}
+
 /** Runs one attempt directly on the store at a chosen time; answers "counted" or the refusal. */
 async function attemptAt(name: string, address: string, fingerprint: string, now: number) {
   return runInDurableObject(stubFor(name), (instance: Installation) => {
@@ -54,9 +67,14 @@ function countsOf(name: string) {
   return runInDurableObject(stubFor(name), (instance: Installation) => instance.setup.counts());
 }
 
-async function adminInput(fingerprint: string, overrides: Partial<CreateFirstAdministratorInput> = {}): Promise<CreateFirstAdministratorInput> {
+async function adminInput(
+  fingerprint: string,
+  ticket: string,
+  overrides: Partial<CreateFirstAdministratorInput> = {},
+): Promise<CreateFirstAdministratorInput> {
   return {
     fingerprint,
+    ticket,
     installationName: "Acme Security",
     publicAddress: "https://survey.acme.test",
     name: "Dana Admin",
@@ -71,8 +89,8 @@ describe("set-up state", () => {
     const name = "state";
     const [fingerprint] = await codeFingerprints();
     expect(await callObject(env.INSTALLATION, idFor(name), "setupState")).toEqual({ ok: true, value: { state: "open" } });
-    expect((await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.1", fingerprint })).ok).toBe(true);
-    const created = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint));
+    const ticket = await ticketFor(name, "198.51.100.1", fingerprint);
+    const created = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket));
     expect(created).toEqual({
       ok: true,
       value: { userId: expect.any(String), installationName: "Acme Security", email: "dana@acme.test" },
@@ -82,7 +100,7 @@ describe("set-up state", () => {
     // Once a user exists, the code no longer works: attempts and creates are refused as closed.
     const attempt = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.1", fingerprint });
     expect(attempt.ok ? null : attempt.body.error.code).toBe("setup_closed");
-    const again = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, { email: "other@acme.test" }));
+    const again = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket, { email: "other@acme.test" }));
     expect(again.ok ? null : again.body.error.code).toBe("setup_closed");
   });
 });
@@ -92,9 +110,9 @@ describe("the first administrator's stored row", () => {
     const name = "stored-row";
     const password = "correct horse battery";
     const [fingerprint] = await codeFingerprints();
-    await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.2", fingerprint });
+    const ticket = await ticketFor(name, "198.51.100.2", fingerprint);
     const passwordHash = await hashPassword(password);
-    const created = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, { passwordHash }));
+    const created = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket, { passwordHash }));
     expect(created.ok).toBe(true);
 
     const stored = await runInDurableObject(stubFor(name), (_instance, state) => ({
@@ -128,7 +146,7 @@ describe("the first administrator's stored row", () => {
   it("refuses input that breaks the rules, naming the field and never the value", async () => {
     const name = "create-invalid";
     const [fingerprint] = await codeFingerprints();
-    await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.3", fingerprint });
+    const ticket = await ticketFor(name, "198.51.100.3", fingerprint);
     const cases: [Partial<CreateFirstAdministratorInput>, string][] = [
       [{ installationName: "x".repeat(81) }, "installationName"],
       [{ name: "" }, "name"],
@@ -136,7 +154,7 @@ describe("the first administrator's stored row", () => {
       [{ publicAddress: "https://survey.acme.test/setup?x=1" }, "publicAddress"],
     ];
     for (const [overrides, field] of cases) {
-      const result = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, overrides));
+      const result = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket, overrides));
       expect(result.ok, field).toBe(false);
       if (!result.ok) {
         expect(result.body.error).toMatchObject({ code: "invalid_input", field });
@@ -145,7 +163,7 @@ describe("the first administrator's stored row", () => {
       }
     }
     const badHash = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", {
-      ...(await adminInput(fingerprint)),
+      ...(await adminInput(fingerprint, ticket)),
       passwordHash: { algorithm: "plain", value: "correct horse battery" },
     });
     expect(badHash.ok ? null : badHash.body.error.code).toBe("invalid_input");
@@ -155,16 +173,140 @@ describe("the first administrator's stored row", () => {
 
   it("is refused when the code's fingerprint changed after the attempt, or no attempt was made", async () => {
     const [first, second] = await codeFingerprints();
-    const never = await callObject(env.INSTALLATION, idFor("create-no-attempt"), "createFirstAdministrator", await adminInput(first));
+    const never = await callObject(env.INSTALLATION, idFor("create-no-attempt"), "createFirstAdministrator", await adminInput(first, "a".repeat(64)));
     expect(never.ok ? null : never.body.error.code).toBe("setup_code_wrong");
 
     const name = "create-stale-fingerprint";
-    await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.4", fingerprint: first });
+    const ticket = await ticketFor(name, "198.51.100.4", first);
     // A redeploy issued a new code, seen by another attempt in the meantime.
     await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.5", fingerprint: second });
-    const stale = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first));
+    const stale = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, ticket));
     expect(stale.ok ? null : stale.body.error.code).toBe("setup_code_wrong");
     expect(await callObject(env.INSTALLATION, idFor(name), "setupState")).toEqual({ ok: true, value: { state: "open" } });
+  });
+});
+
+describe("password hash parameters at create", () => {
+  it("are pinned to scrypt N = 131,072, r = 8, p = 1, a 16-byte salt and a 32-byte hash; others are refused and nothing is written", async () => {
+    const name = "create-pinned-parameters";
+    const [fingerprint] = await codeFingerprints();
+    const ticket = await ticketFor(name, "198.51.100.7", fingerprint);
+    const good = await hashPassword("correct horse battery");
+    const cases: [Record<string, unknown>, string][] = [
+      [{ n: 16_384 }, "passwordHash.n"],
+      [{ n: 262_144 }, "passwordHash.n"],
+      [{ r: 1 }, "passwordHash.r"],
+      [{ p: 2 }, "passwordHash.p"],
+      [{ keyLength: 64 }, "passwordHash.keyLength"],
+      [{ salt: toBase64(new Uint8Array(8)) }, "passwordHash.salt"],
+      [{ salt: toBase64(new Uint8Array(17)) }, "passwordHash.salt"],
+      [{ hash: toBase64(new Uint8Array(16)) }, "passwordHash.hash"],
+      [{ hash: toBase64(new Uint8Array(64)) }, "passwordHash.hash"],
+      [{ hash: "A" }, "passwordHash.hash"],
+    ];
+    for (const [change, field] of cases) {
+      const input = await adminInput(fingerprint, ticket, { passwordHash: { ...good, ...change } as typeof good });
+      const result = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", input);
+      expect(result.ok, JSON.stringify(change)).toBe(false);
+      if (!result.ok) {
+        expect(result.body.error).toMatchObject({ code: "invalid_input", field });
+        expect(JSON.stringify(result.body)).not.toContain(ticket);
+      }
+    }
+    const stored = await runInDurableObject(stubFor(name), (_instance, state) => ({
+      users: state.storage.sql.exec(`SELECT * FROM ${USERS_TABLE}`).toArray(),
+      settings: state.storage.sql.exec(`SELECT * FROM ${SETTINGS_TABLE}`).toArray(),
+    }));
+    expect(stored).toEqual({ users: [], settings: [] });
+    // The ticket was not spent by the refused creates: the right parameters still succeed.
+    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket))).ok).toBe(true);
+  });
+});
+
+describe("the one-time ticket from a counted attempt", () => {
+  async function storedRows(name: string) {
+    return runInDurableObject(stubFor(name), (_instance, state) => ({
+      users: state.storage.sql.exec(`SELECT * FROM ${USERS_TABLE}`).toArray().length,
+      settings: state.storage.sql.exec(`SELECT * FROM ${SETTINGS_TABLE}`).toArray().length,
+    }));
+  }
+
+  /** Creates directly on the store at a chosen time; answers "created" or the refusal code. */
+  async function createAt(name: string, input: CreateFirstAdministratorInput, now: number) {
+    const parsed = createFirstAdministratorInput.parse(input);
+    return runInDurableObject(stubFor(name), (instance: Installation) => {
+      try {
+        instance.setup.createFirstAdministrator(parsed, now);
+        return "created";
+      } catch (error) {
+        return (error as { code?: string }).code ?? "error";
+      }
+    });
+  }
+
+  it("is required: a create without one is refused, naming only the field, and writes nothing", async () => {
+    const name = "ticket-missing";
+    const [fingerprint] = await codeFingerprints();
+    await ticketFor(name, "198.51.100.8", fingerprint);
+    const { ticket: _omitted, ...withoutTicket } = await adminInput(fingerprint, "unused");
+    const missing = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", withoutTicket);
+    expect(missing.ok ? null : missing.body.error).toMatchObject({ code: "invalid_input", field: "ticket" });
+    const made = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, "f".repeat(64)));
+    expect(made.ok ? null : made.body.error.code).toBe("setup_code_wrong");
+    expect(JSON.stringify(made)).not.toContain("f".repeat(64));
+    expect(await storedRows(name)).toEqual({ users: 0, settings: 0 });
+  });
+
+  it("is single-use: once consumed it is gone, and reusing it is refused", async () => {
+    const name = "ticket-reused";
+    const [fingerprint] = await codeFingerprints();
+    const ticket = await ticketFor(name, "198.51.100.9", fingerprint);
+    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket))).ok).toBe(true);
+    const reused = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket, { email: "other@acme.test" }));
+    expect(reused.ok ? null : reused.body.error.code).toBe("setup_closed");
+
+    // Even with the users and settings gone, the spent ticket does not work again.
+    const tickets = await runInDurableObject(stubFor(name), (_instance, state) => {
+      state.storage.sql.exec(`DELETE FROM ${USERS_TABLE}`);
+      state.storage.sql.exec(`DELETE FROM ${SETTINGS_TABLE}`);
+      return state.storage.sql.exec("SELECT * FROM setup_tickets").toArray().length;
+    });
+    expect(tickets).toBe(0);
+    const again = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket));
+    expect(again.ok ? null : again.body.error.code).toBe("setup_code_wrong");
+    expect(await storedRows(name)).toEqual({ users: 0, settings: 0 });
+  });
+
+  it("expires 5 minutes after its attempt", async () => {
+    const [fingerprint] = await codeFingerprints();
+    const issue = (name: string) =>
+      runInDurableObject(stubFor(name), (instance: Installation) => instance.setup.attempt("198.51.100.10", fingerprint, T0).ticket);
+
+    const lateName = "ticket-expired";
+    const late = await issue(lateName);
+    expect(await createAt(lateName, await adminInput(fingerprint, late), T0 + TICKET_TTL_MS)).toBe("setup_code_wrong");
+    expect(await storedRows(lateName)).toEqual({ users: 0, settings: 0 });
+
+    const inTimeName = "ticket-in-time";
+    const inTime = await issue(inTimeName);
+    expect(await createAt(inTimeName, await adminInput(fingerprint, inTime), T0 + TICKET_TTL_MS - 1)).toBe("created");
+  });
+
+  it("lapses when a new code's fingerprint arrives, even if the create names the new fingerprint", async () => {
+    const name = "ticket-earlier-fingerprint";
+    const [first, second] = await codeFingerprints();
+    const old = await ticketFor(name, "198.51.100.11", first);
+    await ticketFor(name, "198.51.100.12", second);
+    const withOld = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(second, old));
+    expect(withOld.ok ? null : withOld.body.error.code).toBe("setup_code_wrong");
+    const staleBoth = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, old));
+    expect(staleBoth.ok ? null : staleBoth.body.error.code).toBe("setup_code_wrong");
+
+    // The old code's fingerprint coming back (copies alternating during a deploy) does not revive it.
+    await ticketFor(name, "198.51.100.13", first);
+    const revived = await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(first, old));
+    expect(revived.ok ? null : revived.body.error.code).toBe("setup_code_wrong");
+    expect(await storedRows(name)).toEqual({ users: 0, settings: 0 });
   });
 });
 
@@ -172,10 +314,13 @@ describe("two set-up requests at the same moment", () => {
   it("leave exactly one administrator; the others are refused as closed", async () => {
     const name = "concurrent-create";
     const [fingerprint] = await codeFingerprints();
-    await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "198.51.100.6", fingerprint });
     const passwordHash = await hashPassword("correct horse battery");
-    const inputs = ["first@acme.test", "second@acme.test", "third@acme.test"].map((email) => ({
+    const emails = ["first@acme.test", "second@acme.test", "third@acme.test"];
+    // Each request made its own counted attempt and carries its own ticket.
+    const tickets = await Promise.all(emails.map((_email, index) => ticketFor(name, `198.51.100.${60 + index}`, fingerprint)));
+    const inputs = emails.map((email, index) => ({
       fingerprint,
+      ticket: tickets[index]!,
       installationName: `Installation of ${email}`,
       publicAddress: "https://survey.acme.test",
       name: email,
@@ -205,7 +350,7 @@ describe("wrong-code counts", () => {
     const address = "203.0.113.10";
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const result = await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address, fingerprint });
-      expect(result).toEqual({ ok: true, value: { counted: true } });
+      expect(result).toEqual({ ok: true, value: { counted: true, ticket: expect.stringMatching(/^[0-9a-f]{64}$/) } });
     }
     const before = await countsOf(name);
     expect(before.byAddress).toEqual([{ address, failures: 5, lastFailureAt: expect.any(Number) }]);
@@ -270,17 +415,66 @@ describe("wrong-code counts", () => {
     expect((await attemptAt(name, "203.0.113.99", fingerprint, now + 1000)).outcome).toBe("counted");
   });
 
-  it("clear an address's count 15 minutes after its last failure", async () => {
+  it("clear an address's count 15 minutes after its wait has ended (D-3 as amended)", async () => {
+    expect(addressClearsAt(T0, 4)).toBe(T0 + ADDRESS_CLEAR_MS);
+    expect(addressClearsAt(T0, 5)).toBe(T0 + MINUTE + ADDRESS_CLEAR_MS);
+    expect(addressClearsAt(T0, 9)).toBe(T0 + MAX_WAIT_MS + ADDRESS_CLEAR_MS);
+
     const name = "counts-clearing";
     const [fingerprint] = await codeFingerprints();
     const address = "203.0.113.13";
     for (let attempt = 0; attempt < 4; attempt += 1) await attemptAt(name, address, fingerprint, T0);
-    // Just before 15 minutes the count is kept; at 15 minutes it has cleared.
+    // Four failures carry no wait: just before 15 minutes the count is kept.
     expect((await attemptAt(name, address, fingerprint, T0 + ADDRESS_CLEAR_MS - 1)).outcome).toBe("counted");
     expect((await countsOf(name)).byAddress[0]!.failures).toBe(5);
     const last = T0 + ADDRESS_CLEAR_MS - 1;
-    expect((await attemptAt(name, address, fingerprint, last + ADDRESS_CLEAR_MS)).outcome).toBe("counted");
-    expect((await countsOf(name)).byAddress).toEqual([{ address, failures: 1, lastFailureAt: last + ADDRESS_CLEAR_MS }]);
+    // Five failures wait 1 minute, so 15 minutes after the last failure the count is still held:
+    // the next attempt is counted as the sixth, not as a fresh first.
+    const sixthAt = last + ADDRESS_CLEAR_MS;
+    expect((await attemptAt(name, address, fingerprint, sixthAt)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress).toEqual([{ address, failures: 6, lastFailureAt: sixthAt }]);
+    // Six failures wait 2 minutes: the count clears 2 + 15 minutes after the sixth, not before.
+    expect((await attemptAt(name, address, fingerprint, sixthAt + 2 * MINUTE + ADDRESS_CLEAR_MS - 1)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress[0]!.failures).toBe(7);
+    const seventhAt = sixthAt + 2 * MINUTE + ADDRESS_CLEAR_MS - 1;
+    const clearedAt = seventhAt + 4 * MINUTE + ADDRESS_CLEAR_MS;
+    expect((await attemptAt(name, address, fingerprint, clearedAt)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress).toEqual([{ address, failures: 1, lastFailureAt: clearedAt }]);
+  });
+
+  it("keep a 15-minute wait from the 9th failure on, so an address gets one attempt per 15 minutes", async () => {
+    const name = "counts-capped-wait";
+    const [fingerprint] = await codeFingerprints();
+    const address = "203.0.113.18";
+    let now = T0;
+    for (let attempt = 0; attempt < 5; attempt += 1) await attemptAt(name, address, fingerprint, now);
+    for (const waitMinutes of [1, 2, 4, 8]) {
+      now += waitMinutes * MINUTE;
+      expect((await attemptAt(name, address, fingerprint, now)).outcome).toBe("counted");
+    }
+    expect((await countsOf(name)).byAddress[0]!.failures).toBe(9);
+
+    // Boundary: exactly 900 s after the 9th failure the wait has ended but the count has not
+    // cleared, so this attempt counts as the 10th and the next wait is 15 minutes again.
+    now += MAX_WAIT_MS;
+    expect((await attemptAt(name, address, fingerprint, now)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress).toEqual([{ address, failures: 10, lastFailureAt: now }]);
+    expect(await attemptAt(name, address, fingerprint, now + 1000)).toEqual({ outcome: "setup_wait", retryAfterSeconds: 15 * 60 - 1 });
+
+    // 11th and 12th, each 15 minutes after the one before: still counted, the wait never resets.
+    for (const failures of [11, 12]) {
+      now += MAX_WAIT_MS;
+      expect((await attemptAt(name, address, fingerprint, now)).outcome).toBe("counted");
+      expect((await countsOf(name)).byAddress[0]!.failures).toBe(failures);
+      expect(await attemptAt(name, address, fingerprint, now + MAX_WAIT_MS - 1)).toEqual({ outcome: "setup_wait", retryAfterSeconds: 1 });
+    }
+
+    // Just before wait end + 15 minutes the count is held; at that moment it has cleared.
+    expect((await attemptAt(name, address, fingerprint, now + MAX_WAIT_MS + ADDRESS_CLEAR_MS - 1)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress[0]!.failures).toBe(13);
+    const last = now + MAX_WAIT_MS + ADDRESS_CLEAR_MS - 1;
+    expect((await attemptAt(name, address, fingerprint, last + MAX_WAIT_MS + ADDRESS_CLEAR_MS)).outcome).toBe("counted");
+    expect((await countsOf(name)).byAddress).toEqual([{ address, failures: 1, lastFailureAt: last + MAX_WAIT_MS + ADDRESS_CLEAR_MS }]);
   });
 
   it("refuse every address after 100 within a rolling hour, until the oldest leaves the hour", async () => {
@@ -319,10 +513,9 @@ describe("wrong-code counts", () => {
   it("are cleared when set-up completes", async () => {
     const name = "counts-cleared-on-success";
     const [fingerprint] = await codeFingerprints();
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "203.0.113.15", fingerprint });
-    }
-    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint))).ok).toBe(true);
+    let ticket = "";
+    for (let attempt = 0; attempt < 3; attempt += 1) ticket = await ticketFor(name, "203.0.113.15", fingerprint);
+    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket))).ok).toBe(true);
     const counts = await countsOf(name);
     expect(counts.byAddress).toEqual([]);
     expect(counts.recent).toEqual([]);
@@ -344,8 +537,8 @@ describe("accounts and the installation's name are outside project revisions (CA
   it("live only in the installation object, which offers no restore, so a restore leaves them unchanged", async () => {
     const name = "outside-revisions";
     const [fingerprint] = await codeFingerprints();
-    await callObject(env.INSTALLATION, idFor(name), "setupAttempt", { address: "203.0.113.17", fingerprint });
-    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint))).ok).toBe(true);
+    const ticket = await ticketFor(name, "203.0.113.17", fingerprint);
+    expect((await callObject(env.INSTALLATION, idFor(name), "createFirstAdministrator", await adminInput(fingerprint, ticket))).ok).toBe(true);
     const snapshot = () =>
       runInDurableObject(stubFor(name), (_instance, state) => ({
         users: state.storage.sql.exec(`SELECT * FROM ${USERS_TABLE}`).toArray(),

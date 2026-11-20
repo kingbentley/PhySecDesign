@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { checkInput } from "../../shared/routes";
 import { emailField, installationNameField, personNameField } from "../../shared/setup";
+import {
+  fromBase64,
+  PASSWORD_HASH_ALGORITHM,
+  SCRYPT_KEY_LENGTH,
+  SCRYPT_N,
+  SCRYPT_P,
+  SCRYPT_R,
+  SCRYPT_SALT_BYTES,
+} from "../auth/password";
 import { OperationRefusal } from "../objects/ObjectBase";
 
 // Set-up storage in the installation object (story 1.2): users, the installation's settings, the
@@ -12,11 +21,17 @@ import { OperationRefusal } from "../objects/ObjectBase";
 // Wrong-code limits (CA-05, CA-43, CA-45, D-3):
 // - Counts are raised before the code is checked: every attempt that is let through counts.
 // - Per network address: after 5 counted attempts, the address waits 1 minute, doubling with each
-//   further one up to 15 minutes. A count clears 15 minutes after its last failure. Attempts
-//   during a wait are refused and not counted.
+//   further one up to 15 minutes. A count clears 15 minutes after its wait has ended, that is at
+//   the last failure plus that count's wait plus 15 minutes (D-3 as amended on 2026-11-20), so
+//   from the 9th failure on an address gets one attempt per 15 minutes until it stops for 30.
+//   Attempts during a wait are refused and not counted.
 // - Installation-wide: 100 counted attempts within a rolling 60 minutes refuse every attempt until
 //   the oldest of them leaves the window. Refused attempts are not counted.
-// - A new code fingerprint (a redeploy issued a fresh code) clears every count.
+// - A new code fingerprint (a redeploy issued a fresh code) clears every count and every ticket.
+//
+// Tickets: each counted attempt returns a one-time ticket, kept with the fingerprint it was issued
+// under for 5 minutes. Creating the first administrator consumes one, so no create happens without
+// a counted attempt before it.
 
 export const ADDRESS_FREE_ATTEMPTS = 5;
 export const FIRST_WAIT_MS = 60_000;
@@ -24,11 +39,18 @@ export const MAX_WAIT_MS = 15 * 60_000;
 export const ADDRESS_CLEAR_MS = 15 * 60_000;
 export const INSTALLATION_CAP = 100;
 export const CAP_WINDOW_MS = 60 * 60_000;
+export const TICKET_TTL_MS = 5 * 60_000;
+const TICKET_BYTES = 32;
 
 /** How long an address with this many counted failures must wait after its last one. */
 export function addressWaitMs(failures: number): number {
   if (failures < ADDRESS_FREE_ATTEMPTS) return 0;
   return Math.min(FIRST_WAIT_MS * 2 ** (failures - ADDRESS_FREE_ATTEMPTS), MAX_WAIT_MS);
+}
+
+/** When an address's count clears: 15 minutes after its wait ends (D-3). */
+export function addressClearsAt(lastFailureAt: number, failures: number): number {
+  return lastFailureAt + addressWaitMs(failures) + ADDRESS_CLEAR_MS;
 }
 
 export const USERS_TABLE = "users";
@@ -69,12 +91,25 @@ const SCHEMA = [
      id INTEGER PRIMARY KEY AUTOINCREMENT,
      at INTEGER NOT NULL
    )`,
+  `CREATE TABLE IF NOT EXISTS setup_tickets (
+     ticket TEXT PRIMARY KEY,
+     fingerprint TEXT NOT NULL,
+     expires_at INTEGER NOT NULL
+   )`,
 ];
 
 const fingerprintField = z.string().regex(/^[0-9a-f]{64}$/);
 const addressField = z.string().min(1).max(100);
 const base64Field = z.string().min(1).max(512).regex(/^[A-Za-z0-9+/]+={0,2}$/);
-const positiveInt = z.number().int().positive();
+const ticketField = z.string().regex(/^[0-9a-f]{64}$/);
+
+function decodedLength(text: string): number {
+  try {
+    return fromBase64(text).byteLength;
+  } catch {
+    return -1;
+  }
+}
 
 /** An origin such as `https://survey.example.com`: what the installation records as its public address (CA-57). */
 export const publicAddressField = z
@@ -94,25 +129,36 @@ export const setupAttemptInput = z.object({ address: addressField, fingerprint: 
 export const createFirstAdministratorInput = z
   .object({
     fingerprint: fingerprintField,
+    ticket: ticketField,
     installationName: installationNameField,
     publicAddress: publicAddressField,
     name: personNameField,
     email: emailField,
     passwordHash: z
       .object({
-        algorithm: z.literal("scrypt"),
-        n: positiveInt,
-        r: positiveInt,
-        p: positiveInt,
-        keyLength: positiveInt,
-        salt: base64Field,
-        hash: base64Field,
+        // Pinned to the current parameters (AD-12, K19): anything else is a caller fault.
+        algorithm: z.literal(PASSWORD_HASH_ALGORITHM),
+        n: z.literal(SCRYPT_N),
+        r: z.literal(SCRYPT_R),
+        p: z.literal(SCRYPT_P),
+        keyLength: z.literal(SCRYPT_KEY_LENGTH),
+        salt: base64Field.refine((value) => decodedLength(value) === SCRYPT_SALT_BYTES),
+        hash: base64Field.refine((value) => decodedLength(value) === SCRYPT_KEY_LENGTH),
       })
       .strict(),
   })
   .strict();
 
 export type CreateFirstAdministratorInput = z.input<typeof createFirstAdministratorInput>;
+
+/**
+ * What a counted attempt returns: a one-time ticket for `createFirstAdministrator`. The ticket stays
+ * inside the Worker's handling of that one request: never logged, never sent to the browser.
+ */
+export interface SetupAttemptCounted {
+  counted: true;
+  ticket: string;
+}
 
 export interface FirstAdministratorCreated {
   userId: string;
@@ -161,25 +207,49 @@ export class SetupStore {
     this.sql.exec("DELETE FROM setup_failures");
   }
 
+  /** Deletes address rows whose count has cleared (D-3): 15 minutes after their wait ended. */
+  private deleteClearedAddresses(now: number): void {
+    const rows = this.sql
+      .exec<{ address: string; failures: number; last_failure_at: number }>(
+        "SELECT address, failures, last_failure_at FROM setup_failures_by_address",
+      )
+      .toArray();
+    for (const row of rows) {
+      if (addressClearsAt(row.last_failure_at, row.failures) <= now) {
+        this.sql.exec("DELETE FROM setup_failures_by_address WHERE address = ?", row.address);
+      }
+    }
+  }
+
+  private issueTicket(fingerprint: string, now: number): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(TICKET_BYTES));
+    const ticket = [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    this.sql.exec("INSERT INTO setup_tickets (ticket, fingerprint, expires_at) VALUES (?, ?, ?)", ticket, fingerprint, now + TICKET_TTL_MS);
+    return ticket;
+  }
+
   /**
    * Raises the wrong-code counts for one attempt before its code is checked, or refuses it.
    * `fingerprint` is that of the configured code (the current secret), never of the entered code.
    * Refuses with `setup_closed` once a user exists, and with `setup_wait` (carrying the seconds)
-   * while the address or the installation must wait; a refused attempt is not counted.
+   * while the address or the installation must wait; a refused attempt is not counted. A counted
+   * attempt returns a one-time ticket that `createFirstAdministrator` requires.
    */
-  attempt(address: string, fingerprint: string, now: number): void {
+  attempt(address: string, fingerprint: string, now: number): SetupAttemptCounted {
     if (this.hasUsers()) throw new OperationRefusal("setup_closed");
 
     if (this.storedFingerprint() !== fingerprint) {
-      // A fresh code: every count starts again (CA-45).
+      // A fresh code: every count starts again (CA-45), and tickets issued under the old code lapse.
       this.clearCounts();
+      this.sql.exec("DELETE FROM setup_tickets");
       this.sql.exec(
         "INSERT INTO setup_code (id, fingerprint) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET fingerprint = excluded.fingerprint",
         fingerprint,
       );
     }
 
-    this.sql.exec("DELETE FROM setup_failures_by_address WHERE last_failure_at <= ?", now - ADDRESS_CLEAR_MS);
+    this.deleteClearedAddresses(now);
+    this.sql.exec("DELETE FROM setup_tickets WHERE expires_at <= ?", now);
     this.sql.exec("DELETE FROM setup_failures WHERE at <= ?", now - CAP_WINDOW_MS);
 
     let waitMs = 0;
@@ -210,17 +280,23 @@ export class SetupStore {
       now,
     );
     this.sql.exec("INSERT INTO setup_failures (at) VALUES (?)", now);
+    return { counted: true, ticket: this.issueTicket(fingerprint, now) };
   }
 
   /**
    * Creates the first administrator and records the installation's name and public address, in
-   * one synchronous transaction: it confirms there is still no user and that the code fingerprint
-   * is still the current one, then writes. Success clears the wrong-code counts.
+   * one synchronous transaction: it confirms there is still no user, that the code fingerprint is
+   * still the current one and that the ticket is one issued under it, unexpired and unused, then
+   * consumes the ticket and writes. Success clears the wrong-code counts and every ticket.
    */
   createFirstAdministrator(input: z.output<typeof createFirstAdministratorInput>, now: number): FirstAdministratorCreated {
     return this.storage.transactionSync(() => {
       if (this.hasUsers()) throw new OperationRefusal("setup_closed");
       if (this.storedFingerprint() !== input.fingerprint) throw new OperationRefusal("setup_code_wrong");
+      const consumed = this.sql
+        .exec("DELETE FROM setup_tickets WHERE ticket = ? AND fingerprint = ? AND expires_at > ? RETURNING ticket", input.ticket, input.fingerprint, now)
+        .toArray();
+      if (consumed.length !== 1) throw new OperationRefusal("setup_code_wrong");
       const userId = crypto.randomUUID();
       const at = new Date(now).toISOString();
       const hash = input.passwordHash;
@@ -249,6 +325,7 @@ export class SetupStore {
         at,
       );
       this.clearCounts();
+      this.sql.exec("DELETE FROM setup_tickets");
       return { userId, installationName: input.installationName, email: input.email };
     });
   }

@@ -50,7 +50,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
   - **intent:** The set-up code cannot be guessed, and an attacker cannot lock the installer out for good.
   - **success:**
     - A wrong code is refused.
-    - After 5 wrong codes from one address, that address waits 1 minute, doubling after each further failure up to 15 minutes. After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed (CA-05). A per-address count clears 15 minutes after its last failure; attempts during a wait are refused and not counted; the cap is a rolling 60 minutes (D-3).
+    - After 5 wrong codes from one address, that address waits 1 minute, doubling after each further failure up to 15 minutes. After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed (CA-05). A per-address count clears 15 minutes after its wait has ended; attempts during a wait are refused and not counted; the cap is a rolling 60 minutes (D-3).
     - Counts are kept in the installation object's storage and raised before the code is checked. They hold across Worker copies, across a restart and under simultaneous requests (CA-43).
     - The page states the wait and that deploying again issues a fresh code (CA-45).
 - **CAP-8**
@@ -121,7 +121,7 @@ A mandate and a foundation. FR-66 requires that only the person who installed Si
 
 - **D-1** (was OQ-1) The HTTP-to-HTTPS redirect is in the Worker and fires only when Cloudflare's request metadata marks the request as plain HTTP. Self-hosted never sees that signal, so it cannot loop; AD-16 keeps the self-hosted redirect in the bundled web server. Kevin rules this does not breach standing rule 7.
 - **D-2** (was OQ-2) `callObject` retries only on the version-stop reason, after a deployed installation shows the reason reaches the caller. If it cannot be distinguished, writes are never retried.
-- **D-3** (was OQ-3) A per-address wrong-code count clears 15 minutes after its last failure. Attempts during a wait are refused and not counted. The 100-per-hour cap is a rolling 60 minutes.
+- **D-3** (was OQ-3; amended by Kevin 2026-11-20) A per-address wrong-code count clears 15 minutes after its wait has ended, that is at the last failure plus that count's wait plus 15 minutes (before the amendment it cleared 15 minutes after the last failure, which let an address make about 9 guesses every 30 minutes). Attempts during a wait are refused and not counted. The 100-per-hour cap is a rolling 60 minutes.
 - **D-4** (was OQ-4) The administrator's name has 1–80 characters. The email passes a light format check, has at most 254 characters and is stored lower-cased. "Password not equal to the email" ignores case.
 - **D-5** (was OQ-5) After set-up the app shows the prototype as today. The set-up address shows "set-up is already complete", and its request is refused.
 - **D-6** Spec order: Playwright is set up together with the set-up page, so the page's implementation spec ships its own browser and axe tests.
