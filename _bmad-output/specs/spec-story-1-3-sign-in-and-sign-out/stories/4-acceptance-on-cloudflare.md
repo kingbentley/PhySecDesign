@@ -2,7 +2,7 @@
 title: 'Story 1.3, spec 4: Acceptance on Cloudflare'
 type: 'chore'
 created: '2026-11-20'
-status: 'draft'
+status: 'ready-for-dev'
 route: 'dispatch'
 baseline_commit: ''
 review_loop_iteration: 0
@@ -13,7 +13,7 @@ context:
   - '{project-root}/_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/4-acceptance-on-cloudflare.md'
 ---
 
-> **Not ready for development.** Runs after specs 1 to 3; awaits Kevin's rulings on the held findings. Story 1.2's spec 4 found the cloud session could not reach Cloudflare; plan to run from Kevin's workstation.
+> Runs after specs 1 to 3. Story 1.2's spec 4 found the cloud session could not reach Cloudflare; plan to run from Kevin's workstation.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -41,9 +41,9 @@ Run in this order; check 4 is the last check against A (V-19).
 | 5 | A's administrator email and password on Worker B | refused with the one message |
 | 6 | A's session cookie sent to B | not signed in on B |
 | 6b | A's token sent under B's cookie name | not signed in on B (V-4) |
-| 7 | Sign out on A, then the old cookie on A | session ended (the exact reply follows Kevin's ruling on H-1) |
+| 7 | Sign out on A, then the old cookie on A's session read and on sign-out | both 200, "not signed in", each with a clearing `Set-Cookie` (D-7 amended, D-13) |
 | 8 | `deploy/probe/` on the test account: the fixture and a wrong password | the fixture verifies, the wrong password does not; probe deleted afterwards (D-6, V-3) |
-| 9 | 25 wrong sign-ins for A's email carrying a valid marker for it, at once over 25 connections | at most 20 checked against the password (A-6) |
+| 9 | 25 wrong sign-ins for an email with no failures, each carrying a valid marker for it, at once over 25 connections | exactly 5 checked against the password, 20 receive the wait (A-6, D-2 amended) |
 | 4 | After confirming A's email has no failures: 25 wrong sign-ins for it at once, no cookies, over 25 separate connections (`node:https` agents, keep-alive off) | exactly 5 `signin_failed` and 20 `signin_wait` (CA-43, V-19) |
 
 Check 9 runs on a fresh email key: use B, or wait for A's counts to clear, and record which.

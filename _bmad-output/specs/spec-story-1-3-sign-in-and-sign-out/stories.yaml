@@ -8,9 +8,9 @@
   spec_checkpoint: true
   done_checkpoint: true
   invoke_dev_with: >-
-    Build to Kevin's decisions D-1 to D-5 and the applied review findings in SPEC.md. Do not start
-    until Kevin has ruled on the held findings H-1 to H-9 and the spec is marked ready for
-    development. No routes, pages or deploys in this spec.
+    Build to Kevin's decisions in SPEC.md (D-1 to D-5, D-11, D-15 and the amendments of D-2, D-4
+    and D-5) and the applied review findings; where SPEC.md's Notes for Kevin give a least-change
+    reading, follow it. No routes, pages or deploys in this spec.
 - id: "2"
   title: Sign-in routes, cookies and services
   description: >-
@@ -22,8 +22,8 @@
   done_checkpoint: true
   invoke_dev_with: >-
     Writes are never retried after a bare reset (story 1.2's D-2 as amended). The fixture and probe
-    follow D-6 and the applied findings A-22 and V-3; no deploy in this spec. Rows marked held wait
-    for Kevin's rulings.
+    follow D-6 and the applied findings A-22 and V-3; no deploy in this spec. The session read is
+    read-only and sign-out always succeeds (D-4 amended, D-7 amended, D-13).
 - id: "3"
   title: Sign-in page, account menu and browser tests
   description: >-
@@ -34,7 +34,7 @@
   spec_checkpoint: true
   done_checkpoint: true
   invoke_dev_with: >-
-    Build to D-7 to D-10 in SPEC.md. Check first whether both browsers keep the real __Host-
+    Build to D-7 as amended, D-8 to D-10, D-12 to D-14 and D-16 in SPEC.md. Check first whether both browsers keep the real __Host-
     session cookie on http://127.0.0.1, and serve the local test servers over HTTPS if not (D-10).
     No manual-only page check (standing rule 15).
 - id: "4"
@@ -42,7 +42,7 @@
   description: >-
     Deploy two test Workers from one build, with different administrator emails, and the
     deploy/probe Worker, and run the deployed checks in order: CAP-10 across Workers, CAP-12 (R9,
-    CA-08 median, 25 simultaneous wrong sign-ins with and without a marker), CAP-13's Cloudflare
+    CA-08 median, 25 simultaneous wrong sign-ins with and without a marker, 5 checked each), CAP-13's Cloudflare
     part and the deployed cookie attributes; record the results.
   spec_checkpoint: false
   done_checkpoint: true
