@@ -37,3 +37,12 @@ dist/
 
 # Temporary self-hosted configuration written by the smoke test (holds a throwaway set-up code).
 /site-studio/deploy/selfhost/.smoke-*.capnp
+
+# Local Worker secrets (for example a test set-up code); never commit them.
+.dev.vars
+.dev.vars.*
+
+# Browser tests: per-run server state and set-up code, and Playwright's output.
+/site-studio/browser-tests/.local/
+/site-studio/test-results/
+/site-studio/playwright-report/

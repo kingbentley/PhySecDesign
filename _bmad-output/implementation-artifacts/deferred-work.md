@@ -56,3 +56,7 @@
   summary: Item 1 above (`callObject` retrying after any reset) is now handled as D-2 says: a write is retried only when the error carries the version-stop reason; a bare reset retries only calls marked idempotent. What remains is the deployed check that the reason reaches the caller on Cloudflare.
   evidence: In the local runtime the reason does reach the caller (`server-tests/call-retry.test.ts`). If spec 4 finds that Cloudflare drops it, writes are never retried and a version stop during a set-up request answers `internal_error`; the installer then tries again.
 
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/3-playwright-and-the-set-up-page.md`
+  summary: The new `browser` CI job, and with it the `webkit-iphone` Playwright project, has not run yet; the Chromium project passed locally, but the job's browser install, the WebKit run and the trace upload are unverified until the branch is pushed.
+  evidence: Unverified (medium if it fails). This session has no WebKit browser and may not push. Check the first CI run of `story/1.2`: the `browser` job should pass both projects, and a failing run should upload `playwright-traces`.
