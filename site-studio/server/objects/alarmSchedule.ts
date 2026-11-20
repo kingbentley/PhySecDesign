@@ -53,6 +53,20 @@ export class AlarmSchedule {
       .map((row) => ({ kind: row.kind, dueAt: row.due_at }));
   }
 
+  /** True when `kind` is still scheduled at exactly `dueAt` and that time has come. */
+  isStillDue(kind: string, dueAt: number, now: number): boolean {
+    return (
+      this.storage.sql
+        .exec(`SELECT 1 FROM ${ALARM_SCHEDULE_TABLE} WHERE kind = ? AND due_at = ? AND due_at <= ?`, kind, dueAt, now)
+        .toArray().length > 0
+    );
+  }
+
+  /** Moves a kind's due time without re-arming; the caller re-arms once afterwards. */
+  postpone(kind: string, dueAt: number): void {
+    this.storage.sql.exec(`UPDATE ${ALARM_SCHEDULE_TABLE} SET due_at = ? WHERE kind = ?`, Math.floor(dueAt), kind);
+  }
+
   /** Removes a kind once its work succeeded, unless its due time was moved in the meantime. */
   complete(kind: string, dueAt: number): void {
     this.storage.sql.exec(`DELETE FROM ${ALARM_SCHEDULE_TABLE} WHERE kind = ? AND due_at = ?`, kind, dueAt);

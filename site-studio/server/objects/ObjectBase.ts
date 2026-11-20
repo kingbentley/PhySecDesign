@@ -33,6 +33,9 @@ export class OperationRefusal extends Error {
 
 export const META_TABLE = "_meta";
 
+/** How long to wait before looking again at work that could not run (format mismatch, no handler). */
+export const ALARM_RETRY_MS = 60_000;
+
 export abstract class ObjectBase<E = unknown> extends DurableObject<E> {
   /** Changes every time the object starts; used to observe restarts. */
   readonly startId: string = crypto.randomUUID();
@@ -127,13 +130,22 @@ export abstract class ObjectBase<E = unknown> extends DurableObject<E> {
   protected async runDueWork(now: number): Promise<void> {
     const format = formatRefusal(this.readMeta().formatVersion);
     if (format) {
+      // The fired alarm is used up, so keep a wake-up: check again later, rows untouched.
       this.log("alarm_skipped", { reason: format });
+      await this.ctx.storage.setAlarm(now + ALARM_RETRY_MS);
       return;
     }
     for (const { kind, dueAt } of this.schedule.due(now)) {
+      // An earlier handler may have moved or removed this kind; run only what is still due.
+      if (!this.schedule.isStillDue(kind, dueAt, now)) continue;
       const handler = this.alarmHandlers.get(kind);
-      if (handler) await handler();
-      else this.log("alarm_without_handler", { kind });
+      if (!handler) {
+        // Keep the work for a build that has the handler, and look again later.
+        this.log("alarm_without_handler", { kind });
+        this.schedule.postpone(kind, now + ALARM_RETRY_MS);
+        continue;
+      }
+      await handler();
       this.schedule.complete(kind, dueAt);
     }
     await this.schedule.rearm();
