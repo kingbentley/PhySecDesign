@@ -31,11 +31,11 @@ context:
 - UX section 10: 4.5:1 contrast, 2 px focus ring, labelled 16 px fields, usable at 200% zoom; account menu trigger and Sign out at least 44 px on the iPhone viewport and 32 px on desktop; `BrandMark`; white and teal.
 - Fields fillable by a password manager: a `<form>`, `autocomplete="username"` and `autocomplete="current-password"`, `type="email"` and `type="password"`.
 - The one failure message comes from the server's refusal; the wait sentence is composed on the page with `waitWording` from the refusal's seconds (A-19). The page never says whether an email exists.
-- Unknown set-up state: start-up does not read the session and opens the prototype as today (A-8).
+- Set-up state read: a 404 or a reply that is not the declared JSON (no server, the Sites package) opens the prototype; a network failure, no answer within 5 s, a 5xx or `updating` shows story 1.2's "Set-up cannot be checked" page with Try again at every address, and the session is not read (D-7 amended again).
 - Session read: a 404 or a reply that is not the declared JSON (no server) opens the prototype; a network failure, no answer within 5 s, a 5xx or `updating` shows "Sign-in cannot be checked" with Try again (D-7 amended).
 - Only a well-formed reviewer link skips sign-in, also when it arrives by a hash change on the sign-in page (D-14). The page re-reads the session when it becomes visible (D-16). Sign-out shows the sign-in page only after the server confirms it (E-6).
 - Tests use generated local secrets only, never committed. No manual-only page check.
-- `signin.spec.mjs` runs on its own server pair per project (chromium 8793/8794, webkit-iphone 8795/8796), each with its own generated code and state folder, and completes set-up through the API (A-20, V-14). Of `setup.spec.mjs`, only D-9's two assertions change (V-20).
+- `signin.spec.mjs` runs on its own server pair per project (chromium 8793/8794, webkit-iphone 8795/8796), each with its own generated code and state folder, and completes set-up through the API (A-20, V-14). Of `setup.spec.mjs`, only D-9's two assertions and the test "when the state cannot be read, the prototype opens and the set-up address offers to try again" (lines 265–276, D-7 amended again) change (V-20).
 
 **Never:** Server, route or storage changes (specs 1 and 2). Deploys (spec 4). The four Sites files, `sprint-status.yaml`. Prototype changes beyond the header's account menu.
 
@@ -58,6 +58,8 @@ context:
 | Restore | sign in, save a named revision, restore it | account menu still shows the name (V-13) | N/A |
 | Two servers, one host (test named "keeps separate sessions and markers on one host; not isolated") | set up and sign in to port A then port B in one context | both stay signed in; `context.cookies()` holds two distinct markers (A-5, V-6, D-12) | N/A |
 | No server | session read mocked as 404 | the prototype opens (D-7 amended) | N/A |
+| No server, set-up state | set-up state mocked as 404 | the prototype opens (D-7 amended again) | N/A |
+| Set-up state fails | set-up state mocked as 500, 503 `updating`, aborted, or unanswered for 5 s, at `/` and at `/setup` | "Set-up cannot be checked" with Try again, no prototype; Try again shows the set-up page once the read succeeds; axe clean (D-7 amended again; replaces story 1.2's test at `setup.spec.mjs` 265–276) | N/A |
 | Session read fails | session read mocked as 500, 503 `updating`, aborted, or unanswered for 5 s | "Sign-in cannot be checked" with Try again; Try again reads again and shows the sign-in page once the read succeeds; axe clean (D-7 amended, A-3, E-5) | N/A |
 | Reviewer link | well-formed hash review link, signed out | opens without sign-in (D-7, D-14) | N/A |
 | Malformed reviewer link | `#review=x`, signed out | sign-in page (D-14, A-23) | N/A |
@@ -78,9 +80,10 @@ context:
 **Execution:**
 - [ ] Check the real `__Host-` session cookie in both projects on `http://127.0.0.1`, and in Chrome under `npm run dev` on `http://localhost`; record the results here. If WebKit drops it: `wrangler dev --local-protocol https` in `serve.mjs`, `ignoreHTTPSErrors` in both projects and in `webServer`, `https` base and readiness URLs for every server including the extra pairs (D-10, A-16, E-20). Never omit `Secure`.
 - [ ] `site-studio/src/admin/signInClient.js`, `SignInPage.jsx`, `signin.css` -- S-26.
-- [ ] `site-studio/src/main.jsx` -- session read and routing (D-7 amended, A-8, D-14), the "Sign-in cannot be checked" page, `hashchange` on the sign-in page, `visibilitychange` re-read (D-16).
+- [ ] `site-studio/src/admin/setupState.js` -- tell "no server" (404, or not the declared JSON) apart from "cannot be checked" (network failure, timeout, 5xx, `updating`) (D-7 amended again).
+- [ ] `site-studio/src/main.jsx` -- set-up state and session read routing (D-7 amended and amended again, D-14), with story 1.2's "Set-up cannot be checked" page at every address, the "Sign-in cannot be checked" page, `hashchange` on the sign-in page, `visibilitychange` re-read (D-16).
 - [ ] `site-studio/src/AccountMenu.jsx`, `src/App.jsx` header -- name and Sign out.
-- [ ] `site-studio/src/admin/SetupPage.jsx`, `browser-tests/setup.spec.mjs` -- D-9 text, the plain Sign in link, and the two assertions only.
+- [ ] `site-studio/src/admin/SetupPage.jsx`, `browser-tests/setup.spec.mjs` -- D-9 text, the plain Sign in link, the two D-9 assertions, and the test at lines 265–276 rewritten to the "Set-up state fails" row (a 500 at `/` shows "Set-up cannot be checked", not the prototype); nothing else in `setup.spec.mjs` changes.
 - [ ] `site-studio/browser-tests/playwright.config.mjs`, `serve.mjs` -- the extra server pair per project.
 - [ ] `site-studio/browser-tests/signin.spec.mjs` -- matrix rows and axe on the page and the open menu.
 - [ ] `site-studio/tests/signin-client.test.mjs` -- refusal mapping and wait wording.
