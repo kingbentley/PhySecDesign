@@ -1,0 +1,47 @@
+- id: "1"
+  title: Sign-in data, rules and storage
+  description: >-
+    Shared sign-in rules and limits, session tokens and the marker, the stand-in hash and hash
+    queue, and the installation object's session and failure-count tables and operations. Covers
+    the storage side of CAP-3, CAP-6, CAP-7, CAP-8 and CAP-11 in SPEC.md.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to Kevin's decisions D-1 to D-5 in SPEC.md, and do not start before the adversarial
+    review of the spec has been applied. No routes, pages or deploys in this spec.
+- id: "2"
+  title: Sign-in routes, cookies and services
+  description: >-
+    The session read, sign-in and sign-out routes, handler response headers for Set-Cookie, the
+    origin rule, the timing test, the cross-host fixture and the self-hosted smoke test. Covers
+    CAP-2, CAP-5, CAP-9, the cookie side of CAP-3, CAP-6's timing test, the local parts of CAP-10
+    and CAP-13, and the server side of CAP-1 in SPEC.md.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Writes are never retried after a bare reset (story 1.2's D-2 as amended). The fixture and
+    probe follow D-6 in SPEC.md; no deploy in this spec.
+- id: "3"
+  title: Sign-in page, account menu and browser tests
+  description: >-
+    The S-26 sign-in page, the start-up flow, the account menu in the existing header, the change
+    to the set-up done page, and Playwright and axe tests in Chromium and WebKit iPhone, including
+    two local installations on one host with different ports. Covers CAP-1, CAP-4, CAP-14 and the
+    on-screen parts of CAP-5, CAP-7 and CAP-10 in SPEC.md.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-7 to D-10 in SPEC.md. Check first whether WebKit keeps a Secure cookie on
+    http://127.0.0.1, and serve the local test servers over HTTPS if it does not (D-10). No
+    manual-only page check (standing rule 15).
+- id: "4"
+  title: Acceptance on Cloudflare
+  description: >-
+    Deploy two test Workers from one build and run the deployed checks: CAP-10 across Workers,
+    CAP-12 (R9, CA-08 median, 25 simultaneous wrong sign-ins), CAP-13's Cloudflare part and the
+    deployed cookie attributes; record the results.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Deploy only to the 'PhySec Site Studio' test account, from Kevin's workstation if the session's
+    network cannot reach it (story 1.2 spec 4); delete extra Workers and the D-6 probe afterwards.
