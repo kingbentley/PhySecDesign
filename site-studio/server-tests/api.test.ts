@@ -72,7 +72,7 @@ describe("GET /api/v1/status", () => {
     expect(response.headers.get("retry-after")).toMatch(/^\d+$/);
     const error = await refusalOf(response);
     expect(error.code).toBe("updating");
-    expect(error.message).toBe("Site Studio is updating, try again shortly.");
+    expect(error.message).toBe("Site Survey Design is updating, try again shortly.");
   });
 });
 

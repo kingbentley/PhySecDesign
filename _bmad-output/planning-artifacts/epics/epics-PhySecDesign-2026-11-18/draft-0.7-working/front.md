@@ -1,12 +1,12 @@
 ---
-title: "Site Studio — Epics and Stories"
+title: "Site Survey Design — Epics and Stories"
 status: draft 0.7; epic order and twelve product decisions confirmed by Kevin; story content and the remaining choices not yet confirmed
 created: 2026-11-18
 inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification 0.6; architecture 3.1"
 method: BMAD Create Epics and Stories; reviewed twice with BMAD Review
 ---
 
-# Site Studio — Epics and Stories
+# Site Survey Design — Epics and Stories
 
 This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into work that can be built and checked one story at a time. It follows the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md) for screens (S-numbers) and the [architecture](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for mechanisms (AD-numbers) and experiments (R-numbers).
 

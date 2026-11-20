@@ -1,14 +1,14 @@
 ---
-title: "Site Studio — Architecture"
+title: "Site Survey Design — Architecture"
 status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); and for updates (K20, AD-20 and AD-21); decisions K1-K3 and K5-K21 confirmed by Kevin, K20 with seven fixes and K21 refining it after the epics review; K22 added on his instruction to proceed with Claude's recommendations; version 3.1 on 2026-11-19 adds agent access (AD-22, K23) for PRD amendment 1.3, and one rule for external tickets (PRD amendment 1.4); version 3.2 on 2026-11-20 adds automated browser tests (K24); story 1.1 built
 created: 2026-11-18
 inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification; the site-studio prototype; experiments R1, R2, R6, R7, R8 and R10"
 method: BMAD Create Architecture, followed by hand (the BMAD skills were not installed in the cloud checkout when this was first written)
 ---
 
-# Site Studio — Architecture
+# Site Survey Design — Architecture
 
-This document decides how Site Studio is built, hosted and updated so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
+This document decides how Site Survey Design is built, hosted and updated so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
 
 **What changed from version 2.1.** Six experiments were run early on 2026-11-18 ([record](../../../../experiments/README.md)). Kevin then made three decisions:
 
@@ -26,7 +26,7 @@ Nothing here has been built. The experiments ran in a cloud container on synthet
 
 ## 1. Summary
 
-Site Studio is one server build and one browser application. An organisation runs it in one of two ways, with the same features either way (NFR-7).
+Site Survey Design is one server build and one browser application. An organisation runs it in one of two ways, with the same features either way (NFR-7).
 
 | | On Cloudflare | Self-hosted |
 | --- | --- | --- |
@@ -124,7 +124,7 @@ flowchart TB
 
 The image needs a glibc-based base (the runtime has no Alpine build) and is built for x64 and arm64.
 
-Why the open-source runtime: experiment R8 ran a Worker with a SQLite-backed Durable Object under it on a plain Linux server, with no experimental flag. Every acknowledged write survived 45 forced kills, timers survived restarts, and Cloudflare documents the runtime's use "as an application server, to self-host applications designed for Cloudflare Workers". Its warning that it is "not a hardened sandbox" concerns running untrusted code; Site Studio runs only its own.
+Why the open-source runtime: experiment R8 ran a Worker with a SQLite-backed Durable Object under it on a plain Linux server, with no experimental flag. Every acknowledged write survived 45 forced kills, timers survived restarts, and Cloudflare documents the runtime's use "as an application server, to self-host applications designed for Cloudflare Workers". Its warning that it is "not a hardened sandbox" concerns running untrusted code; Site Survey Design runs only its own.
 
 Not supported at first: running without Docker, Windows Server as the host, and Kubernetes.
 
@@ -610,7 +610,7 @@ All confirmed by Kevin on 2026-11-18.
 | K20 | **Updates are carried out object by object**: one version acts at a time, each object converts and returns its own data, an update record with three states replaces the pending-update marker, and deployments replace running objects at once (AD-20, AD-21). Proposed after the first part of experiment R11 and confirmed on 2026-11-19, with seven fixes listed at the end of AD-20's update text. |
 | K21 | **Sixteen refinements to K20** from the independent review of the update stories, listed in AD-20: chiefly a fourth state, *stopping*, before *prepared*; time limits on every waiting state; a step number that never goes back; authenticated machine calls; recovery when the version allowed to act is not deployed; and conversion of restore copies and imports outside an update. Proposed and confirmed on 2026-11-19. |
 | K22 | **Twelve additions to K21 from a second review of the update stories**, listed in AD-20: kept attempt outcomes, deadlines on every state, timers tied to an attempt, a command to clear a stuck record, an update secret shown once, and recovery paths for the self-hosted updater. Claude's recommendations, accepted on Kevin's instruction of 2026-11-19 to proceed with them. |
-| K23 | **AI agents can use Site Studio** (PRD amendment 1.3, AD-22): outside agents act for a person with personal access tokens; agents draft and people decide; one declared API serves the app and agents, with an MCP endpoint generated from it; it works on Cloudflare and on a private network with no outside service; access is settled in Epic 1 and the agent tools come in a later epic. Approved by Kevin on 2026-11-19 through the sprint change proposal, with Claude's recommendations for its five choices. |
+| K23 | **AI agents can use Site Survey Design** (PRD amendment 1.3, AD-22): outside agents act for a person with personal access tokens; agents draft and people decide; one declared API serves the app and agents, with an MCP endpoint generated from it; it works on Cloudflare and on a private network with no outside service; access is settled in Epic 1 and the agent tools come in a later epic. Approved by Kevin on 2026-11-19 through the sprint change proposal, with Claude's recommendations for its five choices. |
 | K24 | **Automated browser tests.** Playwright against the built bundle served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, on every push and pull request, with an axe check on each new screen. Set up in story 1.2; required of every later story that adds or changes a screen. Approved by Kevin on 2026-11-20 through the [sprint change proposal on browser tests](../../sprint-change-proposal-2026-11-20-browser-tests.md). |
 
 K4, the permanent administrator key of version 1.0, was replaced in version 2.0 by administrator accounts and a one-time set-up code.

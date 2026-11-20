@@ -46,7 +46,7 @@ export async function reviewRequest(access, action, body, { version, signal } = 
   }
   const response = await fetch(url, { method: payload === undefined ? 'GET' : 'POST', headers, body: payload, signal, cache: 'no-store' });
   if (!response.headers.get('content-type')?.includes('application/json')) {
-    throw new Error('This address does not have the review service. Use the local Site Studio server.');
+    throw new Error('This address does not have the review service. Use the local Site Survey Design server.');
   }
   const result = await response.json();
   if (!response.ok) throw Object.assign(new Error(result.error || 'The review action failed.'), { status: response.status });

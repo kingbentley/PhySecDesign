@@ -4,7 +4,7 @@
 
 ## Goal
 
-An organisation can deploy Site Studio on Cloudflare, complete a protected one-time set-up, invite people, and control on the server who can see and change each project. Accounts come first because every later story needs to know who is acting and what they may do, so no temporary access scheme is built and thrown away. The epic also lays the server foundation every later epic stands on: one server build that runs on Cloudflare and under Cloudflare's open-source runtime (self-hosted), a version rule that makes future updates safe, declared routes with schemas and reason codes, and personal access tokens so AI agents can later act for a person within that person's access.
+An organisation can deploy Site Survey Design on Cloudflare, complete a protected one-time set-up, invite people, and control on the server who can see and change each project. Accounts come first because every later story needs to know who is acting and what they may do, so no temporary access scheme is built and thrown away. The epic also lays the server foundation every later epic stands on: one server build that runs on Cloudflare and under Cloudflare's open-source runtime (self-hosted), a version rule that makes future updates safe, declared routes with schemas and reason codes, and personal access tokens so AI agents can later act for a person within that person's access.
 
 ## Stories
 

@@ -1,4 +1,4 @@
-# PhySec Site Studio — proof-of-concept goal
+# PhySec Site Survey Design — proof-of-concept goal
 
 Status: **Complete — core workflow verified on 2026-11-16.**
 

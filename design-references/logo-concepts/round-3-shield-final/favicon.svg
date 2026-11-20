@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="32" height="32" role="img" aria-label="PhySec">
+<g transform="translate(20 0)">
+<path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 C178 180 192 110 188 44 C156 40 122 28 100 8 Z" fill="#1f6f5c"/>
+<path d="M100 8 C78 28 44 40 12 44 C8 110 22 180 100 232 Z" fill="#0b6f72"/>
+<path d="M100 192 C84 170 54 150 54 114 A46 46 0 0 1 146 114 C146 150 116 170 100 192 Z" fill="#fff"/>
+<circle cx="100" cy="114" r="22" fill="#17324d"/>
+</g>
+</svg>

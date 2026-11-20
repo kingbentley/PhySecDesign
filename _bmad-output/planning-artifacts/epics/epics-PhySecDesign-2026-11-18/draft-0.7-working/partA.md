@@ -1,6 +1,6 @@
 ## Epic 1: Install, sign in and manage people
 
-**Outcome.** An organisation can deploy Site Studio on Cloudflare, set it up, invite people, and control who can see and change each project.
+**Outcome.** An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project.
 
 **Depends on.** Nothing earlier and nothing later. Inside the epic each story needs only the stories before it.
 
@@ -8,7 +8,7 @@
 
 ### Story 1.1: Run the app on Cloudflare with a portable server core
 
-As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
+As an organisation's administrator, I want Site Survey Design served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
 Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), AD-22 (route declarations, reason codes), architecture section 10, experiments R7 and R8.
 
@@ -52,7 +52,7 @@ Notes: The version rule is in this story, not with the Update control, because t
 
 ### Story 1.2: Set up a new installation
 
-As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Studio can complete, so that I become its first administrator and nobody else can.
+As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Survey Design can complete, so that I become its first administrator and nobody else can.
 
 Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 (set-up code on redeploy). Screens: S-25.
 
@@ -533,7 +533,7 @@ Notes: This story applies to every account the behaviour that story 1.8b builds 
 
 ### Story 1.10c: Optional email and forgotten passwords
 
-As an administrator, I want Site Studio to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
+As an administrator, I want Site Survey Design to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
 
 Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18. Screens: S-26, S-30 invite panel, S-33.
 
@@ -571,7 +571,7 @@ Notes: Left to later stories: SMTP (story 1.10d).
 
 ### Story 1.10d: Experiment R13: email by SMTP on both hosts
 
-As an administrator who runs my own mail server, I want to know whether Site Studio can send by SMTP, so that I am offered it only if it works on my host.
+As an administrator who runs my own mail server, I want to know whether Site Survey Design can send by SMTP, so that I am offered it only if it works on my host.
 
 Covers: AD-18, experiment R13.
 

@@ -17,7 +17,7 @@ a{color:var(--teal)}
 .app{height:100dvh;min-height:640px;display:flex;flex-direction:column;overflow:hidden}
 .app-header{height:65px;flex-shrink:0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 22px;background:#fff;white-space:nowrap;z-index:600}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#122626;font-size:24px;font-weight:700;letter-spacing:-.8px}
-.brand svg{color:var(--teal)}
+.brand>span{color:#0b6f72}.brand b{color:#2f9461;font-weight:inherit}
 .studio-label{border-left:1px solid var(--line);padding-left:18px;font-size:16px;font-weight:650}
 .breadcrumb{display:flex;align-items:center;gap:13px;border-left:1px solid var(--line);padding-left:22px;flex:1;font-size:14px;min-width:0}
 .breadcrumb>span:first-child{color:var(--muted)}
@@ -235,7 +235,7 @@ td{padding:13px 12px;border-bottom:1px solid #edf1e5}
  body{min-width:360px}
  .app{min-height:560px}
  .app-header{padding:0 12px;gap:10px}
- .brand{font-size:21px}.brand svg{width:26px}
+ .brand{font-size:21px}.brand svg{width:auto;height:27px}
  .breadcrumb{font-size:11px;padding-left:10px;gap:5px}
  .app-header .button{font-size:11px;padding:8px 10px;gap:5px}
  .workflow-nav{padding:0 8px;gap:2px;justify-content:space-between}

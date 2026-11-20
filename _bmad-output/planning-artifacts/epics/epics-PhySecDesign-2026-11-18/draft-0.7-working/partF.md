@@ -357,7 +357,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ## Epic 9: Install from published instructions and update from the interface
 
-**Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
+**Outcome.** Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
 **Depends on.** The version rule that every update relies on is in story 1.1, so that the first release already obeys it. Story 9.1 needs story 1.2, story 1.4, story 1.8d, story 2.13a, story 2.13b, story 2.13c, story 2.14, story 2.15, story 8.1b and story 8.3a. Story 9.2 needs story 1.1, story 2.13a, story 2.13d and story 9.1. Story 9.3a needs story 1.1, story 1.9 and all of Epic 8, because the update record follows the pre-update backup; story 9.3b needs story 9.3a, all of Epic 8 and story 4.7a; story 9.3c needs story 9.2, story 9.3a and story 9.3b. Story 9.4 needs story 1.8a, story 1.9 and story 9.2. Story 9.5a to story 9.7d need all of Epic 8 and story 9.2 to story 9.4, because an update takes a backup first and restores it on failure; story 9.7a and story 9.7b also need the failure warning of story 9.6a; story 9.7b also needs the settings secrets of story 1.10a. The first release published for organisations is cut only after story 9.6a self-hosted and story 9.7b on Cloudflare, because it must act as the version before in their first update. Nothing later.
 
@@ -365,7 +365,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ### Story 9.1: Published installation instructions
 
-As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Studio on our own server or our own Cloudflare account.
+As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Survey Design on our own server or our own Cloudflare account.
 
 Covers: FR-66 (instructions), SM-6.
 
@@ -614,7 +614,7 @@ Covers: FR-72, FR-21, NFR-2, NFR-8, AD-20, UX decision D13. Screens: S-35, S-26.
 
 **Limits and values**
 - The banner appears two minutes before saving stops and reads "An update starts in 2 minutes. Your unsaved work will be kept on this page."
-- An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Studio". (CF-46)
+- An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Survey Design". (CF-46)
 
 **Evidence to record**
 - A test that sends saves throughout an update finds every acknowledged one present afterwards.

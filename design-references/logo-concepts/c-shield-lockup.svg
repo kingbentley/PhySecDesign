@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 64" width="200" height="64" role="img" aria-label="PhySec">
+<g style="color:#007e73"><path d="M32 4 L56 12.5 V30 C56 45 46 55 32 60.5 C18 55 8 45 8 30 V12.5 Z" fill="currentColor"/>
+<path d="M27 21 H19 V44 H45 V21 H37" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M32 44 V35" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+<circle cx="39" cy="29" r="3.2" fill="#fff"/></g>
+<text x="74" y="43" font-family="DM Sans, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="-1" fill="#122626">PhySec</text>
+</svg>

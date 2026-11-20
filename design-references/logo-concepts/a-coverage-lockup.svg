@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 64" width="200" height="64" role="img" aria-label="PhySec">
+<g style="color:#007e73"><rect x="7" y="7" width="50" height="50" rx="11" fill="none" stroke="currentColor" stroke-width="5.5"/>
+<path d="M17 17 L49 29 Q46 46 29 49 Z" fill="currentColor" opacity=".38"/>
+<circle cx="17" cy="17" r="6" fill="currentColor"/></g>
+<text x="74" y="43" font-family="DM Sans, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="-1" fill="#122626">PhySec</text>
+</svg>

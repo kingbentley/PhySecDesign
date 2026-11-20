@@ -1,4 +1,4 @@
-# Site Studio self-hosted (AD-1, AD-16): the same Worker bundle that runs on Cloudflare, served
+# Site Survey Design self-hosted (AD-1, AD-16): the same Worker bundle that runs on Cloudflare, served
 # by workerd, Cloudflare's open-source runtime, with Durable Object storage on local disk.
 #
 # Build first (`npm run build`), then from site-studio/:

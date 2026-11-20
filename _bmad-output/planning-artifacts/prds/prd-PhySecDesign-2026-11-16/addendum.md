@@ -1,4 +1,4 @@
-# Site Studio — PRD addendum
+# Site Survey Design — PRD addendum
 
 Supporting context for [final PRD 1.2](prd.md), updated 2026-11-17; a section on amendment 1.1 was added on 2026-11-18, and the access section was rewritten and a section on amendment 1.2 added on the same day. This domain reference preserves accepted models, technical detail and examples for UX, architecture and implementation. Sections explicitly distinguish prototype behavior from confirmed requirements and unmeasured acceptance targets. Current mechanisms and numeric prototype limits are not automatically permanent product requirements.
 
@@ -19,7 +19,7 @@ Supporting context for [final PRD 1.2](prd.md), updated 2026-11-17; a section on
 
 ### Application and hosting baseline
 
-The existing Site Studio application is a React/Vite map editor with browser-local project storage and a separate local revision-review API. The [design/coverage digest](sources/design-and-coverage.md) and [delivery/review digest](sources/delivery-and-reviews.md) identify the relevant source files and tests.
+The existing Site Survey Design application is a React/Vite map editor with browser-local project storage and a separate local revision-review API. The [design/coverage digest](sources/design-and-coverage.md) and [delivery/review digest](sources/delivery-and-reviews.md) identify the relevant source files and tests.
 
 | Area | Current implementation | Consequence for the PRD |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ The surveyed baseline, proposed work and actual installation have distinct repre
 
 Current/proposed analysis population is a deliberate domain choice, independent of display-layer visibility. Proposed replacements must avoid accidental double-counting, while planned removal must not archive the current physical record. Retained equipment still contributes applicable demand despite having no repurchase cost. Known failures and unknown inputs need visible treatment; a planning calculation remains an estimate. Exact data representation and migration from the current existing/proposed flag belong to architecture.
 
-Existing cables use retained-versus-changed cost treatment and FR-53 endpoint/archive rules. Scoped checks and existing defects follow the checklist, retest and closeout models. Inventory intake supports manual survey and reviewed spreadsheet import (FR-56–59/62). The general inventory/history pattern is consistent with [SiteOwl’s asset-management description](https://getsiteowl.com/physical-security-asset-management-software/); the precise actions and view rules are confirmed Site Studio choices.
+Existing cables use retained-versus-changed cost treatment and FR-53 endpoint/archive rules. Scoped checks and existing defects follow the checklist, retest and closeout models. Inventory intake supports manual survey and reviewed spreadsheet import (FR-56–59/62). The general inventory/history pattern is consistent with [SiteOwl’s asset-management description](https://getsiteowl.com/physical-security-asset-management-software/); the precise actions and view rules are confirmed Site Survey Design choices.
 
 ### Work scope, costs and outstanding issues
 
@@ -103,7 +103,7 @@ Preserve the existing three project states. The selected work scope can show its
 
 Example: the lobby camera upgrade is finished, but an existing parking-lot camera fault is deferred. Show the lobby scope as finished and the property closeout as Closed with outstanding items. Carry the parking-lot issue into later work; do not mark it passed, repurchase unchanged devices or rewrite the older package.
 
-The retained failure/correction/retest and punch-list record pattern is supported by [UFGS 28 08 10 sections 3.3.5.1 and 3.3.5.3](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). Its government acceptance gates are not adopted. The scope categories, costing choices and deferred-issue closeout policy above are confirmed Site Studio product choices.
+The retained failure/correction/retest and punch-list record pattern is supported by [UFGS 28 08 10 sections 3.3.5.1 and 3.3.5.3](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). Its government acceptance gates are not adopted. The scope categories, costing choices and deferred-issue closeout policy above are confirmed Site Survey Design product choices.
 
 ### Current issued installation reference
 
@@ -121,7 +121,7 @@ Changing the reference must not roll back or overwrite field placements, notes/p
 
 Each organisation runs its own installation over HTTPS, on its own server or on its own Cloudflare account (FR-66). People who edit sign in with individual accounts created by an administrator's invitation (FR-67) and reach a project only as its Editor or Viewer; administrators manage users, projects, settings, backups and updates and can open every project (FR-68, FR-70). Separate revocable links remain for designated reviewers of fixed design/closeout versions who have no account (FR-23–25). Design and Installation are work views, not permissions. Project Editors manage a project's reviewer links and use self-approval/bypass; administrators can see and revoke every reviewer link. Actions by signed-in people are attributed to their account; a name entered through a reviewer link is unverified and is labelled so (FR-69). The earlier model of one hosted demo with a shared project edit link and unverified display names for editors is withdrawn; its text is preserved in [sources/pre-amendment-1.2](sources/pre-amendment-1.2/addendum.md.txt).
 
-Enforce accounts, roles, membership and reviewer-link scope on the server for records and stored drawings/photos (NFR-5). Keep passwords, session tokens, recovery codes and link tokens out of records, logs, exports and portable projects. Each hosting organisation is responsible for the data it stores; the software carries no security certification, and an independent security review is required before it is recommended for confidential client data. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the account-plus-reviewer-link model is a Site Studio product decision. Sign-in mechanics, session handling and the two hosting implementations belong to architecture.
+Enforce accounts, roles, membership and reviewer-link scope on the server for records and stored drawings/photos (NFR-5). Keep passwords, session tokens, recovery codes and link tokens out of records, logs, exports and portable projects. Each hosting organisation is responsible for the data it stores; the software carries no security certification, and an independent security review is required before it is recommended for confidential client data. This is consistent with [OWASP authorization guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html); the account-plus-reviewer-link model is a Site Survey Design product decision. Sign-in mechanics, session handling and the two hosting implementations belong to architecture.
 
 ### Shared editing and common safeguards
 
@@ -167,7 +167,7 @@ Use a bounded equipment-inventory importer for UTF-8 CSV (.csv) and ordinary Exc
 
 Use a short workflow: choose file/sheet/header, map columns, review interpreted rows and proposed effects, then import the selected valid rows. Suggest familiar headings but let the user change or ignore each mapping. Make unmapped columns visible rather than silently treating them as imported. Show required-field gaps, invalid values, conflicting mappings and duplicate/matching results before commit; let users correct the source/mapping or explicitly skip affected rows. Reuse FR-58's New/Unchanged/Changed/Needs review preview and verified-field protection; do not introduce another conflicting import policy.
 
-Start with inventory fields: source asset ID and optional existing Site Studio ID, label/name, equipment type, manufacturer/model, serial number, IP/MAC address, building/floor/room hints and descriptive notes. Require at least a usable label or source asset ID per new row; source IDs are strongly encouraged for repeat imports but incomplete inventories remain usable. Map equipment type or choose an explicit batch default, including generic/custom Unknown when the source cannot establish a type. Preserve unknown attributes. Generate internal IDs for new records without reliable source IDs; later ambiguous re-imports require explicit review instead of matching by name alone or blindly creating duplicates.
+Start with inventory fields: source asset ID and optional existing Site Survey Design ID, label/name, equipment type, manufacturer/model, serial number, IP/MAC address, building/floor/room hints and descriptive notes. Require at least a usable label or source asset ID per new row; source IDs are strongly encouraged for repeat imports but incomplete inventories remain usable. Map equipment type or choose an explicit batch default, including generic/custom Unknown when the source cannot establish a type. Preserve unknown attributes. Generate internal IDs for new records without reliable source IDs; later ambiguous re-imports require explicit review instead of matching by name alone or blindly creating duplicates.
 
 Resolve source type labels to supported catalog categories through a small value-mapping step (for example CCTV to Camera). Let users confirm building/floor matches to existing project records or retain unresolved location hints in Awaiting placement. Do not create floors, coordinates, cable runs, port assignments or optical models solely from free-text names. Model numbers can remain inventory text until deliberately linked to a suitable catalog definition; missing lens/resolution data is not inferred. Existing/proposed intake context can use an explicit, previewed batch choice; an imported installation or test-status column remains a source claim and cannot become verified field evidence or a Pass.
 
@@ -179,7 +179,7 @@ FR-57–59 define Awaiting placement, reviewed matching/re-import and guarded bu
 
 ### Matching, reviewed updates and re-import
 
-Use the existing Site Studio device ID when present and valid for this property. Otherwise match only a reliably unique, stable source asset ID within a declared source/property context. Names, IP addresses, row positions and location hints can assist review but must not silently establish identity. Preserve IDs as strings, including leading zeros. Conflicting or duplicate keys, matches to archived devices and indications of a different physical replacement require explicit review, not automatic merge, restoration or identity reuse.
+Use the existing Site Survey Design device ID when present and valid for this property. Otherwise match only a reliably unique, stable source asset ID within a declared source/property context. Names, IP addresses, row positions and location hints can assist review but must not silently establish identity. Preserve IDs as strings, including leading zeros. Conflicting or duplicate keys, matches to archived devices and indications of a different physical replacement require explicit review, not automatic merge, restoration or identity reuse.
 
 Preview New, Unchanged, Changed and Needs review rows, including duplicate keys within the file. Show current and incoming values with source/verification context. Skip unchanged data and identify already-applied rows/retries without duplicate creation. Offer clearly scoped batch selection of straightforward new rows and reviewed changes, without requiring a separate confirmation for every ordinary row; unmatched or ambiguous rows are not guessed into existing assets. Mapping/source-batch records should make later diagnosis possible; row order alone is not a durable matching key.
 
@@ -287,7 +287,7 @@ The current solver evaluates one rectilinear view per camera and deduplicates ID
 
 The extension must preserve parent/child identities and selected profiles through revisions, field evidence, exports and backup. Per-head changes affect relevant checks; shared hardware changes can affect multiple heads under the existing retest policy. Whole-device archive/replacement and endpoint changes follow FR-35/36/53; changed-floor restoration follows confirmed FR-54. Exports identify assessed views, unsupported outputs and illustrative footprints. No approvals become mandatory and no planning result becomes a field-test Pass.
 
-The [official reference digest](sources/panoramic-camera-reference.md) distinguishes independent heads, stitched panoramas and fisheye/dewarped views using [Axis panoramic documentation](https://whitepapers.axis.com/en-us/panoramic-cameras). The [fisheye datasheet](https://www.axis.com/dam/public/permalink/263167/datasheet-axis-m4338-plve-panoramic-camera-en-US_263167.pdf#page=7) illustrates nonuniform pixel density and conditional DORI distances. The [scope extract](sources/panoramic-camera-scope-extract.md) records current implementation limits. These sources ground the distinctions; the support levels above are confirmed Site Studio product choices.
+The [official reference digest](sources/panoramic-camera-reference.md) distinguishes independent heads, stitched panoramas and fisheye/dewarped views using [Axis panoramic documentation](https://whitepapers.axis.com/en-us/panoramic-cameras). The [fisheye datasheet](https://www.axis.com/dam/public/permalink/263167/datasheet-axis-m4338-plve-panoramic-camera-en-US_263167.pdf#page=7) illustrates nonuniform pixel density and conditional DORI distances. The [scope extract](sources/panoramic-camera-scope-extract.md) records current implementation limits. These sources ground the distinctions; the support levels above are confirmed Site Survey Design product choices.
 
 ## Closets, ports and physical cable routes
 
@@ -388,13 +388,13 @@ Flag missing segments/landings, unknown scale/lengths, endpoint/assignment misma
 
 Show per-floor continuation labels and a property-wide schedule with run ID, endpoints/ports, floors/riser, horizontal/vertical/drop breakdown, fixed loops, percentage/base, suggested supply quantity, selected purchasing quantity and measured length where recorded. Aggregate each run once by cable type and work scope even when it appears on several plan sheets. Keep uncertainty and selected/partial-floor context visible in the confirmed export packages.
 
-The [inter-floor cable reference digest](sources/interfloor-cable-reference.md) records [editable cross-floor connections](https://docs.cctvdesigntool.com/quick-start/creating-connections.html), [individual/grouped schedules](https://docs.cctvdesigntool.com/ui-guide/connection-manager.html), and the [distinction between fixed cabling and patch leads](https://www.flukenetworks.com/blog/cabling-chronicles/channel-permanent-link-patch-cords-mptl-e2e-oh-my). The manual segmentation and allowance formula above are confirmed Site Studio product choices, not source-prescribed engineering rules.
+The [inter-floor cable reference digest](sources/interfloor-cable-reference.md) records [editable cross-floor connections](https://docs.cctvdesigntool.com/quick-start/creating-connections.html), [individual/grouped schedules](https://docs.cctvdesigntool.com/ui-guide/connection-manager.html), and the [distinction between fixed cabling and patch leads](https://www.flukenetworks.com/blog/cabling-chronicles/channel-permanent-link-patch-cords-mptl-e2e-oh-my). The manual segmentation and allowance formula above are confirmed Site Survey Design product choices, not source-prescribed engineering rules.
 
 ### Engineering scope and references
 
 Defer a comprehensive vendor catalog, automatic equipment discovery, live device configuration, access credential administration, full rack/patch-panel engineering, automatic 3D/path routing, voltage-drop/conduit-fill calculations and automatic code/compliance verification. Required manufacturer/project criteria can be captured in notes/checklists without claiming those calculations are implemented. The catalog and manual routing remain useful with incomplete existing-site information, with gaps disclosed.
 
-The [equipment/cable reference digest](sources/equipment-cable-reference.md) records official examples of [generic device placement](https://docs.cctvdesigntool.com/quick-start/adding-devices.html), [doors linked to individual components](https://help.axis.com/en-us/axis-camera-station-secure-entry), [per-port switch configuration](https://help.axis.com/en-us/axis-network-switch-configuration-guide) and [height-aware connection estimates](https://docs.cctvdesigntool.com/ui-guide/device-sidebar.html). These support the direction, not the exact Site Studio scope or a universal wiring standard.
+The [equipment/cable reference digest](sources/equipment-cable-reference.md) records official examples of [generic device placement](https://docs.cctvdesigntool.com/quick-start/adding-devices.html), [doors linked to individual components](https://help.axis.com/en-us/axis-camera-station-secure-entry), [per-port switch configuration](https://help.axis.com/en-us/axis-network-switch-configuration-guide) and [height-aware connection estimates](https://docs.cctvdesigntool.com/ui-guide/device-sidebar.html). These support the direction, not the exact Site Survey Design scope or a universal wiring standard.
 
 ## Site annotations
 
@@ -429,7 +429,7 @@ Include annotations by default in the selected floor-plan sheets, using their la
 
 Example: draw a fence line labeled North perimeter, place a Vehicle entrance marker linked to Gate G-01, label the loading area using an existing zone, and add a callout referencing the survey photo of a proposed mounting surface. A simple dimension can show the estimated span; actual camera occlusion and cable length still use their respective tools.
 
-The [official reference digest](sources/site-annotation-reference.md) records common [text/measurement drawing tools](https://docs.cctvdesigntool.com/quick-start/) and [separate visibility layers](https://docs.cctvdesigntool.com/ui-guide/layers.html). These are limited precedents; the Site Studio tools, reuse of zones/evidence and behavior above are confirmed product choices.
+The [official reference digest](sources/site-annotation-reference.md) records common [text/measurement drawing tools](https://docs.cctvdesigntool.com/quick-start/) and [separate visibility layers](https://docs.cctvdesigntool.com/ui-guide/layers.html). These are limited precedents; the Site Survey Design tools, reuse of zones/evidence and behavior above are confirmed product choices.
 
 ## Commissioning, evidence and targeted retesting
 
@@ -479,7 +479,7 @@ Add a small editable project/floor checklist for applicable end-to-end functions
 
 Example camera check: “Retrieve and play the recorded test segment for CAM-12 in the specified viewing system; confirm the camera identity, picture and timestamp against the test.” A successful observed playback can Pass; a missing recording is Fail; an unperformed check remains Not tested. Save the actual result, actor/time and any project-required evidence. The POC records manual observations rather than executing hardware tests.
 
-This action/expected-result/log structure is informed by [UFGS 28 08 10 sections 3.1.3, 3.1.5 and 3.3.5](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). Its contractual approval requirements and test values are not adopted. The starter categories, progress rules and applicability choices above are confirmed Site Studio behavior.
+This action/expected-result/log structure is informed by [UFGS 28 08 10 sections 3.1.3, 3.1.5 and 3.3.5](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). Its contractual approval requirements and test values are not adopted. The starter categories, progress rules and applicability choices above are confirmed Site Survey Design behavior.
 
 ### Targeted review and retesting
 
@@ -517,7 +517,7 @@ Required pending retests and unresolved failures remain in device/floor/project 
 
 Example: CAM-12 passed a recorded scene check, then its actual aim changed. Keep the dated Pass and its original context, flag the relevant scene checks as Retest required, and recompute planned/recorded coverage as appropriate. The technician records a new attempt under the changed aim. A cost-only edit to the same camera does not create another retest.
 
-The scope-specific failure/correction/retest record pattern is consistent with [UFGS 28 08 10 sections 3.2, 3.3.1 and 3.3.5](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). This is product-design guidance, not adoption of that specification's government approval gates, universal retest matrix or certification obligations. The trigger rules and follow-up behavior above are confirmed Site Studio product choices.
+The scope-specific failure/correction/retest record pattern is consistent with [UFGS 28 08 10 sections 3.2, 3.3.1 and 3.3.5](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf). This is product-design guidance, not adoption of that specification's government approval gates, universal retest matrix or certification obligations. The trigger rules and follow-up behavior above are confirmed Site Survey Design product choices.
 
 ## Archive, restoration and cleanup
 
@@ -550,7 +550,7 @@ Apply the existing own-session undo, saved-version/dependency checks and duplica
 
 Keep named revisions, issued designs, reviews, closeouts and associated evidence unchanged. Deletion affects current working content and records a history event; it is not permanent erasure of the property record. Do not add a separate recycle-bin UI or arbitrary retention duration for this POC. Durable recovery follows existing retained revisions/history/backups; immediate Undo remains limited to supported own-session edits, not a promise of indefinite cross-session undo. FR-60 container deletion and FR-59 bulk cleanup preserve this history policy.
 
-Example: an extra accidentally placed CAM-099 can be deleted with Undo. If it was already issued to the installer, cancel the planned item in the working revision and preserve the issued design. If it represents a real surveyed camera, use actual removal/archive or an explained record correction. The [reference digest](sources/draft-deletion-reference.md) distinguishes ordinary design editing from retained asset history; the eligibility and safeguards above are confirmed Site Studio product choices.
+Example: an extra accidentally placed CAM-099 can be deleted with Undo. If it was already issued to the installer, cancel the planned item in the working revision and preserve the issued design. If it represents a real surveyed camera, use actual removal/archive or an explained record correction. The [reference digest](sources/draft-deletion-reference.md) distinguishes ordinary design editing from retained asset history; the eligibility and safeguards above are confirmed Site Survey Design product choices.
 
 ### Guarded bulk cleanup
 
@@ -596,7 +596,7 @@ Removing shared equipment such as a switch or controller flags its known affecte
 
 Preserve previous test outcomes and fixed issued/closeout packages. Changed or restored connections trigger appropriate review/retest under FR-44; an old Pass does not establish current fitness. Show affected connection status in plans and schedules, preserve it in revisions/backups, and surface unresolved installation issues through the established scope and closeout rules. This introduces no mandatory approval gate or automatic pass/fail.
 
-Example: archive CAM-01, retain CBL-014 and mark its endpoint for review while switch port 05 remains occupied/reserved as recorded. Explicitly reuse CBL-014 for replacement CAM-02. Restoring CAM-01 later keeps its history but cannot take CAM-02’s connection. The [reference digest](sources/connection-lifecycle-reference.md) identifies limited official asset-history/archive precedents; these cable/port semantics are confirmed Site Studio product choices, not verified competitor behavior.
+Example: archive CAM-01, retain CBL-014 and mark its endpoint for review while switch port 05 remains occupied/reserved as recorded. Explicitly reuse CBL-014 for replacement CAM-02. Restoring CAM-01 later keeps its history but cannot take CAM-02’s connection. The [reference digest](sources/connection-lifecycle-reference.md) identifies limited official asset-history/archive precedents; these cable/port semantics are confirmed Site Survey Design product choices, not verified competitor behavior.
 
 ### Restore a device onto a current floor
 
@@ -623,7 +623,7 @@ Recalculate supported current/proposed analysis only using the selected location
 
 Apply normal shared-edit safeguards if the destination floor, drawing basis, device or dependencies change during restoration. Preserve the pending choices and ask the editor to review the new saved context instead of committing onto a deleted or stale plan. Reopen an archived project under its existing lifecycle policy before editing it; restoration does not bypass project scope or history.
 
-Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. FR-60 permits only unused-draft container deletion; already-missing historical floor references still use this restoration rule. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Studio product choice, not verified competitor behavior.
+Example: CAM-01’s original Floor 2 drawing has been replaced after remodeling. Restore its original ID, open the current Floor 2 plan and confirm its new position. Keep the old installation photo and location in history; review the affected CBL-014 endpoint and required checks before claiming the current connection or test status. FR-60 permits only unused-draft container deletion; already-missing historical floor references still use this restoration rule. The [floor-restoration reference digest](sources/floor-restoration-reference.md) records limited official floor-editing and inactive-asset-history precedents; the restore flow above is a confirmed Site Survey Design product choice, not verified competitor behavior.
 
 ## Design and closeout packages
 
@@ -671,7 +671,7 @@ Illustrative acceptance payload: 30 source PDFs averaging 20 MiB = 600 MiB; 30 p
 
 ### Package references
 
-The closeout structure draws on the test logs, updated records, correction/retest and report organization in [UFGS 28 08 10 sections 3.3.4–3.4.3](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf#page=9). The [official CCTV Design Tool output guide](https://docs.cctvdesigntool.com/quick-start/generating-outputs.html) separates visual plans, reports and tabular outputs. These are limited precedents, not adoption of contractual approvals, certification requirements or additional competitor functionality. The [export reference digest](sources/export-package-reference.md) records the source boundaries. Package presets, defaults, pagination and exact-file retention above are confirmed Site Studio product choices.
+The closeout structure draws on the test logs, updated records, correction/retest and report organization in [UFGS 28 08 10 sections 3.3.4–3.4.3](https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2028%2008%2010.pdf#page=9). The [official CCTV Design Tool output guide](https://docs.cctvdesigntool.com/quick-start/generating-outputs.html) separates visual plans, reports and tabular outputs. These are limited precedents, not adoption of contractual approvals, certification requirements or additional competitor functionality. The [export reference digest](sources/export-package-reference.md) records the source boundaries. Package presets, defaults, pagination and exact-file retention above are confirmed Site Survey Design product choices.
 
 ## POC acceptance and operating targets
 

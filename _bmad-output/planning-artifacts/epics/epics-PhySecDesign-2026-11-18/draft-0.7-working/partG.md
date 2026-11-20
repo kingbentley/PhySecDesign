@@ -1,6 +1,6 @@
 ## Epic 11: Work with AI agents
 
-**Outcome.** An AI agent acting for a person can find, read and prepare work in Site Studio through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people.
+**Outcome.** An AI agent acting for a person can find, read and prepare work in Site Survey Design through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people.
 
 **Depends on.** Epics 1 to 8: tokens, route classes and the entered-text field type from Epic 1, and the features the agent uses from Epics 2 to 8. It does not depend on Epic 9 or Epic 10. SM-7 is shown here, outside the acceptance run of Epic 10, as PRD amendment 1.3 states.
 
@@ -32,7 +32,7 @@ Covers: FR-76 (documented, versioned API), AD-22.
 
 ### Story 11.2: MCP endpoint
 
-As a designer, I want to connect an AI agent to Site Studio through MCP, so that it can work in my projects using tools it discovers by itself.
+As a designer, I want to connect an AI agent to Site Survey Design through MCP, so that it can work in my projects using tools it discovers by itself.
 
 Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 
@@ -155,7 +155,7 @@ Covers: FR-75 (entered text), NFR-5, AD-22.
 
 ### Story 11.6: Experiment R18 and setting up an agent on either host
 
-As an organisation's administrator, I want instructions for connecting an agent on my host, so that our agents can reach Site Studio on Cloudflare or inside our own network.
+As an organisation's administrator, I want instructions for connecting an agent on my host, so that our agents can reach Site Survey Design on Cloudflare or inside our own network.
 
 Covers: FR-76 (both hosts, private network), AD-16, AD-22, experiment R18.
 
@@ -176,7 +176,7 @@ Covers: FR-76 (both hosts, private network), AD-16, AD-22, experiment R18.
 
 ### Story 11.7: OAuth sign-in for MCP connectors
 
-As a designer using an AI service whose connectors require OAuth, I want to connect it by signing in to Site Studio, so that I need not copy a token by hand.
+As a designer using an AI service whose connectors require OAuth, I want to connect it by signing in to Site Survey Design, so that I need not copy a token by hand.
 
 Covers: FR-73, FR-76, AD-22.
 
@@ -186,7 +186,7 @@ Covers: FR-73, FR-76, AD-22.
 - Connectors register by dynamic client registration (RFC 7591); the installation fetches no client metadata from outside.
 - Registration is limited to 20 a hour from one network address, and a registration unused for 30 days is removed. (CG-36)
 - Every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
-- A connector that starts OAuth sends the person to Site Studio's sign-in, including the second step, then to a consent page.
+- A connector that starts OAuth sends the person to Site Survey Design's sign-in, including the second step, then to a consent page.
 - The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind, the projects and an expiry, 90 days unless changed and within the installation's maximum.
 - On consent the installation issues a token of the chosen kind, bound to that connector, listed under the person's Access tokens with the connector named, and counted among the person's active tokens.
 - A refresh replaces the token's value without adding a list entry and never extends access beyond the token's expiry; revoking the token, deactivating the account or recovering the installation ends its refresh grant.
@@ -208,7 +208,7 @@ Notes: Optional (sprint change proposal choice D4). Tokens created by hand remai
 
 ### Story 11.8: Acceptance: an agent does real work on both hosts
 
-As Kevin, I want to see an agent do a real piece of design work on both hosts, so that I know agents can use Site Studio as intended.
+As Kevin, I want to see an agent do a real piece of design work on both hosts, so that I know agents can use Site Survey Design as intended.
 
 Covers: SM-7, FR-73, FR-74, FR-75, FR-76, FR-77.
 

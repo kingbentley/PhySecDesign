@@ -1,12 +1,12 @@
 ---
-title: "Site Studio — Epics and Stories"
+title: "Site Survey Design — Epics and Stories"
 status: draft 0.7; epic order and twelve product decisions confirmed by Kevin; story content and the remaining choices not yet confirmed
 created: 2026-11-18
 inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification 0.6; architecture 3.1"
 method: BMAD Create Epics and Stories; reviewed twice with BMAD Review
 ---
 
-# Site Studio — Epics and Stories
+# Site Survey Design — Epics and Stories
 
 This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into work that can be built and checked one story at a time. It follows the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md) for screens (S-numbers) and the [architecture](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for mechanisms (AD-numbers) and experiments (R-numbers).
 
@@ -105,7 +105,7 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 
 | Epic | Outcome | Stories |
 | --- | --- | --- |
-| 1. Install, sign in and manage people | An organisation can deploy Site Studio on Cloudflare, set it up, invite people, and control who can see and change each project. | 19 |
+| 1. Install, sign in and manage people | An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project. | 19 |
 | 2. One shared project online | The existing design tool runs as one shared project, on Cloudflare and on your own server. Two members can edit different things at once, see each other's changes within seconds and resolve a clash without losing work. | 26 |
 | 3. A workspace that holds the whole job | The app has the frame, the eight areas and the status language from the UX specification, and the prototype's measured readability problems are fixed. Later epics add their screens into this structure. | 7 |
 | 4. Design, estimate and issue | A design can be saved as a named revision, estimated, reviewed or bypassed, issued as the fixed installation reference and exported as a retained package. | 18 |
@@ -113,9 +113,9 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 | 6. Existing sites and return visits | An existing building can be inventoried from a spreadsheet, surveyed, upgraded and returned to later, with its history, warranty and service visits intact. | 20 |
 | 7. Extended modelling | The design can describe multi-view and pan/tilt/zoom cameras, doors with their components, site annotations, closets and ports, and cable that runs between floors. | 11 |
 | 8. Backups and recovery | Projects and the installation's own data are backed up daily, a project or a whole installation can be recovered, and a project can be moved as a portable backup. | 14 |
-| 9. Install from published instructions and update from the interface | Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails. | 15 |
+| 9. Install from published instructions and update from the interface | Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails. | 15 |
 | 10. Acceptance | The proof of concept is measured against the PRD's acceptance profile on Cloudflare, and then on a self-hosted installation. Passing story 10.2 to story 10.7 is enough to accept the proof of concept on Cloudflare; a self-hosted installation is not described as supported until story 10.8 and story 10.9 pass. | 9 |
-| 11. Work with AI agents | An AI agent acting for a person can find, read and prepare work in Site Studio through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people. | 8 |
+| 11. Work with AI agents | An AI agent acting for a person can find, read and prepare work in Site Survey Design through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people. | 8 |
 
 Each epic's own section states what it depends on.
 
@@ -152,7 +152,7 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 ## Epic 1: Install, sign in and manage people
 
-**Outcome.** An organisation can deploy Site Studio on Cloudflare, set it up, invite people, and control who can see and change each project.
+**Outcome.** An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project.
 
 **Depends on.** Nothing earlier and nothing later. Inside the epic each story needs only the stories before it.
 
@@ -160,7 +160,7 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 ### Story 1.1: Run the app on Cloudflare with a portable server core
 
-As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
+As an organisation's administrator, I want Site Survey Design served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
 Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), AD-22 (route declarations, reason codes), architecture section 10, experiments R7 and R8.
 
@@ -204,7 +204,7 @@ Notes: The version rule is in this story, not with the Update control, because t
 
 ### Story 1.2: Set up a new installation
 
-As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Studio can complete, so that I become its first administrator and nobody else can.
+As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Survey Design can complete, so that I become its first administrator and nobody else can.
 
 Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 (set-up code on redeploy). Screens: S-25.
 
@@ -685,7 +685,7 @@ Notes: This story applies to every account the behaviour that story 1.11 builds 
 
 ### Story 1.17: Optional email and forgotten passwords
 
-As an administrator, I want Site Studio to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
+As an administrator, I want Site Survey Design to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
 
 Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18. Screens: S-26, S-30 invite panel, S-33.
 
@@ -723,7 +723,7 @@ Notes: Left to later stories: SMTP (story 1.18).
 
 ### Story 1.18: Experiment R13: email by SMTP on both hosts
 
-As an administrator who runs my own mail server, I want to know whether Site Studio can send by SMTP, so that I am offered it only if it works on my host.
+As an administrator who runs my own mail server, I want to know whether Site Survey Design can send by SMTP, so that I am offered it only if it works on my host.
 
 Covers: AD-18, experiment R13.
 
@@ -1331,9 +1331,9 @@ Covers: FR-22 (format migration), FR-20 (images from older records), AD-14.
 
 Notes: Left to later stories: named revisions from the file (story 4.1) and costs from the file (story 4.5), each then removing its item from the "not imported" list; the portable backup of the new format (story 8.10).
 
-### Story 2.21: Run Site Studio on your own server over HTTPS
+### Story 2.21: Run Site Survey Design on your own server over HTTPS
 
-As an organisation's administrator, I want to start Site Studio on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
+As an organisation's administrator, I want to start Site Survey Design on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
 
 Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 
@@ -1356,7 +1356,7 @@ Notes: Left to later stories: an operator's own proxy (story 2.22); the deployme
 
 ### Story 2.22: Run behind your own HTTPS proxy
 
-As an organisation's administrator, I want to put Site Studio behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
+As an organisation's administrator, I want to put Site Survey Design behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
 
 Covers: FR-66 (self-hosted), NFR-5, AD-17.
 
@@ -2926,7 +2926,7 @@ Covers: FR-62 (column mapping, identifiers, remembered mapping), UX decision D9.
 
 **Core behaviour**
 - Step 2 lists one row per source column: its heading, three sample values, the suggested field, and a choice to change or ignore it.
-- Columns can be mapped to source asset ID, existing Site Studio ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
+- Columns can be mapped to source asset ID, existing Site Survey Design ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
 - Equipment-type values found in the file are mapped to equipment types in the same way.
 - A default equipment type, including Unknown, can be set for rows whose type is missing or not recognised.
 - Unmapped and ignored columns are listed, with their count, before the next step.
@@ -2951,7 +2951,7 @@ Covers: FR-58 (matching and preview), FR-62 (row review). Screens: S-09 step 3.
 **Core behaviour**
 - Step 3 groups rows as New, Changed, Unchanged and Needs review, with counts.
 - A Changed row shows the current and incoming values side by side, with the source of each.
-- A row matches an existing device by a valid Site Studio ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03 · reading)
+- A row matches an existing device by a valid Site Survey Design ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03 · reading)
 - A row with neither identifier matches the device that an earlier import of this project created from a row with identical mapped values. With no such device it is listed as New. (CE-04 · reading)
 - A row matched this way is listed as Unchanged only when its mapped values equal the device's current record. Otherwise it is listed as Changed and shows the differences, like any other matched row. (CE-04 · reading)
 - Names, addresses and location hints never establish identity by themselves.
@@ -3398,7 +3398,7 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 
 ### Story 6.20: External tickets on issues, visits and warranties
 
-As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Studio to the ticket in the other system.
+As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Survey Design to the ticket in the other system.
 
 Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
 
@@ -4073,7 +4073,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ## Epic 9: Install from published instructions and update from the interface
 
-**Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
+**Outcome.** Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
 **Depends on.** The version rule that every update relies on is in story 1.1, so that the first release already obeys it. Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1, story 1.14 and all of Epic 8, because the update record follows the pre-update backup; story 9.4 needs story 9.3, all of Epic 8 and story 4.10; story 9.5 needs story 9.2, story 9.3 and story 9.4. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.12 and story 9.13 also need the failure warning of story 9.10; story 9.13 also needs the settings secrets of story 1.15. The first release published for organisations is cut only after story 9.10 self-hosted and story 9.13 on Cloudflare, because it must act as the version before in their first update. Nothing later.
 
@@ -4081,7 +4081,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ### Story 9.1: Published installation instructions
 
-As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Studio on our own server or our own Cloudflare account.
+As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Survey Design on our own server or our own Cloudflare account.
 
 Covers: FR-66 (instructions), SM-6.
 
@@ -4330,7 +4330,7 @@ Covers: FR-72, FR-21, NFR-2, NFR-8, AD-20, UX decision D13. Screens: S-35, S-26.
 
 **Limits and values**
 - The banner appears two minutes before saving stops and reads "An update starts in 2 minutes. Your unsaved work will be kept on this page."
-- An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Studio". (CF-46 · value)
+- An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Survey Design". (CF-46 · value)
 
 **Evidence to record**
 - A test that sends saves throughout an update finds every acknowledged one present afterwards.
@@ -4760,7 +4760,7 @@ Notes: SM-6 needs both hosts and is complete only when this story passes.
 
 ## Epic 11: Work with AI agents
 
-**Outcome.** An AI agent acting for a person can find, read and prepare work in Site Studio through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people.
+**Outcome.** An AI agent acting for a person can find, read and prepare work in Site Survey Design through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people.
 
 **Depends on.** Epics 1 to 8: tokens, route classes and the entered-text field type from Epic 1, and the features the agent uses from Epics 2 to 8. It does not depend on Epic 9 or Epic 10. SM-7 is shown here, outside the acceptance run of Epic 10, as PRD amendment 1.3 states.
 
@@ -4792,7 +4792,7 @@ Covers: FR-76 (documented, versioned API), AD-22.
 
 ### Story 11.2: MCP endpoint
 
-As a designer, I want to connect an AI agent to Site Studio through MCP, so that it can work in my projects using tools it discovers by itself.
+As a designer, I want to connect an AI agent to Site Survey Design through MCP, so that it can work in my projects using tools it discovers by itself.
 
 Covers: FR-75, FR-76 (MCP endpoint), AD-22.
 
@@ -4915,7 +4915,7 @@ Covers: FR-75 (entered text), NFR-5, AD-22.
 
 ### Story 11.6: Experiment R18 and setting up an agent on either host
 
-As an organisation's administrator, I want instructions for connecting an agent on my host, so that our agents can reach Site Studio on Cloudflare or inside our own network.
+As an organisation's administrator, I want instructions for connecting an agent on my host, so that our agents can reach Site Survey Design on Cloudflare or inside our own network.
 
 Covers: FR-76 (both hosts, private network), AD-16, AD-22, experiment R18.
 
@@ -4936,7 +4936,7 @@ Covers: FR-76 (both hosts, private network), AD-16, AD-22, experiment R18.
 
 ### Story 11.7: OAuth sign-in for MCP connectors
 
-As a designer using an AI service whose connectors require OAuth, I want to connect it by signing in to Site Studio, so that I need not copy a token by hand.
+As a designer using an AI service whose connectors require OAuth, I want to connect it by signing in to Site Survey Design, so that I need not copy a token by hand.
 
 Covers: FR-73, FR-76, AD-22.
 
@@ -4946,7 +4946,7 @@ Covers: FR-73, FR-76, AD-22.
 - Connectors register by dynamic client registration (RFC 7591); the installation fetches no client metadata from outside.
 - Registration is limited to 20 a hour from one network address, and a registration unused for 30 days is removed. (CG-36 · value)
 - Every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
-- A connector that starts OAuth sends the person to Site Studio's sign-in, including the second step, then to a consent page.
+- A connector that starts OAuth sends the person to Site Survey Design's sign-in, including the second step, then to a consent page.
 - The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind, the projects and an expiry, 90 days unless changed and within the installation's maximum.
 - On consent the installation issues a token of the chosen kind, bound to that connector, listed under the person's Access tokens with the connector named, and counted among the person's active tokens.
 - A refresh replaces the token's value without adding a list entry and never extends access beyond the token's expiry; revoking the token, deactivating the account or recovering the installation ends its refresh grant.
@@ -4968,7 +4968,7 @@ Notes: Optional (sprint change proposal choice D4). Tokens created by hand remai
 
 ### Story 11.8: Acceptance: an agent does real work on both hosts
 
-As Kevin, I want to see an agent do a real piece of design work on both hosts, so that I know agents can use Site Studio as intended.
+As Kevin, I want to see an agent do a real piece of design work on both hosts, so that I know agents can use Site Survey Design as intended.
 
 Covers: SM-7, FR-73, FR-74, FR-75, FR-76, FR-77.
 
@@ -5273,7 +5273,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | CF-41 | 9.3 | A prepared update record with no yes within 30 minutes is withdrawn by the installation itself | 60 minutes | AD-20 (K21) puts a limit on every waiting state and gives no value; 30 minutes allows for a queued GitHub run, as the earlier limit did | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CF-42 | 9.3 | The time limit after the yes, after arrival, and for a stopping or returning record is three times the estimate shown before the update, at least 30 minutes and at most 5 hours | A fixed 60 minutes | AD-20 (K21) derives the limit from the estimate; the maximum stays under GitHub's 6-hour job limit | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CF-43 | 9.4 | A project that refuses a call for a version difference is called again after 35 seconds, up to 3 times, before it counts as failed | Count it as failed at once | Story 1.1 lets an object refuse for 30 seconds after a stop; a refusal then is not a conversion failure | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
-| CF-46 | 9.8 | An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Studio" | "not saved: changed by an update" | Standing rule 11 asks each new refusal reason to state its wording; no source gives one | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-46 | 9.8 | An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Survey Design" | "not saved: changed by an update" | Standing rule 11 asks each new refusal reason to state its wording; no source gives one | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 | CF-47 | 9.10 | If no container answers a request to return within 60 seconds, the updater starts the earlier image | 5 minutes | AD-20 (K22) gives no period; a running container answers within seconds | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
 
 *Epic 10: Acceptance (1)*
@@ -5554,7 +5554,7 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 2.11 (part) | 2.18 | Undo and redo my own recent edits |
 | 2.11 (part) | 2.19 | Delete an accidental draft device |
 | 2.12 | 2.20 | Bring in a project saved by the prototype |
-| 2.13 (part) | 2.21 | Run Site Studio on your own server over HTTPS |
+| 2.13 (part) | 2.21 | Run Site Survey Design on your own server over HTTPS |
 | 2.13 (part) | 2.22 | Run behind your own HTTPS proxy |
 | 2.13 (part) | 2.23 | Deployment key and administrator recovery on your own server |
 | 2.13 (part) | 2.24 | Self-hosted smoke suite for accounts and the shared project |
