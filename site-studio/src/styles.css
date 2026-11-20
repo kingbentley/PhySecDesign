@@ -17,7 +17,7 @@ a{color:var(--teal)}
 .app{height:100dvh;min-height:640px;display:flex;flex-direction:column;overflow:hidden}
 .app-header{height:65px;flex-shrink:0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 22px;background:#fff;white-space:nowrap;z-index:600}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#122626;font-size:24px;font-weight:700;letter-spacing:-.8px}
-.brand>span{color:#0b6f72}.brand b{color:#4f7f6a;font-weight:inherit}
+.brand>span{color:#0b6f72}.brand b{color:#2f9461;font-weight:inherit}
 .studio-label{border-left:1px solid var(--line);padding-left:18px;font-size:16px;font-weight:650}
 .breadcrumb{display:flex;align-items:center;gap:13px;border-left:1px solid var(--line);padding-left:22px;flex:1;font-size:14px;min-width:0}
 .breadcrumb>span:first-child{color:var(--muted)}
