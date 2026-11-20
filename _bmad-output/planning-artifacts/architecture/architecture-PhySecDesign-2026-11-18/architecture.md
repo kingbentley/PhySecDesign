@@ -1,6 +1,6 @@
 ---
 title: "Site Studio — Architecture"
-status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); and for updates (K20, AD-20 and AD-21); decisions K1-K3 and K5-K21 confirmed by Kevin, K20 with seven fixes and K21 refining it after the epics review; K22 added on his instruction to proceed with Claude's recommendations; version 3.1 on 2026-11-19 adds agent access (AD-22, K23) for PRD amendment 1.3, and one rule for external tickets (PRD amendment 1.4); nothing built
+status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); and for updates (K20, AD-20 and AD-21); decisions K1-K3 and K5-K21 confirmed by Kevin, K20 with seven fixes and K21 refining it after the epics review; K22 added on his instruction to proceed with Claude's recommendations; version 3.1 on 2026-11-19 adds agent access (AD-22, K23) for PRD amendment 1.3, and one rule for external tickets (PRD amendment 1.4); version 3.2 on 2026-11-20 adds automated browser tests (K24); story 1.1 built
 created: 2026-11-18
 inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification; the site-studio prototype; experiments R1, R2, R6, R7, R8 and R10"
 method: BMAD Create Architecture, followed by hand (the BMAD skills were not installed in the cloud checkout when this was first written)
@@ -17,6 +17,8 @@ This document decides how Site Studio is built, hosted and updated so that it me
 3. **A Cloudflare update is started through a GitHub Actions run**, because it can name the release to install.
 
 Versions 1.0 to 2.1 are in the repository history.
+
+**Version 3.2 (2026-11-20).** Adds automated browser tests (K24): Playwright in desktop Chromium and in WebKit with an iPhone viewport, with an axe check on each new screen, in sections 5, 9, 10, 11 and 13. Kevin approved the change through the [sprint change proposal on browser tests](../../sprint-change-proposal-2026-11-20-browser-tests.md).
 
 **Version 3.1 (2026-11-19).** PRD amendment 1.3 lets AI agents act for a person. AD-22 adds access tokens, route classes, one declared API and an MCP endpoint; AD-5, AD-9, AD-10, AD-12, AD-16 and AD-17 gain a sentence each, and experiments R17 and R18 are added. Kevin approved the change through the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) (K23).
 
@@ -148,6 +150,7 @@ Rules that keep it so:
 - The server reaches storage only through the project room, the installation object and the file-store interface. No route touches a platform binding directly.
 - The self-hosted file store adds what R2 provides and the disk service does not: a stored hash and size per file, kept in the project room's records.
 - The test suite runs in Cloudflare's runtime. A smoke suite runs the built bundle under the self-hosted configuration in continuous integration: start, set up, sign in, save, upload a file, restart, read back.
+- Browser tests use Playwright against the built bundle served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, on every push and pull request, each run from empty local storage. Each new screen passes an axe accessibility check (K24).
 - The portable backup (AD-14) is the same format on both hosts.
 - The agent interface (AD-22) uses only what is listed here and calls no service outside the installation.
 
@@ -344,7 +347,7 @@ Because it is made of the application's own records and not of database files, t
 ### AD-19 — One public repository; signed releases built by GitHub Actions (confirmed; revised)
 
 - The source is published in the GitHub repository under its MIT licence. Kevin makes the repository public when the first release is ready (K15).
-- A version tag starts a workflow that runs the test suite, builds the one Worker bundle, builds the Docker image from that bundle and a pinned version of the open-source runtime, runs the self-hosted smoke suite against the image, signs both, and publishes a GitHub Release with notes.
+- A version tag starts a workflow that runs the test suite, builds the one Worker bundle, runs the browser tests against that bundle, builds the Docker image from the same bundle and a pinned version of the open-source runtime, runs the self-hosted smoke suite against the image, signs both, and publishes a GitHub Release with notes.
 - The image is published to GitHub's container registry. Signing is keyless and tied to this repository's release workflow (K14).
 - Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class (AD-21).
 
@@ -503,6 +506,7 @@ site-studio/
   updater/          the updater container
   tests/            existing tests (Node's test runner)
   server-tests/     server tests in Cloudflare's runtime, and the self-hosted smoke suite
+  browser-tests/    Playwright browser tests and their configuration (K24)
 .github/workflows/  test, release
 ```
 
@@ -519,7 +523,7 @@ Rules for implementers:
 - No Durable Object class is added, renamed or removed after the first release without Kevin's decision.
 - Every new table or record shape comes with its conversion step and a test that converts data from the previous release.
 
-Language and tests (K6): existing application code stays in JavaScript; `shared/`, `server/` and `updater/` are TypeScript. Server tests use Vitest with `@cloudflare/vitest-plugin`, the current name of Cloudflare's test integration, which experiment R7 showed working with the prototype's versions.
+Language and tests (K6): existing application code stays in JavaScript; `shared/`, `server/` and `updater/` are TypeScript. Server tests use Vitest with `@cloudflare/vitest-plugin`, the current name of Cloudflare's test integration, which experiment R7 showed working with the prototype's versions. Browser tests use Playwright with `@axe-core/playwright`, both pinned (K24).
 
 ## 11. How the quality requirements are met
 
@@ -534,6 +538,7 @@ Language and tests (K6): existing application code stays in JavaScript; `shared/
 | Same product on either host | One build (AD-16). Full acceptance on Cloudflare first; self-hosting is not called supported until the same run passes there. | SM-6. |
 | Safe updates | AD-20, AD-21. | R11, R14. |
 | Fixed records never change | Hash-named files; no update path. | Hash tests after later edits. |
+| New screens are readable and operable | An axe check on every new screen in the browser tests (K24). | The full pass of story 3.4; real devices in story 10.6. |
 | Agents act only within their person's access, and people decide | Token kinds and route classes in the gate (AD-22). | Gate tests for every route class with each caller kind; R18. |
 
 ## 12. Risks and experiments
@@ -606,6 +611,7 @@ All confirmed by Kevin on 2026-11-18.
 | K21 | **Sixteen refinements to K20** from the independent review of the update stories, listed in AD-20: chiefly a fourth state, *stopping*, before *prepared*; time limits on every waiting state; a step number that never goes back; authenticated machine calls; recovery when the version allowed to act is not deployed; and conversion of restore copies and imports outside an update. Proposed and confirmed on 2026-11-19. |
 | K22 | **Twelve additions to K21 from a second review of the update stories**, listed in AD-20: kept attempt outcomes, deadlines on every state, timers tied to an attempt, a command to clear a stuck record, an update secret shown once, and recovery paths for the self-hosted updater. Claude's recommendations, accepted on Kevin's instruction of 2026-11-19 to proceed with them. |
 | K23 | **AI agents can use Site Studio** (PRD amendment 1.3, AD-22): outside agents act for a person with personal access tokens; agents draft and people decide; one declared API serves the app and agents, with an MCP endpoint generated from it; it works on Cloudflare and on a private network with no outside service; access is settled in Epic 1 and the agent tools come in a later epic. Approved by Kevin on 2026-11-19 through the sprint change proposal, with Claude's recommendations for its five choices. |
+| K24 | **Automated browser tests.** Playwright against the built bundle served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, on every push and pull request, with an axe check on each new screen. Set up in story 1.2; required of every later story that adds or changes a screen. Approved by Kevin on 2026-11-20 through the [sprint change proposal on browser tests](../../sprint-change-proposal-2026-11-20-browser-tests.md). |
 
 K4, the permanent administrator key of version 1.0, was replaced in version 2.0 by administrator accounts and a one-time set-up code.
 

@@ -12,7 +12,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2423 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2427 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
 - **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
 - **Not confirmed:** the story boundaries and the acceptance criteria.
@@ -23,6 +23,7 @@ This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-
 - **External tickets added (PRD amendment 1.4):** on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](../../sprint-change-proposal-2026-11-19-external-tickets.md). Story 6.20 adds external tickets on issues, service visits and warranties, and story 11.2 lets an agent find and add them. Choices CE-41 to CE-47 are Kevin's, made in that proposal. Not independently reviewed.
 - **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time. On 2026-11-19 Kevin also ruled on the remaining open choices of agent access: CG-04 to CG-09, CG-13, CG-15, CG-19, CG-26 and CG-36 as written, and CG-16 changed to the PRD's 10 MiB inventory limit with no separate row limit.
 - **Epic 1 reviewed:** on 2026-11-19 Epic 1 was reviewed with the adversarial lens ([review of Epic 1](review-epic-1.md)): 21 findings, mostly on sign-in, set-up, tokens and recovery. Kevin asked for all of them to be applied with Claude's recommendations. Fourteen stories from story 1.2 to story 1.19 were revised (all of Epic 1 except story 1.1, story 1.9, story 1.12, story 1.16 and story 1.18), standing rule 2 extended, standing rules 13 and 14 added, CA-13 widened and CA-43 to CA-58 added, each marked as Claude's recommendation accepted on Kevin's instruction. Not reviewed a second time.
+- **Browser tests added (K24):** on 2026-11-20 Kevin approved the [sprint change proposal on browser tests](../../sprint-change-proposal-2026-11-20-browser-tests.md). Standing rule 15 and the definition of done now require Playwright browser tests, in desktop Chromium and in WebKit with an iPhone viewport, with an axe check on each new screen. Story 1.2 sets them up; story 1.1's wording, and the Notes of story 3.4 and story 10.6, were adjusted. No story was added or renumbered. Not independently reviewed.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
@@ -143,10 +144,11 @@ Each epic's own section states what it depends on.
 12. A reply value whose source is not a member of the project, or that an agent added, is returned in the entered-text wrapper of story 1.1 with its source: reviewer-link entries, imported content (which keeps the source "import" after it is applied), names of uploaded files, text read from PDF plans, and anything a token wrote. A value a member edits becomes that member's. Sources and references survive restore and backup. A refusal names a field but never repeats an entered value (AD-22).
 13. Every request that changes anything with a session cookie, and every request made before a session exists that creates a session or changes an account (sign-in, set-up, accepting an invitation, using a reset link, using a recovery code), is refused unless it comes from the app's own origin and carries the header the app adds (AD-12). Each story that adds such a request tests the refusal. Token requests are exempt, as story 1.19 states.
 14. A secret carried in a link (an invitation or a reset link) holds at least 32 random bytes, and the administrator recovery code of story 1.13 at least 20 random characters. The server stores only its SHA-256 hash. The page that opens a link is served with `Referrer-Policy: no-referrer` and removes the secret from the address bar once it is read, and no log, record or export contains it. (CA-55)
+15. From story 1.2 on, a story that adds or changes a screen adds browser tests with Playwright, in `site-studio/browser-tests/`. They cover its Core behaviour flows on that screen and at least one refusal or error that the screen shows. They run against the built app served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, on every push and pull request. Each screen a story adds also passes an axe accessibility check with no serious or critical violations. Rules and edge cases stay in the server tests. A criterion that names a real device, another browser or a deployed installation is still checked there (story 10.6). (Architecture K24.)
 
 ### Definition of done
 
-A story is done when its criteria pass in Chrome against the locally run server, its automated tests pass, the self-hosted smoke suite passes once it exists, and the existing tests still pass. Where a criterion names a deployed Cloudflare test installation, another browser, or a real phone or tablet, it is tested there.
+A story is done when its criteria pass in Chrome against the locally run server, its automated tests pass, its browser tests pass in desktop Chromium and in WebKit with an iPhone viewport (standing rule 15), the self-hosted smoke suite passes once it exists, and the existing tests still pass. Where a criterion names a deployed Cloudflare test installation, another browser, or a real phone or tablet, it is tested there.
 
 ## Epic 1: Install, sign in and manage people
 
@@ -164,7 +166,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
-- The existing unit and browser tests pass against that locally served app with no test changed or removed.
+- The existing unit tests pass against that locally served app with no test changed or removed. (The prototype had no browser tests.)
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
@@ -238,7 +240,13 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
 
-Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3); two installations sharing no project (story 1.7) and no file (story 2.25); the self-hosted set-up code, printed in the server output (story 2.21); installation instructions (story 9.1).
+**Evidence to record**
+- Playwright is set up in `site-studio/browser-tests/` with pinned versions. It runs against the built app served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, and each run starts from empty local storage.
+- A browser test completes set-up with a set-up code supplied to the local installation and finds the confirmation of the installation's name and the administrator's email; another shows a wrong code refused with the wait stated.
+- The set-up page passes an axe accessibility check with no serious or critical violations.
+- Continuous integration installs the browsers and runs the browser tests on every push and pull request, keeping a trace when a test fails.
+
+Notes: For tests, the local installation's set-up code is supplied as a local secret that is never committed. Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3); two installations sharing no project (story 1.7) and no file (story 2.25); the self-hosted set-up code, printed in the server output (story 2.21); installation instructions (story 9.1).
 
 ### Story 1.3: Sign in and sign out
 
@@ -1554,7 +1562,7 @@ Covers: NFR-3, UX section 10, audit findings A2, A3, A5, A6.
 - The text contrast measurements are recorded for every screen that exists at this story.
 - The marker, icon and focus-ring contrast measurements are recorded against both the plan and aerial imagery.
 
-Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1). Screens added later meet these rules under standing rule 5.
+Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1). Screens added later meet these rules under standing rule 5. The axe checks of standing rule 15 cover each new screen from story 1.2 on; this story makes the full pass, including the prototype's existing screens.
 
 ### Story 3.5: Plan workspace regrouped
 
@@ -4678,6 +4686,8 @@ Covers: NFR-3, SM-4.
 - Hardware, operating system and browser versions and the test conditions are recorded.
 - The result of each accessibility check is recorded for both fixtures.
 
+Notes: The browser tests of standing rule 15 run in desktop Chromium and in WebKit with an iPhone viewport on every change. This story is the evidence on real devices and browsers, which emulation does not replace.
+
 ### Story 10.7: Show installing and updating on Cloudflare
 
 As Kevin, the product owner, I want the Cloudflare parts of the installation and update Checks shown on a fresh account, so that the proof of concept can be accepted on Cloudflare.
@@ -5678,3 +5688,4 @@ Stories that were split, added or moved down by a split. A story not listed kept
 - **Draft 0.6** applied the first independent review: user-story sentences and Notes lines throughout, criteria moved to the stories that can test them, missing parts of requirements added, edge-case handling added.
 - **Draft 0.7** applies the second independent review and Kevin's twelve decisions: contradictions between stories removed, hidden dependencies fixed, the update path on Cloudflare corrected, criteria grouped under five labels, large stories split and renumbered, and the choices reduced to those that are really open, each with an ID.
 - **Draft 0.7, revised 2026-11-19 for the review of Epic 1:** an adversarial review of Epic 1 ([review of Epic 1](review-epic-1.md), 21 findings) was applied in full on Kevin's instruction. Sign-in, set-up, two-step verification, sessions, reset and recovery, the activity log, email and tokens were tightened; standing rule 2 gained token and account management as person-only routes; standing rules 13 and 14 were added; and CA-13 was widened and CA-43 to CA-58 added, each Claude's recommendation accepted on Kevin's instruction.
+- **Draft 0.7, revised 2026-11-20 for browser tests:** through `bmad-correct-course` Kevin approved automated browser tests with Playwright (architecture K24): standing rule 15, the definition of done, and evidence in story 1.2 that sets them up.
