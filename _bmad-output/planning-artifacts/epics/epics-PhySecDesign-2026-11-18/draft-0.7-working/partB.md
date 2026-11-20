@@ -505,9 +505,9 @@ Covers: FR-22 (format migration), FR-20 (images from older records), AD-14.
 
 Notes: Left to later stories: named revisions from the file (story 4.1a) and costs from the file (story 4.4), each then removing its item from the "not imported" list; the portable backup of the new format (story 8.4a).
 
-### Story 2.13a: Run Site Studio on your own server over HTTPS
+### Story 2.13a: Run Site Survey Design on your own server over HTTPS
 
-As an organisation's administrator, I want to start Site Studio on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
+As an organisation's administrator, I want to start Site Survey Design on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
 
 Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 
@@ -530,7 +530,7 @@ Notes: Left to later stories: an operator's own proxy (story 2.13b); the deploym
 
 ### Story 2.13b: Run behind your own HTTPS proxy
 
-As an organisation's administrator, I want to put Site Studio behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
+As an organisation's administrator, I want to put Site Survey Design behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
 
 Covers: FR-66 (self-hosted), NFR-5, AD-17.
 

@@ -357,7 +357,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ## Epic 9: Install from published instructions and update from the interface
 
-**Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
+**Outcome.** Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
 **Depends on.** Story 9.1 needs story 1.2, story 1.4, story 1.8d, story 2.13a, story 2.13b, story 2.13c, story 2.14, story 2.15, story 8.1b and story 8.3a. Story 9.2 needs story 1.1, story 2.13a, story 2.13d and story 9.1. Story 9.3a needs story 1.1; story 9.3b needs all of Epic 8, story 1.9 and story 4.7a; story 9.3c needs story 9.2. Story 9.4 needs story 1.8a, story 1.9 and story 9.2. Story 9.5a to story 9.7d need all of Epic 8 and story 9.2 to story 9.4, because an update takes a backup first and restores it on failure; story 9.7b also needs the settings secrets of story 1.10a. Nothing later.
 
@@ -365,7 +365,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ### Story 9.1: Published installation instructions
 
-As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Studio on our own server or our own Cloudflare account.
+As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Survey Design on our own server or our own Cloudflare account.
 
 Covers: FR-66 (instructions), SM-6.
 

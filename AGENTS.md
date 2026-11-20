@@ -1,6 +1,7 @@
 # PhySecDesign workspace
 
-- The Site Studio proof of concept is in `site-studio/`. Read its `AGENTS.md` before changing the application.
+- The product is named Site Survey Design. It was called Site Studio until 2026-11-20: the current planning documents, READMEs and the app use the new name, while the folder `site-studio/`, the Worker `site-studio-experiments`, and frozen records (PRD source snapshots, superseded drafts, review reports and decision logs) keep the old one.
+- The Site Survey Design proof of concept is in `site-studio/`. Read its `AGENTS.md` before changing the application.
 - Existing project context is in `site-studio/README.md`, `site-studio/POC-ROADMAP.md`, and `site-studio/design-qa.md`.
 - Design references and mockups are in `design-references/` and `design-mockups/`.
 

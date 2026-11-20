@@ -1,12 +1,12 @@
 ---
-title: "Site Studio — UX Design Specification"
+title: "Site Survey Design — UX Design Specification"
 status: draft 0.5, aligned with final PRD 1.2 after its review on 2026-11-18; design decisions D1-D14 confirmed by Kevin
 created: 2026-11-18
 inputs: "final PRD 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
-# Site Studio — UX Design Specification
+# Site Survey Design — UX Design Specification
 
 This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–65 and, in section 17, FR-66–72. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
 

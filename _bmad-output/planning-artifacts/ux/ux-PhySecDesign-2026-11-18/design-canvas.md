@@ -1,4 +1,4 @@
-# Site Studio — design canvas
+# Site Survey Design — design canvas
 
 Canvas: https://claude.ai/artifact/NWwzBsnutPwRM7SxjNyQDL (Claude Design, private to Kevin unless shared from the page's Share menu).
 

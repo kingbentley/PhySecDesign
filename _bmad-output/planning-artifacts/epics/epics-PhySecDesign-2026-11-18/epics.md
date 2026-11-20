@@ -1,12 +1,12 @@
 ---
-title: "Site Studio — Epics and Stories"
+title: "Site Survey Design — Epics and Stories"
 status: draft 0.7; epic order and twelve product decisions confirmed by Kevin; story content and the remaining choices not yet confirmed
 created: 2026-11-18
 inputs: "final PRD 1.2; UX design specification 0.5; architecture 3.0"
 method: BMAD Create Epics and Stories; reviewed twice with BMAD Review
 ---
 
-# Site Studio — Epics and Stories
+# Site Survey Design — Epics and Stories
 
 This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into work that can be built and checked one story at a time. It follows the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md) for screens (S-numbers) and the [architecture](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for mechanisms (AD-numbers) and experiments (R-numbers).
 
@@ -82,7 +82,7 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 
 | Epic | Outcome | Stories |
 | --- | --- | --- |
-| 1. Install, sign in and manage people | An organisation can deploy Site Studio on Cloudflare, set it up, invite people, and control who can see and change each project. | 18 |
+| 1. Install, sign in and manage people | An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project. | 18 |
 | 2. One shared project online | The existing design tool runs as one shared project, on Cloudflare and on your own server. Two members can edit different things at once, see each other's changes within seconds and resolve a clash without losing work. | 26 |
 | 3. A workspace that holds the whole job | The app has the frame, the eight areas and the status language from the UX specification, and the prototype's measured readability problems are fixed. Later epics add their screens into this structure. | 7 |
 | 4. Design, estimate and issue | A design can be saved as a named revision, estimated, reviewed or bypassed, issued as the fixed installation reference and exported as a retained package. | 18 |
@@ -90,7 +90,7 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 | 6. Existing sites and return visits | An existing building can be inventoried from a spreadsheet, surveyed, upgraded and returned to later, with its history, warranty and service visits intact. | 19 |
 | 7. Extended modelling | The design can describe multi-view and pan/tilt/zoom cameras, doors with their components, site annotations, closets and ports, and cable that runs between floors. | 11 |
 | 8. Backups and recovery | Projects and the installation's own data are backed up daily, a project or a whole installation can be recovered, and a project can be moved as a portable backup. | 14 |
-| 9. Install from published instructions and update from the interface | Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails. | 15 |
+| 9. Install from published instructions and update from the interface | Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails. | 15 |
 | 10. Acceptance | The proof of concept is measured against the PRD's acceptance profile on Cloudflare, and then on a self-hosted installation. Passing story 10.2 to story 10.7 is enough to accept the proof of concept on Cloudflare; a self-hosted installation is not described as supported until story 10.8 and story 10.9 pass. | 9 |
 
 Each epic's own section states what it depends on.
@@ -124,7 +124,7 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 ## Epic 1: Install, sign in and manage people
 
-**Outcome.** An organisation can deploy Site Studio on Cloudflare, set it up, invite people, and control who can see and change each project.
+**Outcome.** An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project.
 
 **Depends on.** Nothing earlier and nothing later. Inside the epic each story needs only the stories before it.
 
@@ -132,7 +132,7 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 ### Story 1.1: Run the app on Cloudflare with a portable server core
 
-As an organisation's administrator, I want Site Studio served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
+As an organisation's administrator, I want Site Survey Design served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
 Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), architecture section 10, experiments R7 and R8.
 
@@ -163,7 +163,7 @@ Notes: Left to later stories: moving between released versions (story 9.3); the 
 
 ### Story 1.2: Set up a new installation
 
-As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Studio can complete, so that I become its first administrator and nobody else can.
+As an organisation's administrator, I want a one-time set-up step that only the person who installed Site Survey Design can complete, so that I become its first administrator and nobody else can.
 
 Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 (set-up code on redeploy). Screens: S-25.
 
@@ -586,7 +586,7 @@ Notes: This story applies to every account the behaviour that story 1.11 builds 
 
 ### Story 1.17: Optional email and forgotten passwords
 
-As an administrator, I want Site Studio to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
+As an administrator, I want Site Survey Design to send invitations and password resets by email when I connect an email service, so that I do not have to pass every link on by hand.
 
 Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18. Screens: S-26, S-30 invite panel, S-33.
 
@@ -613,7 +613,7 @@ Notes: Left to later stories: SMTP (story 1.18).
 
 ### Story 1.18: Experiment R13: email by SMTP on both hosts
 
-As an administrator who runs my own mail server, I want to know whether Site Studio can send by SMTP, so that I am offered it only if it works on my host.
+As an administrator who runs my own mail server, I want to know whether Site Survey Design can send by SMTP, so that I am offered it only if it works on my host.
 
 Covers: AD-18, experiment R13.
 
@@ -1134,9 +1134,9 @@ Covers: FR-22 (format migration), FR-20 (images from older records), AD-14.
 
 Notes: Left to later stories: named revisions from the file (story 4.1) and costs from the file (story 4.5), each then removing its item from the "not imported" list; the portable backup of the new format (story 8.10).
 
-### Story 2.21: Run Site Studio on your own server over HTTPS
+### Story 2.21: Run Site Survey Design on your own server over HTTPS
 
-As an organisation's administrator, I want to start Site Studio on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
+As an organisation's administrator, I want to start Site Survey Design on a Linux server with Docker and reach it over HTTPS, so that our data stays on our own machine.
 
 Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 
@@ -1159,7 +1159,7 @@ Notes: Left to later stories: an operator's own proxy (story 2.22); the deployme
 
 ### Story 2.22: Run behind your own HTTPS proxy
 
-As an organisation's administrator, I want to put Site Studio behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
+As an organisation's administrator, I want to put Site Survey Design behind the HTTPS proxy we already run, so that it fits our network without weakening sign-in.
 
 Covers: FR-66 (self-hosted), NFR-5, AD-17.
 
@@ -2728,7 +2728,7 @@ Covers: FR-62 (column mapping, identifiers, remembered mapping), UX decision D9.
 
 **Core behaviour**
 - Step 2 lists one row per source column: its heading, three sample values, the suggested field, and a choice to change or ignore it.
-- Columns can be mapped to source asset ID, existing Site Studio ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
+- Columns can be mapped to source asset ID, existing Site Survey Design ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
 - Equipment-type values found in the file are mapped to equipment types in the same way.
 - A default equipment type, including Unknown, can be set for rows whose type is missing or not recognised.
 - Unmapped and ignored columns are listed, with their count, before the next step.
@@ -2753,7 +2753,7 @@ Covers: FR-58 (matching and preview), FR-62 (row review). Screens: S-09 step 3.
 **Core behaviour**
 - Step 3 groups rows as New, Changed, Unchanged and Needs review, with counts.
 - A Changed row shows the current and incoming values side by side, with the source of each.
-- A row matches an existing device by a valid Site Studio ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03)
+- A row matches an existing device by a valid Site Survey Design ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03)
 - A row with neither identifier matches the device that an earlier import of this project created from a row with identical mapped values. With no such device it is listed as New. (CE-04)
 - A row matched this way is listed as Unchanged only when its mapped values equal the device's current record. Otherwise it is listed as Changed and shows the differences, like any other matched row. (CE-04)
 - Names, addresses and location hints never establish identity by themselves.
@@ -3833,7 +3833,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ## Epic 9: Install from published instructions and update from the interface
 
-**Outcome.** Anyone can install Site Studio on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
+**Outcome.** Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
 **Depends on.** Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1; story 9.4 needs all of Epic 8, story 1.14 and story 4.10; story 9.5 needs story 9.2. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.13 also needs the settings secrets of story 1.15. Nothing later.
 
@@ -3841,7 +3841,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 ### Story 9.1: Published installation instructions
 
-As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Studio on our own server or our own Cloudflare account.
+As an organisation's administrator, I want installation instructions I can follow without help, so that I can bring up Site Survey Design on our own server or our own Cloudflare account.
 
 Covers: FR-66 (instructions), SM-6.
 
@@ -4857,7 +4857,7 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 2.11 (part) | 2.18 | Undo and redo my own recent edits |
 | 2.11 (part) | 2.19 | Delete an accidental draft device |
 | 2.12 | 2.20 | Bring in a project saved by the prototype |
-| 2.13 (part) | 2.21 | Run Site Studio on your own server over HTTPS |
+| 2.13 (part) | 2.21 | Run Site Survey Design on your own server over HTTPS |
 | 2.13 (part) | 2.22 | Run behind your own HTTPS proxy |
 | 2.13 (part) | 2.23 | Deployment key and administrator recovery on your own server |
 | 2.13 (part) | 2.24 | Self-hosted smoke suite for accounts and the shared project |

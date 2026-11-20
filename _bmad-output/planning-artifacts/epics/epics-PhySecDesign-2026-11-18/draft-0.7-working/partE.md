@@ -73,7 +73,7 @@ Covers: FR-62 (column mapping, identifiers, remembered mapping), UX decision D9.
 
 **Core behaviour**
 - Step 2 lists one row per source column: its heading, three sample values, the suggested field, and a choice to change or ignore it.
-- Columns can be mapped to source asset ID, existing Site Studio ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
+- Columns can be mapped to source asset ID, existing Site Survey Design ID, name, type, manufacturer, model, serial number, IP address, MAC address, building, floor and room hints, and notes.
 - Equipment-type values found in the file are mapped to equipment types in the same way.
 - A default equipment type, including Unknown, can be set for rows whose type is missing or not recognised.
 - Unmapped and ignored columns are listed, with their count, before the next step.
@@ -98,7 +98,7 @@ Covers: FR-58 (matching and preview), FR-62 (row review). Screens: S-09 step 3.
 **Core behaviour**
 - Step 3 groups rows as New, Changed, Unchanged and Needs review, with counts.
 - A Changed row shows the current and incoming values side by side, with the source of each.
-- A row matches an existing device by a valid Site Studio ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03)
+- A row matches an existing device by a valid Site Survey Design ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03)
 - A row with neither identifier matches the device that an earlier import of this project created from a row with identical mapped values. With no such device it is listed as New. (CE-04)
 - A row matched this way is listed as Unchanged only when its mapped values equal the device's current record. Otherwise it is listed as Changed and shows the differences, like any other matched row. (CE-04)
 - Names, addresses and location hints never establish identity by themselves.

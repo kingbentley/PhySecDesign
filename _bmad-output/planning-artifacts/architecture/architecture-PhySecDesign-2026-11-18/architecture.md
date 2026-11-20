@@ -1,14 +1,14 @@
 ---
-title: "Site Studio — Architecture"
+title: "Site Survey Design — Architecture"
 status: 3.0, revised on 2026-11-18 after the early experiments and on 2026-11-19 for password hashing (K19); decisions K1-K3 and K5-K19 confirmed by Kevin; K20 (how updates are carried out, AD-20 and AD-21) proposed and awaiting his confirmation; nothing built
 created: 2026-11-18
 inputs: "final PRD 1.2; UX design specification; the site-studio prototype; experiments R1, R2, R6, R7, R8 and R10"
 method: BMAD Create Architecture, followed by hand (the BMAD skills were not installed in the cloud checkout when this was first written)
 ---
 
-# Site Studio — Architecture
+# Site Survey Design — Architecture
 
-This document decides how Site Studio is built, hosted and updated so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
+This document decides how Site Survey Design is built, hosted and updated so that it meets the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) and the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md). It changes no requirement.
 
 **What changed from version 2.1.** Six experiments were run early on 2026-11-18 ([record](../../../../experiments/README.md)). Kevin then made three decisions:
 
@@ -22,7 +22,7 @@ Nothing here has been built. The experiments ran in a cloud container on synthet
 
 ## 1. Summary
 
-Site Studio is one server build and one browser application. An organisation runs it in one of two ways, with the same features either way (NFR-7).
+Site Survey Design is one server build and one browser application. An organisation runs it in one of two ways, with the same features either way (NFR-7).
 
 | | On Cloudflare | Self-hosted |
 | --- | --- | --- |
@@ -119,7 +119,7 @@ flowchart TB
 
 The image needs a glibc-based base (the runtime has no Alpine build) and is built for x64 and arm64.
 
-Why the open-source runtime: experiment R8 ran a Worker with a SQLite-backed Durable Object under it on a plain Linux server, with no experimental flag. Every acknowledged write survived 45 forced kills, timers survived restarts, and Cloudflare documents the runtime's use "as an application server, to self-host applications designed for Cloudflare Workers". Its warning that it is "not a hardened sandbox" concerns running untrusted code; Site Studio runs only its own.
+Why the open-source runtime: experiment R8 ran a Worker with a SQLite-backed Durable Object under it on a plain Linux server, with no experimental flag. Every acknowledged write survived 45 forced kills, timers survived restarts, and Cloudflare documents the runtime's use "as an application server, to self-host applications designed for Cloudflare Workers". Its warning that it is "not a hardened sandbox" concerns running untrusted code; Site Survey Design runs only its own.
 
 Not supported at first: running without Docker, Windows Server as the host, and Kubernetes.
 

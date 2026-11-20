@@ -1,4 +1,4 @@
-# Site Studio — PRD source index
+# Site Survey Design — PRD source index
 
 Implementation snapshot date: **2026-11-16**. Planning began with **guided vision and feature discovery**; **PRD 1.0 was finalized on 2026-11-17**. Intended POC scope now extends through **design, optional installer handoff, installation, commissioning, and lifecycle records**. The implementation snapshot remains the earlier baseline; new user direction is recorded separately below.
 
@@ -45,9 +45,9 @@ The root `AGENTS.md` links here so future BMAD sessions can find this context wi
 | [Closet/port references](sources/closet-port-reference.md) | Official context for device grouping, port capabilities, power bases and terminal/patching distinctions | Grounds the subsequently confirmed manual connection model, not a universal wiring/capacity rule |
 | [Confirmed closet/port extract](sources/confirmed-closet-port-extract.md) | Maps accepted locations, assignments, capacity bases and logical/physical distinctions | Subsequent physical inter-floor route/allowance confirmation is recorded separately |
 | [Confirmed inter-floor routing extract](sources/confirmed-interfloor-routing-extract.md) | Maps accepted run/segment/riser identities, length components and allowance/supply rules | Resolves OQ-7; subsequent cable-lifecycle confirmation is recorded separately |
-| [Cable connection lifecycle reference](sources/connection-lifecycle-reference.md) | Limited official asset-history/archive context and proposed cable/port safeguards | Cable reuse/release/restore semantics were subsequently confirmed as Site Studio product choices |
+| [Cable connection lifecycle reference](sources/connection-lifecycle-reference.md) | Limited official asset-history/archive context and proposed cable/port safeguards | Cable reuse/release/restore semantics were subsequently confirmed as Site Survey Design product choices |
 | [Confirmed cable-lifecycle extract](sources/confirmed-cable-lifecycle-extract.md) | Maps accepted retained-run, endpoint-change, port occupancy and reconnection rules | FR-53 is confirmed; subsequent floor-restoration confirmation is recorded separately |
-| [Floor restoration reference](sources/floor-restoration-reference.md) | Limited official floor-editing and inactive-asset-history context | Guided restoration was subsequently confirmed as a Site Studio product choice, not verified competitor behavior |
+| [Floor restoration reference](sources/floor-restoration-reference.md) | Limited official floor-editing and inactive-asset-history context | Guided restoration was subsequently confirmed as a Site Survey Design product choice, not verified competitor behavior |
 | [Confirmed floor-restoration extract](sources/confirmed-floor-restoration-extract.md) | Maps accepted destination/placement, historical evidence and cancellation rules | FR-54 is confirmed; subsequent draft-deletion confirmation is recorded separately |
 | [Draft deletion reference](sources/draft-deletion-reference.md) | Existing official design-editing/undo and inactive-asset-history context | Eligibility, dependency and recovery safeguards were subsequently confirmed in FR-55 |
 | [Confirmed draft-deletion extract](sources/confirmed-draft-deletion-extract.md) | Maps accepted delete/cancel/correct-or-archive, dependency and guarded recovery behavior | Records OQ-8 resolution; subsequent OQ-9 acceptance/limits are now confirmed |
@@ -145,7 +145,7 @@ Browser-only drawings and notes are not automatically included in the codebase. 
 
 ## Current planning position
 
-- Product: Site Studio, a web planning tool for physical security professionals.
+- Product: Site Survey Design, a web planning tool for physical security professionals.
 - Scope: proof of concept spanning design, optional installer handoff, installation documentation, commissioning, and later building/device history.
 - Inputs: current project, design references, QA evidence, and this conversation; no extra inputs supplied.
 - Method: guided discussion, beginning with vision and features.
