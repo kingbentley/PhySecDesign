@@ -1,4 +1,4 @@
-# PhySec · Site Studio
+# PhySec · Site Survey Design
 
 Interactive physical security planning proof of concept based on the white/teal Site Studio design. Site plans overlay a persistent geographic map, and each building floor keeps its own drawing, devices, cable routes, walls, and solid obstructions. A project-wide equipment schedule and bill of materials are derived from those floor designs. Camera coverage views show geometric visibility estimates for one camera or combined coverage across an analysis area on the active floor.
 
@@ -63,7 +63,7 @@ Use the switch model's rated budgets and switch-side allocations. Allow separate
 
 ## Undo and revisions
 
-Use **Undo** and **Redo** above the map, or Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Site Studio keeps the last 40 project edits in the current session. Saved drawing changes, devices and their connections, zones, survey records, and estimate settings use the same edit history.
+Use **Undo** and **Redo** above the map, or Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Site Survey Design keeps the last 40 project edits in the current session. Saved drawing changes, devices and their connections, zones, survey records, and estimate settings use the same edit history.
 
 Open **Revisions**, enter a name, and choose **Save revision** to capture the entire property design. **Compare layouts** shows a floor at the same scale in any two saved revisions or in a revision and the working draft. Device changes identify additions, removals, moves, and changes to device properties. **Restore** replaces the working layout with the selected revision. Use **Undo** to recover the previous working layout.
 
@@ -72,7 +72,7 @@ Up to 20 named revisions autosave with the project in IndexedDB and travel in th
 ## Sharing and approvals
 
 1. Open **Revisions**, choose **Share & review** beside the named revision, then select **Start review**. It shares a fixed copy of that version’s floor drawings, equipment layout, routes, barriers and zones.
-2. Enter each reviewer’s name and email to create an individual link. Copy each link and send it to its assigned reviewer. When sharing across devices, open Site Studio at the address those reviewers can reach before making links. A loopback address works only on the same machine.
+2. Enter each reviewer’s name and email to create an individual link. Copy each link and send it to its assigned reviewer. When sharing across devices, open Site Survey Design at the address those reviewers can reach before making links. A loopback address works only on the same machine.
 3. Reviewers choose a floor and use **Pin comment**. They can submit **Approve revision** or **Request changes**. The designer can see pinned comments and the current and past decisions with names and times in the same revision’s review.
 4. Use **Revoke access** to disable an invite or **New link** to replace it. Revoking or replacing a link retains its comments and decision history. Start a separate review for a new revision.
 
