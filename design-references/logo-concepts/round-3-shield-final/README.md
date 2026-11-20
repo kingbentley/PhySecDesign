@@ -1,6 +1,6 @@
 # PhySec logo
 
-The shield chosen on 2026-11-20: the site's map on the left, coverage rings on the right, and a map pin holding a camera lens in the centre. The drafts it came from are in `../logo-concepts/`, and `../logo-concepts/round-3-shield/preview.html` shows it at every size.
+The shield chosen on 2026-11-20: the site's map on the left, coverage rings on the right, and a map pin holding a camera lens in the centre. The drafts it came from are in `../`, and `../round-3-shield/preview.html` shows it at every size.
 
 | File | Use |
 | --- | --- |
@@ -15,4 +15,4 @@ Colours: teal `#0b6f72`, navy `#1d3557`, green `#4a9d6a` to `#1f6f5c`, lens `#17
 
 Keep at least a quarter of the shield's height clear around the logo.
 
-The app draws the shield with `site-studio/src/BrandMark.jsx`, and the icons in `site-studio/public/` are copies of the files here. Change them together.
+This folder is historical. The shield was the app's logo briefly on 2026-11-20 and was replaced the same day; the app no longer draws it or uses these icons. To update the app's logo or icons, follow the current logo's notes in `../../logo/README.md`.
