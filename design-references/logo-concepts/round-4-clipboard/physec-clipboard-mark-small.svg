@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 276 250" width="276" height="250" role="img" aria-label="PhySec">
+<circle cx="100" cy="24" r="16" fill="#0b6f72"/>
+<rect x="22" y="50" width="156" height="176" rx="18" fill="#fff" stroke="#0b6f72" stroke-width="20"/>
+<rect x="62" y="28" width="76" height="38" rx="8" fill="#0b6f72"/>
+<path d="M54 132 L74 154 L104 112" fill="none" stroke="#2f9461" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="rotate(7 198 140)"><path d="M146 140 A52 52 0 0 0 250 140 Z" fill="#17324d" stroke="#fff" stroke-width="12" paint-order="stroke" stroke-linejoin="round"/>
+<rect x="134" y="104" width="128" height="40" rx="12" fill="#2f9461" stroke="#fff" stroke-width="12" paint-order="stroke"/>
+<circle cx="198" cy="166" r="17" fill="#8fd0ad"/><circle cx="198" cy="166" r="7" fill="#17324d"/></g>
+</svg>
