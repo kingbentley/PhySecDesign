@@ -9,11 +9,11 @@ export const REFUSALS = {
     status: 404,
     message: "Review links are not available on this server yet. They work only in the local development server.",
   },
-  updating: { status: 503, message: "Site Studio is updating, try again shortly." },
+  updating: { status: 503, message: "Site Survey Design is updating, try again shortly." },
   data_newer_than_build: {
     status: 503,
     message:
-      "This data was written by a newer release of Site Studio than the one running here. Install that release or a newer one to use it.",
+      "This data was written by a newer release of Site Survey Design than the one running here. Install that release or a newer one to use it.",
   },
   update_not_completed: {
     status: 503,
