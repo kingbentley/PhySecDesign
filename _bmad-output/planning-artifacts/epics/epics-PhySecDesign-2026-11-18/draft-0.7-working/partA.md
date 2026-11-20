@@ -14,7 +14,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one v
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
-- The existing unit and browser tests pass against that locally served app with no test changed or removed.
+- The existing unit tests pass against that locally served app with no test changed or removed. (The prototype had no browser tests.)
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
@@ -88,7 +88,13 @@ Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
 
-Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.14); the self-hosted set-up code, printed in the server output (story 2.13a); installation instructions (story 9.1).
+**Evidence to record**
+- Playwright is set up in `site-studio/browser-tests/` with pinned versions. It runs against the built app served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, and each run starts from empty local storage.
+- A browser test completes set-up with a set-up code supplied to the local installation and finds the confirmation of the installation's name and the administrator's email; another shows a wrong code refused with the wait stated.
+- The set-up page passes an axe accessibility check with no serious or critical violations.
+- Continuous integration installs the browsers and runs the browser tests on every push and pull request, keeping a trace when a test fails.
+
+Notes: For tests, the local installation's set-up code is supplied as a local secret that is never committed. Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3a); two installations sharing no project (story 1.6) and no file (story 2.14); the self-hosted set-up code, printed in the server output (story 2.13a); installation instructions (story 9.1).
 
 ### Story 1.3a: Sign in and sign out
 

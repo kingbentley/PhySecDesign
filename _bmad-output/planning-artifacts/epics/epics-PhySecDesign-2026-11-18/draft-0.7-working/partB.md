@@ -736,7 +736,7 @@ Covers: NFR-3, UX section 10, audit findings A2, A3, A5, A6.
 - The text contrast measurements are recorded for every screen that exists at this story.
 - The marker, icon and focus-ring contrast measurements are recorded against both the plan and aerial imagery.
 
-Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1a). Screens added later meet these rules under standing rule 5.
+Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1a). Screens added later meet these rules under standing rule 5. The axe checks of standing rule 15 cover each new screen from story 1.2 on; this story makes the full pass, including the prototype's existing screens.
 
 ### Story 3.4: Plan workspace regrouped
 

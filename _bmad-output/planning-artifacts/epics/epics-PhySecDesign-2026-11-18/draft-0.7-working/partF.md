@@ -970,6 +970,8 @@ Covers: NFR-3, SM-4.
 - Hardware, operating system and browser versions and the test conditions are recorded.
 - The result of each accessibility check is recorded for both fixtures.
 
+Notes: The browser tests of standing rule 15 run in desktop Chromium and in WebKit with an iPhone viewport on every change. This story is the evidence on real devices and browsers, which emulation does not replace.
+
 ### Story 10.3c: Show installing and updating on Cloudflare
 
 As Kevin, the product owner, I want the Cloudflare parts of the installation and update Checks shown on a fresh account, so that the proof of concept can be accepted on Cloudflare.
