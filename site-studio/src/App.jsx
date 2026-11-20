@@ -642,7 +642,7 @@ export function App(){
   return <div className={'app'+(alignment?' alignment-active':'')}>
     <header className="app-header" inert={alignment?true:undefined}>
       <a href="#" className="brand" onClick={e=>{e.preventDefault();mapApi.current?.fitPlan();choose({kind:'plan'})}}><BrandMark size={32}/><span>Phy<b>Sec</b></span></a>
-      <span className="studio-label">Site Studio</span>
+      <span className="studio-label">Site Survey Design</span>
       <div className="breadcrumb"><span>Projects</span><span className="slash">/</span><strong>{project.name}</strong><CaretDown size={13}/></div>
       <span className="stage-badge">Concept design</span>
       <span className={'draft-status '+(saveStatus==='error'?'save-error':'')} title={saveError||'Saved in this browser on this device'}><span className={'status-dot '+(saveStatus!=='saved'?'changed':'')}/>{saveStatus==='saved'?'Saved locally':saveStatus==='error'?'Save failed':'Saving…'}</span>
