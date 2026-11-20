@@ -3,6 +3,7 @@ import { handleApi } from "./api/router";
 import { serveAsset } from "./assets";
 import type { Env } from "./env";
 import { refusalResponse } from "./http";
+import { httpsRedirect, withHsts } from "./httpsRedirect";
 
 // The one server build (AD-1, AD-16). The same bundle runs on Cloudflare and, self-hosted, under
 // workerd. Declared routes answer /api/v1/, /mcp and /.well-known/; everything else is the app.
@@ -17,6 +18,15 @@ function isUnknownServerPath(path: string): boolean {
 }
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
+  // Plain HTTP that reached Cloudflare: pages go to HTTPS (D-1), server addresses are refused
+  // (D-8), before anything else.
+  const redirect = httpsRedirect(request);
+  if (redirect) return redirect;
+  // Every answer to a request Cloudflare marks as HTTPS carries HSTS (D-8).
+  return withHsts(request, await route(request, env));
+}
+
+async function route(request: Request, env: Env): Promise<Response> {
   const path = new URL(request.url).pathname;
   try {
     // Review links stay in the local Vite development server for now (decision 2026-11-19).

@@ -18,13 +18,20 @@ Open http://127.0.0.1:4174/
 
 `npm run dev` serves the app through the Worker locally with Cloudflare's Vite plugin, so `/api/v1/status` answers in development. The local review service still runs in the Vite server and answers `/api/reviews/` first.
 
+While the local installation has no administrator, every address opens the set-up page at `/setup` (story 1.2). To complete it locally, put a set-up code of your own in `deploy/cloudflare/.dev.vars` (git ignores it; never commit a code):
+
+    SETUP_CODE=<at least 20 letters and digits>
+
+Once set-up is done, `/setup` says set-up is already complete and the rest of the app is the prototype as before. The local state is in `.wrangler/state`; deleting it starts over.
+
 ## Server build and hosts
 
 One TypeScript Worker build serves the app and the API on both hosts: Cloudflare, and self-hosted under `workerd`, Cloudflare's open-source runtime.
 
 | Folder | Contents |
 | --- | --- |
-| `src/` | The React app (JavaScript, unchanged). |
+| `src/` | The React app (JavaScript). `src/admin/` holds the set-up page (S-25). |
+| `browser-tests/` | Playwright browser tests with axe, against the built Worker served by `wrangler dev`. |
 | `shared/` | TypeScript shared by browser and server: the release and data-format version, reason codes and their wording, the entered-text type, and the route declarations with their input and reply schemas. |
 | `server/` | The Worker: `index.ts` (entry), `api/` (routing through the declarations), `objects/` (the shared object base: data-format version, conversion runner, version rule, alarm schedule, object-call helper), `project-room/` and `installation/` (the two Durable Object classes), `files/` and `update/` (the file-store and update interfaces, the only place for host-specific code). |
 | `deploy/cloudflare/` | `wrangler.jsonc` for Cloudflare. |
@@ -42,6 +49,9 @@ Commands:
     npm run build             # dist/client (app), dist/worker (Worker bundle), dist/server and dist/.openai (Sites package)
     npm run test:sites        # the Sites package test, after a build
     npm run smoke:selfhost    # after a build: runs dist/worker under workerd, restarts it, and checks the saved value
+    npm run test:browser      # builds, then Playwright in desktop Chromium and WebKit with an iPhone profile, with axe
+
+`npm run test:browser` starts one local server per browser project, each with an empty state folder and a set-up code generated for the run (in the git-ignored `browser-tests/.local/`). Run one project with `npm run test:browser -- --project=chromium`. The browsers come from `npx playwright install chromium webkit`; the versions are pinned to `@playwright/test` 1.63.0.
 
 Deploy to Cloudflare (Workers Paid plan; sign in once with `npx wrangler login`). The configuration names the Worker `site-studio`; the test installation uses another name:
 

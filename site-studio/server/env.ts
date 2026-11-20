@@ -10,6 +10,11 @@ export interface Env {
   ASSETS: Fetcher;
   PROJECT_ROOM: DurableObjectNamespace<ProjectRoom>;
   INSTALLATION: DurableObjectNamespace<Installation>;
+  /**
+   * The set-up code (story 1.2): a Worker secret set by the Cloudflare deploy command while no user
+   * exists. Absent self-hosted until story 2.21, so set-up is refused there. Never logged.
+   */
+  SETUP_CODE?: string;
 }
 
 /** The installation object always has this name (AD-2). */

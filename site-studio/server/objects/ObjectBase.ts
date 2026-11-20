@@ -26,7 +26,12 @@ export interface ObjectMeta {
 
 /** A refusal raised inside an operation; the base turns it into a refusal reply. */
 export class OperationRefusal extends Error {
-  constructor(readonly code: string, readonly field?: string) {
+  constructor(
+    readonly code: string,
+    readonly field?: string,
+    /** Whole seconds the caller must wait, for refusals that impose a wait. */
+    readonly retryAfterSeconds?: number,
+  ) {
     super(code);
   }
 }
@@ -112,7 +117,7 @@ export abstract class ObjectBase<E = unknown> extends DurableObject<E> {
       return jsonResponse({ value: value ?? null });
     } catch (error) {
       if (error instanceof OperationRefusal && isRefusalCode(error.code)) {
-        return refusalBodyResponse(refusalBody(error.code, { field: error.field }));
+        return refusalBodyResponse(refusalBody(error.code, { field: error.field, retryAfterSeconds: error.retryAfterSeconds }));
       }
       throw error;
     }

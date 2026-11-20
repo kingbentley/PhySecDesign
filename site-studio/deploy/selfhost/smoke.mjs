@@ -4,8 +4,15 @@
 // object is first created), stop the process, start it again on the same storage, and check that
 // the same value comes back. Also checks the release, the app's page and script, an API refusal
 // and that a directory is never listed. Run `npm run build` first.
+//
+// Story 1.2: it also completes set-up with test data, so the bundle's scrypt hashing runs under
+// workerd and proves `nodejs_compat` works self-hosted, and after the restart checks that set-up
+// is closed. Self-hosted installations get their set-up code in story 2.21; here a random code for
+// this run only is given to workerd through a temporary copy of the configuration (next to the
+// original, so its `embed` path still resolves), deleted afterwards and never committed.
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -17,11 +24,15 @@ const workerdBinary = typeof workerd.default === "string" ? workerd.default : wo
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
-const config = path.join(here, "config.capnp");
+const baseConfig = path.join(here, "config.capnp");
+const config = path.join(here, `.smoke-${process.pid}.capnp`);
+const setupCode = randomBytes(18).toString("hex");
 const bundle = path.join(root, "dist", "worker", "index.js");
 const client = path.join(root, "dist", "client");
 const { version } = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
 const FETCH_TIMEOUT_MS = 2000;
+// One scrypt hash (128 MiB, N = 131,072) can take a few seconds on a slow runner.
+const SETUP_TIMEOUT_MS = 30_000;
 
 class SmokeFailure extends Error {}
 
@@ -31,6 +42,7 @@ try {
     if (!existsSync(file)) fail(`Missing ${path.relative(root, file)}. Run npm run build first.`);
   }
   storage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
+  writeSmokeConfig();
   const port = await freePort();
   const base = `http://127.0.0.1:${port}`;
 
@@ -40,12 +52,18 @@ try {
     await checkPage(base);
     await checkRefusal(base);
     await checkNoListing(base);
+    await completeSetup(base);
     return status;
   });
-  console.log(`first start: release ${first.release}, createdAt ${first.installation.createdAt}`);
+  console.log(`first start: release ${first.release}, createdAt ${first.installation.createdAt}, set-up completed`);
 
-  const second = await withServer(base, port, () => readStatus(base));
-  console.log(`after restart: createdAt ${second.installation.createdAt}`);
+  const second = await withServer(base, port, async () => {
+    const status = await readStatus(base);
+    const state = await readSetupState(base);
+    if (state !== "closed") fail(`After the restart set-up is ${state}, not closed: the administrator did not persist.`);
+    return status;
+  });
+  console.log(`after restart: createdAt ${second.installation.createdAt}, set-up closed`);
 
   if (second.installation.createdAt !== first.installation.createdAt) {
     fail("The installation's createdAt changed across the restart: storage did not persist.");
@@ -57,6 +75,48 @@ try {
   process.exitCode = 1;
 } finally {
   if (storage) rmSync(storage, { recursive: true, force: true });
+  rmSync(config, { force: true });
+}
+
+function writeSmokeConfig() {
+  const text = readFileSync(baseConfig, "utf8");
+  // The checkout may use CRLF line endings (Windows), so match the line however it ends.
+  const marker = /^([ \t]*bindings = \[)(\r?\n)/m;
+  if (!marker.test(text)) fail("deploy/selfhost/config.capnp has no bindings list to add the test set-up code to.");
+  writeFileSync(config, text.replace(marker, (_, line, end) => `${line}${end}    (name = "SETUP_CODE", text = "${setupCode}"),${end}`), { mode: 0o600 });
+}
+
+async function readSetupState(base) {
+  const response = await get(base + "/api/v1/setup/state");
+  const body = await response.json();
+  if (response.status !== 200 || Object.keys(body ?? {}).join() !== "state") {
+    fail(`GET /api/v1/setup/state answered ${response.status}: ${JSON.stringify(body)}`);
+  }
+  return body.state;
+}
+
+// Completes set-up with test data: the request path hashes the password with scrypt through
+// node:crypto, which needs nodejs_compat under workerd.
+async function completeSetup(base) {
+  if ((await readSetupState(base)) !== "open") fail("Set-up is not open on a new installation.");
+  const response = await fetch(base + "/api/v1/setup", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: base, "x-site-survey-design": "1" },
+    body: JSON.stringify({
+      code: setupCode,
+      installationName: "Smoke Test Installation",
+      name: "Smoke Test Administrator",
+      email: "smoke-admin@example.test",
+      password: randomBytes(12).toString("hex"),
+    }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200 || body?.installationName !== "Smoke Test Installation" || body?.email !== "smoke-admin@example.test") {
+    // The reply never holds the code or the password, so it is safe to print.
+    fail(`POST /api/v1/setup answered ${response.status}: ${JSON.stringify(body)}`);
+  }
+  if ((await readSetupState(base)) !== "closed") fail("Set-up is still open after it completed.");
 }
 
 function get(url, init = {}) {

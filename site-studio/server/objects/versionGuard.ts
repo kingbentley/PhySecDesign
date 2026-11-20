@@ -36,9 +36,21 @@ export function formatRefusal(recorded: number, build: number = DATA_FORMAT_VERS
   return null;
 }
 
-/** True when an error thrown by an object call means the object stopped for a version change. */
+/**
+ * True when an error thrown by an object call may mean the object stopped for a version change:
+ * the error names the version-stop reason, or the runtime reports a reset of the object, which a
+ * stop is one cause of among others. Use `isVersionStopShown` to tell a stop apart from a reset.
+ */
 export function isVersionStop(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   if ((error as { durableObjectReset?: unknown }).durableObjectReset === true) return true;
   return error.message.includes(VERSION_STOP_REASON);
+}
+
+/**
+ * True only when the error carries the version-stop reason itself, so the stop is known to have
+ * happened before anything was written (D-2). A bare reset may follow a committed write.
+ */
+export function isVersionStopShown(error: unknown): boolean {
+  return error instanceof Error && error.message.includes(VERSION_STOP_REASON);
 }

@@ -8,12 +8,16 @@
   "name": "site-studio",
   "main": "../../server/index.ts",
   "compatibility_date": "2026-11-01",
+  // Node.js-compatible APIs, for scrypt password hashing (K19). Keep equal to the self-hosted flags.
+  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "assets": {
     "directory": "../../dist/client",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api", "/api/*", "/mcp", "/mcp/*", "/.well-known", "/.well-known/*"]
+    // Every request reaches the Worker first, so that a plain HTTP request for a page is
+    // redirected to HTTPS too (D-1); the Worker serves the app's files through ASSETS.
+    "run_worker_first": true
   },
   "durable_objects": {
     "bindings": [
