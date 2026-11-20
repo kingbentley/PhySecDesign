@@ -1,4 +1,4 @@
-// Site Studio on Cloudflare (AD-1, AD-16). Paths are relative to this file.
+// Site Survey Design on Cloudflare (AD-1, AD-16). Paths are relative to this file.
 // Allowed platform features only: Durable Objects with SQLite, their alarms and web-standard
 // APIs. No D1, Workflows, Queues, cron triggers or KV (server-tests/host-config.test.ts checks).
 // The two Durable Object classes are fixed from the first release (AD-20): adding, renaming or
