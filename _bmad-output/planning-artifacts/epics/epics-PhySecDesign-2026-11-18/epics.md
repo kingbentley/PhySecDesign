@@ -2,57 +2,80 @@
 title: "Site Survey Design — Epics and Stories"
 status: draft 0.7; epic order and twelve product decisions confirmed by Kevin; story content and the remaining choices not yet confirmed
 created: 2026-11-18
-inputs: "final PRD 1.2; UX design specification 0.5; architecture 3.0"
+inputs: "final PRD 1.2 with amendments 1.3 and 1.4; UX design specification 0.6; architecture 3.1"
 method: BMAD Create Epics and Stories; reviewed twice with BMAD Review
 ---
 
 # Site Survey Design — Epics and Stories
 
-This document breaks [final PRD 1.2](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into work that can be built and checked one story at a time. It follows the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md) for screens (S-numbers) and the [architecture](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for mechanisms (AD-numbers) and experiments (R-numbers).
+This document breaks [final PRD 1.2 with amendments 1.3 and 1.4](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into work that can be built and checked one story at a time. It follows the [UX design specification](../../ux/ux-PhySecDesign-2026-11-18/ux-design-specification.md) for screens (S-numbers) and the [architecture](../../architecture/architecture-PhySecDesign-2026-11-18/architecture.md) for mechanisms (AD-numbers) and experiments (R-numbers).
 
 ## Status
 
-- **Draft 0.7**, 2026-11-18. 10 epics, 165 stories, 2071 acceptance criteria. Nothing here has been built.
+- **Draft 0.7**, 2026-11-18, last changed 2026-11-19. 11 epics, 175 stories, 2427 acceptance criteria. Nothing here has been built.
 - **Confirmed by Kevin:** the epic order, and the twelve decisions listed under [Decisions made](#decisions-made).
-- **Not confirmed:** the story boundaries, the acceptance criteria, and the choices listed under [Decisions needed from Kevin](#decisions-needed-from-kevin).
-- **Reviewed:** drafts 0.5 and 0.6 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md)). Draft 0.7 applies the second review. Draft 0.7 itself has not been independently reviewed.
-- **Out of step with the architecture:** on 2026-11-19 the architecture's update decisions (AD-20 and AD-21) were rewritten as a proposal, K20, after experiment R11. The update stories in Epic 9 still describe the earlier design (the pending-update marker and its hold). They are to be rewritten once Kevin confirms K20, and should not be reviewed or built before then.
-- **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations, they remain listed in that review, and adding them all would grow the document again.
+- **Ruled on Kevin's instruction:** on 2026-11-19 Kevin asked Claude to recommend a ruling on every open choice and to proceed with its recommendations. Every choice below now carries one in its decision column, marked as Claude's and accepted on that instruction: all 16 decisions yes, 207 values and readings as written, and two values changed (CB-07 and CB-17). Kevin can overrule any of them.
+- **Not confirmed:** the story boundaries and the acceptance criteria.
+- **Reviewed:** drafts 0.5, 0.6 and 0.7 were each read by three independent reviewers ([review of 0.5](review-epics-draft-0.5.md), [review of 0.6](review-epics-draft-0.6.md), [review of 0.7](review-epics-draft-0.7.md)). Draft 0.7 applies the second review. From the third, the findings on the update stories and on story 1.18, and the structure findings on ruling (the decision column, the kind in each ID, tables by epic, experiment states), were applied on 2026-11-19; a second round on the update stories was applied the same day. The other structure findings are open.
+- **Updates rewritten for K20 and K21:** on 2026-11-19 Kevin confirmed K20, the redesign of updates (AD-20 and AD-21), with seven fixes. The update stories were rewritten for it, then revised for the review's findings, which also produced K21, sixteen refinements to K20, confirmed by Kevin on 2026-11-19. A second review of the update stories led to K22, Claude's recommendations accepted on Kevin's instruction. Story 1.1, story 9.2 and story 9.3 to story 9.15 follow K21 and K22. Story 9.3 is now the update record and story 9.4 the conversions and the return. Story 9.1 and story 1.18 gained the two findings of experiment R13. The update stories as revised after the second round have not been reviewed a third time.
+- **Not applied on purpose:** 30 of the 45 edge cases in the second review. They are handling for rarer situations and remain listed in that review. Leaving them out, and adding any that turn up when the story concerned is built, is Claude's recommendation, accepted on Kevin's instruction of 2026-11-19.
+- **Agent access added (PRD amendment 1.3):** on 2026-11-19 Kevin approved the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) for AI agents. Story 1.1, story 1.3, story 1.8 and story 1.14 gained route declarations, reason codes, route classes and the actor's `via` field; story 1.19 adds personal access tokens; Epic 11 adds the API description, the MCP endpoint, results and import for agents, set-up on both hosts and its acceptance. Standing rule 2 now covers tokens. These additions have not been independently reviewed. Their choices are CG-01 to CG-09: CG-01 to CG-03 were decided by Kevin in the proposal, and CG-04 to CG-09 are open.
+- **External tickets added (PRD amendment 1.4):** on 2026-11-19 Kevin approved the [sprint change proposal on external tickets](../../sprint-change-proposal-2026-11-19-external-tickets.md). Story 6.20 adds external tickets on issues, service visits and warranties, and story 11.2 lets an agent find and add them. Choices CE-41 to CE-47 are Kevin's, made in that proposal. Not independently reviewed.
+- **Epic 11 reviewed:** on 2026-11-19 Epic 11 and story 1.19 were reviewed with two lenses ([review of Epic 11](review-epic-11.md)): 28 adversarial findings and 37 edge cases. Kevin asked for all of them to be applied, including three new rules (CG-10 to CG-12). Story 1.1, standing rules 2 and 12, Epic 10's introduction, story 1.19 and every Epic 11 story were revised. A second review of all the agent-access and external-ticket material found 63 more problems, applied in full on Kevin's instruction with seven new rules (CG-27 to CG-31, CE-48 and CE-49). The material has not been reviewed a third time. On 2026-11-19 Kevin also ruled on the remaining open choices of agent access: CG-04 to CG-09, CG-13, CG-15, CG-19, CG-26 and CG-36 as written, and CG-16 changed to the PRD's 10 MiB inventory limit with no separate row limit.
+- **Epic 1 reviewed:** on 2026-11-19 Epic 1 was reviewed with the adversarial lens ([review of Epic 1](review-epic-1.md)): 21 findings, mostly on sign-in, set-up, tokens and recovery. Kevin asked for all of them to be applied with Claude's recommendations. Fourteen stories from story 1.2 to story 1.19 were revised (all of Epic 1 except story 1.1, story 1.9, story 1.12, story 1.16 and story 1.18), standing rule 2 extended, standing rules 13 and 14 added, CA-13 widened and CA-43 to CA-58 added, each marked as Claude's recommendation accepted on Kevin's instruction. Not reviewed a second time.
+- **Browser tests added (K24):** on 2026-11-20 Kevin approved the [sprint change proposal on browser tests](../../sprint-change-proposal-2026-11-20-browser-tests.md). Standing rule 15 and the definition of done now require Playwright browser tests, in desktop Chromium and in WebKit with an iPhone viewport, with an axe check on each new screen. Story 1.2 sets them up; story 1.1's wording, and the Notes of story 3.4 and story 10.6, were adjusted. No story was added or renumbered. Not independently reviewed.
 - Stories were split and renumbered in this draft. [Numbering changes from draft 0.6](#numbering-changes-from-draft-06) maps old numbers to new.
 
 ## Decisions needed from Kevin
 
-Where no source document gave a rule or a value, the stories state one so that they can be built and tested. Each is marked on its criterion with an ID in brackets.
+Where no source document gave a rule or a value, the stories state one so that they can be built and tested. Each is marked on its criterion with an ID in brackets. Each now has a ruling in its decision column (see Status); the section keeps its name so that links to it still work.
 
-**1. New behaviour or restrictions that no source states (16).** Each needs a yes or a no.
+**1. New behaviour or restrictions that no source states (34).** Each needed a yes or a no.
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
-| CA-13 | 1.5 | Turning two-step verification off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open | |
-| CB-19 | 2.16 | A saved survey entry cannot be edited or deleted; a correction is a new entry | Let the author edit an entry, keeping its history | NFR-1 keeps prior evidence unchanged and FR-21 protects evidence from undo | |
-| CB-26 | 2.21 | Bundled web server gets and renews its certificate automatically, or uses operator-supplied files | Operator-supplied certificate files only | The architecture leaves the certificate method open; the two ways cover public and private servers | |
-| CB-35 | 2.26 | A storage-full notice naming the volume is shown to administrators in Administration | Show the reason only on the failed save | Only an administrator can free space, and Administration is their one surface at this point | |
-| CC-03 | 4.1 | A second revision with a name already used in the scope is refused | Allow repeated names, told apart by identifier and date | Revisions are picked by name in the timeline, the issue step and packages; the PRD does not say whether names may repeat | |
-| CC-06 | 4.2 | A revision imported from a prototype file can be opened and compared but not restored | Offer restore, listing what the old file does not hold | The prototype's revisions hold less than a new snapshot, so a restore would blank content they never recorded | |
-| CC-14 | 4.8 | Requesting a review is refused until a design reviewer is assigned | Allow a request with no assignee, open to any Editor or administrator | A request with nobody named leaves Awaiting decision with no one to act; no source states either way | |
-| CC-17 | 4.9 | Once a revision is bypassed its state stays Bypassed; later decisions are kept and labelled "after the bypass" | A later Approve changes the state to Approved | FR-25 records bypass distinctly from approval; keeping the state stops a bypass being overwritten unnoticed | |
-| CC-21 | 4.11 | A reviewer link still shows its revision but accepts no new comment or decision once its assignment is reassigned, its review is bypassed or its revision is superseded; reassignment does not revoke the previous reviewer's link, which the administrator's list shows as "Read-only: reviewer reassigned" | Keep accepting entries, labelled as late, as for accounts | The PRD says a link keeps pointing at its fixed revision but not whether it stays writable after the record has moved on | |
-| CD-13 | 5.11 | A Pass whose required photo is still Uploading or Failed reads "Pass pending evidence" and is not counted | Refuse Pass until the photo is Saved | FR-30 requires the evidence for a Pass; NFR-2 forbids showing an incomplete upload as saved | |
-| CD-20 | 5.17 | A resolved or deferred issue can be reopened with a reason | No reopening; raise a new linked issue | The PRD is silent; without it a wrongly resolved defect cannot be put right | |
-| CD-25 | 5.20 | Run start and end times may be backdated and may not be in the future | Times fixed to the moment of entry | A person records them, often afterwards; a future time cannot be an observation | |
-| CD-32 | 5.25 | With no active scope, field changes, survey and field notes and photos, run starts, revision restore, issuing or designating, and cancelling a proposal or correcting a record are refused as well | Accept notes and photos, recorded with no scope | The confirmed rule allows only issues and warranty or service records; each of these carries the active scope or changes the design reference | |
-| CE-20 | 6.13 | A label or asset ID now used by another active device must be decided before the restore is confirmed | Allow the duplicate and flag both devices | No source covers a clash on restore. | |
-| CE-26 | 6.16 | While a project is archived, every reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision | Keep accepting decisions on fixed records, such as final acceptance of a closeout | FR-37 pauses editing; no source says whether a review decision counts as editing. | |
-| CF-13 | 8.8 | Recovery without the key needs a stated option, resets two-step verification for all and clears stored settings secrets | Refuse recovery without the key | Secrets encrypted with the key cannot be read; accounts must stay usable | |
+| CA-44 | 1.3 | A browser that has signed in to an account before holds a signed marker and is not held by that account's per-email wait, only the per-address one; the recovery code of story 1.8d also clears the wait | The per-email wait applies to every browser | No source states it; without it anyone who knows an email can keep that account locked (review of Epic 1, A6) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-13 | 1.5 | Turning two-step verification on or off needs the password; a fresh set of recovery codes needs the password and a current code | No re-check for a signed-in user | No source states it; guards a session left open, which could otherwise enrol its own authenticator (review of Epic 1, A13) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-49 | 1.7 | Until story 2.1, an Epic 1 build is for testing only and says so; project data in the browser is cleared when a different account signs in | Separate the prototype's browser data by installation, account and project | Project data stays in the browser until Epic 2, so the epic's access control cannot cover it; separating storage that Epic 2 replaces would be work thrown away (review of Epic 1, A16) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-50 | 1.10 | An administrator can change a user's email; it ends the user's sessions, cancels unused links, is refused if another account holds that email, and is logged with both addresses | Email fixed for the life of the account | No source lets an email change; with CA-10 a mistyped invitation or a changed mail domain could not be fixed (review of Epic 1, A20) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-54 | 1.11 | Issuing a reset link leaves the current password working until it is used; a new link, including an emailed one, cancels earlier ones (accepted: only the mailbox holder can use an emailed link); the next sign-in shows who reset the password and when; with email working the owner is told | Several live links, and no notice to the owner | FR-70 gives administrators reset links without saying how they combine; FR-69 asks for actions to be attributable to the person who made them (review of Epic 1, A19) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-51 | 1.13 | The recovery command generates the code on the operator's machine and supplies only its hash, account and expiry as a Worker secret; the installation object records it on use; the code works within 60 seconds, wrong codes share the set-up-code limit, and running the command resets those counts | A route signed with the deployment key | Only control of the Cloudflare account is needed, as the story intends; a locked-out administrator may not hold the deployment key (review of Epic 1, A8) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CG-03 | 1.19 | Agent access is off in a new installation until an administrator turns it on | On by default | Sprint change proposal choice D5 | Yes (Kevin, sprint change proposal, 2026-11-19) |
+| CG-10 | 1.19 | An administrator's token reaches only projects the administrator is a member of | Every project, as the administrator's role allows | A stolen administrator token would otherwise reach every project (review A12) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-27 | 1.19 | Deactivating an account revokes its tokens for good | Suspend them and restore on reactivation | A reactivated account should not silently regain forgotten tokens (second review F14) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-28 | 1.19 | Removing the owner from a project drops it from tokens limited to chosen projects | Restore access when the owner is added back | A forgotten token should not silently regain a project (second review F15) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CB-19 | 2.16 | A saved survey entry cannot be edited or deleted; a correction is a new entry | Let the author edit an entry, keeping its history | NFR-1 keeps prior evidence unchanged and FR-21 protects evidence from undo | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-26 | 2.21 | Bundled web server gets and renews its certificate automatically, or uses operator-supplied files | Operator-supplied certificate files only | The architecture leaves the certificate method open; the two ways cover public and private servers | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-35 | 2.26 | A storage-full notice naming the volume is shown to administrators in Administration | Show the reason only on the failed save | Only an administrator can free space, and Administration is their one surface at this point | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-03 | 4.1 | A second revision with a name already used in the scope is refused | Allow repeated names, told apart by identifier and date | Revisions are picked by name in the timeline, the issue step and packages; the PRD does not say whether names may repeat | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-06 | 4.2 | A revision imported from a prototype file can be opened and compared but not restored | Offer restore, listing what the old file does not hold | The prototype's revisions hold less than a new snapshot, so a restore would blank content they never recorded | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-14 | 4.8 | Requesting a review is refused until a design reviewer is assigned | Allow a request with no assignee, open to any Editor or administrator | A request with nobody named leaves Awaiting decision with no one to act; no source states either way | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-17 | 4.9 | Once a revision is bypassed its state stays Bypassed; later decisions are kept and labelled "after the bypass" | A later Approve changes the state to Approved | FR-25 records bypass distinctly from approval; keeping the state stops a bypass being overwritten unnoticed | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-21 | 4.11 | A reviewer link still shows its revision but accepts no new comment or decision once its assignment is reassigned, its review is bypassed or its revision is superseded; reassignment does not revoke the previous reviewer's link, which the administrator's list shows as "Read-only: reviewer reassigned" | Keep accepting entries, labelled as late, as for accounts | The PRD says a link keeps pointing at its fixed revision but not whether it stays writable after the record has moved on | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-13 | 5.11 | A Pass whose required photo is still Uploading or Failed reads "Pass pending evidence" and is not counted | Refuse Pass until the photo is Saved | FR-30 requires the evidence for a Pass; NFR-2 forbids showing an incomplete upload as saved | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-20 | 5.17 | A resolved or deferred issue can be reopened with a reason | No reopening; raise a new linked issue | The PRD is silent; without it a wrongly resolved defect cannot be put right | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-25 | 5.20 | Run start and end times may be backdated and may not be in the future | Times fixed to the moment of entry | A person records them, often afterwards; a future time cannot be an observation | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-32 | 5.25 | With no active scope, field changes, survey and field notes and photos, run starts, revision restore, issuing or designating, and cancelling a proposal or correcting a record are refused as well | Accept notes and photos, recorded with no scope | The confirmed rule allows only issues and warranty or service records; each of these carries the active scope or changes the design reference | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-20 | 6.13 | A label or asset ID now used by another active device must be decided before the restore is confirmed | Allow the duplicate and flag both devices | No source covers a clash on restore. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-26 | 6.16 | While a project is archived, every reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision | Keep accepting decisions on fixed records, such as final acceptance of a closeout | FR-37 pauses editing; no source says whether a review decision counts as editing. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-47 | 6.20 | Packages include external tickets only when chosen, off by default; the reviewer view never shows them | Always shown, or never | Internal tracker addresses often should not reach a client (E7) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-48 | 6.20 | A link carrying a user name or password is refused | Store it as given | Tracker credentials would otherwise reach exports and backups (second review B30) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CE-49 | 6.20 | "Also on" stays within one project and never appears in exports or packages | Across every project the viewer can read | Keeps one customer's tickets out of another's records and documents (second review F4, F6, B28) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CF-13 | 8.8 | Recovery without the key needs a stated option, resets two-step verification for all and clears stored settings secrets | Refuse recovery without the key | Secrets encrypted with the key cannot be read; accounts must stay usable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CG-11 | 11.2 | Downloading a project's portable backup is person only | Allowed to read tokens | A misled agent could otherwise take away whole projects (review A15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-12 | 11.2 | An agent's change to a verified device clears its verified state; an agent's import row that would change a verified device goes to Needs review | Keep verified | FR-75: an agent's change never establishes a verified state (review A15, A16) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-29 | 11.2 | Only a person can undo an agent's tool call; an undo is refused if items changed since, and never restores verified | Let the token undo its own change | An undo through a token could re-establish a verified state or overwrite later work (second review B6, F19, F20) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-30 | 11.2 | Deletions made with a token can be reversed by a person; permanently removing files or a project is person only | Deletion by token is person only | Lets agents tidy drafts while keeping every loss recoverable (second review B23) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-31 | 11.2 | An agent may request a review; its assignee must be a person | Requesting a review is person only | A request decides nothing; the decision stays with a person (second review B33) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-09 | 11.3 | Where a calculation does not fit one request, agents get it as a job with a second route for the result | Refuse the calculation to agents | FR-77 requires the same results; AD-13's job pattern already exists | Yes (Kevin, 2026-11-19) |
 
-**2. Values nobody specified (62).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
+**2. Values nobody specified (96).** Durations, sizes, counts and wording, set to conventional defaults. They can be confirmed as a group; changing one changes only the criterion that carries its ID. They are listed in [Values and readings](#values-and-readings) at the end.
 
-**3. Readings of a source (142).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end.
+**3. Readings of a source (159).** Places where a requirement could be read two ways and the stories follow one. Also listed at the end, grouped by epic, each with a column for Kevin's decision. They can be confirmed as a group or epic by epic; changing one changes only the criterion that carries its ID.
 
 **4. Open points.**
 
-- Whether a second independent review of draft 0.7 is wanted before building starts.
-- The 30 edge cases left out (see Status): accept leaving them, or name the ones to add.
+- The structure findings of the [review of draft 0.7](review-epics-draft-0.7.md) not yet applied (S5 to S11 and S15): optional, none blocks building.
 
 ## Decisions made
 
@@ -82,16 +105,17 @@ Kevin, 2026-11-18. These are no longer open and are written into the stories.
 
 | Epic | Outcome | Stories |
 | --- | --- | --- |
-| 1. Install, sign in and manage people | An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project. | 18 |
+| 1. Install, sign in and manage people | An organisation can deploy Site Survey Design on Cloudflare, set it up, invite people, and control who can see and change each project. | 19 |
 | 2. One shared project online | The existing design tool runs as one shared project, on Cloudflare and on your own server. Two members can edit different things at once, see each other's changes within seconds and resolve a clash without losing work. | 26 |
 | 3. A workspace that holds the whole job | The app has the frame, the eight areas and the status language from the UX specification, and the prototype's measured readability problems are fixed. Later epics add their screens into this structure. | 7 |
 | 4. Design, estimate and issue | A design can be saved as a named revision, estimated, reviewed or bypassed, issued as the fixed installation reference and exported as a retained package. | 18 |
 | 5. Install, test and close out in the field | A technician with a phone can find a device, read what is required, record work, results and photos, and the scope can be closed honestly with a Closeout package. | 28 |
-| 6. Existing sites and return visits | An existing building can be inventoried from a spreadsheet, surveyed, upgraded and returned to later, with its history, warranty and service visits intact. | 19 |
+| 6. Existing sites and return visits | An existing building can be inventoried from a spreadsheet, surveyed, upgraded and returned to later, with its history, warranty and service visits intact. | 20 |
 | 7. Extended modelling | The design can describe multi-view and pan/tilt/zoom cameras, doors with their components, site annotations, closets and ports, and cable that runs between floors. | 11 |
 | 8. Backups and recovery | Projects and the installation's own data are backed up daily, a project or a whole installation can be recovered, and a project can be moved as a portable backup. | 14 |
 | 9. Install from published instructions and update from the interface | Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails. | 15 |
 | 10. Acceptance | The proof of concept is measured against the PRD's acceptance profile on Cloudflare, and then on a self-hosted installation. Passing story 10.2 to story 10.7 is enough to accept the proof of concept on Cloudflare; a self-hosted installation is not described as supported until story 10.8 and story 10.9 pass. | 9 |
+| 11. Work with AI agents | An AI agent acting for a person can find, read and prepare work in Site Survey Design through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people. | 8 |
 
 Each epic's own section states what it depends on.
 
@@ -100,27 +124,31 @@ Each epic's own section states what it depends on.
 - A story's criteria can be tested using only the stories before it.
 - Each story has a user-story sentence, a **Covers** line naming the requirements, architecture decisions and experiments it delivers, and **acceptance criteria** grouped under up to five labels, always in the same order. Each criterion is one observable result.
 - A **Notes** line, where present, says what the story leaves to a later story, or records an experiment's finding. It is not a criterion.
-- An ID in brackets at the end of a criterion, such as (CA-03), marks a choice listed in this document.
+- An ID in brackets at the end of a criterion, such as (CA-03 · value), marks a choice listed in this document and says its kind: a decision (new behaviour, yes or no), a value, or a reading. The letter after C names the part of the plan it was written in: A for Epic 1, B for Epics 2 and 3, C for Epic 4, D for Epic 5, E for Epics 6 and 7, F for Epics 8 to 10, G for agent access (story 1.19 and Epic 11).
 - Criteria draw on each requirement's Check in the PRD, which remains the authority. Where a story lists a requirement, its full Check applies even if the criteria here summarise it.
 - **Standing rules** apply to every story and are not repeated in them.
 
 ### Standing rules
 
 1. Every change is saved through a versioned operation or an append-only entry (AD-5). No story adds a way to edit a record without a base version.
-2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified.
+2. Every server route sits behind the access gate (AD-12). From Epic 2 on, each story's write paths are tested as an Editor and shown to be refused for a Viewer and for a signed-in user who is not a member. A Viewer can read and export whatever a story adds, and cannot change it, unless the story says otherwise. The one exception to the refusal is story 4.8: a Viewer who is the approval assignee can comment and decide. For a signed-in action, the actor recorded is always the signed-in account. An action through a reviewer link records the name the reviewer entered, marked not verified. Calls from the update workflow and the updater are a fourth kind of route, checked by the gate with the update secret (AD-20). Every route declares its class (AD-22). From Epic 2 on, each story's write routes are also called with a read-and-draft access token and shown to succeed, unless the route is person only, when the token is refused with "needs a person"; and called with a read-only token and shown to be refused. An action made with a token records its owner with `via` naming the token, and wherever a story shows or exports an actor, such an action shows the owner and "via agent" with the token's name. Approving or deciding a review, bypassing, issuing or designating, closing out or reopening a scope, recording a test outcome, an installed mark or a verified observation, archiving or un-archiving, restoring, creating a reviewer link, creating a project, downloading a portable backup, permanently removing files or a project, undoing a change, creating, renaming or revoking an access token, and every change to one's own account (name, password, two-step verification, recovery codes, ending sessions) are person-only routes (FR-75). An agent may request a review; its assignee is a person. A deletion made with a token can be reversed by a person. A change made with a token to any field of a verified device clears its verified state. Each new administrator-only route is shown to refuse an administrator's token, each new reviewer-link route to refuse any token, and each write route to refuse a read-and-draft token on a project where its owner is a Viewer.
 3. Every status shown uses the status language (UX section 6): a label and a shape as well as a colour. Unknown, estimated, not assessed and incomplete are shown as such, never as blank or zero.
 4. Fixed records and stored files are never modified (AD-3, AD-8).
 5. New screens meet the visual foundation (UX section 10): text sizes, 4.5:1 text contrast, visible focus, and 44 px targets on the field shell.
 6. Rules that span the browser and the server are written once in the shared module, in TypeScript, with tests (architecture section 10, decision K6).
 7. The server is one build for both hosts. Host-specific code lives only behind the file-store and update interfaces, and no platform feature outside the list in AD-16 is used. Server tests run in Cloudflare's runtime, and the self-hosted smoke suite is extended for each new area once story 2.24 has built it.
-8. From the first published release onward, a changed record shape comes with its data conversion (AD-20). Before that release there is no earlier data to convert.
+8. From the first published release onward, a changed record shape comes with its data conversion (AD-20). Before that release there is no earlier data to convert, and a change of record shape re-creates development and test installations instead of converting them. A conversion is the one permitted change to the shape of a fixed record: its content and its files are unchanged.
 9. A story that adds a kind of record states, under Access and restore, whether a revision restore replaces it or leaves it unchanged.
 10. Performance criteria are measured against the acceptance-size test project that story 2.11 generates. Until story 10.1 fixes the fixture's manifest with Kevin, those measurements guide development and are not acceptance evidence.
-11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording.
+11. A save refused because something changed underneath it stays on the page, is not retried, and is labelled "not saved:" followed by the reason. Each story that adds a reason states its wording. An answer of "updating, try again shortly" is not a refusal: the edit stays unsaved and is sent again automatically, as after a lost connection (AD-20). So are the refusals of data newer or older than the server during or after an update.
+12. A reply value whose source is not a member of the project, or that an agent added, is returned in the entered-text wrapper of story 1.1 with its source: reviewer-link entries, imported content (which keeps the source "import" after it is applied), names of uploaded files, text read from PDF plans, and anything a token wrote. A value a member edits becomes that member's. Sources and references survive restore and backup. A refusal names a field but never repeats an entered value (AD-22).
+13. Every request that changes anything with a session cookie, and every request made before a session exists that creates a session or changes an account (sign-in, set-up, accepting an invitation, using a reset link, using a recovery code), is refused unless it comes from the app's own origin and carries the header the app adds (AD-12). Each story that adds such a request tests the refusal. Token requests are exempt, as story 1.19 states.
+14. A secret carried in a link (an invitation or a reset link) holds at least 32 random bytes, and the administrator recovery code of story 1.13 at least 20 random characters. The server stores only its SHA-256 hash. The page that opens a link is served with `Referrer-Policy: no-referrer` and removes the secret from the address bar once it is read, and no log, record or export contains it. (CA-55)
+15. From story 1.2 on, a story that adds or changes a screen adds browser tests with Playwright, in `site-studio/browser-tests/`. They cover its Core behaviour flows on that screen and at least one refusal or error that the screen shows. They run against the built app served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, on every push and pull request. Each screen a story adds also passes an axe accessibility check with no serious or critical violations. Rules and edge cases stay in the server tests. A criterion that names a real device, another browser or a deployed installation is still checked there (story 10.6). (Architecture K24.)
 
 ### Definition of done
 
-A story is done when its criteria pass in Chrome against the locally run server, its automated tests pass, the self-hosted smoke suite passes once it exists, and the existing tests still pass. Where a criterion names a deployed Cloudflare test installation, another browser, or a real phone or tablet, it is tested there.
+A story is done when its criteria pass in Chrome against the locally run server, its automated tests pass, its browser tests pass in desktop Chromium and in WebKit with an iPhone viewport (standing rule 15), the self-hosted smoke suite passes once it exists, and the existing tests still pass. Where a criterion names a deployed Cloudflare test installation, another browser, or a real phone or tablet, it is tested there.
 
 ## Epic 1: Install, sign in and manage people
 
@@ -134,21 +162,34 @@ A story is done when its criteria pass in Chrome against the locally run server,
 
 As an organisation's administrator, I want Site Survey Design served by one server build that runs on Cloudflare and also starts under the self-hosted runtime, so that my organisation can use either host.
 
-Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), architecture section 10, experiments R7 and R8.
+Covers: AD-1, AD-16, AD-17, AD-20 (data-format version, conversion runner, one version at a time), AD-22 (route declarations, reason codes), architecture section 10, experiments R7 and R8.
 
 **Core behaviour**
 - When the local development command runs, the existing app loads from the locally run Worker through Cloudflare's Vite plugin.
-- The existing unit and browser tests pass against that locally served app with no test changed or removed.
+- The existing unit tests pass against that locally served app with no test changed or removed. (The prototype had no browser tests.)
 - The Worker has exactly two Durable Object classes, a project room and the installation object, each with SQLite storage.
 - The file-store and update interfaces are defined in the server.
 - The project room and the installation object each record a data-format version when first created, and a test reads it back after a restart.
-- A conversion runner compares the recorded data-format version with the build's version each time an object starts and applies the listed conversions in order.
-- The runner's list is empty, and a test with one sample conversion shows the conversion applied once and the recorded version raised.
+- A conversion runner, when called, applies the listed conversions in order from the recorded data-format version to the build's version. It is never started by an object starting.
+- The runner's list is empty, and a test with one sample conversion called directly shows the conversion applied once and the recorded version raised.
+- Every build carries a release version. The entry code attaches it to every call to an object, and an object attaches its own to every call it makes to another object.
+- An object that receives a call carrying a different version refuses the call and stops itself, so that it starts again on the code now deployed; the caller tries once more and otherwise answers "updating, try again shortly".
+- A test calls a busy object with a version other than its own and finds the call refused, nothing written by it kept, and the object started again with a new start identifier.
 - On a Cloudflare account on the Workers Paid plan, the deploy command makes the app reachable over HTTPS at a `workers.dev` address.
 - The static "Sites" package and its test still work (K7).
+- Every server route other than the application's own pages and files is under `/api/v1/`, and declares, in the shared module, a schema for its input and its reply; the only other addresses allowed are an MCP endpoint at `/mcp` and standard discovery addresses under `/.well-known/`, which declare their schemas in the same way.
+- A request whose input does not match its route's schema is refused with the field named.
+- Every refusal carries a reason code as well as its wording.
+- The shared route declarations offer an entered-text value type, which wraps each value with its source (member, agent, reviewer link, import, file name or PDF text) and a reference to where it came from; at this point no route uses it.
 
 **Refusals and edge cases**
 - An object whose recorded data-format version is newer than the build's refuses requests with an explanation.
+- An object whose recorded data-format version is older than the build's refuses requests and says that an update was not completed.
+- An object stops itself at most once in 30 seconds; a call from a different version within that time after a stop is refused without stopping again. (CA-41 · value)
+- The time of a stop is written to the object's own storage before it stops, so that the limit holds across the restart.
+- A call marked as version-independent is answered whatever the caller's version; at this point no call is so marked.
+- An object that uses its alarm for more than one kind of work keeps a schedule of due times and always sets its one alarm to the earliest; setting one never removes another.
+- Each stop and each such refusal is written to the runtime log with both versions.
 
 **Limits and values**
 - The configuration for each host declares no D1, Workflows, Queues, scheduled-trigger or KV binding.
@@ -159,7 +200,7 @@ Covers: AD-1, AD-16, AD-17, AD-20 (data-format version and conversion runner), a
 - A self-hosted configuration starts the same built bundle under Cloudflare's open-source runtime, and a smoke test in continuous integration shows a value saved, the process restarted, and the value read back.
 - The HTTPS address is checked on a deployed Cloudflare test installation.
 
-Notes: Left to later stories: moving between released versions (story 9.3); the pending-update rule added to the refusal above (story 9.4). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
+Notes: The version rule is in this story, not with the Update control, because the first update depends on the first release already obeying it (AD-20, K20). Left to later stories: the update record and its refusals (story 9.3); conversions and the return (story 9.4); moving between released versions (story 9.7 self-hosted, story 9.12 on Cloudflare). Experiments R7 and R8 were run early; see the experiments record. R7 met an install problem, which the pinned versions avoid or the repository documents.
 
 ### Story 1.2: Set up a new installation
 
@@ -168,32 +209,44 @@ As an organisation's administrator, I want a one-time set-up step that only the 
 Covers: FR-66 (set-up; Cloudflare host), NFR-5 (password storage), AD-12, AD-21 (set-up code on redeploy). Screens: S-25.
 
 **Core behaviour**
-- The Cloudflare deploy command generates a random set-up code, supplies it to the installation as a secret and prints it once in the deployment output. (CA-01)
+- The Cloudflare deploy command generates a random set-up code, supplies it to the installation as a secret and prints it once in the deployment output. (CA-01 · value)
 - An installation with no users shows the set-up page when opened.
 - The step asks for the set-up code, the installation's name and the first administrator's name, email and password.
 - The page states that it disappears once an administrator exists.
 - On completion exactly one administrator exists, and the page confirms the installation's name and the administrator's email.
+- Set-up records the installation's public address from the address the set-up page was opened on. (CA-57 · reading)
 - The password is stored only as a salted scrypt hash (N = 131,072, r = 8, p = 1, a 32-byte result), with the parameters stored beside the hash.
+- The deploy command learns whether set-up is still open from a public read-only route that answers only open or closed, which reveals nothing the set-up page does not already show, and issues a set-up code only when set-up is open. (CA-52 · reading)
 
 **Refusals and edge cases**
 - Once any user exists, the set-up page and its request are refused, and the set-up code no longer works.
 - A wrong or missing set-up code is refused.
+- A set-up request from another origin, or without the app's header, is refused (standing rule 13).
 - Two set-up requests sent at the same moment create one administrator; the second is refused.
 - Deploying again to an installation that has an administrator generates no set-up code and does not make set-up available.
-- Deploying again to an installation with no users prints a new set-up code, and the earlier code stops working. (CA-02)
+- Deploying again to an installation with no users prints a new set-up code, and the earlier code stops working. (CA-02 · reading)
 - On a deployed Cloudflare test installation, a plain HTTP request is redirected to HTTPS or refused.
 - Of two test installations deployed from the same build, completing set-up on one leaves the other still offering set-up with its own code.
 
 **Limits and values**
-- The set-up code has at least 20 characters. (CA-01)
-- The password must have 12 to 128 characters and must not equal the account's email address; there are no other composition rules. (CA-03)
-- The installation's name must be 1 to 80 characters. (CA-04)
-- After 5 wrong codes, further attempts from any address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05)
+- The set-up code has at least 20 characters. (CA-01 · value)
+- The password must have 12 to 128 characters and must not equal the account's email address; there are no other composition rules. (CA-03 · value)
+- The installation's name must be 1 to 80 characters. (CA-04 · value)
+- After 5 wrong codes from one network address, further attempts from that address are refused for 1 minute, doubling after each further failure up to 15 minutes, and the page says how long to wait. (CA-05 · value)
+- After 100 wrong codes within an hour from all addresses together, every attempt is refused until the hour has passed. (CA-05 · value)
+- The counts of wrong codes are kept in the installation object's storage and are raised before the code is checked, so they hold across every copy of the Worker, across a restart and under requests sent at once. (CA-43 · reading)
+- Deploying again with a new set-up code resets the count of wrong codes, and the waiting message says that deploying again issues a fresh code. (CA-45 · reading)
 
 **Access and restore**
 - A revision restore leaves accounts and the installation's name unchanged.
 
-Notes: Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3); two installations sharing no project (story 1.7) and no file (story 2.25); the self-hosted set-up code, printed in the server output (story 2.21); installation instructions (story 9.1).
+**Evidence to record**
+- Playwright is set up in `site-studio/browser-tests/` with pinned versions. It runs against the built app served locally by Cloudflare's runtime, in desktop Chromium and in WebKit with an iPhone viewport, and each run starts from empty local storage.
+- A browser test completes set-up with a set-up code supplied to the local installation and finds the confirmation of the installation's name and the administrator's email; another shows a wrong code refused with the wait stated.
+- The set-up page passes an axe accessibility check with no serious or critical violations.
+- Continuous integration installs the browsers and runs the browser tests on every push and pull request, keeping a trace when a test fails.
+
+Notes: For tests, the local installation's set-up code is supplied as a local secret that is never committed. Left to later stories: the sign-in page showing the installation's name, and two installations sharing no sign-in or session (story 1.3); two installations sharing no project (story 1.7) and no file (story 2.25); the self-hosted set-up code, printed in the server output (story 2.21); installation instructions (story 9.1).
 
 ### Story 1.3: Sign in and sign out
 
@@ -204,31 +257,36 @@ Covers: FR-67 (sign-in, sign-out), NFR-5, AD-12, experiment R9. Screens: S-26.
 **Core behaviour**
 - An installation that has an administrator shows the sign-in page, with the installation's name, to anyone not signed in.
 - The administrator created in story 1.2 signs in with their email and password.
-- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax.
-- The server stores only a hash of the session token.
+- The session is held in a cookie that scripts cannot read, marked Secure and SameSite=Lax, named with the `__Host-` prefix and an identifier of the installation, with no Domain attribute and the path `/`.
+- The server stores only a hash of the session token, and a new token is issued at each sign-in. (CA-47 · value)
 - An account menu in the existing header shows the signed-in user's name and Sign out.
 - Sign out ends the session, and a later request with its cookie is refused.
 
 **Refusals and edge cases**
 - A wrong email or password gives one message, whether or not the email has an account.
-- After repeated failed sign-ins, further attempts are refused for a wait, and the page says how long to wait. (CA-07)
+- For an email with no account, the server checks the password against a fixed stand-in hash made with the same parameters, so that a refusal takes the same time whether or not the account exists: a test finds the median times of 20 refusals for each case within 100 ms of each other. (CA-58 · value)
+- After repeated failed sign-ins, further attempts are refused for a wait, and the page says how long to wait. (CA-07 · value)
 - The wait is the same for an email with no account.
 - A successful sign-in clears that email's failure count.
-- The count of failed sign-ins for an email address is kept by the entered address in a short-lived store, and is not read from any log, so it applies equally to an address that has no account.
-- A request that changes anything is refused unless it comes from the app's own origin and carries the header the app adds.
+- The counts of failed sign-ins, by entered email address and by network address, are kept in the installation object's storage, which is a single instance for the installation on both hosts, and are not read from any log, so they apply equally to an address that has no account. (CA-43 · reading)
+- An attempt is counted before its password is checked, and the count is lowered again only when the password proves correct, so attempts sent at once cannot all pass the limit. (CA-43 · reading)
+- A browser that has signed in to an account successfully holds a signed marker for that account. While that account's email is in a wait, a sign-in from a browser holding the marker is held only by the per-address count, not the per-email one: a test locks an email from one address, then signs in with the correct password from a browser holding the marker. (CA-44 · decision)
+- A request that changes anything with a session cookie, and a sign-in request, is refused unless it comes from the app's own origin and carries the header the app adds, so that another site cannot sign a person in to an account of its choosing (standing rule 13).
 - An account of one test installation cannot sign in to another deployed from the same build, and a session cookie from one is refused by the other.
+- Two test installations on one host name with different ports each keep their own session: signing in to one does not sign the person out of the other.
 
 **Limits and values**
 - The failure message reads "That email and password do not match."
-- The wait starts after 5 failed sign-ins in a row for one email, or 20 from one network address within 15 minutes. (CA-07)
-- The wait is 1 minute, doubling after each further failure up to 15 minutes. (CA-07)
+- The wait starts after 5 failed sign-ins in a row for one email, or 20 from one network address within 15 minutes. (CA-07 · value)
+- The wait is 1 minute, doubling after each further failure up to 15 minutes. (CA-07 · value)
 - The sign-in fields are labelled, use 16 px text and can be filled by a password manager.
 
 **Access and restore**
 - A revision restore leaves sessions unchanged.
 
 **Evidence to record**
-- On a deployed Cloudflare test installation the scrypt hash is accepted without a platform error, and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08)
+- On a deployed Cloudflare test installation the scrypt hash is accepted without a platform error, and sign-in completes in under 1 second at the median of 20 sign-ins. (CA-08 · value)
+- On a deployed Cloudflare test installation, of 25 wrong sign-ins for one email sent at once over several connections, at most 5 are checked against the password and the other 20 receive the wait. (CA-43 · reading)
 - A password hash made on one host verifies on the other.
 
 Notes: Left to later stories: invitations (story 1.4); the second sign-in step (story 1.5); My account in the account menu (story 1.6); the activity log, which records a failed sign-in for an address with no account only as "unknown address" and so cannot supply the failure count (story 1.14); "Forgot password" (story 1.17). Experiment R9 was run on 2026-11-19: Cloudflare refuses a PBKDF2 call above 100,000 iterations, so the 600,000-iteration hash first planned was replaced by scrypt, which worked on both hosts with identical results and added about 0.36 s to a request on Cloudflare.
@@ -246,17 +304,19 @@ Covers: FR-67 (invitation), AD-12. Screens: S-27, S-30 invite panel.
 - The person sets a name and a password and is signed in.
 - The password must meet the password rules of story 1.2, and the page shows each rule as it is met.
 - The new password is stored in the form story 1.2 states.
+- The invitation link's secret follows standing rule 14: a test checks its length, finds only its hash stored, and finds the secret absent from the address bar after the page opens and from the runtime log. (CA-55 · value)
 
 **Refusals and edge cases**
 - There is no open registration: no page or request creates an account without an invitation.
+- Accepting an invitation from another origin, or without the app's header, is refused (standing rule 13).
 - An invitation works once.
 - A used or expired link says so and tells the person to ask an administrator for a new one.
-- Inviting an email that already has an account is refused, and the administrator is told so. (CA-10)
-- Inviting an email that has an unused invitation replaces the earlier link, which stops working. (CA-10)
+- Inviting an email that already has an account is refused, and the administrator is told so. (CA-10 · reading)
+- Inviting an email that has an unused invitation replaces the earlier link, which stops working. (CA-10 · reading)
 - A standard user's account menu has no "Invite a person", and a standard user's invite request is refused.
 
 **Limits and values**
-- An invitation expires 7 days after it is issued. (CA-09)
+- An invitation expires 7 days after it is issued. (CA-09 · value)
 
 **Access and restore**
 - A revision restore leaves invitations unchanged.
@@ -270,34 +330,42 @@ As a designer, I want to protect my account with an authenticator app, so that a
 Covers: FR-67 (two-step verification), AD-12, AD-17, AD-21 (deployment key), UX decision D14. Screens: S-26, S-27, S-29.
 
 **Core behaviour**
-- A user turns it on by scanning a code and confirming with one generated code.
+- A user turns it on by giving their password, scanning a code and confirming with one generated code. (CA-13 · decision)
 - The user is then shown recovery codes once, with Copy and Download; the codes cannot be displayed again.
 - With it on, a correct password alone does not sign in; a current code does.
+- After a correct password, an account with it on receives a pending sign-in token, stored only as a hash and bound to that browser, which allows nothing but the second step; it is discarded on success, on expiry, or when the wait of story 1.3 begins. (CA-46 · value)
+- When the second step succeeds, a new session token is issued in place of any earlier one. (CA-47 · value)
 - "Use a recovery code" accepts a recovery code in place of a generated code, once.
 - The account page shows how many recovery codes remain.
-- A user makes a fresh set of recovery codes by giving their password and a current code, and the old set stops working. (CA-13)
+- A user makes a fresh set of recovery codes by giving their password and a current code, and the old set stops working. (CA-13 · decision)
 - A person who has just accepted an invitation is offered two-step set-up and can skip it.
 - Recovery codes are stored only as hashes.
-- The authenticator secret is stored encrypted with a deployment key that the deploy command generates and supplies to the installation as a secret. (CA-14)
+- The authenticator secret is stored encrypted with a deployment key that the deploy command generates and supplies to the installation as a secret. (CA-14 · reading)
 - The deploy command prints the deployment key once, when it creates it, with an instruction to keep a copy outside the Cloudflare account.
 - When the operator supplies a deployment key kept from an earlier installation, the deploy command uses it and generates none.
 
 **Refusals and edge cases**
 - A code that has been accepted is refused if used again.
-- Wrong codes and wrong recovery codes count toward the same limit and wait as wrong passwords in story 1.3. (CA-15)
-- Turning it off asks for the password. (CA-13)
+- Wrong codes and wrong recovery codes count toward the same limit and wait as wrong passwords in story 1.3. (CA-15 · reading)
+- Turning it off asks for the password. (CA-13 · decision)
+- Turning it on with a wrong password is refused. (CA-13 · decision)
+- A pending sign-in token used after it expires, used for anything but the second step, or sent from another browser is refused. (CA-46 · value)
+- A second-step request from another origin, or without the app's header, is refused (standing rule 13).
 - Neither the authenticator secret nor a recovery code appears in any reply after set-up.
 - The deploy command generates the deployment key only when the installation has none: a test deploys again and then signs in with a two-step code set up before.
+- The deploy command finds an existing deployment key in the Worker's list of secrets and never replaces it. (CA-52 · reading)
+- The installation stores a fingerprint of its deployment key; started with a key that does not match, it reads and writes no encrypted value and says that the deployment key does not match. (CA-52 · reading)
 
 **Limits and values**
-- A set holds 10 recovery codes. (CA-11)
-- Codes are 6 digits and change every 30 seconds; a code from the step just before or just after the current one is accepted. (CA-12)
+- A set holds 10 recovery codes. (CA-11 · value)
+- A pending sign-in token lasts 5 minutes. (CA-46 · value)
+- Codes are 6 digits and change every 30 seconds; a code from the step just before or just after the current one is accepted. (CA-12 · value)
 - The code field asks for a numeric keypad and offers code autofill on a phone.
 
 **Access and restore**
 - A revision restore leaves two-step set-up and recovery codes unchanged.
 
-Notes: Left to later stories: the two-step controls on the My account page (story 1.6 places them there); reset or requirement by an administrator for one user (story 1.11); requirement for everyone (story 1.16); the self-hosted key file (story 2.23).
+Notes: Showing the second-step page tells the person that the password was right, as is usual; the shared failure count of CA-15 limits guessing. Left to later stories: the two-step controls on the My account page (story 1.6 places them there); reset or requirement by an administrator for one user (story 1.11); requirement for everyone (story 1.16); the self-hosted key file (story 2.23).
 
 ### Story 1.6: My account and sessions
 
@@ -309,24 +377,28 @@ Covers: FR-67 (password change, sessions, sign out everywhere, session end), UX 
 - My account is reached from the account menu and shows the user's name and email, with the two-step controls of story 1.5.
 - A user changes their name.
 - A user changes their password by giving the current one; the new one must meet the password rules of story 1.2.
-- A password change signs out every other session of that account. (CA-16)
+- A password change signs out every other session of that account. (CA-16 · reading)
 - A user sees each signed-in session with its device (browser and system), time of last use and network address, with the current session marked.
-- A session shows a country or city where the host supplies one. (CA-17)
+- A session shows a country or city where the host supplies one. (CA-17 · reading)
 - "Sign out everywhere else" ends the other sessions, and each is refused on its next request.
-- A session ends after a period without use. (CA-19)
-- Only a request that results from something the person does, such as opening a page, saving, uploading or any other deliberate action, counts as use of the session. (CA-19)
-- A request the page sends by itself, such as an automatic check for other people's changes, does not count as use, so a page left open still reaches the idle limit. (CA-19)
+- A session ends after a period without use. (CA-19 · reading)
+- A session also ends 30 days after its sign-in, whatever its use: a test with a test clock finds a session in daily use refused after that. (CA-47 · value)
+- Only a request that results from something the person does, such as opening a page, saving, uploading or any other deliberate action, counts as use of the session. (CA-19 · reading)
+- A request the page sends by itself, such as an automatic check for other people's changes, does not count as use, so a page left open still reaches the idle limit. (CA-19 · reading)
 - When a session ends while a page is open, the page asks the user to sign in again in place.
 - After the same account signs in, input pending on that page, such as an unsaved name on My account, is still there and can be saved.
 
 **Refusals and edge cases**
-- If a different account signs in on that page, the earlier account's pending input is neither shown to it nor sent. (CA-20)
-- That input stays bound to the earlier account and is offered again only when that account signs in on the same browser. (CA-20)
+- If a different account signs in on that page, the earlier account's pending input is neither shown to it nor sent. (CA-20 · reading)
+- That input stays bound to the earlier account and is offered again only when that account signs in on the same browser. (CA-20 · reading)
+- Signing out deliberately while input is pending warns that it will be removed and, on confirmation, removes it from the browser: a test inspects the browser's storage after sign-out and finds none. (CA-48 · value)
+- Pending input that its account has not reclaimed within 7 days is removed from the browser. (CA-48 · value)
 
 **Limits and values**
-- The period without use is 24 hours. (CA-18)
+- The period without use is 24 hours. (CA-18 · value)
+- The longest a session lasts is 30 days from its sign-in. (CA-47 · value)
 
-Notes: Left to later stories: ending sessions by deactivation (story 1.9); the administrator changing the 24-hour period (story 1.15); pending project edits kept the same way (story 2.3); an upload in progress counting as use and resuming after sign-in (story 2.9).
+Notes: The changes on My account (name, password, two-step verification, recovery codes, ending sessions) become person-only routes when story 1.8 gives every route a class (standing rule 2). Left to later stories: ending sessions by deactivation (story 1.9); the administrator changing the 24-hour period (story 1.15); pending project edits kept the same way (story 2.3); an upload in progress counting as use and resuming after sign-in (story 2.9).
 
 ### Story 1.7: Projects list and creating a project
 
@@ -339,7 +411,9 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 - An administrator creates a project by giving its name; it appears in the list without reloading the page, and its creator is recorded.
 - Each project has its own address, and opening a project from the list goes to that address.
 - A project's address loads the existing app, whose data is still held only in the browser.
-- A user whose list holds exactly one project, an administrator included, goes straight to it after signing in. (CA-22)
+- While project data is held only in the browser, the projects list states that the build is for testing only and is not for real project data. (CA-49 · decision)
+- When a different account signs in on a browser, project data that the app holds in that browser is cleared first. (CA-49 · decision)
+- A user whose list holds exactly one project, an administrator included, goes straight to it after signing in. (CA-22 · reading)
 - The projects list is reachable from the account menu and by its own address, including for a user who was sent straight to a project.
 
 **Refusals and edge cases**
@@ -347,7 +421,7 @@ Covers: FR-66 (installations share no projects), FR-68 (project creation), UX de
 - A project created on one test installation is not listed on, and its address is refused by, another deployed from the same build.
 
 **Limits and values**
-- A project's name has 1 to 120 characters, and two projects may have the same name. (CA-21)
+- A project's name has 1 to 120 characters, and two projects may have the same name. (CA-21 · value)
 - A user with no project sees "You have not been added to a project yet. Ask an administrator."
 
 **Access and restore**
@@ -359,19 +433,24 @@ Notes: Left to later stories: membership, so until then every standard user sees
 
 As an administrator, I want access decided by role and project membership on the server, so that people see and change only what they should.
 
-Covers: FR-68, FR-69, NFR-5, AD-12, AD-17.
+Covers: FR-68, FR-69, NFR-5, AD-12, AD-17, AD-22 (route classes, the actor's via field).
 
 **Core behaviour**
 - Every request passes one access gate that identifies the caller and decides from their installation role and project membership.
+- Every route built in story 1.1 to story 1.7 declares its class and is decided by the gate alone, with no access check of its own left in place.
 - An administrator's server functions add a user to a project as Editor or Viewer, change that role and remove the user.
 - A standard user's project list shows only the projects they belong to, each with their role; an administrator's list shows every project.
 - Server tests, using one test route marked as a project read and one marked as a project change, show the gate's decision for each case: an administrator may read and change any project, an Editor may read and change their own project, a Viewer may read their project and is refused any change, and a non-member and an ended session are refused.
 - Removing a member or changing a role takes effect on that person's next request: a test changes a role and shows that the very next request is decided by the new role, with no delay from any held lookup.
 - The actor recorded on every action is the signed-in account and its name at the time, supplied by the gate.
+- The actor record has a `via` field, empty for a signed-in person.
 - After a user is renamed, records made earlier, such as a project's creator and an invitation's sender, still show the earlier name.
 
 **Refusals and edge cases**
-- A test route not marked public, reviewer-link, signed-in or administrator-only is refused.
+- Every route declares one class: public, reviewer link, read, draft change, person only, administrator only or update secret; in the test build, the gate refuses a test route that declares none.
+- The build fails if any route declares no class.
+- The test routes of this story exist only in the test build: a deployed installation answers them as not found.
+- A signed-in Editor is accepted on a test route marked person only, and decided by role and membership as on any other change.
 - The membership functions called by a standard user, including an Editor of that project, are refused.
 - A signed-in standard user who requests the address or the record of a project they do not belong to is refused by the server.
 - A change refused because access changed (no longer a member, or role too low) returns a reason distinct from "not signed in".
@@ -402,7 +481,7 @@ Covers: FR-67 (deactivation), FR-68 (installation role, last administrator), NFR
 - The gate's server tests of story 1.8 gain the case of a deactivated account, which is refused.
 - A change refused because the account was deactivated returns the access-changed reason of story 1.8.
 - The last administrator cannot be demoted or deactivated.
-- Only active accounts that have accepted their invitation count as administrators for this rule. (CA-23)
+- Only active accounts that have accepted their invitation count as administrators for this rule. (CA-23 · reading)
 - Two requests sent at the same moment that would together remove the last two administrators leave one administrator; the second request is refused.
 
 Notes: Left to later stories: the screens for these actions (story 1.10); cancelling a deactivated account's links (story 1.11).
@@ -419,11 +498,13 @@ Covers: FR-70 (Users), FR-67 (deactivation), UX decision D10. Screens: S-30.
 - Invite is in Users, and the account-menu action of story 1.4 is removed.
 - When inviting, an administrator optionally chooses projects and a role in each, which apply when the invitation is accepted.
 - A user's detail lets an administrator change the name and installation role, sign the user out everywhere, deactivate and reactivate.
+- A user's detail lets an administrator change the user's email: the change ends all of the user's sessions, cancels the user's unused links, and is recorded in the activity log with the earlier and new address. (CA-50 · decision)
 - Deactivating explains that the person's records keep their name.
 
 **Refusals and edge cases**
 - A standard user does not see Administration, cannot open its pages by address and is refused by each of its server functions.
-- Inviting the email of a deactivated account is refused, and the administrator is told the account is deactivated. (CA-10)
+- Inviting the email of a deactivated account is refused, and the administrator is told the account is deactivated. (CA-10 · reading)
+- Changing a user's email to one that another account holds, active or deactivated, is refused with the reason. (CA-50 · decision)
 - The last administrator's role and Deactivate controls are disabled, with the reason shown.
 - When an administrator's role is removed while they have an unsaved change open in Administration, the save is refused and shown as "not saved: access changed".
 - What they entered stays on the page and is not retried.
@@ -438,10 +519,14 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Core behaviour**
 - A user's detail lets an administrator issue a password reset link, which the administrator copies.
-- Using the link sets a new password and ends all of that account's sessions. (CA-25)
-- A password reset leaves two-step verification on. (CA-25)
+- The reset link's secret follows standing rule 14.
+- Issuing a reset link leaves the current password working until the link is used. (CA-54 · decision)
+- Issuing a new reset link cancels any earlier unused one for that account. (CA-54 · decision)
+- Using the link sets a new password, ends all of that account's sessions and clears the account's sign-in wait. (CA-25, CA-44)
+- At its next sign-in after an administrator's reset, the account is shown once "Your password was reset by ‹administrator› on ‹date›". (CA-54 · decision)
+- A password reset leaves two-step verification on. (CA-25 · reading)
 - A user's detail lets an administrator reset that user's two-step verification: the user then signs in with the password alone and is offered set-up again.
-- After a reset, the user's old recovery codes no longer work. (CA-26)
+- After a reset, the user's old recovery codes no longer work. (CA-26 · reading)
 - A user's detail lets an administrator require two-step verification for that user, and remove the requirement.
 - A user for whom it is required and who has not set it up must do so at their next sign-in before doing anything else, and a session already signed in can do nothing but set it up from its next request.
 - The Users table shows "Required but not set up" for such a user.
@@ -449,13 +534,14 @@ Covers: FR-70 (Users: require or reset two-step verification, issue a password r
 
 **Refusals and edge cases**
 - A reset link works once.
+- Using a reset link from another origin, or without the app's header, is refused (standing rule 13).
 - A cancelled link says it is no longer valid.
-- Deactivating an account cancels its unused invitation and reset links. (CA-28)
-- An invitation or reset link opened for an account that has since been deactivated is refused. (CA-28)
+- Deactivating an account cancels its unused invitation and reset links. (CA-28 · reading)
+- An invitation or reset link opened for an account that has since been deactivated is refused. (CA-28 · reading)
 - While two-step verification is required for a user, their attempt to turn it off is refused with the reason.
 
 **Limits and values**
-- A reset link issued by an administrator expires after 24 hours. (CA-24)
+- A reset link issued by an administrator expires after 24 hours. (CA-24 · value)
 
 **Access and restore**
 - A revision restore leaves reset links and two-step requirements unchanged.
@@ -486,17 +572,26 @@ As the person who controls my organisation's Cloudflare account, I want a comman
 Covers: FR-70 (administrator recovery, Cloudflare host), AD-12.
 
 **Core behaviour**
-- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account and prints a one-time recovery code.
-- With the code, that account sets a new password and has its two-step verification reset. (CA-29)
-- Using the code ends all of that account's sessions.
+- A command documented in the repository, run by a person who controls the Cloudflare account, names an administrator account, generates a one-time recovery code on that person's machine and prints it. (CA-51 · decision)
+- The command supplies the installation with only the code's hash, the account named and the expiry time, as a Worker secret. (CA-51 · decision)
+- The entry code passes that hash to the installation object, which records it when it is used, so a code already used is refused even while the secret remains. (CA-51 · decision)
+- With the code, that account sets a new password and has its two-step verification reset. (CA-29 · reading)
+- Using the code ends all of that account's sessions and clears the account's sign-in wait. (CA-44 · decision)
+- Running the command resets the counts of wrong recovery and set-up codes. (CA-51 · decision)
 
 **Refusals and edge cases**
 - The code works once.
 - A wrong or expired code is refused.
+- Wrong recovery codes count toward the limit and wait of wrong set-up codes in story 1.2, kept in the installation object. (CA-51 · decision)
+- Using the code from another origin, or without the app's header, is refused (standing rule 13).
 - No page or request in the app issues a recovery code.
 
 **Limits and values**
-- The code expires 1 hour after it is printed. (CA-30)
+- The code expires 1 hour after it is printed. (CA-30 · value)
+- The code has at least 20 random characters (standing rule 14).
+
+**Evidence to record**
+- On a deployed Cloudflare test installation, the code works within 60 seconds of the command finishing. (CA-51 · decision)
 
 Notes: Left to later stories: the activity-log entries for issuing and using the code (story 1.14); the self-hosted form of the command (story 2.23); the command in the published instructions (story 9.1).
 
@@ -511,25 +606,28 @@ Covers: FR-71. Screens: S-36.
 - Sign-in events add entries: sign-in, failed sign-in including a failed second step, sign-out and sign out everywhere.
 - Credential events add entries: password change and reset, recovery codes renewed, and two-step verification turned on, turned off, reset, required and no longer required for a user.
 - Invitation and link events add entries: invitation issued, accepted and cancelled, and reset link issued and cancelled.
-- Account and project events add entries: set-up completed, role and membership changes, deactivation and reactivation, and project creation.
+- Account and project events add entries: set-up completed, email changes, role and membership changes, deactivation and reactivation, and project creation.
 - Issuing and using the recovery code of story 1.13 each add an entry; the issue is recorded as made from the host, with the account it names.
-- A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32)
-- When the text entered matches no account, the entry reads "unknown address" and the text entered is not stored. (CA-32)
+- A failed sign-in entry records the network address, and the email only when it matches an account. (CA-32 · reading)
+- When the text entered matches no account, the entry reads "unknown address" and the text entered is not stored. (CA-32 · reading)
 - Failed sign-ins and administrative changes are each marked by an icon and a label.
-- An administrator filters by person, kind of event and date, and exports the filtered log as a CSV file. (CA-31)
+- An administrator filters by person, kind of event and date, and exports the filtered log as a CSV file. (CA-31 · value)
 
 **Refusals and edge cases**
 - No entry contains a password, token, code or link: a test signs in, invites, resets and fails a sign-in, then searches the stored log for each secret used and finds none.
 - No page or server function edits or removes an entry.
 - A standard user cannot open Activity or call its functions.
+- Failed sign-ins from one network address within one minute are written as one entry with a count, so that unauthenticated requests cannot grow the log one entry at a time. (CA-56 · value)
+- In the CSV export, a cell that begins with `=`, `+`, `-` or `@` is prefixed with an apostrophe so that a spreadsheet does not run it as a formula. (CA-56 · value)
 
 **Limits and values**
 - Entries are never removed by age: an entry given a date several years in the past in a test is still listed and exported.
+- The export is produced in pages, and an export of 100,000 entries completes on a deployed Cloudflare test installation. (CA-56 · value)
 
 **Access and restore**
 - A revision restore leaves the activity log unchanged.
 
-Notes: Left to later stories, which add their own events: settings changes (story 1.15); reviewer links and link decisions (story 4.10 and story 4.11); archiving (story 6.16); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
+Notes: Left to later stories, which add their own events: settings changes (story 1.15); access tokens and actions made with them (story 1.19); reviewer links and link decisions (story 4.10 and story 4.11); archiving (story 6.16); backups and restores (Epic 8); updates (Epic 9). The log is included in the installation's backups by Epic 8.
 
 ### Story 1.15: Settings: installation, sign-in and maps
 
@@ -541,23 +639,24 @@ Covers: FR-70 (Settings), FR-67 (session period, invitation life), FR-68 (projec
 - Administration's left-hand list gains Settings, grouped as Installation, Sign-in and Maps.
 - Each group saves on its own and says what changed.
 - Installation holds the name, and a changed name shows on the sign-in page.
+- Installation holds the public address used in links the installation sends, recorded at set-up from the address the set-up page was opened on and changeable here. (CA-57 · reading)
 - Sign-in holds the period without use after which a session ends, how long an invitation lasts, and whether standard users may create projects.
-- A changed session period applies to existing sessions on their next request. (CA-34)
-- A changed invitation life applies to invitations issued afterwards. (CA-34)
+- A changed session period applies to existing sessions on their next request. (CA-34 · reading)
+- A changed invitation life applies to invitations issued afterwards. (CA-34 · reading)
 - When standard users are allowed to create projects, a standard user sees Create project, creates one, becomes its Editor and cannot add members.
 - Maps holds optional provider keys; a saved key is stored encrypted with the deployment key of story 1.5.
-- A saved secret is shown in Settings only as its last characters, never again in full. (CA-35)
+- A saved secret is shown in Settings only as its last characters, never again in full. (CA-35 · value)
 - Each change is recorded in the activity log with the earlier and new value, except that a secret is recorded only as changed.
 
 **Refusals and edge cases**
 - A value outside a setting's bounds is refused with the bounds shown.
-- When project creation by standard users is turned off again, projects already created keep their members. (CA-36)
+- When project creation by standard users is turned off again, projects already created keep their members. (CA-36 · reading)
 
 **Limits and values**
-- The session period accepts 15 minutes to 30 days. (CA-33)
-- The invitation life accepts 1 to 30 days. (CA-33)
-- A saved secret shows its last 4 characters. (CA-35)
-- The Maps group states beside the Google mapping key that this key is visible in the browsers of signed-in users. (CA-37)
+- The session period accepts 15 minutes to 30 days. (CA-33 · value)
+- The invitation life accepts 1 to 30 days. (CA-33 · value)
+- A saved secret shows its last 4 characters. (CA-35 · value)
+- The Maps group states beside the Google mapping key that this key is visible in the browsers of signed-in users. (CA-37 · reading)
 
 **Access and restore**
 - A revision restore leaves settings unchanged.
@@ -595,19 +694,30 @@ Covers: FR-67 (reset by email), FR-70 (Settings: optional email sending), AD-18.
 - With an HTTP email service configured, "Send a test message" reports success or the service's error.
 - With email working, the invite panel offers "Email it" beside the link to copy.
 - With email working, "Forgot password" on the sign-in page sends a reset link.
-- Using the emailed link sets a new password, ends all of that account's sessions and leaves two-step verification on.
+- "Forgot password" replies before any message is sent; the message is sent afterwards by a job of the installation object, so that the reply takes the same time for every email. (CA-58 · value)
+- Emailed links use the installation's public address of story 1.15, never a request header: a test sends "Forgot password" with a forged host header and finds the emailed link unchanged. (CA-57 · reading)
+- The emailed reset link's secret follows standing rule 14.
+- With email working, a reset link issued by an administrator also emails the account's owner that a reset was issued, without the link. (CA-54 · decision)
+- An emailed reset link cancels any earlier unused reset link for that account, including one issued by an administrator; only the holder of the account's mailbox can use it. (CA-54 · decision)
+- Using the emailed link sets a new password, ends all of that account's sessions, clears the account's sign-in wait and leaves two-step verification on. (CA-44 · decision)
 - Without email, "Forgot password" says "Ask an administrator for a reset link".
 - Without email, every invitation and reset is a link the administrator copies, and nothing else stops working.
 - A change to the Email group and each reset link sent are recorded in the activity log, without the link.
 
 **Refusals and edge cases**
 - A failed invitation send is reported with the link still offered.
-- "Forgot password" gives the same reply for every email, and no message is sent for an unknown or deactivated account. (CA-39)
+- "Forgot password" gives the same reply for every email, and no message is sent for an unknown or deactivated account. (CA-39 · value)
 - An emailed reset link works once.
+- Using an emailed reset link from another origin, or without the app's header, is refused (standing rule 13).
 
 **Limits and values**
-- An emailed reset link expires after 1 hour. (CA-38)
-- At most 3 reset messages are sent to one account in an hour. (CA-39)
+- An emailed reset link expires after 1 hour. (CA-38 · value)
+- At most 3 reset messages are sent to one account in an hour. (CA-39 · value)
+- "Forgot password" requests from one network address are limited to 10 an hour. (CA-53 · value)
+- The installation sends at most 100 messages an hour in total, counting invitations, resets, notices and test messages. (CA-53 · value)
+- A "Forgot password" request over either limit receives the usual reply and sends nothing. (CA-53 · value)
+- An administrator's send over the installation's limit is reported, with the link still offered. (CA-53 · value)
+- The activity log records each time a limit is reached. (CA-53 · value)
 
 Notes: Left to later stories: SMTP (story 1.18).
 
@@ -618,14 +728,101 @@ As an administrator who runs my own mail server, I want to know whether Site Sur
 Covers: AD-18, experiment R13.
 
 **Core behaviour**
-- If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.15 states for secrets, and "Send a test message" works through SMTP. (CA-40)
-- If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40)
+- If R13 passed on both hosts, the Email group offers SMTP server details, with the password stored and shown as story 1.15 states for secrets, and "Send a test message" works through SMTP. (CA-40 · reading)
+- If R13 did not pass on both hosts, the Email group offers only the HTTP email service. (CA-40 · reading)
+- R13 passes on a host when a message sent from that host by SMTP, signing in with a user name and password, is delivered to a real mailbox; a connection that reaches the point of signing in is not a pass.
+- Where SMTP is offered, the self-hosted configuration has a documented deployment setting that allows outbound connections to a mail server on a private network and adds an organisation's own certificate authority to those the runtime trusts.
+
+**Refusals and edge cases**
+- Without that setting, a self-hosted installation refuses to connect to a mail server on a private address or one whose certificate comes from an authority the runtime does not trust.
+- On Cloudflare, the Email group states that a mail server on a private address and port 25 cannot be reached, and points to no deployment setting.
+- The SMTP password is sent only over an encrypted connection: a server that offers neither encryption from the first byte nor an upgrade to it is refused, and the test message says that the server does not offer a secure connection.
+- A failure after the connection was made and while encryption was being set up is reported as the secure connection to the mail server failing, with the reason in the server log; the message does not guess a reason.
+- A failure before a connection was made is reported as the server not being reached, and a refusal by the server gives the server's reply.
+- On a self-hosted installation, the Email group states, beside the SMTP server details, that a private mail server or a private certificate authority needs the deployment setting and cannot be enabled from Settings.
+
+**Limits and values**
+- Connecting to the mail server times out after 10 seconds and each reply after 30 seconds, and the test message reports which timed out. (CA-42 · value)
 
 **Evidence to record**
-- Experiment R13 has a recorded result on a deployed Cloudflare test installation: a message sent by SMTP through the runtime's outbound sockets reaches a test server.
+- Experiment R13 has a recorded result on a deployed Cloudflare test installation for a message sent by SMTP through the runtime's outbound sockets, signing in to a real mailbox: delivered, which is a pass, or not delivered, with the reason, which leads to the HTTP-only Email group above.
 - Experiment R13 has a recorded result for the same send under the self-hosted configuration of story 1.1.
+- Under the self-hosted configuration, a test mail server on a private address with a certificate from a test authority is refused without the deployment setting and accepts a message with it, and the result is recorded.
+- A send to a server whose certificate names another host, and one to a server whose certificate comes from an untrusted authority, each produce the secure-connection message above, and the runtime log is checked to hold the reason.
 
 Notes: The self-hosted image is story 2.21; this experiment uses the configuration of story 1.1 because it comes earlier. R13 was run early on 2026-11-19. From Cloudflare, encrypted connections to two public mail services reached the point of signing in, and port 25 is prohibited there; a complete delivery from Cloudflare was not shown. On a server a message was delivered with both usual forms of encrypted SMTP; it found that a mail server on a private network or with a private certificate authority needs a line of runtime configuration, and that certificate failures reach the application only as a generic error, with the reason in the server log.
+
+### Story 1.19: Personal access tokens for agents
+
+As a designer, I want to give an AI agent its own token that acts for me, so that it can prepare work in my projects while I keep the decisions and can cut it off at any time.
+
+Covers: FR-73, FR-74, FR-75 (refusal of person-only routes), FR-76 (agent-access switch), NFR-5 (tokens), AD-5, AD-12, AD-17, AD-22. Screens: S-29, S-30, S-33, S-36, S-38, S-39, S-40.
+
+**Core behaviour**
+- Settings gains an Agent access group with an on/off switch, off in a new installation, and the maximum token lifetime. (CG-03 · decision)
+- My account gains Access tokens. While agent access is on, Create token asks for a name, the kind (Read only, or Read and draft), all of my projects or chosen ones, and an expiry. (CG-01 · reading)
+- The created token is shown once with Copy, beside the addresses of the API and the MCP endpoint, and "You will not see this token again."
+- The installation object stores only the SHA-256 hash of the token, with its owner, name, kind, projects, expiry and last use; a request's token is found by its hash and compared in constant time.
+- A token is accepted only in the `Authorization: Bearer` header.
+- A request with a token is decided by the gate as its owner, limited by the token's kind and projects.
+- "All of my projects" is checked against the owner's membership at each request, so it covers projects joined later and drops projects left.
+- An administrator's token reaches only projects the administrator is a member of, never every project in the installation, and the project list called with it returns only those projects. (CG-10 · decision)
+- An administrator becomes a member of a project as anyone else does, through the project's members.
+- A read-only token is accepted on read routes only; a read-and-draft token also on draft-change routes.
+- A read-and-draft token is decided per project by the owner's role there: it may change a project where its owner is an Editor and only read one where its owner is a Viewer.
+- A test route marked person only refuses every token with the reason code and wording "needs a person", and the same route accepts the owner signed in.
+- An administrator-only route refuses every token, including an administrator's, with "needs a person".
+- A public route accepts a request carrying a token and ignores the token; a reviewer-link route and an update-secret route refuse a token. (CG-22 · reading)
+- Every draft change made with a token carries an operation identifier, held per token for 24 hours, and a repeated identifier returns the stored result without applying the change again (AD-5). (CG-33 · value)
+- An operation identifier carries the time it was made, and its age is measured on the server's clock: one dated more than 5 minutes ahead of the server is refused with "identifier from the future", and one more than 24 hours old is refused with "identifier expired". (CG-33 · value)
+- A stored result is kept until 24 hours after its identifier's time, so every identifier still accepted finds its result and a late retry never repeats a change. (CG-33 · value)
+- A repeated identifier sent with a different request is refused with "identifier reused".
+- A change made with a token is recorded under its owner and the owner's name at that time, with `via` naming the token.
+- My account lists the person's tokens with name, kind, projects, expiry, created and last used, and Revoke, whether agent access is on or off.
+- A user's detail in Administration lists that user's tokens with Revoke, and the Users table shows a count of active tokens.
+- The activity log records token creation, revocation and expiry; an expiry is recorded by an alarm at the expiry time.
+- Each activity entry made with a token shows "via agent" and the token's name, and Activity gains an "Agent actions" filter.
+
+**Refusals and edge cases**
+- With agent access off, every token request is refused with HTTP 403 and the reason code "agent access is off".
+- Turning agent access on again restores the tokens that are neither expired nor revoked.
+- A token is refused after it expires or is revoked.
+- A token is refused for a project outside its list, and for a project its owner no longer belongs to, from the very next request.
+- A role change, deactivation or removal applies to the owner's tokens on the next request, exactly as to a session.
+- Deactivating an account revokes all its tokens, and reactivating the account does not bring them back. (CG-27 · decision)
+- Removing the owner from a project drops that project from the list of every token limited to chosen projects, and adding the owner back does not restore it. (CG-28 · decision)
+- An unknown, malformed or revoked token is refused with one reason code, "token not accepted", and does not say which.
+- A value starting with `ssat_` in a query string is refused with the reason code "token in address" and is never logged.
+- A token request is not subject to the origin-and-header rule of sessions, and a session request still is.
+- A request that carries both a session cookie and a token is refused. (CG-05 · reading)
+- A token cannot create a project; the request is refused with "needs a person". (CG-24 · reading)
+- Creating, renaming or revoking a token, every change on My account (name, password, two-step verification, recovery codes, ending sessions) and changing the agent-access setting are person-only or administrator-only routes: a test calls each with a read-and-draft token and finds it refused with "needs a person" (standing rule 2).
+- An expiry that is not later than now, or beyond the installation's maximum, is refused with the reason and the maximum stated.
+- Lowering the maximum lifetime shortens every existing token whose expiry is beyond the new maximum, counted from its creation; a token whose new expiry has passed expires at once, and the activity log records each. (CG-20 · reading)
+- When the maximum is below 90 days, Create token offers the maximum as its default.
+- Recovering the whole installation from a backup revokes every token, and revoked tokens stay listed as revoked. (CG-25 · reading)
+- No log entry, record or export contains a token: a test creates and uses one, then searches the stored log and records for it and finds none.
+
+**Limits and values**
+- A token's expiry is 90 days unless changed and at most 1 year, and an administrator can lower the maximum. (CG-02 · value)
+- A token starts with `ssat_` and holds at least 32 random bytes. (CG-06 · value)
+- A token may make 300 requests a minute, counting each API call made inside an MCP tool call; further requests receive HTTP 429 with `Retry-After`. (CG-04 · value)
+- All of one person's tokens together may make 600 requests a minute, and a person may hold at most 10 active tokens, active meaning neither expired nor revoked. (CG-13 · value)
+- Creating an eleventh active token is refused with the limit stated.
+- After 20 refused token requests in a minute from one network address, further requests from it with an unknown or refused token receive HTTP 429 with `Retry-After`; requests with a valid token are not affected. (CG-14 · value)
+- Token request-rate counters are kept in the installation object's memory, which is a single instance for the installation on both hosts; a restart of the object resets them, which is accepted for per-minute rates. Last use is written at most once a minute per token. (CA-43 · reading)
+- A per-address check in the Worker's own memory may run first as an extra guard; it is not relied on as the limit. (CA-43 · reading)
+- A self-hosted installation takes the client's address from `X-Forwarded-For` only when the request comes from a proxy listed in its configuration, and from the connection otherwise.
+- An expired or revoked token stays listed, greyed, for 30 days. (CG-07 · value)
+
+**Access and restore**
+- A revision restore leaves tokens and the agent-access setting unchanged.
+
+**Evidence to record**
+- The gate's server tests of story 1.8 and story 1.9 are repeated with a read-only token and with a read-and-draft token for each route class and caller case, including a Viewer's token and an administrator's token.
+- On a deployed Cloudflare test installation, requests with one token sent at once over several connections above 300 a minute receive HTTP 429. (CA-43 · reading)
+
+Notes: Story 1.1 declares every route with its schema, and story 1.8 gives every route its class and adds the `via` field; this story adds the caller kind that uses them. It builds on Administration's Users (story 1.10), the activity log (story 1.14) and Settings (story 1.15), all earlier in this epic. The API description and the MCP endpoint come in Epic 11. From Epic 2 on, standing rule 2 makes each story test its routes with both kinds of token.
 
 ## Epic 2: One shared project online
 
@@ -656,7 +853,7 @@ Covers: FR-2, FR-45 (first work scope), FR-68 (project list), FR-69, AD-2, AD-5.
 - A change request sent to the project as a Viewer is refused by the server.
 - A scope name that is empty or too long is refused with the reason, and no project is created.
 **Limits and values**
-- A scope name has 1 to 80 characters. (CB-01)
+- A scope name has 1 to 80 characters. (CB-01 · value)
 - For a project with no saved change yet, the last activity is its creation.
 **Access and restore**
 - A revision restore leaves the project's work scopes unchanged.
@@ -680,9 +877,9 @@ Covers: FR-21, NFR-2, AD-5. Screens: S-01.
 - Choosing the save status opens a list of the items not yet saved.
 - A saved edit updates the project's last activity in the project list.
 - An Editor can still delete a route, an obstruction or a zone as in the prototype, and each deletion is saved as one operation.
-- Capacity inputs (retention, and each camera's bitrate, recorded percentage and power allocation) are saved to the server, and the prototype's Capacity dialog works from the saved values. (CB-02)
+- Capacity inputs (retention, and each camera's bitrate, recorded percentage and power allocation) are saved to the server, and the prototype's Capacity dialog works from the saved values. (CB-02 · reading)
 - The prototype's Materials dialog lists equipment and cable quantities from the saved records and offers no cost entry.
-- Cost entry, named revisions and review are not offered in a shared project: each says that the feature is not available yet. (CB-03)
+- Cost entry, named revisions and review are not offered in a shared project: each says that the feature is not available yet. (CB-03 · reading)
 **Refusals and edge cases**
 - A save whose reply was lost is retried with the same operation identifier, and the change is applied once only.
 - Apart from plan images, no control in a shared project keeps project data only in the browser.
@@ -772,11 +969,11 @@ Covers: FR-1, FR-60. Screens: S-03 left panel.
 - Deleting a floor that holds any device, route, obstruction, zone or note is refused, the blocking records are listed, and the floor and its content are unchanged.
 - Hiding layers or clearing the visible plan does not make a floor eligible for deletion.
 - Deleting a building that still has a floor is refused, with its floors listed.
-- The last remaining floor of a project, and the last remaining building, cannot be deleted, and the reason is shown. (CB-04)
+- The last remaining floor of a project, and the last remaining building, cannot be deleted, and the reason is shown. (CB-04 · reading)
 - A deletion requested from a stale view, after content was added to the floor in another browser, is refused with the new content listed.
 - A refused deletion never deletes or moves any other record.
 **Access and restore**
-- A revision restore deletes no building or floor and renames none. (CB-05)
+- A revision restore deletes no building or floor and renames none. (CB-05 · reading)
 
 Notes: Left to later stories, each adding its own blocking record to the deletion rule: a stored plan (story 2.9); survey entries (story 2.16); a saved revision that holds the floor (story 4.1); a floor-level site check with an attempt (story 5.16); a closeout record that holds the floor (story 5.24); a removed device's last location (story 6.11); annotations (story 7.5); a closet (story 7.6); a riser reference (story 7.9). Undoing a floor or building deletion is story 2.18. The plan-switch timing is story 2.11.
 
@@ -846,8 +1043,8 @@ Covers: FR-4 (retained original), FR-6 (retained source PDF), NFR-2, AD-3, AD-4.
 - A signed-in user who is not a member is refused a plan file, even with its exact address.
 - A floor that holds a stored plan cannot be deleted, and the refusal lists the plan.
 **Limits and values**
-- An unfinished upload is discarded after 7 days. (CB-06)
-- A completed file that no record references is removed by a daily clean-up once it is 24 hours old. (CB-07)
+- An unfinished upload is discarded after 7 days. (CB-06 · value)
+- A completed file that no record references is removed by a daily clean-up once it is 7 days old. (CB-07 · value)
 **Access and restore**
 - A revision restore deletes no stored file.
 
@@ -862,17 +1059,17 @@ Covers: FR-7 (base), FR-8 (base), FR-41 (Current and Proposed, base). Screens: S
 **Core behaviour**
 - Two similar devices each have their own unchanging identifier and their own label, shown in the plan and in the equipment list.
 - Every device has a lifecycle value of Proposed, Existing or Removed, and a newly placed device is Proposed.
-- An Editor can set a device to Proposed or Existing, as the prototype's status field allows. (CB-08)
-- A device once saved as Existing is marked as having been recorded as existing, and that mark stays if it is set back to Proposed. (CB-09)
-- A device has an optional "Room or area" text field, shown with its other details. (CB-10)
+- An Editor can set a device to Proposed or Existing, as the prototype's status field allows. (CB-08 · reading)
+- A device once saved as Existing is marked as having been recorded as existing, and that mark stays if it is set back to Proposed. (CB-09 · reading)
+- A device has an optional "Room or area" text field, shown with its other details. (CB-10 · reading)
 - The plan and the equipment list have a basis control with Current installation and Proposed design, and the basis in use is always labelled.
-- Current installation shows Existing devices only, and Proposed design shows Existing and Proposed devices. (CB-11)
+- Current installation shows Existing devices only, and Proposed design shows Existing and Proposed devices. (CB-11 · reading)
 - Choosing a placed device in the equipment list opens its floor with the device selected.
 - Search by identifier, label, name, room or area, and model returns correct results.
 - An Editor can delete a Proposed device that was never recorded as existing, as the prototype allows.
 **Refusals and edge cases**
 - Removed cannot be chosen as a lifecycle value.
-- A device that is or has been Existing has no delete control. (CB-12)
+- A device that is or has been Existing has no delete control. (CB-12 · reading)
 **Access and restore**
 - A revision restore replaces Proposed devices and their positions with the revision's, and leaves the recorded attributes of Existing devices unchanged.
 
@@ -886,7 +1083,7 @@ Covers: NFR-4, SM-5 (large fixture and timings).
 
 **Core behaviour**
 - A script generates the acceptance-size test project through the server's own operations.
-- The project has 10 buildings, 25 plans and 600 devices, of which 150 are cameras with 60 on the busiest plan, and it has obstructions, 20 targeted zones and routes on the busiest plan. (CB-13)
+- The project has 10 buildings, 25 plans and 600 devices, of which 150 are cameras with 60 on the busiest plan, and it has obstructions, 20 targeted zones and routes on the busiest plan. (CB-13 · value)
 - A declared share of its devices is Existing.
 - The same seed produces the same project.
 - The script generates buildings, plans, devices, obstructions, zones and routes only, and takes its counts as options that later stories extend.
@@ -924,7 +1121,7 @@ Covers: FR-10, FR-11, FR-12, FR-13, NFR-4, AD-9. Screens: S-05.
 - Without a custom boundary, the fallback area is stated.
 - If every camera on the floor is left out, the result is shown as Not assessed, not as 100% unseen.
 **Limits and values**
-- While a calculation runs, selection and direct-edit feedback still appear within 250 ms. (CB-14)
+- While a calculation runs, selection and direct-edit feedback still appear within 250 ms. (CB-14 · reading)
 **Access and restore**
 - Obstructions, zones, the analysis boundary and analysis settings are design content that a revision restore returns to the revision's values.
 
@@ -942,14 +1139,14 @@ Covers: FR-14, FR-15, FR-16, NFR-4. Screens: S-05.
 - An area seen below Detect is shown differently from an unseen area.
 - A zone with a target shows its achieved percentage, its deficient area, and one of four results: Target met, Shortfall, Not demonstrated or Uncertain near target.
 - A zone's result uses its full polygon, and any part of the zone that was not assessed stays in the denominator.
-- Target met is shown only when the percentage calculated with every sampling cell on a zone or threshold edge counted as not qualifying still reaches the target. (CB-15)
+- Target met is shown only when the percentage calculated with every sampling cell on a zone or threshold edge counted as not qualifying still reaches the target. (CB-15 · reading)
 - Shortfall is shown only when the percentage with those cells counted as qualifying is still below the target.
 - When neither holds, the calculation is repeated once at half the spacing.
 - If the result is still undecided, it is shown as Uncertain near target with both percentages.
 - Zone results stay visible while a camera is adjusted.
 **Refusals and edge cases**
 - A zone without a target shows no result.
-- When the target is not met and a camera in range of the zone was left out of the calculation, the result is Not demonstrated, not Shortfall. (CB-16)
+- When the target is not met and a camera in range of the zone was left out of the calculation, the result is Not demonstrated, not Shortfall. (CB-16 · reading)
 - Rounding for display never changes a result: 89.96% against a 90% target is not shown as Target met.
 
 Notes: Left to later stories: Not demonstrated and Not assessed for unsupported views (story 7.1).
@@ -972,7 +1169,7 @@ Covers: NFR-4, AD-9, experiment R2. Screens: S-05.
 - A calculation that would exceed its time allowance is shown as Incomplete with the reason.
 - Sampling is never coarsened to finish in time.
 **Limits and values**
-- The time allowance for one calculation is 10 seconds. (CB-17)
+- The time allowance for one calculation is 30 seconds; 10 seconds remains the target that is measured. (CB-17 · value)
 **Access and restore**
 - A revision restore does not bring back saved summaries; they are recalculated from the restored inputs.
 **Evidence to record**
@@ -996,7 +1193,7 @@ Covers: FR-9 (base).
 - A floor's routes are requested when the floor is opened, not when the project is opened.
 **Refusals and edge cases**
 - Deleting a device that a route ends on does not delete the route, as it did in the prototype: the route stays, with that end shown as unassigned and marked for review.
-- A route with an unassigned end is still counted in cable totals and is listed as needing review. (CB-18)
+- A route with an unassigned end is still counted in cable totals and is listed as needing review. (CB-18 · reading)
 **Access and restore**
 - Proposed routes are design content that a revision restore returns to the revision's values.
 
@@ -1018,12 +1215,12 @@ Covers: FR-20 (base), FR-45 (scope on evidence), NFR-5 (site credentials kept ou
 - Two people adding entries to the same device at the same time both succeed, and both entries are shown.
 **Refusals and edge cases**
 - Adding an entry never changes or removes an earlier entry.
-- A saved entry has no edit or delete control; a correction is added as a new entry. (CB-19)
+- A saved entry has no edit or delete control; a correction is added as a new entry. (CB-19 · decision)
 - A retried addition does not create a duplicate entry.
 - A device that holds a survey entry cannot be deleted, and the refusal names the entry.
 - A floor that holds a survey entry cannot be deleted, and the refusal lists the entry.
 **Limits and values**
-- The entry form shows "Do not enter passwords or access codes for the site's systems." (CB-20)
+- The entry form shows "Do not enter passwords or access codes for the site's systems." (CB-20 · value)
 **Access and restore**
 - Survey entries are not design content: a revision restore leaves every entry unchanged.
 
@@ -1073,7 +1270,7 @@ Covers: FR-21 (undo and redo), FR-5 (undo of an alignment), AD-7.
 - Undo never removes or alters a survey entry or a photo.
 - A retried undo or redo is applied once only.
 **Limits and values**
-- Undo and redo cover my last 40 edits made in the open page. (CB-21)
+- Undo and redo cover my last 40 edits made in the open page. (CB-21 · value)
 - Reloading the page or signing out empties both lists.
 
 Notes: Left to later stories: full revision restore, a separate guarded action (story 4.2); undo and a port reassigned by someone else (story 7.8).
@@ -1093,12 +1290,12 @@ Covers: FR-55 (Delete draft).
 - The device's change history is kept whether it stays deleted or is returned.
 - Delete draft on a proposed device that has routes first shows a preview listing each route affected.
 - On confirmation the device is deleted and each route is kept with that end shown as unassigned and marked for review.
-- In that preview a route is deleted with the device only if the user selects it, and only if the route has no survey entry and its other end is also unassigned or on the same device. (CB-22)
+- In that preview a route is deleted with the device only if the user selects it, and only if the route has no survey entry and its other end is also unassigned or on the same device. (CB-22 · reading)
 **Refusals and edge cases**
 - Delete draft is not offered for a device that has a survey entry or photo, or that is or has been Existing.
 - For such a device a "Why can't I delete this?" link lists the reasons.
 - A Delete draft sent from a stale view, after someone else added a survey entry or a route to the device, is refused with the reason, and the device is unchanged.
-- A floor whose only devices are deleted drafts counts as unused under story 2.6. (CB-23)
+- A floor whose only devices are deleted drafts counts as unused under story 2.6. (CB-23 · reading)
 - Undoing a draft deletion is refused, with the reason, if the device's floor has since been deleted.
 - A retried Delete draft is applied once only.
 
@@ -1126,9 +1323,9 @@ Covers: FR-22 (format migration), FR-20 (images from older records), AD-14.
 - A file that is not valid JSON, is truncated, or is not a version 1 or version 2 prototype project file is refused with a plain reason, and no project is created.
 - An import that fails part-way leaves no project in the project list and no stored files.
 - Nothing in the file is dropped without being listed.
-- Importing the same file twice creates two separate projects. (CB-24)
+- Importing the same file twice creates two separate projects. (CB-24 · reading)
 **Limits and values**
-- A file over 100 MiB is refused with the limit named, and no project is created. (CB-25)
+- A file over 100 MiB is refused with the limit named, and no project is created. (CB-25 · value)
 **Access and restore**
 - A revision restore leaves the record of the import and the imported notes and photos unchanged.
 
@@ -1145,7 +1342,7 @@ Covers: FR-66 (self-hosted), NFR-7, AD-1, AD-16, AD-17.
 - The image is built for x64 and arm64 on a glibc base, and it starts on both.
 - A Compose file starts the application and a bundled web server that provides HTTPS.
 - With only a host name set, a browser reaches the sign-in page over HTTPS.
-- The bundled web server obtains and renews a certificate for the configured host name automatically, and that is shown to work. (CB-26)
+- The bundled web server obtains and renews a certificate for the configured host name automatically, and that is shown to work. (CB-26 · decision)
 - The bundled web server uses certificate files the operator supplies instead, and that is shown to work.
 - First-run set-up (story 1.2) works with the set-up code printed in the server output.
 - Two installations started from the same image with separate volumes share no users or projects: an account on one cannot sign in to the other, and a project on one is not listed on the other.
@@ -1169,9 +1366,9 @@ Covers: FR-66 (self-hosted), NFR-5, AD-17.
 - Session cookies are always marked Secure.
 **Refusals and edge cases**
 - Forwarded-protocol and forwarded-address headers are believed only from an address on the trusted list.
-- A request that reaches the application without HTTPS, directly or through a trusted proxy that reports plain HTTP, is refused and serves no page and no data. (CB-27)
+- A request that reaches the application without HTTPS, directly or through a trusted proxy that reports plain HTTP, is refused and serves no page and no data. (CB-27 · reading)
 **Limits and values**
-- By default the trusted list holds the bundled web server only. (CB-28)
+- By default the trusted list holds the bundled web server only. (CB-28 · value)
 
 ### Story 2.23: Deployment key and administrator recovery on your own server
 
@@ -1180,7 +1377,7 @@ As an organisation's administrator, I want the key that protects stored secrets 
 Covers: FR-66 (self-hosted), FR-70 (administrator recovery, self-hosted), NFR-7, AD-17.
 
 **Core behaviour**
-- On first start the server generates the deployment key that story 1.5 and story 1.15 encrypt with, and writes it to a key file in a folder set in the Compose file, separate from the records and files folders. (CB-29)
+- On first start the server generates the deployment key that story 1.5 and story 1.15 encrypt with, and writes it to a key file in a folder set in the Compose file, separate from the records and files folders. (CB-29 · reading)
 - On that first start the server output says where the key file is and that a copy must be kept off the server.
 - After a restart, two-step verification secrets and Settings secrets saved earlier still work.
 - After the containers are removed and recreated, or a newer image is started, the key file is unchanged and those secrets still work.
@@ -1189,7 +1386,7 @@ Covers: FR-66 (self-hosted), FR-70 (administrator recovery, self-hosted), NFR-7,
 - A named administrator account uses the code to set a new password and have its two-step verification reset, and the code works once and expires, as in story 1.13.
 - The issue of the code and its use each appear in the activity log.
 **Refusals and edge cases**
-- With records present and the key file missing, the server refuses to start, names the missing file and generates no new key. (CB-30)
+- With records present and the key file missing, the server refuses to start, names the missing file and generates no new key. (CB-30 · reading)
 
 Notes: Left to later stories: recovery of a whole installation with the key (story 8.7) or without it (story 8.8); the instruction to keep the key off the server, in the published instructions (story 9.1).
 
@@ -1201,7 +1398,7 @@ Covers: NFR-7, AD-16.
 
 **Core behaviour**
 - The self-hosted smoke suite from story 1.1 runs against the image in continuous integration and passes.
-- Its cases are a named list, each naming the story it stands for. (CB-31)
+- Its cases are a named list, each naming the story it stands for. (CB-31 · value)
 - Case: set-up with the printed code creates the first administrator.
 - Case: an invited user signs in with a password and a two-step code, and again after a restart.
 - Case: a Settings secret saved before a restart is still usable after it.
@@ -1232,13 +1429,13 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-3, AD-4, AD-16.
 - The live files folder and the backup location are two separate settings in the Compose file, and the backup location has no default value.
 **Refusals and edge cases**
 - A hash or size mismatch shows Failed with Retry, and the file is not referenced.
-- A stored file whose size or hash no longer matches its record is reported as damaged when it is requested, and is not served as if it were good. (CB-32)
+- A stored file whose size or hash no longer matches its record is reported as damaged when it is requested, and is not served as if it were good. (CB-32 · reading)
 - Every download passes the access gate: a user who is not a member is refused a file even with its exact address.
-- The server refuses to start if the backup location is left unset, naming the missing setting. (CB-33)
+- The server refuses to start if the backup location is left unset, naming the missing setting. (CB-33 · reading)
 - The server refuses to start if both settings point to the same folder, with an explanation.
 - Two installations with separate volumes share no files: a file address from one is refused on the other.
 **Limits and values**
-- An unfinished upload is discarded after 7 days, as on Cloudflare. (CB-06)
+- An unfinished upload is discarded after 7 days, as on Cloudflare. (CB-06 · value)
 **Evidence to record**
 - One set of file-store tests passes against both the Cloudflare file store and the disk file store.
 - The self-hosted smoke suite gains the file cases (upload a plan and a photo, restart, read back whole and by range) and passes against the image.
@@ -1256,13 +1453,13 @@ Covers: FR-66 (self-hosted), NFR-2, NFR-7, AD-2, experiment R12.
 - Records are still there after the containers are stopped and started, and after the containers are removed and recreated from the image.
 - After space is freed on a full volume, saves and uploads succeed again without a restart.
 **Refusals and edge cases**
-- A second application container started on a records volume that is already in use refuses to start, with an explanation, and the first keeps working. (CB-34)
+- A second application container started on a records volume that is already in use refuses to start, with an explanation, and the first keeps working. (CB-34 · reading)
 - When the records volume is full, a save is not acknowledged: the item shows Unsaved with the reason, and nothing already saved is damaged.
 - When the files volume is full, an upload part is refused with the reason, the upload shows Failed with Retry, and no file is referenced.
-- While either volume is full, administrators see a storage-full notice in Administration naming the volume. (CB-35)
+- While either volume is full, administrators see a storage-full notice in Administration naming the volume. (CB-35 · decision)
 **Evidence to record**
-- With saves running continuously, the application container is force-killed 50 times; after each restart every acknowledged save is present and no project fails to open. (CB-36)
-- Experiment R12 is run on a typical virtual-machine disk with the power cut during saves, at least 20 times; no acknowledged save is lost and no project fails to open, and the result is recorded. (CB-37)
+- With saves running continuously, the application container is force-killed 50 times; after each restart every acknowledged save is present and no project fails to open. (CB-36 · value)
+- Experiment R12 is run on a typical virtual-machine disk with the power cut during saves, at least 20 times; no acknowledged save is lost and no project fails to open, and the result is recorded. (CB-37 · value)
 - Experiment R12 is also run with the records volume on a network disk (NFS), and the result is recorded.
 - Storage that loses an acknowledged save or fails to lock is listed as unsupported in the experiment record.
 - If R12 fails on the typical virtual-machine disk, the story is not done; the fallback the architecture names is to require local disk for records.
@@ -1293,7 +1490,7 @@ Covers: UX 5.1, 17.1, decisions D1 and D12, FR-2 (views), FR-21 (save status). S
 - Administrators also see Administration in the account menu.
 - A Viewer sees a "View only" chip in the frame.
 - The view switch offers Design and Installation.
-- Switching the view sets the basis (story 2.10) to Proposed design for Design and Current installation for Installation, and a brief notice says so. (CB-38)
+- Switching the view sets the basis (story 2.10) to Proposed design for Design and Current installation for Installation, and a brief notice says so. (CB-38 · reading)
 - The user can then change the basis.
 - "Members and reviewer links" lists who belongs to the project and each person's role.
 **Refusals and edge cases**
@@ -1329,7 +1526,7 @@ Covers: UX section 6, NFR-3.
 
 **Core behaviour**
 - One component renders every family and value in the UX status reference, each with a text label and an icon or shape.
-- The component also renders an approval state with the values Approved, Changes requested, Bypassed, Awaiting decision and No review. (CB-39)
+- The component also renders an approval state with the values Approved, Changes requested, Bypassed, Awaiting decision and No review. (CB-39 · reading)
 - A status reference page in the development build shows every family and value.
 - The statuses already in the app use the component: save state (story 2.2), lifecycle (story 2.10) and analysis status (story 2.12), including Updating, Not assessed and Uncertain near target.
 - Device markers on the plan show lifecycle by outline: dashed for Proposed, solid for Existing.
@@ -1365,7 +1562,7 @@ Covers: NFR-3, UX section 10, audit findings A2, A3, A5, A6.
 - The text contrast measurements are recorded for every screen that exists at this story.
 - The marker, icon and focus-ring contrast measurements are recorded against both the plan and aerial imagery.
 
-Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1). Screens added later meet these rules under standing rule 5.
+Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1). Screens added later meet these rules under standing rule 5. The axe checks of standing rule 15 cover each new screen from story 1.2 on; this story makes the full pass, including the prototype's existing screens.
 
 ### Story 3.5: Plan workspace regrouped
 
@@ -1385,7 +1582,7 @@ Covers: UX 7.1, decision D5, audit findings A7, A8, A9, A12. Screens: S-03.
 **Refusals and edge cases**
 - Plan alignment handles appear only while the plan is unlocked and Alignment is open, and never in the Installation view.
 **Limits and values**
-- At 1440 × 900 and at 1280 × 720 the analysis strip overlaps neither the dock nor the scale bar. (CB-40)
+- At 1440 × 900 and at 1280 × 720 the analysis strip overlaps neither the dock nor the scale bar. (CB-40 · value)
 
 Notes: Left to later stories: attention marks on floors (story 5.18); Awaiting placement in Place and the left panel (story 6.6); the annotation tools in the Annotate group (story 7.5).
 
@@ -1406,13 +1603,13 @@ Covers: FR-8, FR-68 (Viewer export), NFR-6, audit finding A1. Screens: S-08.
 - Locate opens the device's floor with the device selected.
 - The table has three segments: Placed, Awaiting placement and Historical; the last two are present and each says that it has no records yet.
 - The filtered table exports as a CSV file holding the rows and columns shown.
-- The exported file names the project, the basis and the time of export. (CB-41)
+- The exported file names the project, the basis and the time of export. (CB-41 · value)
 **Refusals and edge cases**
 - A search or filter with no matches says so; it does not show an empty table without explanation.
 - A deleted draft is not listed under Historical, or in any other segment.
 **Limits and values**
 - Search and filter results appear within 1 second on the fixture.
-- While the table is scrolled from its first row to its last, no main-thread task lasts longer than 200 ms. (CB-42)
+- While the table is scrolled from its first row to its last, no main-thread task lasts longer than 200 ms. (CB-42 · value)
 
 Notes: Left to later stories: the tabbed side panel (story 3.7); Historical filled by cancelled and corrected records (story 4.14) and removed devices (story 6.11); Awaiting placement (story 6.6); multi-select for bulk cleanup (story 6.7); the Doors and gates tab (story 7.4).
 
@@ -1456,19 +1653,19 @@ Covers: FR-1 (deletion guard for floors held in revisions), FR-22 (saving, proto
 - A revision opens read-only from the timeline.
 - The snapshot is taken at one saved version of the project. Another person's edit that the server accepted after that version is not in it.
 - After later edits to the working project, the revision's stored file has the same hash as when it was saved.
-- Importing a version 1 or version 2 prototype project file that holds named revisions creates each as a named revision of the project's first scope, with its name and saved date, and each can be opened. (CC-04)
+- Importing a version 1 or version 2 prototype project file that holds named revisions creates each as a named revision of the project's first scope, with its name and saved date, and each can be opened. (CC-04 · reading)
 - After such an import the import review no longer lists named revisions as not imported.
 
 **Refusals and edge cases**
-- If any of the saving user's own edits is still Unsaved or in Conflict, the save is refused and those items are listed. Once none remain, the revision can be saved. (CC-02)
+- If any of the saving user's own edits is still Unsaved or in Conflict, the save is refused and those items are listed. Once none remain, the revision can be saved. (CC-02 · reading)
 - A revision is listed only when its snapshot file is stored and its hash has been verified.
 - A failed snapshot write shows as Failed with Retry and lists no revision.
-- Saving a second revision with a name already used in the scope is refused with the reason. (CC-03)
+- Saving a second revision with a name already used in the scope is refused with the reason. (CC-03 · decision)
 - Deleting a floor that any saved revision contains is refused, and the refusal lists those revisions.
 - A floor deletion sent from a page loaded before a revision containing that floor was saved is refused in the same way, and the floor is unchanged.
 
 **Limits and values**
-- Identifiers read "Rev A", "Rev B" and so on, in the order revisions are saved within the scope, and are never reused. (CC-01)
+- Identifiers read "Rev A", "Rev B" and so on, in the order revisions are saved within the scope, and are never reused. (CC-01 · value)
 
 Notes: Left to later stories: compare and restore (story 4.2); the timeline's other entries, each added by the story that creates the record; revisions of a later scope (story 6.15); revision content in portable backups (story 8.10).
 
@@ -1487,12 +1684,12 @@ Covers: FR-22 (compare, restore), AD-7. Screens: S-20, S-21.
 - A restore leaves unchanged the recorded attributes of every device whose lifecycle is Existing, and every survey note and photo.
 - A draft device deleted since the revision returns with its original identifier.
 - A restore deletes no revision. Revisions saved after the restored one stay in the timeline with unchanged hashes.
-- The person who restored can undo the restore in the same session. (CC-05)
+- The person who restored can undo the restore in the same session. (CC-05 · reading)
 
 **Refusals and edge cases**
 - A restore is one versioned operation. A save that another person based on the state before the restore is returned to them as a conflict, with their value kept on their page.
 - The undo is refused with an explanation if any restored item has been changed since.
-- Restore is not offered for a revision imported from a prototype file. (CC-06)
+- Restore is not offered for a revision imported from a prototype file. (CC-06 · decision)
 
 **Access and restore**
 - A restore changes no installation record: accounts, sessions, invitations, project members, settings and the activity log's earlier entries are the same before and after.
@@ -1543,16 +1740,16 @@ Covers: FR-47. Screens: S-08 Camera models.
 - Two cameras placed from one varifocal template can hold different focal settings within the template's range, and each gives its own coverage and DORI result.
 - Changing a camera's resolution or mode makes its results use that mode's pixels and framing, not the model's maximum.
 - Editing a template afterwards leaves cameras already placed, saved revisions and survey evidence unchanged.
-- A placed camera shows that its template has changed and takes the new values only when an Editor applies them to it. (CC-08)
+- A placed camera shows that its template has changed and takes the new values only when an Editor applies them to it. (CC-08 · reading)
 
 **Refusals and edge cases**
 - A camera placed from a fixed-lens template cannot be given another focal length.
 - A focal setting outside a varifocal template's range is refused.
 - A missing optical value shows as Unknown in the template and on the camera.
-- A result that needs a missing value shows as not assessed with the missing input named; no generic value is substituted. (CC-09)
+- A result that needs a missing value shows as not assessed with the missing input named; no generic value is substituted. (CC-09 · reading)
 
 **Access and restore**
-- A revision restore leaves templates unchanged. A camera that a restore returns holds the optical values recorded in the revision, and shows that its template has changed if it has. (CC-10)
+- A revision restore leaves templates unchanged. A camera that a restore returns holds the optical values recorded in the revision, and shows that its template has changed if it has. (CC-10 · reading)
 
 Notes: Left to later stories: the retest that applying changed values triggers on a tested camera (story 5.14); several views and streams per camera (story 7.1); pan/tilt/zoom ranges (story 7.2).
 
@@ -1602,10 +1799,10 @@ Covers: FR-19 (base). Screens: S-14.
 
 **Refusals and edge cases**
 - A camera with no bitrate recorded is listed as unknown demand, and no camera is counted as zero.
-- With any such camera the total reads Incomplete with the count of those cameras. (CC-11)
+- With any such camera the total reads Incomplete with the count of those cameras. (CC-11 · reading)
 
 **Access and restore**
-- A revision holds the bitrate, recording percentage and retention inputs, and a restore returns them. (CC-12)
+- A revision holds the bitrate, recording percentage and retention inputs, and a restore returns them. (CC-12 · reading)
 
 Notes: Left to later stories: multi-head cameras and display-only views (story 7.1); port and power capacity, and demand with no assigned switch (story 7.7).
 
@@ -1650,10 +1847,10 @@ Covers: FR-24 (decisions by account), FR-69 (decisions name the account). Screen
 
 **Refusals and edge cases**
 - A comment or decision from a Viewer who is not the assignee is refused by the server.
-- Requesting a review when no design reviewer is assigned is refused with a prompt to assign one. (CC-14)
+- Requesting a review when no design reviewer is assigned is refused with a prompt to assign one. (CC-14 · decision)
 - A decision retried with the same operation identifier is recorded once.
 - After an assignee's account is deactivated or removed from the project, its earlier decisions stay listed and its next attempt to decide is refused.
-- A decision submitted by a Viewer whose assignment was reassigned while their page was open is refused with the reason, and the text they typed stays on the page. (CC-15)
+- A decision submitted by a Viewer whose assignment was reassigned while their page was open is refused with the reason, and the text they typed stays on the page. (CC-15 · reading)
 - A decision changes no device record, note or photo, and gives no account any access it did not have.
 
 **Access and restore**
@@ -1672,9 +1869,9 @@ Covers: FR-25, FR-69 (bypasses name the account). Screens: S-22, S-23.
 - A bypass is recorded on that one revision, as Bypassed and never as Approved, with the account, the time and an optional reason.
 - Bypassing one revision changes the state of no other revision.
 - Each saved revision shows one review state, drawn with the approval-state component of story 3.3: No review, Awaiting decision, Approved, Changes requested or Bypassed.
-- The state is No review when nothing is recorded on the revision, Awaiting decision after a request with no decision since, and Approved or Changes requested after the latest decision. (CC-16)
+- The state is No review when nothing is recorded on the revision, Awaiting decision after a request with no decision since, and Approved or Changes requested after the latest decision. (CC-16 · reading)
 - A revision saved later starts at No review.
-- Once a revision is bypassed its state stays Bypassed. A decision recorded afterwards is kept and labelled as made after the bypass. (CC-17)
+- Once a revision is bypassed its state stays Bypassed. A decision recorded afterwards is kept and labelled as made after the bypass. (CC-17 · decision)
 - Continue without approval on an Unavailable assignment records a bypass on the revision being reviewed.
 
 **Refusals and edge cases**
@@ -1694,7 +1891,7 @@ As a client reviewer, I want to open one revision from a link, comment on the pl
 Covers: FR-24 (reviewer links), FR-69 (unverified name in the interface), FR-71 (link events), NFR-5. Screens: S-24.
 
 **Core behaviour**
-- An Editor creates a reviewer link for one saved revision and for the named person assigned as design reviewer. (CC-18)
+- An Editor creates a reviewer link for one saved revision and for the named person assigned as design reviewer. (CC-18 · reading)
 - "Members and reviewer links" lists the project's links with their revision and named reviewer, and an Editor can copy a link from it.
 - A link opens only its revision, read-only, with its floors and comment pins.
 - The reviewer enters a name before anything else, and the page says the name is not verified.
@@ -1713,8 +1910,8 @@ Covers: FR-24 (reviewer links), FR-69 (unverified name in the interface), FR-71 
 - A submission with no name, or over a limit below, is refused with the reason.
 
 **Limits and values**
-- The name is required and is at most 80 characters. (CC-19)
-- A comment is at most 2,000 characters, and a link accepts at most 200 comments. (CC-20)
+- The name is required and is at most 80 characters. (CC-19 · value)
+- A comment is at most 2,000 characters, and a link accepts at most 200 comments. (CC-20 · value)
 
 **Access and restore**
 - A revision restore leaves links and what was recorded through them unchanged.
@@ -1739,14 +1936,14 @@ Covers: FR-24 (revocable, replaceable links), FR-70 (Reviewer links), FR-71, NFR
 **Refusals and edge cases**
 - After a link is revoked or replaced, its next request is refused. Text already typed stays on the page and nothing is recorded.
 - A request through an expired link is refused and nothing is recorded.
-- When the assignment a link serves is reassigned, or the review of its revision is bypassed, the link still shows the revision and accepts no new comment or decision. (CC-21)
-- Reassigning an approval assignment does not revoke an existing reviewer link for the previous reviewer. The link stays read-only until it expires or an Editor revokes or replaces it. (CC-21)
-- The administrator's list of links shows such a link as "Read-only: reviewer reassigned", with the previously named reviewer. (CC-21)
+- When the assignment a link serves is reassigned, or the review of its revision is bypassed, the link still shows the revision and accepts no new comment or decision. (CC-21 · decision)
+- Reassigning an approval assignment does not revoke an existing reviewer link for the previous reviewer. The link stays read-only until it expires or an Editor revokes or replaces it. (CC-21 · decision)
+- The administrator's list of links shows such a link as "Read-only: reviewer reassigned", with the previously named reviewer. (CC-21 · decision)
 - A standard user cannot open the installation's list of links.
 
 **Limits and values**
-- A revoked or replaced link reads "This link is no longer valid", and an expired one reads "This link has expired". (CC-23)
-- After 20 requests with invalid link tokens from one network address within 15 minutes, further link requests from that address are refused for 1 minute, doubling after each further failure up to 15 minutes: the figures story 1.3 uses for failed sign-ins. (CC-22)
+- A revoked or replaced link reads "This link is no longer valid", and an expired one reads "This link has expired". (CC-23 · value)
+- After 20 requests with invalid link tokens from one network address within 15 minutes, further link requests from that address are refused for 1 minute, doubling after each further failure up to 15 minutes: the figures story 1.3 uses for failed sign-ins. (CC-22 · value)
 
 Notes: Left to later stories: a link whose revision is superseded (story 4.13); whose scope is closed (story 5.25); whose project is archived (story 6.16); links cancelled by a restored project (story 8.5) or a recovered installation (story 8.7).
 
@@ -1759,7 +1956,7 @@ Covers: FR-25 (issuing without approval), FR-26, FR-55 (an issued device is not 
 **Core behaviour**
 - An Editor issues a saved revision of the active scope in three steps: choose the revision, then record an approval, request a review or bypass, then confirm that it becomes the current reference.
 - The three choices in the second step are offered with equal weight, and each records what story 4.8 or story 4.9 records.
-- A revision can be issued with its review bypassed, or while a requested review is still awaiting a decision. (CC-24)
+- A revision can be issued with its review bypassed, or while a requested review is still awaiting a decision. (CC-24 · reading)
 - After issuing, the frame's issued-design chip shows the revision's identifier, its name, the issue date and the scope.
 - The chip opens the issued design read-only.
 - The issued design's review state shows separately from Current, as Approved, Changes requested, Awaiting decision or Bypassed.
@@ -1788,13 +1985,13 @@ Covers: FR-24 (decisions kept), FR-26 (another fixed reference, comparison), FR-
 - When Revision B is made current after A, A is marked Superseded and links to the current one.
 - A's snapshot, comments and decisions can still be opened, and its hash is unchanged.
 - B shows no approval because A was approved: B's review state comes only from requests, decisions and bypasses recorded on B.
-- A superseded revision can be made current again. The history then shows both of its designations, and the revision that was current is marked Superseded. (CC-25)
+- A superseded revision can be made current again. The history then shows both of its designations, and the revision that was current is marked Superseded. (CC-25 · reading)
 - The issued design can be compared with the working project in the compare view of story 4.2.
 - After the working layout is edited, the issued snapshot's hash and its decisions and bypass are unchanged.
 
 **Refusals and edge cases**
-- A reviewer link to a superseded revision still shows that revision and accepts no new comment or decision. (CC-21)
-- A decision recorded by an account on a superseded revision is kept and labelled as made after it was superseded. (CC-27)
+- A reviewer link to a superseded revision still shows that revision and accepts no new comment or decision. (CC-21 · decision)
+- A decision recorded by an account on a superseded revision is kept and labelled as made after it was superseded. (CC-27 · reading)
 
 Notes: Left to later stories: proof that field records are untouched by a change of reference (story 5.4 and story 5.6).
 
@@ -1810,7 +2007,7 @@ Covers: FR-55 (cancellation, correction), UX decision D8. Screens: S-04 device m
 - A proposed device in an issued design is cancelled with a short reason. The issued snapshot still shows it, and the compare view shows it as cancelled.
 - A proposed device that was never issued and carries a survey note or photo is cancelled with a reason. Its identifier, history, notes and photos stay findable.
 - A cancelled device leaves the proposed plan, the proposed schedule, the estimate total and the capacity totals.
-- The cancelled device's estimate line is kept with its entered quantity and cost in a "Cancelled" group outside the total. An Editor can tick it as a committed cost, and it then counts in the total under that label. (CC-28)
+- The cancelled device's estimate line is kept with its entered quantity and cost in a "Cancelled" group outside the total. An Editor can tick it as a committed cost, and it then counts in the total under that label. (CC-28 · reading)
 - An Existing device entered in error or twice is corrected with a reason and, for a duplicate, a reference to the record that is kept. The correction is recorded as a correction, not as a removal.
 - A cancellation or correction records the account, the time and the reason.
 - Cancelled and corrected records are listed under Historical in Equipment with their reason, and are found by search.
@@ -1818,7 +2015,7 @@ Covers: FR-55 (cancellation, correction), UX decision D8. Screens: S-04 device m
 
 **Refusals and edge cases**
 - A proposed device that is eligible for Delete draft is offered Delete draft, not Cancel proposal.
-- A cancellation, correction or reversal with no reason is refused. (CC-29)
+- A cancellation, correction or reversal with no reason is refused. (CC-29 · reading)
 - A cancellation or correction based on a stale view of the device is returned as a conflict.
 
 **Access and restore**
@@ -1842,8 +2039,8 @@ Covers: FR-33 (Design preset contents), FR-34 (fixed source and cutoff), FR-69 (
 - The package contains the review requests, decisions and bypasses recorded on the revision.
 - Every device identifier on a plan sheet matches its row in the equipment schedule.
 - Design content is taken from the revision's snapshot. Review entries are separate records added over time, and the package prints those recorded up to its cutoff.
-- The cutoff is the time generation started. (CC-30)
-- Survey notes, measurements and photos are printed as recorded up to the time the revision was saved. (CC-31)
+- The cutoff is the time generation started. (CC-30 · value)
+- Survey notes, measurements and photos are printed as recorded up to the time the revision was saved. (CC-31 · reading)
 - A decision made through a reviewer link is printed with its name marked not verified. A decision made by an account is printed with the account name, without that mark.
 - At this story the generated PDF is saved by the browser, no edition is kept on the server, and the cover reads "Not retained".
 
@@ -1903,11 +2100,11 @@ Covers: FR-33 (volumes, limits), FR-34 (failed generation visible and retryable)
 - A size or hash mismatch shows Failed with Retry.
 - A failed edition shows as Failed, is not listed as an edition, and can be retried.
 - After a dropped connection the upload resumes from the last accepted part.
-- When the volumes generated so far reach the edition limit, generation stops, the edition shows Failed with the reason, and the volumes already stored are discarded. (CC-32)
+- When the volumes generated so far reach the edition limit, generation stops, the edition shows Failed with the reason, and the volumes already stored are discarded. (CC-32 · reading)
 - That failure offers a smaller floor selection or fewer optional contents. Nothing is left out silently to fit.
 - If the tab is closed during generation or upload, no edition is listed, generation can be started again, and the parts already stored are discarded as an unfinished upload under story 2.9.
 - If the person's role changes to Viewer or their membership is removed during upload, the next part is refused, the stored parts are discarded and no edition is listed.
-- If the session ends between parts, the stored parts are kept, and after the same account signs in again in the open tab the upload resumes from the last accepted part. (CC-33)
+- If the session ends between parts, the stored parts are kept, and after the same account signs in again in the open tab the upload resumes from the last accepted part. (CC-33 · reading)
 
 **Limits and values**
 - A volume is at most 250 pages and 100 MiB.
@@ -1916,7 +2113,7 @@ Covers: FR-33 (volumes, limits), FR-34 (failed generation visible and retryable)
 
 **Evidence to record**
 - Generation time and upload time are reported separately.
-- On the acceptance-size project from story 2.11, generating a complete edition takes no more than 5 minutes, not counting upload. (CC-34)
+- On the acceptance-size project from story 2.11, generating a complete edition takes no more than 5 minutes, not counting upload. (CC-34 · reading)
 
 Notes: Experiments R1 and R6 were run early and their results are in the architecture. The 5-minute timing here is a development measurement; the acceptance run is story 10.4. Left to later stories: counting editions toward project storage usage, and abandoned parts not counting (story 8.14).
 
@@ -1969,9 +2166,9 @@ Covers: NFR-3, FR-61 (shown where installers start work), UX 8.1, decisions D3 a
 - When nothing is issued for the active scope the chip reads "Not issued" with the work scope, and tapping it explains that no design has been issued.
 
 **Limits and values**
-- The choice between field shell and desktop workspace on a tablet or laptop is remembered in that browser. (CD-01)
+- The choice between field shell and desktop workspace on a tablet or laptop is remembered in that browser. (CD-01 · reading)
 - Every control is at least 44 px high, form text is at least 16 px, and every input has a visible label.
-- At 200% zoom the top row, the chip, the bottom navigation and every form field can be reached and operated, no label or value is cut off, and no form scrolls sideways. (CD-02)
+- At 200% zoom the top row, the chip, the bottom navigation and every form field can be reached and operated, no label or value is cut off, and no form scrolls sideways. (CD-02 · value)
 
 **Access and restore**
 - A Viewer sees a "View only" chip in the field shell.
@@ -2022,7 +2219,7 @@ Covers: FR-2 (views), FR-26, FR-41 (base), FR-61, UX 5.3, decision D2. Screens: 
 **Refusals and edge cases**
 - When nothing is issued for the active scope, the device sheet reads "Not issued — no requirements" and shows no draft values as requirements.
 - When nothing is issued, "Compare with issued" and the issued reference toggle are unavailable and say why.
-- A device added after the design was issued reads "Not in the issued design" in the comparison. (CD-03)
+- A device added after the design was issued reads "Not in the issued design" in the comparison. (CD-03 · value)
 
 **Evidence to record**
 - On a real iPhone and a real Android phone, the device sheet, the comparison and the issued reference toggle are opened and read.
@@ -2040,7 +2237,7 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - The device sheet of an in-scope device has two separate marks, Installed and Configured.
 - Setting a mark records the account's name, the time and the active scope. A device holds at most one Installed and one Configured mark for each work scope.
 - Recording Installed on a Proposed device sets its lifecycle value from story 2.10 to Existing, and it appears in Current installation at its recorded location.
-- Configured can be set before Installed. The device then shows a neutral notice that it is marked configured but not installed, and nothing is blocked. (CD-04)
+- Configured can be set before Installed. The device then shows a neutral notice that it is marked configured but not installed, and nothing is blocked. (CD-04 · reading)
 - When the first Installed mark of a scope is recorded while nothing is issued for that scope, the mark is saved at once and the project shows the warning "Work started with no issued design".
 - The warning carries a link that takes an Editor to issue a design (story 4.12), and it goes away when a design is issued for the scope.
 - The field shell's filtered lists gain "Not installed": the in-scope devices with no Installed mark in the active scope.
@@ -2050,7 +2247,7 @@ Covers: FR-30 (work recorded), FR-26 (work started with nothing issued), FR-55 (
 - When a second person sets a mark that is already set in the scope, no second entry is created. The first name and time stay, and the second person sees who set it.
 
 **Limits and values**
-- The warning is shown on the Overview, beside the frame's issued-design chip and beside the field shell's chip. (CD-05)
+- The warning is shown on the Overview, beside the frame's issued-design chip and beside the field shell's chip. (CD-05 · value)
 
 **Access and restore**
 - A Viewer sees the warning without the link to issue.
@@ -2146,7 +2343,7 @@ As a designer, I want the Design package to list the checks expected for each pl
 Covers: FR-33 (Design preset: scoped checklist expectations), FR-29 (earlier wording preserved), FR-34 (packages come from a fixed source). Screens: S-37.
 
 **Core behaviour**
-- Saving a named revision records, in its snapshot, the checklist definitions in force at that moment and the checks scoped to each planned device. (CD-07)
+- Saving a named revision records, in its snapshot, the checklist definitions in force at that moment and the checks scoped to each planned device. (CD-07 · reading)
 - The Design package generated from a revision lists, for each planned device identifier, its scoped checks with task, expected result and required or optional status.
 - The checklist pages use the same device identifiers as the equipment schedule.
 - Generating the package again after the working definitions have changed lists the same expectations as before.
@@ -2172,9 +2369,9 @@ Covers: FR-30, FR-29 (Needs definition cannot pass), FR-44 (the criteria tested 
 
 **Refusals and edge cases**
 - A check showing Needs definition offers no Pass.
-- A measured value must be a number, in the unit the check defines. Anything else is refused with the reason. (CD-08)
-- Where a measured check defines a tolerance and the value is outside it, Pass is not offered. (CD-09)
-- An outcome submitted against a definition that changed after the page loaded is not recorded. It is returned to the technician with the new definition beside what they entered. (CD-10)
+- A measured value must be a number, in the unit the check defines. Anything else is refused with the reason. (CD-08 · reading)
+- Where a measured check defines a tolerance and the value is outside it, Pass is not offered. (CD-09 · reading)
+- An outcome submitted against a definition that changed after the page loaded is not recorded. It is returned to the technician with the new definition beside what they entered. (CD-10 · reading)
 
 Notes: Left to later stories: attempts, retests and corrections (story 5.10); photos as evidence (story 5.11); refusing a result when no scope is active (story 5.25).
 
@@ -2189,8 +2386,8 @@ Covers: FR-31, FR-30, FR-44 (original attempts preserved), FR-55 (Delete draft e
 - Earlier attempts are listed beneath the check.
 - A passing retest leaves the earlier failure and its evidence in the list.
 - After a check's definition changes, earlier attempts still show the wording and expected result they were recorded against.
-- An attempt entered by mistake is corrected by a correction note with a required reason. The original entry stays visible, marked corrected, and is no longer counted. (CD-11)
-- A correction made by mistake is reversed with a required reason. The attempt is counted again and both entries stay on record. (CD-12)
+- An attempt entered by mistake is corrected by a correction note with a required reason. The original entry stays visible, marked corrected, and is no longer counted. (CD-11 · reading)
+- A correction made by mistake is reversed with a required reason. The attempt is counted again and both entries stay on record. (CD-12 · reading)
 - A proposed device that was never issued and has a test attempt can be cancelled with a reason under story 4.14, and its attempts stay findable under Historical.
 
 **Refusals and edge cases**
@@ -2215,7 +2412,7 @@ Covers: FR-31 (photos and required evidence), FR-20 (prompts in the field), NFR-
 - "Take photo" opens the camera and "Choose photo" opens the library.
 - A photo taken from a check is attached to that attempt and shows the Uploading, Saved and Failed states of story 2.17.
 - Where a check requires a photo, Pass is offered only once a photo has been attached to the attempt.
-- Where a check requires a photo, a Pass recorded while the photo is Uploading or Failed reads "Pass pending evidence" and is not counted as passed until the photo is Saved. (CD-13)
+- Where a check requires a photo, a Pass recorded while the photo is Uploading or Failed reads "Pass pending evidence" and is not counted as passed until the photo is Saved. (CD-13 · decision)
 - The field note form offers the optional prompts of story 2.16, and they can be skipped.
 - The field note form and the explanation and reason fields of a check show story 2.16's warning against entering passwords or access codes for the site's systems.
 
@@ -2237,7 +2434,7 @@ Covers: experiment R4, NFR-2, NFR-3.
 - A photo at the size limit, taken on a phone, reaches Saved over a slow connection that drops twice, resuming each time from the last accepted part.
 
 **Limits and values**
-- The test photo is 25 MiB, the upload is throttled to 400 kbit/s, and the connection is dropped twice during the upload. (CD-15)
+- The test photo is 25 MiB, the upload is throttled to 400 kbit/s, and the connection is dropped twice during the upload. (CD-15 · value)
 
 **Evidence to record**
 - Experiment R4 is run on a real iPhone and a real Android phone under those conditions.
@@ -2256,11 +2453,11 @@ Covers: FR-28, FR-44 (follow-up flags), FR-55 (follow-up after a reversed Instal
 - Moving or re-aiming a tested camera, or changing its height or lens, keeps the old attempt and flags its placement, mounting and image checks Retest required.
 - A recorded change of equipment or configuration flags that device's settings and function checks Retest required.
 - A recorded route change flags the link checks of the devices at the route's ends Retest required.
-- A recorded change to a shared switch or power supply lists the devices whose routes end on it as affected and flags their link and function checks Needs review. (CD-16)
+- A recorded change to a shared switch or power supply lists the devices whose routes end on it as affected and flags their link and function checks Needs review. (CD-16 · reading)
 - The same list states that other effects are uncertain and need review.
 - After an actual move, coverage and other results on the Current basis are recalculated for the new position.
 - Reversing an Installed mark flags the device's Configured mark, its recorded check results and its evidence Needs review, linked to the reversal.
-- Changing an obstruction or a zone's coverage target recalculates the analysis and flags Needs review each check that names that zone, range or obstruction. (CD-17)
+- Changing an obstruction or a zone's coverage target recalculates the analysis and flags Needs review each check that names that zone, range or obstruction. (CD-17 · reading)
 - Flag chips are shown on the device sheet and in the inspector header.
 
 **Refusals and edge cases**
@@ -2280,7 +2477,7 @@ Covers: FR-44, FR-28 (additional affected checks), FR-31 (a definition change re
 
 **Core behaviour**
 - Changing a check's expected result after a Pass keeps the attempt and flags the check Retest required.
-- Removing the expected result shows Needs definition, and the check is no longer counted as passed. (CD-18)
+- Removing the expected result shows Needs definition, and the check is no longer counted as passed. (CD-18 · reading)
 - Applying a changed camera-model template's values (story 4.4) to an installed, tested camera flags its image checks Retest required, linked to that change.
 - An Editor can add further affected checks to a change, with actor, time and reason.
 - An Editor can record why a suggested check is unaffected, with actor, time and reason, which removes that flag.
@@ -2358,11 +2555,11 @@ Covers: FR-46 (records and dispositions), FR-55 (Delete draft eligibility). Scre
 - An issue's status is Open or Resolved. Its disposition in the active scope is kept separately: none, Include now or Deferred. A deferred issue is Open.
 - Include now lets an Editor select the work, the checks and the estimate lines (story 4.5) added to the active scope for the issue.
 - Defer requires a short reason. Owner and due date are optional.
-- Resolve is available only when a corrective-work entry on the issue (what was done, by whom and when) and a current passing attempt or other current evidence are recorded. (CD-19)
+- Resolve is available only when a corrective-work entry on the issue (what was done, by whom and when) and a current passing attempt or other current evidence are recorded. (CD-19 · reading)
 - Resolving keeps the original failure and links the new attempt.
-- A resolved or deferred issue can be reopened with a reason, and its history is kept. (CD-20)
+- A resolved or deferred issue can be reopened with a reason, and its history is kept. (CD-20 · decision)
 - A mistaken or duplicate issue is corrected with a reason, actor and time. A duplicate links to the issue kept, and a corrected issue stays listed with its reason.
-- A correction made by mistake is reversed with a reason, and both entries stay on record. (CD-12)
+- A correction made by mistake is reversed with a reason, and both entries stay on record. (CD-12 · reading)
 - The issue page shows a timeline of the original failure, attempts, corrections and resolution.
 
 **Refusals and edge cases**
@@ -2384,7 +2581,7 @@ Covers: FR-46 (deferred faults stay visible), FR-33 (Design preset: open issues)
 
 **Core behaviour**
 - Open issues, deferred ones included, appear in the remaining-work list and in the Overview's count.
-- The project list shows, for each project, an attention count: the number of open issues, deferred ones included, plus the checks flagged Needs review, Retest required or Needs definition in the active scope. (CD-21)
+- The project list shows, for each project, an attention count: the number of open issues, deferred ones included, plus the checks flagged Needs review, Retest required or Needs definition in the active scope. (CD-21 · value)
 - The field shell's bottom navigation gains Issues.
 - Saving a named revision records the open issues as they stand at that moment.
 - The Design package of story 4.15 lists the issues that were open when its revision was saved, each with its identifier, linked devices and whether it was deferred.
@@ -2429,16 +2626,16 @@ Covers: FR-64 (runs and their timing), FR-44 (a change during a run flags the st
 - A run in progress shows elapsed and planned time, has no outcome and is not listed as an attempt.
 - Stages can be run in any order.
 - Starting a run while required checks, retests or open issues remain in the covered scope, or while an earlier stage has no Pass, shows a warning listing them, and Start remains available.
-- Recording an end before the planned duration has elapsed is a stop and asks why: "The system failed to perform", with a required explanation, or "Another reason", with a required reason. The run and its reason are kept. (CD-22)
-- A run uses the definition in force when it started. Its covered devices are the Existing devices in the covered selection at that moment. (CD-23)
+- Recording an end before the planned duration has elapsed is a stop and asks why: "The system failed to perform", with a required explanation, or "Another reason", with a required reason. The run and its reason are kept. (CD-22 · reading)
+- A run uses the definition in force when it started. Its covered devices are the Existing devices in the covered selection at that moment. (CD-23 · reading)
 - Editing the definition or target during a run applies to later runs, and the open run shows a notice that the definition has changed.
-- A covered device that is moved, changed or cancelled during a run appears on that run as an entry and flags the stage Needs review, linked to the run. The run is not stopped. (CD-24)
+- A covered device that is moved, changed or cancelled during a run appears on that run as an entry and flags the stage Needs review, linked to the run. The run is not stopped. (CD-24 · reading)
 - After such a change a participant records Continue or Restart with a reason.
 - Restart ends the current run as stopped for another reason and starts a new run.
 
 **Refusals and edge cases**
-- A start or end time can be entered for an earlier moment and cannot be in the future. An end must be later than its start. (CD-25)
-- A stage has at most one open run. A second start on that stage is refused, showing who started the open run and when. (CD-26)
+- A start or end time can be entered for an earlier moment and cannot be in the future. An end must be later than its start. (CD-25 · decision)
+- A stage has at most one open run. A second start on that stage is refused, showing who started the open run and when. (CD-26 · reading)
 
 **Access and restore**
 - A revision restore leaves runs unchanged.
@@ -2459,7 +2656,7 @@ Covers: FR-64 (downtime log and availability). Screens: S-17.
 - An uncounted entry stays visible and does not change availability.
 - An entry with no end reads "continuing". It counts up to the present while the run is open and up to the run's end once it has ended.
 - A counted entry counts for its duration multiplied by the share of the run's covered devices it affected.
-- Where counted entries overlap, a device affected by more than one is counted once for the time they overlap. (CD-39)
+- Where counted entries overlap, a device affected by more than one is counted once for the time they overlap. (CD-39 · reading)
 - Availability is the time not down divided by the run's elapsed time, as a percentage, shown beside the target and the totals of counted and uncounted downtime.
 - Availability is marked Provisional while the run is open.
 
@@ -2469,7 +2666,7 @@ Covers: FR-64 (downtime log and availability). Screens: S-17.
 - There is no field in which to type availability.
 
 **Limits and values**
-- Availability is shown to two decimal places. (CD-27)
+- Availability is shown to two decimal places. (CD-27 · value)
 - A 60-minute run covering four devices, with one counted 12-minute outage affecting one of them, shows 95.00%.
 
 **Access and restore**
@@ -2482,7 +2679,7 @@ As a designer, I want each ended run to become a Pass or a Fail by rule, so that
 Covers: FR-64 (outcomes; required stages in remaining work), FR-44 (a recorded outcome is not rewritten).
 
 **Core behaviour**
-- When a run's end is recorded after the full planned duration, it becomes one attempt: Pass if availability, before rounding, is at or above the target, and Fail if it is below. (CD-27)
+- When a run's end is recorded after the full planned duration, it becomes one attempt: Pass if availability, before rounding, is at or above the target, and Fail if it is below. (CD-27 · value)
 - A run stopped because the system failed to perform becomes an attempt with outcome Fail and its explanation.
 - A run stopped for another reason is kept with its log and reason, has no outcome, is not an attempt, and leaves the stage's outcome as it was.
 - A new run after a Fail is a new attempt, and the earlier attempt and its log are kept.
@@ -2496,7 +2693,7 @@ Covers: FR-64 (outcomes; required stages in remaining work), FR-44 (a recorded o
 - A Fail does not close or resolve a linked issue.
 - Changing the definition or target after a run has an outcome does not change that outcome.
 - After a run has ended, its entries can be changed only by a correction with a reason, actor and time.
-- Such a correction does not rewrite the recorded outcome: the attempt shows the recalculated availability beside the recorded one, and the stage is flagged Needs review. (CD-28)
+- Such a correction does not rewrite the recorded outcome: the attempt shows the recalculated availability beside the recorded one, and the stage is flagged Needs review. (CD-28 · reading)
 
 **Access and restore**
 - A revision restore leaves outcomes unchanged.
@@ -2542,7 +2739,7 @@ Covers: FR-32 (fixed closeout record), FR-42 (closeout), FR-64 (runs at closeout
 - Closing is refused while the person closing has Unsaved or Conflict items, and those items are listed.
 - A failed write of the closeout record shows Failed with Retry, and the scope stays In progress.
 - When two Editors close the scope at the same time, one succeeds and the other sees a conflict. There is one closeout record.
-- A required stage's run still open at closing is stopped with the reason "Scope closed", has no outcome, and is listed in the closeout record as outstanding. (CD-29)
+- A required stage's run still open at closing is stopped with the reason "Scope closed", has no outcome, and is listed in the closeout record as outstanding. (CD-29 · reading)
 - An optional stage's run still open at closing is stopped with the reason "Scope closed" and listed in the record as not completed. It does not make a Completed scope show outstanding items.
 
 **Access and restore**
@@ -2560,16 +2757,16 @@ Covers: FR-32, FR-42 (stale saves), FR-24 (reviewer links after closing), FR-45 
 **Core behaviour**
 - After a project's only scope is closed, the project has no active scope. The frame and the field shell chip show the closed scope's name and state.
 - With no active scope an Editor can raise an issue. It is recorded with no scope.
-- With no active scope an Editor can defer, resolve, reopen and correct an issue. Include now is unavailable and says why. (CD-30)
+- With no active scope an Editor can defer, resolve, reopen and correct an issue. Include now is unavailable and says why. (CD-30 · reading)
 - With no active scope, a design edit, an Installed or Configured mark, a test result and a new revision are each refused with "not saved: no active scope — reopen first".
-- Design edits here are changes to buildings, floors, plans, devices, routes, zones, obstructions, analysis settings, checklist and site-check definitions, the reliability definition and the estimate. (CD-31)
-- With no active scope, a field change, a survey or field note or photo, a run start, a revision restore, issuing or designating a design, and cancelling a proposal or correcting a record under story 4.14 are refused in the same way. (CD-32)
+- Design edits here are changes to buildings, floors, plans, devices, routes, zones, obstructions, analysis settings, checklist and site-check definitions, the reliability definition and the estimate. (CD-31 · reading)
+- With no active scope, a field change, a survey or field note or photo, a run start, a revision restore, issuing or designating a design, and cancelling a proposal or correcting a record under story 4.14 are refused in the same way. (CD-32 · decision)
 - With no active scope, reading, exporting, generating a package from an already saved revision and recording a review decision on a saved revision remain available.
 
 **Refusals and edge cases**
-- A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried. (CD-38)
-- Closing a scope does not by itself change a reviewer link to one of that scope's design revisions. (CD-33)
-- Every other restriction on a reviewer link still applies after closing: a link whose revision is superseded, whose review is bypassed or whose assignment was reassigned stays read-only under story 4.11 and story 4.13. (CD-33)
+- A save of work, results, photos or issues for the closed scope, sent from a tab that was open before closing, is refused and kept for review as "not saved: scope closed". It is not retried. (CD-38 · value)
+- Closing a scope does not by itself change a reviewer link to one of that scope's design revisions. (CD-33 · reading)
+- Every other restriction on a reviewer link still applies after closing: a link whose revision is superseded, whose review is bypassed or whose assignment was reassigned stays read-only under story 4.11 and story 4.13. (CD-33 · reading)
 
 Notes: Left to later stories: refusing a removal (story 6.11) and a restore of a removed device (story 6.13) with no active scope; reopening into a new scope (story 6.15); warranty records (story 6.17) and service-visit records (story 6.18), which stay editable with no active scope; Start service visit (story 6.19).
 
@@ -2584,7 +2781,7 @@ Covers: FR-23 and FR-24 (final acceptance of a closeout record), FR-25, FR-69 (a
 - An Editor can create a reviewer link to the closeout record under the rules of story 4.10 and story 4.11, and the named reviewer comments and decides through it.
 - An Editor can bypass final acceptance. The bypass is recorded on that closeout record as Bypassed, with the account, the time and an optional reason.
 - Decisions, comments and bypasses are separate entries added beside the closeout record. The record's stored file and hash are unchanged by them.
-- Final acceptance is recorded after closing, with no active scope needed, and is never a condition of closing. (CD-34)
+- Final acceptance is recorded after closing, with no active scope needed, and is never a condition of closing. (CD-34 · reading)
 
 **Refusals and edge cases**
 - A decision or a bypass changes neither the scope's Completed or Closed with outstanding items state nor any outcome.
@@ -2610,7 +2807,7 @@ Covers: FR-33 (Closeout preset), FR-34 (generated from a fixed closeout), FR-64 
 - For each reliability run the package shows its dates, planned and actual duration, downtime log with the devices affected, availability, target and outcome.
 - A decision made through a reviewer link is printed with its name marked not verified.
 - A package generated after a later decision is a new edition with its own cutoff, and the earlier edition is unchanged.
-- Before closing, a preview is generated from a fixed preview record written from one consistent point in the same form as the closeout record. (CD-35)
+- Before closing, a preview is generated from a fixed preview record written from one consistent point in the same form as the closeout record. (CD-35 · reading)
 - A preview is labelled "Draft, In progress" on every page and closes nothing.
 
 **Refusals and edge cases**
@@ -2643,10 +2840,10 @@ Covers: FR-21, FR-42, NFR-2, NFR-3. Screens: S-F7.
 
 **Refusals and edge cases**
 - A pending entry refused because the technician's access was removed, reduced or deactivated stays visible as "not saved: access changed", can be copied, and is not retried.
-- A mark or attempt sent from a stale or reconnecting page onto a device that was cancelled or corrected meanwhile is refused and kept for review as "not saved: device cancelled or corrected". The device is unchanged. (CD-36)
+- A mark or attempt sent from a stale or reconnecting page onto a device that was cancelled or corrected meanwhile is refused and kept for review as "not saved: device cancelled or corrected". The device is unchanged. (CD-36 · value)
 
 **Limits and values**
-- The per-field comparison shows without sideways scrolling on a screen 360 px wide. (CD-37)
+- The per-field comparison shows without sideways scrolling on a screen 360 px wide. (CD-37 · value)
 
 **Evidence to record**
 - After a reload on a real iPhone and a real Android phone, every entry that showed Saved is still present.
@@ -2711,11 +2908,12 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 
 **Limits and values**
 - An inventory file can be at most 10 MiB.
-- An inventory file can hold at most 5,000 data rows. (CE-01)
+- An inventory file can hold at most 5,000 data rows. (CE-01 · value)
+- The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server, before it parses the workbook. (CE-50 · value)
 
 **Evidence to record**
 - The fixture script of story 2.11 also produces a 600-row inventory as .xlsx and as .csv.
-- While the 600-row file is parsed, Cancel and the step controls respond within 250 ms. (CE-02)
+- While the 600-row file is parsed, Cancel and the step controls respond within 250 ms. (CE-02 · reading)
 - The preview of the 600-row file appears within 30 seconds of choosing the file, in each of three runs, recorded as a development measurement.
 
 Notes: Left for later: server-side enforcement of file limits and the usage display (story 8.14); the acceptance measurement of the 30-second target (story 10.2).
@@ -2753,12 +2951,12 @@ Covers: FR-58 (matching and preview), FR-62 (row review). Screens: S-09 step 3.
 **Core behaviour**
 - Step 3 groups rows as New, Changed, Unchanged and Needs review, with counts.
 - A Changed row shows the current and incoming values side by side, with the source of each.
-- A row matches an existing device by a valid Site Survey Design ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03)
-- A row with neither identifier matches the device that an earlier import of this project created from a row with identical mapped values. With no such device it is listed as New. (CE-04)
-- A row matched this way is listed as Unchanged only when its mapped values equal the device's current record. Otherwise it is listed as Changed and shows the differences, like any other matched row. (CE-04)
+- A row matches an existing device by a valid Site Survey Design ID for this property, or by a source asset ID that is unique in the file and in the project. (CE-03 · reading)
+- A row with neither identifier matches the device that an earlier import of this project created from a row with identical mapped values. With no such device it is listed as New. (CE-04 · reading)
+- A row matched this way is listed as Unchanged only when its mapped values equal the device's current record. Otherwise it is listed as Changed and shows the differences, like any other matched row. (CE-04 · reading)
 - Names, addresses and location hints never establish identity by themselves.
 - Re-uploading the same inventory when no device has changed since the import lists every row as Unchanged, including rows that have no identifier.
-- Rows are ticked explicitly. A group-level select is offered for New and Unchanged rows without errors. (CE-05)
+- Rows are ticked explicitly. A group-level select is offered for New and Unchanged rows without errors. (CE-05 · reading)
 - Site-confirmed values are locked by default. Replacing one takes a deliberate choice on that row, with a reason.
 
 **Refusals and edge cases**
@@ -2821,7 +3019,7 @@ Covers: FR-56, FR-57, FR-8 (Awaiting placement). Screens: S-08, S-F5, S-F6.
 - The technician places the record with the crosshair on a chosen floor. It keeps its identifier and import history, and no second device is created.
 - A device found on site that was not in the spreadsheet can be added from the same screen as an Existing device.
 - A project with no spreadsheet can be surveyed by adding every device by hand.
-- The field shell's filtered lists gain "Awaiting placement" and "Not site-confirmed". (CE-06)
+- The field shell's filtered lists gain "Awaiting placement" and "Not site-confirmed". (CE-06 · value)
 
 **Refusals and edge cases**
 - Placing sets no Installed mark, confirms no other value and passes no check.
@@ -2841,8 +3039,8 @@ Covers: FR-59. Screens: S-10.
 - Confirming removes only the eligible records that were previewed.
 - Removing a record removes no other device, cable, note, photo or issue.
 - The outcome is listed per record.
-- The cleanup, with its per-record outcomes, actor and time, is recorded in the project's change log, where any member of the project can open it. (CE-07)
-- The cleanup can be undone by the person who ran it, in the same session. (CE-08)
+- The cleanup, with its per-record outcomes, actor and time, is recorded in the project's change log, where any member of the project can open it. (CE-07 · reading)
+- The cleanup can be undone by the person who ran it, in the same session. (CE-08 · reading)
 - A record removed by a cleanup is not listed under Historical.
 
 **Refusals and edge cases**
@@ -2854,7 +3052,7 @@ Covers: FR-59. Screens: S-10.
 - A retried cleanup is applied once.
 
 **Access and restore**
-- A revision restore returns a draft removed by a cleanup, as it does after any Delete draft, and does not return an import-created record. (CE-09)
+- A revision restore returns a draft removed by a cleanup, as it does after any Delete draft, and does not return an import-created record. (CE-09 · reading)
 
 ### Story 6.8: Planned actions on existing equipment
 
@@ -2868,7 +3066,7 @@ Covers: FR-40, FR-55 (reversal on equipment that was already existing), device s
 - Choosing Replace creates a new Proposed device with its own identifier, linked to its predecessor.
 - Planning a relocation records a planned position and leaves the current position unchanged.
 - Recording Installed on a device with a planned Relocate makes the planned position its recorded location, and the earlier location stays in its history.
-- A planned Service or reconfigure holds the intended work and settings as text. Recording Installed for the scope records that work as done and changes neither the device's lifecycle nor its location. (CE-10)
+- A planned Service or reconfigure holds the intended work and settings as text. Recording Installed for the scope records that work as done and changes neither the device's lifecycle nor its location. (CE-10 · reading)
 - Retained equipment and retained cable create no purchase line and appear in the estimate under "Retained, not purchased".
 - Relocation, service and replacement costs are entered as explicit estimate lines.
 - The device sheet's one-sentence instruction begins with the planned action for Retain, Relocate, Service or reconfigure, Replace and Remove, as it does for Add new.
@@ -2877,7 +3075,7 @@ Covers: FR-40, FR-55 (reversal on equipment that was already existing), device s
 - A choice the state model forbids is disabled with its reason: any action except Add new on a Proposed device, Add new on an Existing device, and any new action on a removed, cancelled or corrected device.
 - Replace cannot be saved without the link to its successor.
 - Planning an action changes no recorded location, archives nothing and sets no mark.
-- From this story on, "Reverse installed mark" of story 5.5 is also offered for a device that was Existing before the scope. It clears the mark for the scope and leaves the device Existing. (CE-11)
+- From this story on, "Reverse installed mark" of story 5.5 is also offered for a device that was Existing before the scope. It clears the mark for the scope and leaves the device Existing. (CE-11 · reading)
 - Reversing a mistaken Installed mark on a relocated device also returns it to its earlier recorded location.
 
 **Access and restore**
@@ -2914,21 +3112,21 @@ Covers: FR-45. Screens: S-11.
 - The scope panel names the active scope and lists its revisions, its estimate and its evidence.
 - Saving a second named revision keeps the same scope and the same estimate.
 - Each device and route in the scope is Work now, Inspect or test only, or Reference only.
-- The category is preselected from the planned action: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only. (CE-12)
+- The category is preselected from the planned action: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only. (CE-12 · reading)
 - Changing a category is recorded with actor and time.
 - The scope panel shows the estimate and the required checks that each category implies, and both update when a category changes.
-- The applicable core checks of story 5.7 are required by default for each Work now device. (CE-13)
+- The applicable core checks of story 5.7 are required by default for each Work now device. (CE-13 · reading)
 - An Inspect or test only device has no check required until an Editor selects the checks that apply to it.
 - A Reference only device gets no checks.
 - Reference-only equipment still counts in coverage and capacity and creates no purchase line.
 - An Inspect or test only device can have a labour line without an equipment purchase.
 - From this story on, the remaining-work list and the closeout count the Work now devices whose work is not recorded, and the required checks of Work now and Inspect or test only devices.
 - A Work now device with a planned Add new, Relocate or Service or reconfigure, and a Replace successor, is listed until its Installed mark for the scope is set.
-- A device with a planned Remove, and a Replace predecessor, is listed as "Removal not recorded" and is not counted as not installed. (CE-14)
+- A device with a planned Remove, and a Replace predecessor, is listed as "Removal not recorded" and is not counted as not installed. (CE-14 · value)
 
 **Refusals and edge cases**
 - A device with a planned action of None or Retain cannot be set to Work now, and the reason is shown.
-- Moving an item out of Work now asks for a reason. (CE-15)
+- Moving an item out of Work now asks for a reason. (CE-15 · reading)
 - Moving an item that has a required retest or an open issue to Reference only shows a warning and leaves that item in the remaining-work list.
 - A Reference only device with unknown details and no selected checks adds nothing to the remaining-work list.
 
@@ -2958,7 +3156,7 @@ Covers: FR-35, FR-8 (historical records), FR-42, FR-58 (archived match), FR-60 (
 
 **Refusals and edge cases**
 - With no scope active, Record removal is refused with "not saved: no active scope — reopen first".
-- A save onto a removed device from a stale tab or a reconnecting phone is refused and kept for review as "not saved: device removed". It is not applied and not discarded. (CE-16)
+- A save onto a removed device from a stale tab or a reconnecting phone is refused and kept for review as "not saved: device removed". It is not applied and not discarded. (CE-16 · value)
 - A re-imported row that matches a removed device goes to Needs review. It does not reactivate the device and creates no new one.
 - A floor that holds a removed device's last location cannot be deleted, and the refusal lists the device.
 
@@ -2984,7 +3182,7 @@ Covers: FR-53 (cable ends and dispositions), FR-35 (reconciling connections), FR
 - Recording the removal of a switch flags the cable ends connected to it for review and archives no other device.
 - Open issues and required retests on the device stay in the remaining-work list after removal. Removal resolves no issue.
 - An open reliability run that covers the device is flagged and keeps running.
-- The project list's attention count of story 5.18 includes cable ends flagged Needs connection review. (CE-17)
+- The project list's attention count of story 5.18 includes cable ends flagged Needs connection review. (CE-17 · reading)
 - A closeout record written from this story on, and its Closeout package, list removed and replaced equipment and the retained, reassigned, removed and unresolved cable ends, with historical ends shown apart from current connections.
 
 **Refusals and edge cases**
@@ -3001,20 +3199,20 @@ Covers: FR-36 (restore), FR-54, NFR-1.
 
 **Core behaviour**
 - A removed device's Historical record offers Restore. Restoring keeps the device's identifier and history and records who restored it and when.
-- A restored device is Existing with condition Unknown. (CE-18)
+- A restored device is Existing with condition Unknown. (CE-18 · reading)
 - Restoring needs a position confirmed by the user on a current floor of the same property. The device never enters Awaiting placement.
 - On an unchanged or renamed floor the former position is offered for confirmation.
 - On a floor whose drawing, scale or alignment has changed, the position must be set again.
 - A floor is matched by its identity, not its name: a different floor that now carries the original floor's name is not offered the former position.
 - Earlier photos and attempts keep their former floor and location.
-- Earlier passes are not counted for the restored device, and its checks are flagged Retest required. (CE-19)
+- Earlier passes are not counted for the restored device, and its checks are flagged Retest required. (CE-19 · reading)
 - Restoring creates no purchase line.
 - Cancelling leaves the device archived with its history intact.
 
 **Refusals and edge cases**
 - A restore is refused when the chosen floor has changed or been deleted, or the device has changed, since the restore screen opened. The choices made are kept for review.
-- When the device's label or asset ID is now used by another active device, the restore asks for a label decision before it can be confirmed. (CE-20)
-- With no scope active, a restore is refused with "not saved: no active scope — reopen first". (CE-21)
+- When the device's label or asset ID is now used by another active device, the restore asks for a label decision before it can be confirmed. (CE-20 · decision)
+- With no scope active, a restore is refused with "not saved: no active scope — reopen first". (CE-21 · reading)
 
 **Access and restore**
 - A revision restore leaves a restored device, its new position and its restoration record unchanged.
@@ -3068,7 +3266,7 @@ Covers: FR-38, FR-45 (one active scope), FR-46 (carryover). Screens: S-20, S-18.
 - Reopening is refused while a scope is active.
 - When two people reopen at the same moment, one scope is created and the second person is taken to it.
 - A revision of an earlier scope cannot be restored into the new scope.
-- A revision of an earlier scope cannot be designated as the new scope's current issued design. (CE-23)
+- A revision of an earlier scope cannot be designated as the new scope's current issued design. (CE-23 · reading)
 
 **Access and restore**
 - A revision restore changes no scope, no scope's state and no carried issue.
@@ -3095,11 +3293,11 @@ Covers: FR-37, FR-68, FR-42. Screens: S-20, S-31.
 
 **Refusals and edge cases**
 - Archiving is refused while a scope is In progress, with the reason shown.
-- Archiving is refused while an inventory import or a package generation is running in the project, with the reason shown. (CE-24)
-- A save into an archived project from a stale tab or a reconnecting phone is refused and kept for review, and is not retried. (CE-25)
+- Archiving is refused while an inventory import or a package generation is running in the project, with the reason shown. (CE-24 · reading)
+- A save into an archived project from a stale tab or a reconnecting phone is refused and kept for review, and is not retried. (CE-25 · value)
 - When two people archive at the same moment, the project is archived once and the second person sees that it already is.
 - A revision restore is refused while the project is archived.
-- While the project is archived, a reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision. (CE-26)
+- While the project is archived, a reviewer link, including one to a closeout record, opens read-only and accepts no comment or decision. (CE-26 · decision)
 
 **Limits and values**
 - The banner reads "Archived — view, search and export only".
@@ -3122,7 +3320,7 @@ Covers: FR-65 (warranty records and status), FR-33 (warranty details). Screens: 
 - Covered items default to the equipment and cable newly installed in that scope and can be adjusted.
 - A device can also carry a manufacturer warranty with its own term, start date and provider.
 - A device covered by more than one warranty shows each separately.
-- Each warranty shows its calculated end date, which is the start date plus the term. (CE-27)
+- Each warranty shows its calculated end date, which is the start date plus the term. (CE-27 · reading)
 - Each warranty shows its status as of a stated date: Not started before the start date, In warranty from the start date to the end date inclusive, Expired after it.
 - Equipment with no warranty recorded shows Unknown, never Expired. This includes surveyed existing equipment.
 - Changing a warranty's term, start date, provider or covered items is recorded with actor and time, and the earlier values stay in its history.
@@ -3133,12 +3331,12 @@ Covers: FR-65 (warranty records and status), FR-33 (warranty details). Screens: 
 
 **Refusals and edge cases**
 - A term of zero, a negative term or a part-month term is refused.
-- A warranty recorded on a scope that is not yet closed, with no start date entered, shows Not started. (CE-29)
+- A warranty recorded on a scope that is not yet closed, with no start date entered, shows Not started. (CE-29 · reading)
 - With no scope active, a warranty can still be added or changed.
 - Adding or changing a warranty, at the warranty step or later, leaves the scope's closeout record unchanged, checked by hash.
 
 **Limits and values**
-- A warranty term is entered in whole months, with a minimum of 1. (CE-30)
+- A warranty term is entered in whole months, with a minimum of 1. (CE-30 · value)
 
 **Access and restore**
 - A revision restore leaves warranties unchanged.
@@ -3167,8 +3365,8 @@ Covers: FR-65 (service visits), FR-46 (visits on an issue), FR-33 (service visit
 - Recording or correcting a visit leaves every closeout record unchanged, checked by hash.
 
 **Refusals and edge cases**
-- The visit time cannot be earlier than the reported time, and neither can be in the future. (CE-31)
-- With no scope active, an existing visit can be corrected and a new visit cannot be recorded. (CE-32)
+- The visit time cannot be earlier than the reported time, and neither can be in the future. (CE-31 · reading)
+- With no scope active, an existing visit can be corrected and a new visit cannot be recorded. (CE-32 · reading)
 
 **Access and restore**
 - A revision restore leaves service visits unchanged.
@@ -3196,7 +3394,49 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 - While a scope is active, Start service visit is not offered.
 
 **Limits and values**
-- A service scope is named "Service visit" followed by the date, and the name can be changed. (CE-34)
+- A service scope is named "Service visit" followed by the date, and the name can be changed. (CE-34 · value)
+
+### Story 6.20: External tickets on issues, visits and warranties
+
+As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Survey Design to the ticket in the other system.
+
+Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
+
+**Core behaviour**
+- An issue, a service visit and a warranty each gain an "External tickets" list, with the hint "A ticket in another system, such as your customer's service desk or your own tracker". (CE-41 · reading)
+- Add asks for a ticket number and an optional link, and notes that a link may carry the tracker's own access; a record may hold several external tickets. (CE-42 · value)
+- The number is shown exactly as typed and matched, for search, duplicates and "also on", ignoring case and surrounding spaces. (CE-43 · value)
+- Each entry shows the number and, when it has a link, the link's host beside a link icon that opens the link in a new tab without sending the project's address.
+- An entry an agent added shows the agent mark.
+- An external ticket whose number is also on another record of the same project shows "also on" with a link to each such record; archived records are labelled and deleted ones are left out. (CE-45 · reading)
+- Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history; adding a removed number again is a new entry. (CE-46 · reading)
+- Searching the Issues list by a ticket number finds issues by their own external tickets and those of their service visits.
+- The Issues list shows the first external ticket of each issue with "+N" for more.
+- Members' CSV exports of issues, visits and warranties include their external tickets in two columns, numbers and links, each listing a record's tickets in the same order with one per line inside the cell, without "also on".
+- Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text and no "also on". (CE-47 · decision)
+- The field shell's issue and visit forms show and add external tickets as on desktop, and a change made without a connection is queued like other field edits.
+- A record after its closeout cutoff still accepts external tickets on its live copy, and the fixed closeout copy never changes.
+
+**Refusals and edge cases**
+- A link is trimmed, and is refused with "Enter a web address starting with https:// or http://" unless its scheme is `https` or `http` (in any case) and it has a host; control characters are refused. (CE-44 · value)
+- A link with a user name or password is refused with "Remove the user name and password from the link". (CE-48 · decision)
+- A number already on the record is refused with "This ticket is already listed", and a number of only spaces, or one containing a line break, a tab or another control character, is refused.
+- "Also on" never names a record in another project. (CE-49 · decision)
+- A change or removal of an external ticket that changed since it was read is refused with "changed since", showing the current value.
+- A queued change refused when the connection returns, because the record changed or the number is already listed, is shown to the technician with the reason.
+- In a CSV export, a number or link starting with `=`, `+`, `-` or `@`, or with the full-width form of any of them, is written so that a spreadsheet does not run it as a formula; the method is checked in Excel, LibreOffice and Google Sheets, with a test for each such leading character.
+- The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
+- The reviewer view never shows external tickets. (CE-47 · decision)
+- A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
+- Two people adding different external tickets to one record at the same moment both keep theirs.
+
+**Limits and values**
+- A ticket number has 1 to 100 characters. (CE-43 · value)
+- A link has at most 2,000 characters, counted after an international host name is converted to its ASCII form, and that form is shown as the host. (CE-44 · value)
+
+**Access and restore**
+- A revision restore leaves external tickets unchanged.
+- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a user name and password are removed from a restored link first and the person restoring is told how many links were changed, a link that still fails is kept as text without a link, and "also on" is worked out again.
 
 ## Epic 7: Extended modelling
 
@@ -3302,7 +3542,7 @@ Covers: FR-49. Screens: S-08 Doors and gates.
 - Creating a link creates no cable, no port assignment and no power demand, and marks nothing installed or tested.
 
 **Access and restore**
-- A revision restore returns the links in which the door or the component is Proposed, and leaves links between two Existing records unchanged. (CE-35)
+- A revision restore returns the links in which the door or the component is Proposed, and leaves links between two Existing records unchanged. (CE-35 · reading)
 
 ### Story 7.5: Site annotations
 
@@ -3358,7 +3598,7 @@ Covers: FR-51 (closets, port schedule, assignments), FR-60 (closets block floor 
 
 **Access and restore**
 - A revision restore returns proposed port assignments and reservations, and leaves current assignments and port availability unchanged.
-- A revision restore leaves closets and their grouping unchanged. (CE-36)
+- A revision restore leaves closets and their grouping unchanged. (CE-36 · reading)
 
 Notes: Left for later: conflicting claims, power and capacity (story 7.7); ports through removal, restoration and draft deletion (story 7.8); cable runs in Connections (story 7.9).
 
@@ -3369,7 +3609,7 @@ As a designer, I want port and power capacity checked from the recorded assignme
 Covers: FR-51 (conflicts, power budgets), FR-19 (ports and power), FR-28 (port or power connection changed), FR-42 (port assignments). Screens: S-12.
 
 **Core behaviour**
-- When two people claim one port, the first save succeeds. The other person sees a conflict, with the claim kept as a pending edit and the conflict highlighted on both rows. (CE-37)
+- When two people claim one port, the first save succeeds. The other person sees a conflict, with the claim kept as a pending edit and the conflict highlighted on both rows. (CE-37 · reading)
 - The power summary shows the budget, known allocation, reservations and unknown loads.
 - With any unknown load the power summary reads Incomplete, with the count, and never shows a pass.
 - With unknown inventory on a switch, the count of available ports is shown as unknown, not as a number.
@@ -3389,10 +3629,10 @@ Covers: FR-53 (port dispositions), FR-55 (ports on Delete draft and undo), FR-68
 **Core behaviour**
 - The removal review of story 6.12 also lists the device's port and terminal assignments, each with a disposition: retained and disconnected, reused, removed, or unresolved.
 - An unresolved port disposition is flagged Needs connection review and is included in the attention count.
-- After a removal the device's demand is gone, and its former port keeps its allocation and is not shown as Free until someone releases or reassigns it. (CE-38)
+- After a removal the device's demand is gone, and its former port keeps its allocation and is not shown as Free until someone releases or reassigns it. (CE-38 · reading)
 - Recording the removal of a switch flags its port assignments for review and archives no downstream device.
 - Restoring a device under story 6.13 offers its earlier port as a historical choice and does not reinstate it.
-- Delete draft on a proposed device with a planned port assignment lists the assignment in its preview and, on confirmation, releases only that device's own reservation. (CE-39)
+- Delete draft on a proposed device with a planned port assignment lists the assignment in its preview and, on confirmation, releases only that device's own reservation. (CE-39 · reading)
 
 **Refusals and edge cases**
 - Reconnecting a restored device cannot take a port now assigned to another device.
@@ -3423,7 +3663,7 @@ Covers: FR-9, FR-52 (runs, segments and risers), FR-60 (riser references). Scree
 - A floor that a riser or a run segment refers to cannot be deleted, and the refusal lists the riser and the runs.
 
 **Access and restore**
-- A revision restore returns proposed runs with their segments and risers, and leaves existing runs unchanged. (CE-40)
+- A revision restore returns proposed runs with their segments and risers, and leaves existing runs unchanged. (CE-40 · reading)
 
 Notes: Left for later: transition and drop lengths, extras and supply quantities (story 7.10); run schedules in packages (story 7.11).
 
@@ -3503,7 +3743,7 @@ Covers: FR-34, FR-71, NFR-5, AD-13.
 **Evidence to record**
 - A test backs up a project holding a plan imported from a password-protected PDF, searches the backup for the password and finds none.
 - A test backs up the installation's data, searches it for the known test session token, link token, recovery code and password, and finds none in readable form.
-- An automated test over the record shapes of the project room and the installation object fails if any has a field for a site system's password or access code. (CF-01)
+- An automated test over the record shapes of the project room and the installation object fails if any has a field for a site system's password or access code. (CF-01 · reading)
 
 Notes: Left to later stories: where backups are written and how many are kept (story 8.2); the Backups screen and Back up now (story 8.3); the "before an update" backup taken in a real update (story 9.7 and story 9.13).
 
@@ -3520,14 +3760,14 @@ Covers: FR-34, AD-13.
 - Rotation removes nothing from a live project or from the activity log.
 
 **Refusals and edge cases**
-- A Cloudflare deployment without the second bucket fails with a message naming the missing bucket. (CF-02)
+- A Cloudflare deployment without the second bucket fails with a message naming the missing bucket. (CF-02 · reading)
 - When the backup area is full or cannot be written, the backup ends as Failed with that reason.
 - While the backup area is full, live saves are still acknowledged.
 - A failed backup damages and removes no earlier generation, and does not count as one of the seven.
 
 **Limits and values**
 - Seven successful daily generations are kept for each project and for the installation's data.
-- The most recent backup marked "before an update or data conversion" is kept in addition to the seven and is not removed by daily rotation. (CF-03)
+- The backup marked "before an update" of the last successful update is kept until the next successful update, and the one of an attempt under way is kept until that attempt ends; neither is removed by daily rotation. (CF-03 · reading)
 
 **Access and restore**
 - A revision restore changes no backup generation.
@@ -3550,8 +3790,8 @@ Covers: FR-34, FR-70 (Backups), FR-71, AD-13. Screens: S-34, S-31, S-02, S-20.
 **Refusals and edge cases**
 - Back up now pressed while a backup of the same project is running shows the running job and starts no second one.
 - A daily backup that falls due while a manual one runs waits for it, and is skipped if that one succeeded.
-- Archiving or un-archiving a project is refused, with the reason, while a backup job for that project is running. (CF-05)
-- A backup that falls due while a project is being archived waits for the archive to finish. (CF-05)
+- Archiving or un-archiving a project is refused, with the reason, while a backup job for that project is running. (CF-05 · reading)
+- A backup that falls due while a project is being archived waits for the archive to finish. (CF-05 · reading)
 
 **Limits and values**
 - The outcome reads Succeeded with its age, Failed, or Never.
@@ -3577,11 +3817,11 @@ Covers: FR-34, FR-70 (Backups), NFR-1, AD-13. Screens: S-34.
 **Refusals and edge cases**
 - A backup written at a newer data-format version than the server is refused with an explanation naming both versions.
 - If any check fails or the restore is interrupted, the copy is shown as failed and the working project is unchanged.
-- Starting another restore for a project that already has a copy asks to replace that copy. (CF-06)
-- Archiving or un-archiving a project is refused, with the reason, while a restore job for that project is running. (CF-05)
+- Starting another restore for a project that already has a copy asks to replace that copy. (CF-06 · value)
+- Archiving or un-archiving a project is refused, with the reason, while a restore job for that project is running. (CF-05 · reading)
 
 **Limits and values**
-- A project has at most one copy that has not been made current, and it stays until an administrator discards or replaces it. (CF-06)
+- A project has at most one copy that has not been made current, and it stays until an administrator discards or replaces it. (CF-06 · value)
 
 **Access and restore**
 - A standard user cannot start a restore, see a copy or discard one.
@@ -3599,7 +3839,7 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 - "Make this copy current" is offered once every check of story 8.4 has passed.
 - Before confirmation it states that this project's reviewer links are cancelled and must be issued again, and that nobody is signed out.
 - When the administrator confirms, writes to the working project stop, and they stay stopped through the switch, so that no save falls between the backup and the switch.
-- With writes stopped, a backup of the working project is taken and kept as "before restore". (CF-07)
+- With writes stopped, a backup of the working project is taken and kept as "before restore". (CF-07 · reading)
 - After the switch members open the restored project in place of the earlier one.
 - After the switch every reviewer link of that project is refused.
 - The switch ends no session.
@@ -3612,13 +3852,13 @@ Covers: FR-34, FR-70 (Backups), FR-71, NFR-1, AD-13. Screens: S-34, S-02, S-20.
 **Refusals and edge cases**
 - "Make this copy current" is not offered for a copy with a failed check or an interrupted restore.
 - If the "before restore" backup fails or the administrator cancels the switch, the switch does not happen, the working project is unchanged and writes to it resume.
-- A save sent from a page that was open before the switch is refused and changes nothing in the restored project. (CF-08)
-- That save stays visible on its page as "not saved: project was restored" and is not retried. (CF-08)
+- A save sent from a page that was open before the switch is refused and changes nothing in the restored project. (CF-08 · reading)
+- That save stays visible on its page as "not saved: project was restored" and is not retried. (CF-08 · reading)
 
 **Limits and values**
-- The most recent "before restore" backup of each project is kept in addition to the seven daily generations. (CF-07)
-- A later restore of the same project replaces it. (CF-07)
-- An administrator can discard it. (CF-07)
+- The most recent "before restore" backup of each project is kept in addition to the seven daily generations. (CF-07 · reading)
+- A later restore of the same project replaces it. (CF-07 · reading)
+- An administrator can discard it. (CF-07 · reading)
 
 **Access and restore**
 - Only an administrator can make a copy current; a standard user's request is refused by the server.
@@ -3638,7 +3878,7 @@ Covers: FR-34 (recovery target), experiment R3.
 
 **Evidence to record**
 - The record states the file kinds and counts of the 8 GiB project.
-- Every file added for size has distinct content, and the project's stored size, summed from its backup manifest, is between 7.5 and 8 GiB. (CF-09)
+- Every file added for size has distinct content, and the project's stored size, summed from its backup manifest, is between 7.5 and 8 GiB. (CF-09 · value)
 - Each elapsed time is recorded against the target, with the preparation assumed.
 
 Notes: R3's fallback, if the target is missed on either host, is to restore by reference first and copy files in the background (architecture section 12); the decision is recorded with the result.
@@ -3652,12 +3892,12 @@ Covers: FR-34, FR-71, NFR-5, AD-13.
 **Core behaviour**
 - A procedure written in the repository, run from outside the interface, rebuilds an installation in an empty destination from the backup area: the installation's own data and every project.
 - The procedure states that the deployment key is kept outside the backups, was shown once when it was created, and is needed for recovery.
-- The operator supplies the kept deployment key to the destination, as a deployment secret on Cloudflare or as the key file self-hosted, and the destination uses it and generates none. (CF-10)
+- The operator supplies the kept deployment key to the destination, as a deployment secret on Cloudflare or as the key file self-hosted, and the destination uses it and generates none. (CF-10 · reading)
 - After recovery, accounts, roles, memberships and settings are as they were at the recovery point.
 - After recovery a user signs in with the password and two-step verification they had at the recovery point.
 - After recovery every session that existed before is refused.
 - After recovery every reviewer link is refused.
-- After recovery every invitation and password-reset link issued before it is refused. (CF-11)
+- After recovery every invitation and password-reset link issued before it is refused. (CF-11 · reading)
 - Administrators see a notice naming the recovery point, stating that passwords, roles, memberships and deactivations are as they were then, and asking them to review users and members changed since.
 - Each project shows its own recovery point and possible loss window, as in story 8.5.
 - Each restored project passes the checks of story 8.4 before it can be opened.
@@ -3665,7 +3905,7 @@ Covers: FR-34, FR-71, NFR-5, AD-13.
 - The activity log's entries up to the recovery point are intact after recovery.
 
 **Limits and values**
-- The notice stays until an administrator dismisses it. (CF-12)
+- The notice stays until an administrator dismisses it. (CF-12 · value)
 
 Notes: Left to later stories: recovery without the key and with backups that do not match (story 8.8); the timed full-size run (story 8.9); the Cloudflare update token as a stored secret (story 9.13).
 
@@ -3676,17 +3916,17 @@ As an organisation's administrator, I want recovery to finish and tell me what i
 Covers: FR-34, FR-71, NFR-5, AD-13.
 
 **Core behaviour**
-- Without the deployment key the procedure completes only when run with a stated option that accepts the loss of stored secrets. (CF-13)
-- Run that way, two-step verification is reset for every account. (CF-13)
-- Run that way, stored settings secrets (the email and map keys) are cleared and shown in Settings as needing re-entry. (CF-13)
+- Without the deployment key the procedure completes only when run with a stated option that accepts the loss of stored secrets. (CF-13 · decision)
+- Run that way, two-step verification is reset for every account. (CF-13 · decision)
+- Run that way, stored settings secrets (the email and map keys) are cleared and shown in Settings as needing re-entry. (CF-13 · decision)
 - A recovery without the key is recorded in the activity log.
 - Where the installation's data and the project backups do not match, the procedure reports each mismatch and the notice of story 8.7 lists it.
 
 **Refusals and edge cases**
 - A restored project that fails a check is listed as not recovered and cannot be opened.
 - With one project not recovered, the other projects can be opened and saved to.
-- A project in the catalogue with no usable backup is listed as not recovered and cannot be opened. (CF-14)
-- A project backup with no catalogue entry is recovered with no members and listed for an administrator to assign. (CF-14)
+- A project in the catalogue with no usable backup is listed as not recovered and cannot be opened. (CF-14 · reading)
+- A project backup with no catalogue entry is recovered with no members and listed for an administrator to assign. (CF-14 · reading)
 - Each project not recovered appears in the activity log.
 
 ### Story 8.9: Time a whole-installation recovery on both hosts
@@ -3726,7 +3966,7 @@ Covers: FR-34, FR-68, FR-71, NFR-5, AD-14.
 - A portable backup that would be larger than 10 GiB, or of a project over the 8 GiB payload boundary, is not produced: the job stops with the reason and the project is unchanged.
 
 **Limits and values**
-- The finished file is kept for download for 24 hours and then removed. (CF-16)
+- The finished file is kept for download for 24 hours and then removed. (CF-16 · value)
 
 **Access and restore**
 - A Viewer's request to create or download a portable backup is refused by the server.
@@ -3746,8 +3986,8 @@ Covers: FR-34, FR-68, FR-71, FR-51 and FR-63 (kept through a portable backup), N
 **Core behaviour**
 - Importing a portable backup is offered to whoever may create projects: administrators, and standard users when the setting of story 1.15 allows it.
 - An import creates a new project and changes no existing one.
-- The new project is given a new project identity and records the identity of its source. (CF-17)
-- A standard user who imports becomes the new project's Editor, and no other member is added. (CF-18)
+- The new project is given a new project identity and records the identity of its source. (CF-17 · reading)
+- A standard user who imports becomes the new project's Editor, and no other member is added. (CF-18 · reading)
 - Before any project is created the upload is validated: the manifest is read and every hash is checked.
 - A backup written at an older data-format version is converted during import.
 - In the imported project, device, view and stream identifiers and their relationships, revisions, evidence, removed devices, issues, pan/tilt/zoom positions, limits and home marks, closets and port schedules, and package files are the same as in the source.
@@ -3774,11 +4014,11 @@ Covers: FR-34, FR-68, FR-70 (Backups), FR-71, AD-14. Screens: S-34.
 **Core behaviour**
 - An administrator uploads a portable backup as the source for the restore flow of story 8.4 and story 8.5: a separate copy, the same listed checks, the "before restore" backup and a deliberate "Make this copy current".
 - The upload is validated as in story 8.11 before the copy is built.
-- After the switch the project keeps its own identity and its members. (CF-19)
+- After the switch the project keeps its own identity and its members. (CF-19 · reading)
 - Each replacement appears in the activity log.
 
 **Refusals and edge cases**
-- A replacement is refused before the copy is built when the backup's project identity is not the live project's own, with the advice to import it as a new project. (CF-20)
+- A replacement is refused before the copy is built when the backup's project identity is not the live project's own, with the advice to import it as a new project. (CF-20 · reading)
 
 **Access and restore**
 - Replacing a live project is offered only to an administrator; an Editor's request is refused by the server.
@@ -3819,8 +4059,8 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 - When a portable-backup import is admitted, its declared container size is checked against the 10 GiB container limit, not against the 8 GiB project budget. Over that limit the user sees a warning naming the limit and the amount over, and nothing is sent.
 - The uncompressed project payload of a portable backup is checked against the 8 GiB project budget during validation (story 8.11).
 - A valid 8 GiB project in a container between 8 GiB and 10 GiB is not refused at admission.
-- A package generation, which has no size until it has run, fails with the limit named when it reaches the remaining budget, and its stored parts are discarded. (CF-21)
-- A warning is shown on Records, and to administrators on S-31, when a project's usage reaches 90% of the budget. (CF-22)
+- A package generation, which has no size until it has run, fails with the limit named when it reaches the remaining budget, and its stored parts are discarded. (CF-21 · reading)
+- A warning is shown on Records, and to administrators on S-31, when a project's usage reaches 90% of the budget. (CF-22 · value)
 
 **Refusals and edge cases**
 - Of two uploads started together that would jointly exceed the budget, the later one is refused before sending and the earlier one completes.
@@ -3835,7 +4075,7 @@ Covers: acceptance table for files and project content; FR-34 (backup storage se
 
 **Outcome.** Anyone can install Site Survey Design on either host from published instructions, and an administrator can install a new signed release with one action and get the earlier version back if it fails.
 
-**Depends on.** Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1; story 9.4 needs all of Epic 8, story 1.14 and story 4.10; story 9.5 needs story 9.2. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.13 also needs the settings secrets of story 1.15. Nothing later.
+**Depends on.** The version rule that every update relies on is in story 1.1, so that the first release already obeys it. Story 9.1 needs story 1.2, story 1.5, story 1.13, story 2.21, story 2.22, story 2.23, story 2.25, story 2.26, story 8.2 and story 8.7. Story 9.2 needs story 1.1, story 2.21, story 2.24 and story 9.1. Story 9.3 needs story 1.1, story 1.14 and all of Epic 8, because the update record follows the pre-update backup; story 9.4 needs story 9.3, all of Epic 8 and story 4.10; story 9.5 needs story 9.2, story 9.3 and story 9.4. Story 9.6 needs story 1.10, story 1.14 and story 9.2. Story 9.7 to story 9.15 need all of Epic 8 and story 9.2 to story 9.6, because an update takes a backup first and restores it on failure; story 9.12 and story 9.13 also need the failure warning of story 9.10; story 9.13 also needs the settings secrets of story 1.15. The first release published for organisations is cut only after story 9.10 self-hosted and story 9.13 on Cloudflare, because it must act as the version before in their first update. Nothing later.
 
 **Why here.** Updating safely needs the backup and restore of Epic 8, and the instructions can only be written and followed once both hosts and their backups exist.
 
@@ -3850,7 +4090,7 @@ Covers: FR-66 (instructions), SM-6.
 - They state which servers are supported: a Linux machine with Docker, x64 or arm64, virtual or physical.
 - They state which kinds of disk are supported and unsupported, from the R12 results of story 2.26.
 - They state what is not supported (no Docker, Windows Server, Kubernetes) and that Cloudflare needs the Workers Paid plan.
-- The self-hosted instructions cover: getting the image and Compose file, HTTPS by the bundled web server or by the operator's own proxy with the trusted-proxy setting, the live and backup folder settings and why the backup folder should be on another disk or machine, the deployment key file and keeping a copy off the server, and where the one-time set-up code appears.
+- The self-hosted instructions cover: getting the image and Compose file, HTTPS by the bundled web server or by the operator's own proxy with the trusted-proxy setting, the live and backup folder settings and why the backup folder should be on another disk or machine, the deployment key file and keeping a copy off the server, where the one-time set-up code appears, and, for SMTP, the deployment setting of story 1.18 for a mail server on a private network or with a private certificate authority, and where the server log shows why a secure connection failed.
 - The Cloudflare instructions cover: deploying from the organisation's own copy of the repository, the two storage buckets the deployment creates, the deployment key of story 1.5 and keeping it outside the Cloudflare account, and where the one-time set-up code appears.
 - Both sets name the command that issues a one-time recovery code for a locked-out sole administrator (story 1.13 on Cloudflare, story 2.23 self-hosted), and the recovery procedure of story 8.7.
 
@@ -3876,75 +4116,111 @@ Covers: FR-72 (publication), FR-66 (instructions name the release), AD-19.
 - Verifying a published bundle or image against this repository's release workflow succeeds.
 - Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class.
 - The installation instructions of story 9.1 name the published image and release.
+- The workflow can also publish to a test channel, marked by a tag prefix and signed by the same workflow; an installation offers and installs test-channel releases only when configured for that channel.
 
+- Each release keeps the route declarations of every route a token may call; a build whose declarations remove or rename a field, narrow a type or add a required input under `/api/v1/` compared with the previous release fails, as does one that removes, renames or changes the inputs of an MCP tool generated from them. (CG-08 · reading)
 **Refusals and edge cases**
 - If the tests or the smoke suite fail, nothing is signed or published.
 - The same verification fails on a build made any other way, and on a published file altered by one byte.
 
 **Evidence to record**
 - A fresh self-hosted install from the published image reaches the sign-in page.
+- The test channel holds fixture releases N, N+1 and N+2, each adding a data conversion, and deliberately broken variants for the failure tests, all signed by the release workflow.
 - Before the repository is made public for the first release (K15), its history is searched for secrets and private files and the result is recorded.
 
 Notes: Signing is keyless (K14).
 
-### Story 9.3: Data conversions between versions
+### Story 9.3: The update record and one version at a time
 
-As an administrator, I want stored data converted safely when a new version needs a different shape, so that an update never leaves projects unreadable or half converted.
+As an administrator, I want the server to keep one record of an update under way and let only one version act on our data, so that old and new code never both change it and an update can always be finished or undone.
 
-Covers: NFR-8, FR-72 (any earlier version to the latest), AD-20.
+Covers: NFR-8, FR-72, FR-21, AD-12, AD-17, AD-20.
 
 **Core behaviour**
-- The server carries every conversion since the first release: a data set written at each earlier data-format version converts directly to the current one.
+- The update record is a table of its own inside the installation object, in a layout every released version reads. It holds the attempt identifier, the version before and the version being installed, how to reach the version before (its image digest or its Cloudflare version), where the pre-update backup is, a state, a step number, the time at which changes stop, when the version being installed first arrived, and the update's step entries.
+- The states are stopping, prepared, installing and returning. Every change of state takes the next number from a step counter kept beside the record, which is never reset, so a new attempt starts above every step number already issued.
+- Stopping is written when an administrator starts an update. The time at which changes stop is set when the users' warning begins, and from that time every object refuses changes.
+- While the record is stopping, during the warning or the backup, an administrator can cancel, which removes the record and accepts changes again.
+- Prepared follows only when the complete pre-update backup has succeeded. A failed backup removes the record and changes are accepted again; a backup interrupted by a restart resumes as a job.
+- Installing is set in one step, in which the installation, asked whether an attempt stands, answers yes only if a prepared record exists whose identifier and version being installed both match the question.
+- Asked again for the same attempt while the record is installing and before the version being installed has arrived, the installation gives the same yes and returns the way back it stored at the first yes, ignoring any new one.
+- A prepared record can be withdrawn, which removes it and accepts changes again at once. An installing record cannot be withdrawn.
+- While a record exists, the entry code passes its state and step number with every call.
+- Only one version acts: the version before while the record is stopping, prepared or returning, and the version being installed while it is installing. Entry code of the other version answers "updating", and an object of the other version refuses and stops itself as in story 1.1.
+- The version before may end an installing attempt in two ways only, and both only set the record to returning: its arrival deadline, while the version being installed has not arrived, and an authenticated request to return for that attempt.
+- A read of the record's state is the first call marked version-independent under story 1.1: the installation object answers it from either version, and a test calls it with another version and finds the same start identifier afterwards.
+- Entry code that finds a record it may not act on answers "updating" on a public notice that needs no sign-in. When the deployed version may not act in the record's current state, the notice gives the steps to deploy the version that may.
+- The calls that ask whether an attempt stands, read its state, report arrival, report a refused signature and ask for a return carry the update secret. They are a fourth kind of route, checked by the access gate, and their log entries name the update workflow or the updater as the actor, with the attempt identifier.
+- On Cloudflare the installation creates the update secret on first use, keeps it encrypted as the settings secrets of story 1.15 are, and shows it once to an administrator to copy into the organisation's repository; an administrator can replace it. Self-hosted, the update secret is the updater's shared secret.
+- The update's step entries are kept in the record's table and copied into the activity log when the attempt ends.
+- Beside the step counter the installation keeps every attempt's outcome: succeeded, returned or withdrawn. A question about an attempt whose record has gone is answered with that outcome.
+
+**Refusals and edge cases**
+- From the time changes stop until the record is removed, the only writes accepted are to the record, its counter and the attempt outcomes, to each object's update bookkeeping, the pre-update backup's own job, progress, catalogue and file writes, conversions and restores, the update's step entries, the health check's test save, and the ending of a session.
+- A second update is refused while any record exists.
+- While a record exists, idle time does not count towards a session's expiry.
+- A session ended while a record exists is noted in the update bookkeeping and ended again after any restore of the installation's data.
+- A prepared record not followed by a yes within 30 minutes is withdrawn by the installation itself, and the attempt is logged as "no result". (CF-41 · value)
+- In the step that sets installing, the installation object sets an arrival deadline 10 minutes after the yes. If it passes before the version being installed has reached the installation object, by a call or by an alarm, the installation, still running the version before, sets the record to returning itself. (CF-40 · value)
+- After arrival, the installation keeps its own deadline equal to the time limit after the yes, and sets the record to returning itself when it passes. (CF-42 · value)
+- A stopping record whose backup has not finished within that same time limit is removed and changes are accepted again; a returning record that has not finished within it shows the failed-return warning. (CF-42 · value)
+- Each object keeps the highest step number it has acted under, and the time it last stopped itself, in an update-bookkeeping table that no conversion touches and no restore replaces.
+- The installation object's schedule of due times, from story 1.1, gains the arrival deadline, the update steps and the time limits. Every due time an update sets carries its attempt and step number, does nothing when they no longer match the record, and is removed when the record changes state; the schedule is kept apart from restored data.
+- Alarm-driven work does nothing while a record exists, except the update's own backup, conversion and return steps run by the version allowed to act, and the arrival deadline run by the version before. Work that cannot read the record treats it as present and only sets its alarm again.
+- A call to an update function without the update secret is refused and logged; a test shows that the attempt identifier alone is refused.
+- Routes that set an update record directly exist only in test builds, and a test fails if a release bundle has one.
+- A command in release builds, authenticated by the update secret and the deployment key, ends a stuck installing or returning record once the administrator has recovered by hand as the failed-return warning describes, and logs it.
+- The prepared time limit, and the removal of a stopping record, run under either version, because they touch only the record.
+- No restore replaces the update record or its counter: a test restores the installation's data from a backup taken before a record existed and then reads the record and the counter intact.
+- An object running the version being installed converts nothing unless the record is installing; with no record it refuses older data as in story 1.1.
+- A server that finds data newer than itself and no record refuses to open it, and its explanation names both versions.
+
+**Access and restore**
+- A revision restore leaves the update record, its counter, the attempt outcomes and every object's update bookkeeping unchanged.
+
+Notes: In this story the record and the two versions are set up by tests. The design is K20 with its refinements K21, both confirmed by Kevin, and the additions K22 (AD-20). It replaces the pending-update marker and its hold of earlier drafts. Left to later stories: conversions, the return and the health check (story 9.4); writing and ending the record in a real update (story 9.7 and story 9.10 self-hosted, story 9.12 and story 9.13 on Cloudflare). That sign-in is not offered during an update is in story 9.8.
+
+### Story 9.4: Data conversions, the health check and the way back to backed-up data
+
+As an administrator, I want stored data converted safely when a new version needs a different shape, and put back by the server itself if the update fails, so that an update never leaves projects unreadable, half converted or lost.
+
+Covers: NFR-8, FR-72 (any earlier version to the latest; return), AD-3, AD-20.
+
+**Core behaviour**
+- The server carries every conversion since the first release: data at any earlier data-format version converts to the current one in one update, by applying each conversion in order.
 - A test for each earlier data-format version compares the converted result with expected records.
-- A project's conversion runs inside one transaction.
-- When asked, the server converts every project and the installation's own data without waiting for each to be opened, and reports the result for each.
-- That conversion is reported as succeeded only when every project and the installation's own data have converted.
+- Each object converts its own data: a project room, or the installation object, records the new data-format version in the same transaction of its own store as the conversion's last write.
+- An object converts only when it runs the version being installed and is called, or runs its own alarm-driven update step, while the update record is installing; no conversion spans two objects.
+- A conversion too large for one transaction builds its result in side tables over several steps and switches to them in one transaction, so the live tables are never part-converted.
+- The installation object drives the conversion: it converts its own data, then calls every project in the catalogue in turn in alarm-driven steps, so that projects nobody opens are converted too, and reports the result for each.
+- Projects recorded as not recovered are skipped and listed in the result.
+- The installation offers a health check: the sign-in route answers through the version being installed, naming that version, in a check mode that writes no session; the first active project opens or, with none, a health-check project room that holds no user data; and a test save to a health-check record is acknowledged.
+- An update succeeds only when every project and the installation's own data have converted and the health check has passed. The installation object then, in one transaction of its store, copies the step entries into the activity log, records the outcome, removes the record and accepts changes again.
+- An object running the version before, called while the record is returning, restores its own records from the pre-update backup if its data is in the newer format, and does nothing if it is not.
+- A restore is built in side tables over as many steps as it needs and switched in one transaction, which also sets the data-format version back.
+- The installation object drives the return: it restores its own data, calls every project and the health-check room in turn, and then, in one transaction, copies the step entries and the failed attempt into the activity log, records the outcome, removes the record and accepts changes again.
+- A project restore copy not yet made current, or an imported project, whose data is at an older data-format version converts its own data with the same conversions before it is opened, outside any update record, and is never live while it converts.
 
 **Refusals and edge cases**
-- A conversion made to fail part-way leaves that project's records exactly as they were, at their earlier version.
-- If the conversion of any project or of the installation's data fails, the server reports the conversion as failed, names the project, and opens no project for normal use.
-- A project room whose data is not yet at the server's version refuses every request until its conversion has succeeded.
+- A conversion made to fail part-way leaves that project's live records exactly as they were, at their earlier version.
+- If the conversion of any project or of the installation's data fails, the conversion is reported as failed, names the project, and no project is opened for normal use.
+- An interrupted conversion or restore that uses side tables starts its steps again and ends with the same result.
+- A project that refuses a call because of a version difference is called again after 35 seconds, up to 3 times, before it counts as failed. (CF-43 · value)
+- A call carrying a lower step number than the object has acted under is refused before any work.
+- A conversion or restore switch checks in the same transaction that the record's step number is still the highest the object has seen, and a call carrying a higher one makes the object discard side tables built under a lower one.
+- A test runs a return, then a conversion under a higher step number, then a second return: every project and the installation's own data end at the pre-update backup, none part-restored or part-converted.
+- A test runs two update attempts in a row and finds the second attempt's conversions accepted by every object.
+- A return removes and overwrites no file.
+- If the return cannot be completed, the installation keeps refusing changes, says plainly that the return did not complete, shows the manual steps, and never reports success.
+- An update cannot start while a project restore copy has not been made current, and Update says why.
+- No conversion of the installation's data changes the update record, its counter or any update bookkeeping, and a test fails if one does.
 - The test suite fails if a data-format version has no conversion and conversion test.
-- A test compares the Durable Object classes in the deployment configuration with the two fixed in story 1.1 and fails if a class is added, renamed or removed.
+- A test compares the Durable Object classes in the deployment configuration with the two fixed in story 1.1 and fails if a class is added, renamed or removed, unless the release is marked as changing a class.
 
-Notes: Before a second release exists, these criteria are exercised with test conversions on the runner of story 1.1.
+**Access and restore**
+- A revision restore leaves the health-check record and the health-check project room unchanged; neither holds user data.
 
-### Story 9.4: The pending-update marker and the way back to backed-up data
-
-As an administrator, I want the server to know that an update was under way and to put the backed-up data back itself, so that a rolled-back version never runs on data it cannot read.
-
-Covers: NFR-8, FR-72 (return), AD-20.
-
-**Core behaviour**
-- A pending-update marker is kept in its own small store, apart from project data and the installation's own data.
-- The marker records the version being installed, an identifier for the attempt, the pre-update backup, whether installation has begun, whether it has been marked withdrawn, which version currently holds the data to restore or to convert, the number of that hold, and which projects have been restored. (CF-24)
-- A server takes the hold on the data in one step at the marker store before it restores or converts anything, and each taking raises the hold number by one.
-- Every restore or conversion write carries the hold number it was made under.
-- Each project, and the installation's own data, keeps the highest hold number it has accepted, and in the same transaction as a write refuses one carrying a lower number.
-- The marker store refuses an update to the restore-progress record that carries a lower hold number.
-- A server whose write is refused stops.
-- A server of any released version reads the marker, whatever the data-format version of the data beside it.
-- A server that starts and finds the marker naming a version other than its own, with installation begun, serves nothing except the restore of the pre-update backup, whether or not the data format changed. (CF-24)
-- That restore is performed before any project is opened, and afterwards every project and the installation's own data are at the server's own version.
-- An earlier version that restarts and finds the marker with installation recorded as begun restores the pre-update backup, but does not clear the marker and does not accept changes.
-- After a return the marker is cleared, and changes are accepted again, only when every project and the installation's own data are back and the update run is confirmed finished or cancelled.
-- A deployment of the new version that arrives after the restore therefore still finds the marker, converts again and runs its health check.
-- In the same step in which it takes the hold to convert, the new version erases the marker's record of which projects and installation data were restored, so a later return restores all of them again.
-- Self-hosted, the updater confirms that the image swap is over, which counts as the run being finished.
-- The restore under the marker ends no session and cancels no reviewer link.
-- The server offers a health check: the sign-in page is served, a project opens and a test save is acknowledged.
-- The marker is cleared as succeeded only after every project and the installation's own data have converted (story 9.3) and the health check has passed.
-
-**Refusals and edge cases**
-- No conversion changes the marker store and no restore replaces it: a test restores the installation's data from a backup taken before the marker was set and then reads the marker with its progress intact.
-- A restore stopped part-way resumes at the next start and ends with the same result.
-- A test runs a restore, then a late deployment whose conversion or health check fails, then a second return: every project and the installation's own data end at the pre-update backup, none skipped as already restored.
-- A test starts the new version while an earlier version's restore is part-way: no restore write lands on a project after the new version has written to it, no restore-progress update lands after the new version takes the hold, and every project ends converted or, after a return, at the pre-update backup, never a mixture.
-- If that restore fails, the server keeps serving nothing, says plainly that the return did not complete, and does not report success.
-- A server that finds the marker with installation not begun restores nothing and keeps changes stopped. (CF-24)
-- A server that finds data newer than itself and no marker refuses to start, and its explanation names both versions.
-
-Notes: In this story the marker and the newer data are set up by tests. Left to later stories: setting the marker in a real update and clearing one whose installation never began (story 9.7 and story 9.10 self-hosted, story 9.12 and story 9.13 on Cloudflare). The pre-update backup is the "before an update" backup of story 8.1.
+Notes: Before a second release exists, these criteria are exercised with test conversions and an update record set by a test build, on the runner of story 1.1. The pre-update backup is the "before an update" backup of story 8.1.
 
 ### Story 9.5: Experiment R14: a new runtime reads the previous release's data
 
@@ -3953,15 +4229,14 @@ As Kevin, I want every release checked against data written by the one before, s
 Covers: NFR-8, AD-20, experiment R14.
 
 **Core behaviour**
-- The release workflow of story 9.2 starts the new image, with its pinned runtime, against a data folder written by the previous release and confirms that it reads and converts the data correctly.
+- The release workflow of story 9.2 starts the new image, with its pinned runtime, against a data folder written by the previous release, and confirms that it opens the data, refuses it as not yet updated, fires an alarm set under the previous release, and reads the installation's own data.
+- A test build made from the same commit and runtime converts the same data under an update record set by a test, and the result matches the expected records.
 
 **Refusals and edge cases**
 - A release that fails this check is not published.
 
 **Evidence to record**
 - Before a second release exists, the check is run with a data folder written by an earlier tagged build and a test conversion, and the result is recorded.
-
-Notes: R14's fallback is to hold the runtime version and move data by portable backup. A first run on 2026-11-19 opened data written by a January 2025 runtime under four later versions up to November 2026, step by step, in one jump and going back, with identical content; the check is still repeated for every release.
 
 ### Story 9.6: Installed version and update check
 
@@ -3979,15 +4254,16 @@ Covers: FR-72 (version, check), FR-71, AD-21. Screens: S-35, S-28.
 - Turning the check on or off appears in the activity log.
 
 **Refusals and edge cases**
-- A release is offered only if its version is higher than the installed one. (CF-25)
-- An installed version that is newer than, or absent from, the list shows "Up to date" with no offer to install an older release. (CF-25)
-- A check that fails or reads a malformed list shows the time and reason of the failure, keeps the result of the last successful check, and raises no update-available dot of its own. (CF-26)
+- A release is offered only if its version is higher than the installed one. (CF-25 · reading)
+- An installed version that is newer than, or absent from, the list shows "Up to date" with no offer to install an older release. (CF-25 · reading)
+- A check that fails or reads a malformed list shows the time and reason of the failure, keeps the result of the last successful check, and raises no update-available dot of its own. (CF-26 · reading)
 
 **Limits and values**
 - With the check turned off, S-35 reads "Update checks are off".
 
 **Access and restore**
 - A standard user sees no version notice, no dot and no Update control, and a direct call to the software functions is refused.
+- A project revision restore leaves the update-check setting unchanged.
 
 **Evidence to record**
 - A test captures the check request and finds only the public address and standard headers: no project data, no user data and nothing identifying the installation.
@@ -3998,55 +4274,67 @@ Notes: Left to later stories: the Update control (story 9.7 self-hosted, story 9
 
 As an administrator of a self-hosted installation, I want to install a new release with one action, so that updating needs no command line and loses no saved work.
 
-Covers: FR-72, NFR-8, FR-71, AD-21. Screens: S-35.
+Covers: FR-72, NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
-- With a newer release available, S-35 shows what the update will do in order, how long users will be interrupted, and Update now; nothing installs without that action.
+- With a newer release available, S-35 shows what the update will do in order, an estimate of how long changes will be stopped, taken from the stored size and the duration of the last backup, and Update now; nothing installs without that action.
 - The Compose file gains the updater container, the only part allowed to start and stop containers.
-- The application reaches the updater over a private connection protected by a shared secret.
-- The steps run in this order: the updater verifies the image's signature; signed-in users are warned; changes of every kind stop; a complete backup of every project and of the installation's data is taken as the "before an update" backup of story 8.1; the pending-update marker is set; the updater records that installation has begun and swaps the image; the new version converts every project and the installation's own data; the health check of story 9.4 runs.
-- The administrator's screen shows the progress list (signature checked, backup taken, new version installed, data converted, checked), each step done, in progress or waiting, with no other control available.
+- The application reaches the updater over a private connection protected by a shared secret, which is also the update secret of story 9.3.
+- On Update now, the installation writes the update record as stopping and gives the updater the attempt identifier and the release. The updater verifies the image's signature and pulls the image by its digest before any user is warned. The stop time is set only when the updater has reported the image verified and pulled; if the updater cannot be reached, the record is removed and the refusal is shown before any warning.
+- Then: signed-in users are warned; at the stop time changes of every kind stop; a complete backup of every project and of the installation's data is taken as the "before an update" backup of story 8.1; the record becomes prepared; the updater asks whether the attempt stands, giving its identifier, the version and the running image's digest, which the installation stores as the way back while setting the record to installing; the updater removes the old container and then starts the new one by digest; under the new version the installation converts every project and its own data and runs the health check of story 9.4; the updater waits until the installation reports success or failure.
+- The administrator's S-35 shows the progress list (signature checked, backup taken, new version installed, data converted, checked), each step done, in progress or waiting.
 - After a successful update S-35 shows the new version and a link to its notes, and every project opens with its data intact.
 - An installation two releases behind updates directly to the latest in one update, with its data converted.
 - The update, each step and its outcome are recorded in the activity log with the administrator who started it.
 
 **Refusals and edge cases**
-- The updater refuses a version that is not from the configured repository.
-- A release with a bad signature is refused before users are warned, nothing is installed, and the refusal is shown and logged.
-- If the backup fails, nothing is installed, changes are accepted again, and the failure is shown and logged.
-- The marker is written only after the complete backup has succeeded and before installation changes anything: a failure before that point leaves no marker, and a restart then works normally.
-- While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason, and a second administrator's request to update is refused by the server. (CF-27)
-- A daily backup that falls due during an update does not start until the update has finished. (CF-27)
+- The updater refuses a version that is not from the configured repository and channel.
+- A release with a bad signature, or an image that cannot be pulled, is refused before users are warned: the record is removed, nothing is installed, and the refusal is shown and logged.
+- The updater starts exactly the digest it verified; a tag pointed elsewhere after the check is not used.
+- If its yes is refused, or no record exists for its attempt, the updater ends without touching any container and discards the attempt; it waits for a yes no longer than the prepared time limit of story 9.3.
+- The application container has no restart policy that could start a replaced image again.
+- If the backup fails, the record is removed, nothing is installed, changes are accepted again, and the failure is shown and logged.
+- While an update, a backup or a restore job runs, Update, Back up now and Restore are disabled with the reason, and a second administrator's request to update is refused by the server. (CF-27 · reading)
+- A daily backup that falls due during an update does not start until the update has finished. (CF-27 · reading)
+
+**Limits and values**
+- The updater's time limit after the yes is three times the estimate shown on S-35, at least 30 minutes and at most 5 hours. (CF-42 · value)
 
 **Access and restore**
 - Only an administrator can use Update now; a standard user's direct call is refused.
 
-Notes: Left to later stories: what signed-in users and open pages see (story 9.8); the command line and the update instructions (story 9.9); a failure after installation has begun (story 9.10).
+Notes: Left to later stories: what signed-in users and open pages see (story 9.8); the command line and the update instructions (story 9.9); a failure after installation has begun (story 9.10). The releases for "two releases behind" come from the test channel of story 9.2.
 
 ### Story 9.8: What people see while an update runs
 
 As a designer, I want to be warned before an update and to keep my unsaved work through it, so that an update interrupts me without costing me anything.
 
-Covers: FR-72, FR-21, NFR-2, NFR-8, UX decision D13. Screens: S-35, S-26.
+Covers: FR-72, FR-21, NFR-2, NFR-8, AD-20, UX decision D13. Screens: S-35, S-26.
 
 **Core behaviour**
 - Signed-in users see a banner before saving stops.
-- While the update runs, every page shows a full-page "Updating" notice, which clears by itself when the update ends.
+- During the warning or the backup an administrator can cancel the update on S-35, which removes the update record, clears the banner and accepts changes again.
+- While the update runs, every page shows a full-page "Updating" notice, which clears by itself when the update ends; an administrator's S-35 shows the progress list instead. (CF-45 · reading)
 - A page that was open during the update still holds its unsaved edits afterwards and submits them.
+- An edit answered "updating" stays unsaved and is sent again automatically when the update ends, as after a lost connection.
+- A page that was warned shows the Updating notice while the server cannot be reached.
 
 **Refusals and edge cases**
-- No save, upload, administrative change or reviewer-link decision is acknowledged between the start of the backup and the new version starting.
-- While changes are stopped, sign-in is not offered: the sign-in page shows the Updating notice. (CF-28)
-- While changes are stopped, existing sessions stay valid.
+- No save, upload, administrative change or reviewer-link decision is acknowledged between the time changes stop and the end of the update or of its return.
+- While changes are stopped, sign-in is not offered: the sign-in page shows the Updating notice. (CF-28 · reading)
+- While changes are stopped, existing sessions stay valid, and idle time does not count towards their expiry.
+- Signing out during an update ends the session.
 - While changes are stopped, no activity-log entry other than the update's own is written.
-- An edit the new version cannot accept stays listed as not saved with its content readable. (CF-29)
-- After such an edit the page asks the user to reload and does not reload by itself. (CF-29)
+- An edit the new version cannot accept stays listed as not saved with its content readable. (CF-29 · reading)
+- After such an edit the page asks the user to reload and does not reload by itself. (CF-29 · reading)
 
 **Limits and values**
 - The banner appears two minutes before saving stops and reads "An update starts in 2 minutes. Your unsaved work will be kept on this page."
+- An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Survey Design". (CF-46 · value)
 
 **Evidence to record**
 - A test that sends saves throughout an update finds every acknowledged one present afterwards.
+- A test with a 15-minute session period across a 20-minute update finds the session still valid afterwards.
 
 ### Story 9.9: Self-hosted update from the command line, and the update instructions
 
@@ -4066,24 +4354,26 @@ Covers: FR-72, FR-66 (instructions), AD-21. Screens: S-35.
 
 As an administrator of a self-hosted installation, I want a failed update to put back the earlier version and its data and tell me so, so that a bad release never leaves us without a working system.
 
-Covers: FR-72 (return), NFR-8, FR-71, AD-21. Screens: S-35.
+Covers: FR-72 (return), NFR-8, FR-71, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
-- If installing, converting or the health check fails, the updater starts the earlier image and restores nothing itself.
-- The earlier image, finding the marker, restores the pre-update backup as in story 9.4.
+- If installing, converting or the health check fails, or the time limit passes, the updater asks the installation to return, presenting the attempt identifier and the update secret. Once the installation confirms that the record is returning, the updater stops the new container and starts the earlier image by its recorded digest. The updater restores nothing itself.
+- If the installation answers, by the record or by the attempt's recorded outcome, that the update has succeeded, the updater ends without starting the earlier image.
+- If no container answers the request to return within 60 seconds, the updater stops the new container if it is still running, then starts the earlier image by its recorded digest and repeats the request, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the updater stops the earlier container, waits for it to exit, and starts the new image again. (CF-47 · value)
+- The earlier version restores what was converted, as in story 9.4, and reports that the data is back. The updater waits for that report.
 - The updater then reports the outcome: S-35 shows which step failed and a plain statement that the earlier version and its data are running again.
-- A conversion failure for any one project counts as a failed step and returns the whole installation; no project is left at the new version.
-- After a return, every save acknowledged before the update is present.
-- After a return, changes are accepted again.
-- The failed attempt is recorded in the activity log after the return, so that the entry is present in the returned installation.
-- The published update instructions describe going back by hand after an update that passed its checks and was found broken later: install the earlier version and restore the pre-update backup from the command line, with the statement that changes made since the update are lost. (CF-30)
+- A conversion failure for any one project fails the update and returns the whole installation; no project is left at the new version.
+- After a return, every save acknowledged before the update is present, and changes are accepted again.
+- After a return, the activity log holds the update's step entries and the failed attempt.
+- The published update instructions describe going back by hand after an update that passed its checks and was found broken later: install the earlier version and restore the pre-update backup from the command line, with the statement that changes made since the update are lost. (CF-30 · reading)
 
 **Refusals and edge cases**
 - If the return itself fails, S-35 and the sign-in page show a prominent warning that never reads as success.
 - That warning states what condition the installation is in and shows the command-line steps to recover by hand.
 - The updater records each step durably before starting it.
-- After the server loses power or the updater is killed before installation had begun, on restart any marker is cleared, changes are accepted again, and the attempt is logged as interrupted. (CF-31)
-- After the server loses power or the updater is killed once installation had begun, on restart the installation returns to the earlier version and the backup. (CF-31)
+- After the server loses power or the updater is killed while the record is stopping, the backup resumes on restart; while the record is prepared, the updater asks on restart for the record to be withdrawn, changes are accepted again, and the attempt is logged as interrupted. (CF-31 · reading)
+- After the server loses power or the updater is killed once the record is installing or returning, the updater decides on restart from its step log and the record: with the record returning, it stops the new container if it is still running and starts the earlier image; with the record installing and the new image started, it uses the new container if that is still running and otherwise starts the new image, and the update continues, returning only on failure, a refused start counting as one; with the new image never started, it starts the earlier image by its recorded digest, so that the earlier version is running when the passed arrival deadline returns the installation. (CF-31 · reading)
+- If the updater stops after its yes and never swaps the image, the arrival deadline sets the record to returning and, with its data unchanged, the installation removes the record and accepts changes again.
 - The installation is never left refusing changes with no update running.
 
 **Evidence to record**
@@ -4096,78 +4386,90 @@ As Kevin, I want a self-hosted update broken at each step and the outcome record
 Covers: FR-72 (return), NFR-8, experiment R11.
 
 **Core behaviour**
-- On a test server an update is broken at each step in turn: the signature, the backup, the image swap, the conversion of one project, each part of the health check, the return, and a forced kill between each pair of steps.
+- On a test server an update is broken at each step in turn: the signature, an image that cannot be pulled, a cancel during the warning, the backup, the updater stopped during the backup, the updater stopped after its yes and before the swap, the image swap, the conversion of one project, each part of the health check, the time limit passing just as the update succeeds, the return, no container answering the request to return, a power loss during the return, a cancel during the backup, and a forced kill between each pair of steps.
+- Two updates are run one after the other, and the second succeeds.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.7 and story 9.10.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
+- On an installation at the acceptance size, how long changes stay stopped is measured for a successful update and for a return, split into backup, conversion and restore, and compared with the estimate shown on S-35.
+- The time from the yes to the new container answering is measured, and the arrival deadline is confirmed to exceed it with margin.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The Cloudflare part of R11 is story 9.15.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The releases come from the test channel of story 9.2; any used as the version before are built from a commit that contains story 9.3 to story 9.10. The Cloudflare part of R11 is story 9.15.
 
 ### Story 9.12: The Cloudflare update workflow
 
 As an administrator of a Cloudflare installation, I want our own deployment of a release to check it, install it and roll back by itself, so that updating on Cloudflare is as safe as on our own server.
 
-Covers: FR-72, NFR-8, FR-71, AD-21, experiment R10.
+Covers: FR-72, NFR-8, FR-71, AD-20, AD-21, experiments R10 and R11.
 
 **Core behaviour**
 - The organisation's copy of the repository contains an update workflow that is started with the name of the release to install and the identifier of the attempt it is started for.
+- The update secret of story 9.3, copied by an administrator into the organisation's repository, is presented by the workflow on every call to the installation.
 - The workflow, not the Worker, verifies the release's signature, and does so before it deploys anything.
-- Immediately before deploying, the workflow asks the installation whether the marker still stands, presenting its attempt identifier, and in that same step the installation records in the marker that installation has begun. (CF-32)
-- The installation answers yes only when a marker exists, is not withdrawn, names the same release and carries the same attempt identifier; on any other answer the workflow stops without deploying.
-- Once installation is recorded as begun, the marker cannot be withdrawn; only a completed update or a completed return clears it.
-- With a good signature the workflow deploys the release, and the new version converts every project and the installation's own data and runs the health check of story 9.4.
-- On success the marker is cleared and S-35 shows the new version.
-- If the conversion of any project or the health check fails, the workflow redeploys the previous version with Cloudflare's rollback command.
-- The earlier version, finding the marker, restores the pre-update backup as in story 9.4. Once the run is confirmed finished, it clears the marker, accepts changes again and records the failed attempt in the activity log.
+- Immediately before deploying, the workflow notes the Cloudflare version now deployed and asks the installation whether its attempt still stands, presenting the identifier, the release and that version. The installation answers yes only for a prepared record with the same identifier and release, and in the same step sets it to installing and stores that version as the way back. (CF-32 · reading)
+- With a yes, the workflow deploys the release in Cloudflare's `immediate` code-update mode, so that running Durable Objects are replaced at once.
+- Under the new version the installation object converts every project and its own data and runs the health check of story 9.4. The workflow asks the installation for the state of the update until it reports success or failure, and treats "updating" and version refusals as not finished.
+- On success the record is removed and S-35 shows the new version.
+- If the conversion of any project or the health check fails, or the time limit passes, the workflow asks the installation to return. Once the installation confirms that the record is returning, the workflow redeploys the stored version with Cloudflare's rollback in `immediate` mode or, if the rollback cannot do that, deploys that release's bundle in `immediate` mode.
+- The earlier version restores what was converted, as in story 9.4, removes the record, accepts changes again and records the failed attempt in the activity log.
 
 **Refusals and edge cases**
-- With a bad signature the workflow deploys nothing and reports the refusal; once the run is confirmed finished, the installation clears the marker, accepts changes again, and shows and logs the refusal.
-- If no marker exists, or the marker has been withdrawn or names another release, the workflow deploys nothing and ends. (CF-32)
-- A run started for a cancelled attempt deploys nothing even when a newer marker names the same release, because its attempt identifier does not match.
-- If the run deploys the new version and then stops before its health check, the new version on starting finds the marker naming its own version, completes the conversions and runs the health check itself, and clears the marker on success.
-- If that conversion or health check fails, the new version stays stopped for changes and shows the warning of story 9.10 with the manual return steps, because only the workflow can roll a Cloudflare deployment back.
+- With a bad signature the workflow deploys nothing and reports the refusal to the installation with its identifier; the installation withdraws only a prepared record with that identifier and release, accepts changes again, and shows and logs the refusal.
+- If no prepared record with the same identifier and release exists, the workflow deploys nothing and ends. (CF-32 · reading)
+- A run started for a withdrawn attempt deploys nothing even when a newer record names the same release, because its identifier does not match.
+- If the reply to its question is lost, the workflow asks again and receives the same yes and the way back stored at the first.
+- If the installation answers, by the record or by the attempt's recorded outcome, that the update has succeeded, the workflow ends without a rollback.
+- If the installation cannot be reached to confirm a return, the workflow redeploys the stored version and repeats the request to return, which the version before accepts while the record is installing; if that version finds the attempt recorded as succeeded, the workflow deploys the release again.
+- If, after deploying, the workflow finds its attempt returning or recorded as returned, it redeploys the stored version itself; an attempt recorded as succeeded is left alone.
+- With its class-change input, the workflow never asks for a return and never redeploys an earlier version; the record carries a class-change flag under which the installation never sets returning by itself, and on a failure the public notice shows the recovery from the pre-update backup.
+- If the run stops after its yes and before deploying, the arrival deadline makes the installation, still running the version before, set the record to returning, remove it and accept changes again.
+- A deployment of the new version that lands after that finds no record and data in an older format, refuses requests as in story 1.1, and its refusal shows the steps to redeploy the previous release.
+- If the run deploys the new version and then stops, the installation object completes the conversions and the health check by itself under the new version, an alarm under the new version counting as its arrival, and removes the record on success.
+- If that conversion or health check fails with no run left to roll back, the installation sets the record to returning, and the public "updating" notice of story 9.3 gives the steps to redeploy the previous release, after which the earlier version completes the return.
 - If the rollback or the restore cannot be completed, the installation shows the warning of story 9.10 with Cloudflare deployment steps to recover by hand, and never reports success.
+
+**Limits and values**
+- The workflow's time limit runs from the yes, includes the deployment, and is three times the estimate shown on S-35, at least 30 minutes and at most 5 hours. (CF-42 · value)
 
 **Evidence to record**
 - On a deployed Cloudflare test installation, the redeployment rule of story 1.2 and story 1.5 holds for a deployment by the workflow: after an update a user with two-step verification signs in with a current code, and a settings secret saved before the update still works.
-- All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the marker set by a test function.
+- All criteria here are tested on a deployed Cloudflare test installation, with runs started by hand in GitHub and the record set by a test build.
 
-Notes: Experiment R10 was run on 2026-11-18 and chose the workflow run over a deploy hook, which cannot name a version; it also found that Cloudflare's rollback never undoes data changes. Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14). Experiment R11 in story 9.15 covers the run that stops after deploying and the cases after the time limit.
+Notes: Experiment R10, run on 2026-11-18, found that a deploy hook cannot name a version, so AD-21 chose the workflow run; it also found that Cloudflare's rollback never undoes data changes. The first part of R11 found that a deployment in `immediate` mode replaced a busy object in about 2 seconds; the second part found that a rollback accepts that mode too, and that a rollback restores the Worker secrets of the version it returns to. Left to later stories: starting the run from the interface (story 9.13); manual steps and releases that change a Durable Object class (story 9.14).
 
 ### Story 9.13: Update a Cloudflare installation with one action
 
 As an administrator of a Cloudflare installation, I want Update to start our own deployment of the new release, so that updating needs one action and no visit to GitHub.
 
-Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Screens: S-35, S-33.
+Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-20, AD-21, experiment R16. Screens: S-35, S-33.
 
 **Core behaviour**
 - An administrator stores a GitHub token for the organisation's copy of the repository in Settings.
 - The token is kept as the other settings secrets of story 1.15 are: encrypted and showing only its last 4 characters.
 - Saving or replacing the token is logged without its value.
 - A recovery without the deployment key (story 8.8) clears the token with the other stored secrets.
-- With a newer release and a stored token, S-35 shows what the update will do in order, how long users will be interrupted, and Update now.
-- Before anything is stopped, Update checks that the token can start the update workflow in the organisation's copy and that the named release exists in the public release list.
-- After those checks the control warns signed-in users as in story 9.8, stops accepting changes of every kind, takes the complete "before an update" backup, sets the pending-update marker once that backup has succeeded, and starts a run of the workflow of story 9.12 through GitHub, naming the release and the marker's attempt identifier.
+- With a newer release and a stored token, S-35 shows what the update will do in order, an estimate of how long changes will be stopped, taken from the stored size and the duration of the last backup, and Update now.
+- Before anything is stopped, Update reads the update workflow in the organisation's copy with the token, confirming that the token reaches it, and checks that the named release exists in the public release list.
+- After those checks the installation writes the update record as stopping, warns signed-in users as in story 9.8, stops accepting changes of every kind at the stop time, takes the complete "before an update" backup, makes the record prepared once that backup has succeeded, and, after noting in the record that the run is being started, starts one run of the workflow of story 9.12 through GitHub, naming the release and the record's attempt identifier; no second run is ever started for that attempt.
 - The release's signature is therefore verified after users are warned, changes stopped and the backup taken; S-35 lists the steps in that order and states that this differs from a self-hosted update, which verifies first.
 - Every attempt and its outcome is recorded in the activity log with the administrator who started it.
 
 **Refusals and edge cases**
 - If either check before stopping fails, the reason is shown, no user is warned and changes continue to be accepted.
-- If the backup fails, no marker is written, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
-- If GitHub refuses the request to start the run with an error, the run is confirmed not started: nothing is deployed, the marker is cleared, changes are accepted again, and the attempt is shown and logged.
-- If the answer to that request is lost or unclear, the installation does not treat a run missing from GitHub's list as proof that none exists; it marks the marker withdrawn, which succeeds only if installation has not been recorded as begun.
-- Once the marker is withdrawn, no run for this attempt can deploy, because the check of story 9.12 answers yes only to a standing marker with the same attempt identifier; the marker is then cleared, changes are accepted again, and the attempt is shown and logged as "start not confirmed".
-- If installation has already been recorded as begun when the installation tries to withdraw, a run did start, and the attempt continues as a running update.
+- If the backup fails, the record is removed, nothing is deployed, changes are accepted again, and the attempt is shown and logged.
+- If GitHub refuses the request to start the run with a client error, the run is confirmed not started: nothing is deployed, the prepared record is withdrawn, changes are accepted again, and the attempt is shown and logged.
+- If GitHub answers with a server error, does not answer in time, or the answer is lost, the installation does not treat a run missing from GitHub's list as proof that none exists; it withdraws the prepared record, which succeeds only while the record is still prepared.
+- Once the record is withdrawn, no run for this attempt can deploy, because the check of story 9.12 answers yes only to a prepared record with the same identifier; changes are accepted again, and the attempt is shown and logged as "start not confirmed".
+- If the record is already installing when the installation tries to withdraw it, a run did start, and the attempt continues as a running update.
 - While an update runs a second request to update is refused, and Update is disabled with the reason while a backup or restore job is running.
-- When the time limit passes with no result, the installation asks GitHub to cancel the run and tries to withdraw the marker.
-- If installation has not been recorded as begun, the withdrawal succeeds: the marker is cleared, changes are accepted again, and the attempt is shown and logged as "no result".
+- When a prepared record is withdrawn for having no yes in time, as story 9.3 states, the installation also asks GitHub to cancel the run, and the attempt is shown and logged as "no result".
 - A run for a withdrawn attempt fails the check of story 9.12 and stops without deploying, whether or not GitHub cancelled it.
-- If installation has been recorded as begun, changes stay stopped until the update or the return has completed, whatever the time limit.
-- If installation has begun and neither the update nor the return can be confirmed complete, the installation stays stopped for changes and shows the warning of story 9.10 with the Cloudflare steps to recover by hand.
+- If the record is installing, changes stay stopped until the update or the return has completed, whatever the time; a version being installed that never arrives is returned from as in story 9.12.
+- If the record is installing and neither the update nor the return can be confirmed complete, the installation stays stopped for changes and shows the warning of story 9.10 with the Cloudflare steps to recover by hand.
 
-**Limits and values**
-- The time limit for a result from the run is 30 minutes from starting it. (CF-33)
+**Access and restore**
+- A project revision restore leaves the GitHub token unchanged; it is an installation setting.
 
 **Evidence to record**
 - Experiment R16: a fine-grained token with only the Actions permission is tried; the narrowest permission that starts the run is recorded, or the classic `repo` scope is recorded if none narrower works.
@@ -4178,19 +4480,22 @@ Covers: FR-72, NFR-8, FR-70 (Settings), FR-71, AD-17, AD-21, experiment R16. Scr
 
 As an administrator of a Cloudflare installation, I want exact steps for updating without one-step deployment and clear warning when a release cannot be returned from, so that I can always update and always know the way back.
 
-Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
+Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-20, AD-21. Screens: S-35.
 
 **Core behaviour**
 - Without a stored token, S-35 shows numbered steps to run the workflow by hand in place of Update now, including the backup first and the way back.
-- The first manual step is "Prepare for a manual update" on S-35, which warns users, stops changes, takes the backup and sets the marker exactly as Update now does. (CF-34)
+- The first manual step is "Prepare for a manual update" on S-35, which writes the update record as stopping, warns users, stops changes, takes the backup and makes the record prepared exactly as Update now does. (CF-34 · reading)
 - After preparing, S-35 shows the attempt identifier to enter with the release name when starting the run by hand.
-- For a release marked as changing a Durable Object class, S-35 says before starting that an automatic return is not available and shows the manual procedure in place of Update now.
+- For a release marked as changing a Durable Object class, S-35 says before starting that no automatic return is available and shows the manual procedure in place of Update now.
+- That procedure is: prepare as above; start the workflow by hand with its class-change input; the update then installs, converts and runs the health check as any other, and the record carries the class-change flag of story 9.12, so no automatic return is attempted.
+- If such an update fails, the installation stays stopped for changes and S-35 and the sign-in page give the way back: recover the installation from the pre-update backup into a fresh deployment of the earlier version, as story 8.7 describes.
 - With update checks turned off, S-35 shows the manual steps with a place to name the release.
-- Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
+- Published instructions for updating on Cloudflare cover keeping the organisation's copy of the repository, copying the update secret shown on S-35 into that copy's secrets, turning off any automatic deployment of that copy, creating the token with the permission recorded by R16, storing it in Settings to set up one-step deployment, the manual steps, and the difference in order from a self-hosted update.
 
 **Refusals and edge cases**
-- A manual update prepared and not followed by a run can be cancelled by the administrator: the marker is withdrawn and cleared and changes are accepted again at once, and a run started by hand for that preparation, queued or later, stops without deploying.
-- A run started for a cancelled preparation deploys nothing after a new preparation for the same release, because the new marker carries a new attempt identifier.
+- A manual update prepared and not followed by a run can be cancelled by the administrator: the prepared record is withdrawn and changes are accepted again at once, and a run started by hand for that preparation, queued or later, stops without deploying.
+- A manual preparation not followed by a yes in time is withdrawn by the installation, as story 9.3 states.
+- A run started for a cancelled preparation deploys nothing after a new preparation for the same release, because the new record carries a new attempt identifier.
 
 **Evidence to record**
 - A person follows the manual steps on a test Cloudflare account, and both an update and a return work.
@@ -4200,23 +4505,29 @@ Covers: FR-72 (manual steps), FR-66 (instructions), NFR-7, AD-21. Screens: S-35.
 
 As Kevin, I want a Cloudflare update broken at each step and the outcome recorded, so that the Update control is released only when every failure returns cleanly.
 
-Covers: FR-72 (return), NFR-8, experiment R11.
+Covers: FR-72 (return), NFR-8, AD-20, experiment R11.
 
 **Core behaviour**
-- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, the backup, a run that cannot be started, no result at the time limit before installation has begun, no result at the time limit after it has begun, a run that deploys the new version and stops before its health check with the conversions then passing and then failing, a deployment that lands after the time limit, a bad signature, the conversion of one project, the health check, and the restore.
+- On a test Cloudflare account an update is broken at each step in turn: a bad token, a missing release, a cancel during the warning, the backup, a run that cannot be started, a prepared record with no yes in time, a run that stops after its yes and before deploying, a run that deploys the new version and then stops with the conversions then passing and then failing, a deployment that lands after the installation has returned by itself, a deployment that lands while the record is returning, a third version deployed during an update, a bad signature, the conversion of one project, the health check, the time limit passing just as the update succeeds, and the restore.
+- Two updates are run one after the other, and the second succeeds.
 
 **Refusals and edge cases**
 - The answer to the start request is made to be lost while GitHub has accepted the run, in both orders: with the withdrawal reaching the installation before the run's check, and with the run's check reaching it first.
 - In the first order the run deploys nothing and changes are accepted again; in the second the attempt continues as a running update and ends as an update or a return.
-- A stale earlier version is tried: it reads the marker, is held back until the new version has converted a project, and then tries to take the hold and restore. Whether Cloudflare lets it run at all, and what it does, is observed.
-- A project restore that takes more than one write is interrupted by the new version starting, and what the conversion reads is observed.
+- With objects kept busy across a deployment and a return, the time each object takes to change version is recorded, and no request is found on which old and new code both acted.
+- No object is found to stop itself more often than story 1.1 allows, including while a deployment is still reaching some regions.
 
 **Evidence to record**
 - The observed outcome of each case is recorded and matches the criteria of story 9.12 and story 9.13.
-- Cloudflare's rollback command is confirmed to behave as documented, and the result is recorded.
+- Cloudflare's rollback command is confirmed, with the real update code, to redeploy the named version in `immediate` mode, as the second part of R11 showed with a probe.
+- After a rollback, and after a redeployment of a bundle, the update secret and the deployment key are unchanged and the version before accepts the workflow's request to return.
+- The time from the yes to the arrival of the new version is measured, and the arrival deadline is confirmed to exceed it with margin.
 - After each return, a user signed in before the update continues without signing in again, and a reviewer link issued before it still opens.
+- People in at least two regions use the installation during an update and during a return, and what each of them sees is recorded.
+- On an installation at the acceptance size, how long changes stay stopped is measured for a successful update and for a return, and compared with the estimate shown on S-35.
+- A release that changes a Durable Object class is installed on a test account by the manual procedure of story 9.14, its failure is followed by the way back that story gives, and the result is recorded, including whether Cloudflare refuses a rollback across it.
 
-Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. If the late-deployment case does not end in a working installation, the result is recorded as an open finding against story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, but Durable Objects in use keep running the previous version for about five minutes when busy, and an object can stop itself to restart on the new version at once. Two points are left open for this experiment to settle before the Update control is released: how a stale earlier version is refused the hold while a real rollback is allowed, and how a conversion is kept from reading a part-restored project.
+Notes: R11's fallback is to hold back the release of the Update control until every step returns cleanly. The releases come from the test channel of story 9.2; any used as the version before are built from a commit that contains story 9.3 to story 9.13. A first part was run on 2026-11-19 without the update code: on Cloudflare a deployment or rollback switches the entry code in about half a second and leaves data untouched, Durable Objects in use keep running the previous version for about five minutes when busy, an object asked to stop itself restarted on the new version at once (shown for one object, not yet under load), and a deployment in `immediate` mode replaced a busy object in about 2 seconds. A second part, run on 2026-11-19, showed that a rollback accepts `immediate` mode (a busy object switched about 12 seconds after the command returned) and restores the secrets of the version it returns to. The design that answers this is K20 with its refinements K21 (AD-20).
 
 ## Epic 10: Acceptance
 
@@ -4224,7 +4535,7 @@ Notes: R11's fallback is to hold back the release of the Update control until ev
 
 **Depends on.** Epics 1 to 9 complete. Nothing later.
 
-**Why here.** The PRD's success measures SM-1 to SM-6 can only be shown by one run across everything built, so this verification milestone comes last; it has no story for fixing what it finds, and a miss goes back to the story that owns the behaviour.
+**Why here.** SM-7, agents doing real work, is shown in Epic 11 and is not part of this acceptance (PRD amendment 1.3). The PRD's success measures SM-1 to SM-6 can only be shown by one run across everything built, so this verification milestone comes last; it has no story for fixing what it finds, and a miss goes back to the story that owns the behaviour.
 
 ### Story 10.1: Acceptance fixtures and the workload manifest
 
@@ -4244,11 +4555,11 @@ Covers: acceptance profile, SM-5, NFR-4 (reference calculations).
 - Kevin confirms in writing that the larger fixture is representative, and both manifests are fixed at that point, before any acceptance run.
 
 **Refusals and edge cases**
-- A change to a fixture after the confirmation is recorded as a new manifest version, and the affected runs are repeated. (CF-35)
+- A change to a fixture after the confirmation is recorded as a new manifest version, and the affected runs are repeated. (CF-35 · reading)
 - Timings recorded by earlier stories against the fixture are development measurements and are not quoted as acceptance evidence.
 
 **Limits and values**
-- The small functional project has about 50 devices. (CF-36)
+- The small functional project has about 50 devices. (CF-36 · value)
 
 **Evidence to record**
 - The reference cases, the method and the values are recorded with the manifest.
@@ -4280,7 +4591,7 @@ Covers: NFR-4, SM-5.
 - Initial project open: within 10 seconds.
 - Switch to another saved plan in an open project: within 5 seconds.
 - Busiest-plan analysis after a committed edit: within 10 seconds.
-- While an import, an analysis or an export runs, selection and button feedback still meets its 250 ms target in at least 19 of 20 trials. (CF-37)
+- While an import, an analysis or an export runs, selection and button feedback still meets its 250 ms target in at least 19 of 20 trials. (CF-37 · reading)
 
 **Evidence to record**
 - All results, conditions and outliers are kept.
@@ -4375,6 +4686,8 @@ Covers: NFR-3, SM-4.
 - Hardware, operating system and browser versions and the test conditions are recorded.
 - The result of each accessibility check is recorded for both fixtures.
 
+Notes: The browser tests of standing rule 15 run in desktop Chromium and in WebKit with an iPhone viewport on every change. This story is the evidence on real devices and browsers, which emulation does not replace.
+
 ### Story 10.7: Show installing and updating on Cloudflare
 
 As Kevin, the product owner, I want the Cloudflare parts of the installation and update Checks shown on a fresh account, so that the proof of concept can be accepted on Cloudflare.
@@ -4441,9 +4754,232 @@ Covers: NFR-7, SM-6.
 - Self-hosting is not described as supported in the repository or the instructions until story 10.8 and this story pass.
 
 **Limits and values**
-- The comparison list is: every area of the project frame and every Administration screen opens; and each of these is refused: a Viewer's save, a non-member opening a project, a request on an ended session, a sign-in by a deactivated account, a revoked reviewer link, an expired reviewer link, an upload over its size limit, a portable backup from a newer version, and Update by a standard user. (CF-38)
+- The comparison list is: every area of the project frame and every Administration screen opens; and each of these is refused: a Viewer's save, a non-member opening a project, a request on an ended session, a sign-in by a deactivated account, a revoked reviewer link, an expired reviewer link, an upload over its size limit, a portable backup from a newer version, and Update by a standard user. (CF-38 · reading)
 
 Notes: SM-6 needs both hosts and is complete only when this story passes.
+
+## Epic 11: Work with AI agents
+
+**Outcome.** An AI agent acting for a person can find, read and prepare work in Site Survey Design through a documented API or an MCP endpoint, on Cloudflare or on a private network, while approvals, issuing, closeout and field results stay with people.
+
+**Depends on.** Epics 1 to 8: tokens, route classes and the entered-text field type from Epic 1, and the features the agent uses from Epics 2 to 8. It does not depend on Epic 9 or Epic 10. SM-7 is shown here, outside the acceptance run of Epic 10, as PRD amendment 1.3 states.
+
+**Why here.** The access model was settled in Epic 1 so that every route was born ready for agents; what remains is to describe the API, offer it to agents, and prove it on both hosts. Placing it after Acceptance keeps the confirmed epic order and numbering.
+
+### Story 11.1: API description
+
+As a developer connecting an agent, I want a machine-readable description of the API, so that my agent can call it correctly without reading the code.
+
+Covers: FR-76 (documented, versioned API), AD-22.
+
+**Core behaviour**
+- While agent access is on, the server serves an API description at `/api/v1/openapi.json`, generated from the route declarations in the shared module, without the server's version. (CG-23 · reading)
+- The description lists every route an access token may call, with its input, its reply, its class and its reason codes, and lists no person-only or administrator-only route.
+- The description marks every value that can carry the entered-text wrapper of story 1.1.
+- The description states the bearer-token scheme, the HTTP 429 and 503 replies with `Retry-After`, and the reason code `updating`.
+- A contract test in continuous integration calls each described route on the built bundle and fails when a route's behaviour differs from its description.
+- The description is checked against the previous release's by the same rule as the route declarations, so a field removed or renamed, a type narrowed or a required input added under `/api/v1/` fails the build. (CG-08 · reading)
+- A test that renames one field in a declaration shows the build failing.
+- A reference page generated from the description is published with the installation instructions.
+
+**Refusals and edge cases**
+- A route added without a declaration fails the build.
+- With agent access off, the description is not served, and the request receives HTTP 403 with "agent access is off". (CG-23 · reading)
+- During an update, an API call receives HTTP 503 with `Retry-After` and the reason code `updating`, as the description states, and not a refusal.
+
+**Limits and values**
+- Requests for the description are limited to 60 a minute from one network address. (CG-15 · value)
+
+### Story 11.2: MCP endpoint
+
+As a designer, I want to connect an AI agent to Site Survey Design through MCP, so that it can work in my projects using tools it discovers by itself.
+
+Covers: FR-75, FR-76 (MCP endpoint), AD-22.
+
+**Core behaviour**
+- The server serves an MCP endpoint at `/mcp` using MCP's Streamable HTTP transport, accepting POST and replying with `application/json`, and issues no session identifier. (CG-26 · value)
+- The endpoint supports the MCP protocol revisions listed in the installation instructions, read from the protocol-version header. (CG-26 · value)
+- The endpoint accepts the same bearer tokens as the API, checked by the same gate.
+- Each tool call runs the corresponding route handlers inside the server, through the gate, with the caller's token; it makes no network request to the server's own address.
+- Its tools are generated from the route declarations, with names of at most 64 letters, digits, underscores and hyphens. (CG-17 · value)
+- Routes are grouped into one tool only within one route class and only by a grouping each route declares, so a tool's name and actions do not depend on how many routes exist.
+- The tool list holds no person-only or administrator-only route, and follows the token's kind and the owner's roles: draft tools are listed when the token is read-and-draft and its owner is an Editor on at least one project in the token's scope, and each call is still decided per project.
+- A tool that changes anything is one operation: it is applied whole or not at all, and carries an operation identifier, so a repeated call returns the stored result.
+- A tool call's whole cost against the rate limits, counted as one unit per route handler it runs, is charged before it starts; if it does not fit, the call is refused with HTTP 429 and `Retry-After`, and a started operation is never stopped by a limit.
+- An MCP client connected with a read-and-draft token lists the tools, reads a project and places a camera, and the camera is recorded as via agent.
+- An agent searches issues by an external ticket number and adds an external ticket to a service visit, recorded as via agent.
+- Entered-text values reach the agent marked, in the tool result's structured content and, as JSON with their source, in its text.
+- A person can undo the change made by one tool call as one action from the project's history, however many items it touched; a token cannot undo. (CG-29 · decision)
+- An undo is refused, listing the items concerned, when any of them was changed after the tool call, and an undo never brings back a cleared verified state. (CG-29 · decision)
+- A change made with a token to any field of a verified device clears its verified state, and the device history shows the change via agent. (CG-12 · decision)
+- With a read-only token, an agent lists a project's existing Design and Closeout packages and downloads one.
+- An agent may request a review of a revision; the review's assignee must be a person. (CG-31 · decision)
+- A deletion made with a token can be reversed by a person from the project's history, and permanently removing files or a project is refused to a token with "needs a person". (CG-30 · decision)
+
+**Refusals and edge cases**
+- A CORS preflight (`OPTIONS`) to `/mcp` is answered without a token and runs nothing; it allows any origin to send POST with the `Authorization`, `Content-Type` and protocol-version headers, without credentials. (CG-35 · reading)
+- Other refusals are checked in this order, and the first that applies is given: GET or DELETE receives HTTP 405; with agent access off, HTTP 403 "agent access is off"; without a token, HTTP 401 with a `WWW-Authenticate: Bearer` header, carrying `resource_metadata` with the address of the protected-resource metadata wherever that metadata is served, and "token required", from any origin; an unsupported protocol revision, HTTP 400. (CG-35 · reading)
+- `/mcp` never accepts a session cookie, so a request without a token runs nothing whatever its origin.
+- The 401 without a token carries `Access-Control-Allow-Origin` for any origin, without credentials, and `Access-Control-Expose-Headers: WWW-Authenticate`, so a browser-based client can read the challenge.
+- A request with a valid token is answered to any origin without credentials, including a browser-based MCP client; a request to `/api/v1/` with a session cookie is answered to the app's own origin only.
+- A call to a tool that is not in the caller's list, including a person-only action, receives the protocol's unknown-tool error.
+- A token's request to download a project's portable backup is refused with "needs a person". (CG-11 · decision)
+- A tool call refused by the API returns a tool result marked as an error, with the API's reason code and wording.
+- A refused change returns the item's current version and value with the reason code "changed since", and overwrites nothing.
+- During an update a tool call returns a tool result marked as an error, with the reason code `updating` and the time to retry.
+
+**Limits and values**
+- The full tool list for an Editor's read-and-draft token holds at most 60 tools; above that, related routes are grouped into one tool with an action field. (CG-17 · value)
+
+**Evidence to record**
+- The endpoint is used from Claude Code and from a second, browser-based MCP client on a deployed Cloudflare test installation and under the self-hosted configuration, and the tool list, its length and one draft change are recorded.
+- A contract-test case whose entered text contains the marker syntax shows the text still reaching the agent inside its marked value.
+
+### Story 11.3: Experiment R17, then coverage and estimates for agents
+
+As a designer working with an agent, I want the agent to get the same coverage and estimate figures that I see, so that its suggestions rest on the app's own calculations.
+
+Covers: FR-77 (coverage and estimates), NFR-4, AD-9, AD-13, AD-22, experiment R17.
+
+**Core behaviour**
+- Experiment R17 runs the coverage calculation on the acceptance-size test project, inside one request, on a deployed Cloudflare test installation and under the self-hosted configuration, and records CPU time, wall time, peak memory and each host's configured limits.
+- The calculation fits one request on a host when it uses at most half of every configured limit; the shipped self-hosted configuration sets the container's CPU and memory limits equal to Cloudflare's, and those are the limits used there. (CG-18 · value)
+- If R17 shows the calculation fits on both hosts, an API route returns a floor's coverage results in its reply. (CG-09 · decision)
+- If R17 shows it does not fit on one host or on both, the route starts a job on both hosts and a second route returns its result when done, so the two hosts behave alike. (CG-09 · decision)
+- A job's first reply gives its identifier and a suggested wait, and the tool's description tells the agent to fetch the result after that wait.
+- An API route returns the estimate of the current design.
+- Both routes use the calculation and estimate code of the shared module, unchanged from the browser's.
+- For the same saved design, counts and categories an agent obtains equal those the app shows in Chrome, and areas and percentages agree to within 0.1 percent or 0.1 percentage points. (CG-19 · value)
+
+**Refusals and edge cases**
+- A result whose inputs changed while it was calculated is returned marked as out of date, with the inputs' fingerprint.
+- A calculation that exceeds its time allowance returns incomplete with the reason; sampling is never coarsened to finish (AD-9).
+- A job's result can be fetched only with the token that started it or by its owner, and only while the token and the owner may still read the project.
+- At each step and when its result is fetched, a job checks again that its token is valid, agent access is on and the owner may read the project, and otherwise stops with the reason.
+- A job whose floor or project is deleted or archived stops with the reason code "target gone".
+- A job running when an update changes the code version is restarted under the new version with the same identifier, and its result says it was restarted.
+- A job not finished within 1 hour is given up with the reason, and a result is kept for 24 hours. (CG-34 · value)
+- A token may have at most 3 jobs running and a person at most 5; a further job is refused with the limit stated. (CG-34 · value)
+
+**Evidence to record**
+- R17's measurements on both hosts are recorded in the experiments record.
+
+### Story 11.4: Inventory import for agents
+
+As a designer, I want an agent to import an equipment spreadsheet into my project, so that it can do the mapping work while I review what it found.
+
+Covers: FR-77 (import), FR-56, FR-58, FR-62, AD-10, AD-22, experiment R17.
+
+**Core behaviour**
+- An upload route accepts a CSV or Excel file as the request body and returns a file identifier; the import routes then name that identifier.
+- An MCP client's agent gets a file to the upload route through an upload address that the import tool returns, so the file never passes through the model.
+- The upload address is unguessable, scoped to its path, usable once, valid for 10 minutes and bound to the token and project; using it checks the token and agent access again and counts against the rate limits. (CG-32 · value)
+- The upload address is never written to a log.
+- The server parses the file with the shared module's parser.
+- The agent proposes a column mapping, receives the preview grouped as New, Unchanged, Changed and Needs review with the preview's fingerprint, and applies selected valid rows.
+- Applying is one operation: every selected row is applied, or none is and the reply lists each refused row with its reason.
+- The groups, row errors and outcomes equal those the app shows for the same file and mapping.
+- Imported devices are recorded as imported by the token's owner, via agent, with their import provenance.
+- Imported values keep the source "import" after they are applied, until a member edits them.
+- An MCP client completes an Excel import end to end.
+
+**Refusals and edge cases**
+- Upload, preview and apply are draft-change routes, and a read-only token is refused on each.
+- Applying with a fingerprint that no longer matches the project is refused with "preview out of date".
+- Applying after the upload was removed is refused with "upload gone".
+- A file whose declared size is over 10 MiB is refused before it is read, and a workbook whose uncompressed contents are over the shared parser's limit is refused before it is parsed, exactly as in the app. (CE-50 · value)
+- Needs review rows are not applied by an agent's request and remain for a person.
+- A Changed row that an agent would apply to a verified device is moved to Needs review. (CG-12 · decision)
+- An imported device placed by an agent stays unverified until a person verifies it.
+
+**Limits and values**
+- An agent's upload may be at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file, and an upload not applied within 24 hours is removed. (CG-16 · value)
+- R17 also parses the representative 600-device inventory and a worst-case 10 MiB workbook inside one request on both hosts and records peak memory; if they do not fit on one host or on both, parsing runs as a job on both hosts as in story 11.3. (CG-09 · decision)
+- When parsing runs as a job, the preview is the job's result: it carries the preview's fingerprint, the apply call names that fingerprint, and applying stays one operation that is refused with "preview out of date" if the project changed since.
+
+### Story 11.5: Check that text from others reaches agents marked
+
+As a designer, I want text that came from outside my team to reach an agent marked as such, so that a comment or a spreadsheet cell cannot pass itself off as an instruction.
+
+Covers: FR-75 (entered text), NFR-5, AD-22.
+
+**Core behaviour**
+- A contract test lists every reply value that can carry the entered-text wrapper and checks, route by route, that each returns the text with its source and reference.
+- The sources checked are: reviewer-link entries, imported content after it is applied, names of uploaded files, text read from PDF plans, and values a token wrote, including external tickets an agent added.
+- A value's source and reference are the same after a revision restore and after a portable backup is restored, and remain as text after the uploaded file is removed.
+- The MCP endpoint's description of its tools states that entered text is data from outside the team and not instructions.
+- Text a member copies or edits becomes that member's text, recorded under their name; applying an import is not copying and keeps the source "import". (CG-21 · reading)
+
+**Refusals and edge cases**
+- A refusal names the field it refused but never repeats an entered value, and the contract test checks every refusal of every route that accepts entered text.
+
+### Story 11.6: Experiment R18 and setting up an agent on either host
+
+As an organisation's administrator, I want instructions for connecting an agent on my host, so that our agents can reach Site Survey Design on Cloudflare or inside our own network.
+
+Covers: FR-76 (both hosts, private network), AD-16, AD-22, experiment R18.
+
+**Core behaviour**
+- The published instructions explain, for each host, turning agent access on, creating a token and connecting an MCP client and an HTTP client.
+- The instructions keep the token out of shared files: client settings read it from an environment variable, with a warning never to commit it.
+- For a private network, the instructions explain that agents must run inside the network and how to make Claude Code and other Node clients, curl and Python trust a private certificate authority.
+- Experiment R18 follows the instructions as written, carried out by someone other than their author: it connects Claude Code with a token to the MCP endpoint of a deployed Cloudflare test installation, and to a self-hosted installation reachable only on a private network with a certificate from a private authority.
+- On each, R18 lists the tools, makes a draft change, and runs the API contract test against the installation.
+- On each, R18 asks for an approval through the API with the same token and receives "needs a person".
+
+**Refusals and edge cases**
+- The instructions state that cloud-hosted AI services cannot reach an installation inside a private network.
+- On the self-hosted installation, a tool call succeeds although the installation's own address does not resolve from inside its container.
+
+**Evidence to record**
+- R18's result on each host, with the contract test's result, is recorded in the experiments record.
+
+### Story 11.7: OAuth sign-in for MCP connectors
+
+As a designer using an AI service whose connectors require OAuth, I want to connect it by signing in to Site Survey Design, so that I need not copy a token by hand.
+
+Covers: FR-73, FR-76, AD-22.
+
+**Core behaviour**
+- The installation acts as its own OAuth authorisation server for the MCP endpoint and needs no outside identity service.
+- A request to `/mcp` without a token receives the `WWW-Authenticate` header with the address of the protected-resource metadata, and the installation serves that metadata and its authorisation-server metadata.
+- Connectors register by dynamic client registration (RFC 7591); the installation fetches no client metadata from outside.
+- Registration is limited to 20 a hour from one network address, and a registration unused for 30 days is removed. (CG-36 · value)
+- Every authorisation uses PKCE with S256, an exactly matching redirect address, a state value and the endpoint as its resource.
+- A connector that starts OAuth sends the person to Site Survey Design's sign-in, including the second step, then to a consent page.
+- The consent page shows the redirect address's host prominently, the connector's name marked as given by the connector itself, the token kind, the projects and an expiry, 90 days unless changed and within the installation's maximum.
+- On consent the installation issues a token of the chosen kind, bound to that connector, listed under the person's Access tokens with the connector named, and counted among the person's active tokens.
+- A refresh replaces the token's value without adding a list entry and never extends access beyond the token's expiry; revoking the token, deactivating the account or recovering the installation ends its refresh grant.
+
+**Refusals and edge cases**
+- With agent access off, sign-in for a connector is refused.
+- Agent access, the account and its membership are checked again when consent is given, and a change since sign-in refuses it.
+- Denying consent returns the OAuth "access denied" reply and issues nothing.
+- A person who must set up two-step verification is sent to set it up first.
+- A person with no project is told so on the consent page, and no token is issued.
+- A person already holding the maximum number of active tokens is told so on the consent page, and no token is issued.
+- A redirect address that does not match exactly, or an authorisation without PKCE, is refused.
+- Revoking the token from Access tokens ends the connector's access on its next call.
+
+**Limits and values**
+- Requests to the OAuth routes are limited to 60 a minute from one network address. (CG-15 · value)
+
+Notes: Optional (sprint change proposal choice D4). Tokens created by hand remain the main way in, and a cloud connector still cannot reach an installation inside a private network.
+
+### Story 11.8: Acceptance: an agent does real work on both hosts
+
+As Kevin, I want to see an agent do a real piece of design work on both hosts, so that I know agents can use Site Survey Design as intended.
+
+Covers: SM-7, FR-73, FR-74, FR-75, FR-76, FR-77.
+
+**Core behaviour**
+- On a deployed Cloudflare test installation, an MCP client acting for an Editor imports an inventory from an Excel file, places a camera, reads its coverage, saves a named draft revision and requests its review with another person as the assignee, each recorded as via agent.
+- The agent's attempt to approve the revision, made through the API with the same token, is refused with "needs a person"; the assignee then approves it.
+- An exported equipment schedule shows the camera's change as made by the Editor via agent.
+- The same run passes on a self-hosted installation reachable only on a private network.
+
+**Evidence to record**
+- Each run's tool calls, results and refusals, and the activity log filtered to agent actions, are kept with the acceptance record.
 
 ## Order and validation
 
@@ -4487,7 +5023,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-18 | 4.5 |
 | FR-19 | 4.6, 7.1, 7.7 |
 | FR-20 | 2.16, 2.17, 2.20, 5.11 |
-| FR-21 | 2.2, 2.3, 2.5, 2.18, 3.1, 5.28, 9.8 |
+| FR-21 | 2.2, 2.3, 2.5, 2.18, 3.1, 5.28, 9.3, 9.8 |
 | FR-22 | 2.20, 4.1, 4.2, 4.5 |
 | FR-23 | 4.7, 5.26 |
 | FR-24 | 4.8, 4.10, 4.11, 4.13, 5.25, 5.26 |
@@ -4499,7 +5035,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-30 | 5.4, 5.9, 5.10, 5.15 |
 | FR-31 | 5.10, 5.11, 5.14, 5.15 |
 | FR-32 | 5.23, 5.24, 5.25 |
-| FR-33 | 4.15, 4.16, 4.17, 5.6, 5.8, 5.18, 5.27, 6.9, 6.12, 6.17, 6.18, 7.11 |
+| FR-33 | 4.15, 4.16, 4.17, 5.6, 5.8, 5.18, 5.27, 6.9, 6.12, 6.17, 6.18, 6.20, 7.11 |
 | FR-34 | 4.1, 4.15, 4.17, 4.18, 5.8, 5.27, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 8.13, 8.14, 10.4 |
 | FR-35 | 6.11, 6.12 |
 | FR-36 | 6.13, 6.14 |
@@ -4512,7 +5048,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-43 | 5.16 |
 | FR-44 | 5.9, 5.10, 5.13, 5.14, 5.20, 5.22 |
 | FR-45 | 2.1, 2.16, 5.25, 6.10, 6.15 |
-| FR-46 | 5.17, 5.18, 5.23, 5.25, 6.15, 6.18 |
+| FR-46 | 5.17, 5.18, 5.23, 5.25, 6.15, 6.18, 6.20 |
 | FR-47 | 4.4, 5.14 |
 | FR-48 | 7.1 |
 | FR-49 | 7.4 |
@@ -4522,16 +5058,16 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-53 | 6.12, 6.14, 7.8 |
 | FR-54 | 6.13 |
 | FR-55 | 2.19, 4.12, 4.14, 5.4, 5.5, 5.10, 5.13, 5.17, 5.24, 6.8, 7.8 |
-| FR-56 | 6.5, 6.6 |
+| FR-56 | 6.5, 6.6, 11.4 |
 | FR-57 | 6.5, 6.6 |
-| FR-58 | 6.4, 6.5, 6.11 |
+| FR-58 | 6.4, 6.5, 6.11, 11.4 |
 | FR-59 | 6.7 |
 | FR-60 | 2.6, 4.1, 5.16, 5.24, 6.11, 7.5, 7.6, 7.9 |
 | FR-61 | 4.12, 4.13, 4.18, 5.1, 5.3 |
-| FR-62 | 6.2, 6.3, 6.4, 6.5 |
+| FR-62 | 6.2, 6.3, 6.4, 6.5, 11.4 |
 | FR-63 | 7.2, 7.3, 8.11 |
 | FR-64 | 5.19, 5.20, 5.21, 5.22, 5.23, 5.24, 5.27 |
-| FR-65 | 6.17, 6.18, 6.19 |
+| FR-65 | 6.17, 6.18, 6.19, 6.20 |
 | FR-66 | 1.2, 1.7, 2.21, 2.22, 2.23, 2.25, 2.26, 9.1, 9.2, 9.9, 9.14, 10.7, 10.8 |
 | FR-67 | 1.3, 1.4, 1.5, 1.6, 1.9, 1.10, 1.11, 1.15, 1.16, 1.17 |
 | FR-68 | 1.7, 1.8, 1.9, 1.12, 1.15, 2.1, 2.3, 3.6, 5.18, 6.12, 6.16, 7.8, 8.10, 8.11, 8.12 |
@@ -4539,11 +5075,17 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | FR-70 | 1.10, 1.11, 1.12, 1.13, 1.15, 1.16, 1.17, 2.7, 2.23, 4.11, 8.3, 8.4, 8.5, 8.12, 8.14, 9.13 |
 | FR-71 | 1.14, 1.15, 4.10, 4.11, 8.1, 8.3, 8.5, 8.7, 8.8, 8.10, 8.11, 8.12, 9.6, 9.7, 9.10, 9.12, 9.13 |
 | FR-72 | 9.2, 9.3, 9.4, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 9.12, 9.13, 9.14, 9.15, 10.7, 10.8 |
+| FR-73 | 1.19, 11.7, 11.8 |
+| FR-74 | 1.19, 11.8 |
+| FR-75 | 1.19, 11.2, 11.5, 11.8 |
+| FR-76 | 1.19, 11.1, 11.2, 11.6, 11.7, 11.8 |
+| FR-77 | 11.3, 11.4, 11.8 |
+| FR-78 | 6.20 |
 | NFR-1 Record integrity | 4.1, 5.24, 6.11, 6.12, 6.13, 8.4, 8.5, 8.11 |
 | NFR-2 Shared-save clarity | 2.2, 2.3, 2.9, 2.17, 2.25, 2.26, 5.11, 5.12, 5.28, 9.8 |
 | NFR-3 Browser, field and accessibility | 3.3, 3.4, 5.1, 5.2, 5.9, 5.11, 5.12, 5.28, 10.6 |
-| NFR-4 Honest analysis and responsiveness | 2.11, 2.12, 2.13, 2.14, 10.1, 10.2, 10.3, 10.4 |
-| NFR-5 Access boundary | 1.2, 1.3, 1.8, 1.9, 2.16, 2.22, 4.10, 4.11, 5.11, 8.1, 8.7, 8.8, 8.10 |
+| NFR-4 Honest analysis and responsiveness | 2.11, 2.12, 2.13, 2.14, 10.1, 10.2, 10.3, 10.4, 11.3 |
+| NFR-5 Access boundary | 1.2, 1.3, 1.8, 1.9, 1.19, 2.16, 2.22, 4.10, 4.11, 5.11, 6.20, 8.1, 8.7, 8.8, 8.10, 11.5 |
 | NFR-6 Consistent deliverables | 3.6, 4.16, 4.17, 5.27 |
 | NFR-7 Same product on either host | 2.21, 2.23, 2.24, 2.25, 2.26, 8.9, 8.11, 8.13, 9.14, 10.8, 10.9 |
 | NFR-8 Safe updates | 9.3, 9.4, 9.5, 9.7, 9.8, 9.10, 9.11, 9.12, 9.13, 9.15 |
@@ -4553,6 +5095,7 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | SM-4 | 10.6, 10.8 |
 | SM-5 | 2.11, 10.1, 10.2, 10.3, 10.4, 10.8 |
 | SM-6 | 9.1, 10.9 |
+| SM-7 | 11.8 |
 
 **Experiments**
 
@@ -4568,12 +5111,14 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | R8 | Done; see the experiments record | 1.1 |
 | R9 | Done; see the experiments record | 1.3 |
 | R10 | Done; see the experiments record | 9.12 |
-| R11 | To run | 9.11, 9.15 |
+| R11 | Partly run; see the experiments record | 9.11, 9.12, 9.15 |
 | R12 | To run | 2.26 |
-| R13 | To run | 1.18 |
-| R14 | To run | 9.5 |
+| R13 | Partly run; see the experiments record | 1.18 |
+| R14 | Partly run; see the experiments record | 9.5 |
 | R15 | To run | 4.16 |
 | R16 | To run | 9.13 |
+| R17 | To run | 11.3, 11.4 |
+| R18 | To run | 11.6 |
 
 **Architecture decisions**
 
@@ -4581,240 +5126,391 @@ Generated from each story's Covers line. Where a requirement is split, the first
 | --- | --- |
 | AD-1 | 1.1, 2.21 |
 | AD-2 | 2.1, 2.26 |
-| AD-3 | 2.9, 2.17, 2.25 |
+| AD-3 | 2.9, 2.17, 2.25, 9.4 |
 | AD-4 | 2.9, 2.25, 4.17, 5.10 |
-| AD-5 | 2.1, 2.2 |
+| AD-5 | 1.19, 2.1, 2.2 |
 | AD-6 | 2.4 |
 | AD-7 | 2.4, 2.18, 4.2 |
 | AD-8 | 4.1 |
-| AD-9 | 2.12, 2.14 |
-| AD-10 | 2.8, 6.2 |
+| AD-9 | 2.12, 2.14, 11.3 |
+| AD-10 | 2.8, 6.2, 11.4 |
 | AD-11 | 4.16, 4.17 |
-| AD-12 | 1.2, 1.3, 1.4, 1.5, 1.8, 1.9, 1.13, 1.16 |
-| AD-13 | 8.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.8, 8.9 |
+| AD-12 | 1.2, 1.3, 1.4, 1.5, 1.8, 1.9, 1.13, 1.16, 1.19, 9.3 |
+| AD-13 | 8.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.8, 8.9, 11.3 |
 | AD-14 | 2.20, 8.10, 8.11, 8.12, 8.13 |
-| AD-16 | 1.1, 2.21, 2.24, 2.25 |
-| AD-17 | 1.1, 1.5, 1.8, 1.15, 2.21, 2.22, 2.23, 9.13 |
+| AD-16 | 1.1, 2.21, 2.24, 2.25, 11.6 |
+| AD-17 | 1.1, 1.5, 1.8, 1.15, 1.19, 2.21, 2.22, 2.23, 9.3, 9.13 |
 | AD-18 | 1.17, 1.18 |
 | AD-19 | 9.2 |
-| AD-20 | 1.1, 9.3, 9.4, 9.5 |
+| AD-20 | 1.1, 9.3, 9.4, 9.5, 9.7, 9.8, 9.10, 9.12, 9.13, 9.14, 9.15 |
 | AD-21 | 1.2, 1.5, 9.6, 9.7, 9.9, 9.10, 9.12, 9.13, 9.14 |
+| AD-22 | 1.1, 1.8, 1.19, 6.20, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7 |
 
 ## Values and readings
 
-**Values nobody specified (62).**
+**Values nobody specified (96).**
+
+*Epic 1: Install, sign in and manage people (34)*
 
 | ID | Story | Choice | Alternative | Why | Kevin's decision |
 | --- | --- | --- | --- | --- | --- |
-| CA-01 | 1.2 | Set-up code is random, at least 20 characters, printed once in the deployment output | A shorter code, or one the installer chooses | AD-12 says only that a one-time code is shown in the deployment output; no length is given | |
-| CA-03 | 1.2 | Password: 12 to 128 characters, not equal to the email, no composition rules | 8-character minimum, or composition rules | Architecture section 15 left the rule open; current published guidance favours length over composition | |
-| CA-04 | 1.2 | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading | |
-| CA-05 | 1.2 | Wrong set-up codes: after 5, refused from any address for 1 minute, doubling to 15 minutes | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in | |
-| CA-07 | 1.3 | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures | |
-| CA-08 | 1.3 | Median sign-in on Cloudflare is under 1 second over 20 sign-ins | A different time bound | The architecture gives no time bound for sign-in; experiment R9 measured about 0.36 s for the hash alone | |
-| CA-09 | 1.4 | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default | |
-| CA-11 | 1.5 | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count | |
-| CA-12 | 1.5 | Codes are 6 digits on a 30-second step; one step either side is accepted | Accept the current step only | Standard authenticator-app settings; AD-12 says only "time-based codes" | |
-| CA-18 | 1.6 | A session ends after 24 hours without use by default | 8 hours or 7 days | FR-67 leaves the period to the administrator and names no default | |
-| CA-21 | 1.7 | Project name is 1 to 120 characters; duplicate names are allowed | Names must be unique | No source gives a bound; properties can share names | |
-| CA-24 | 1.11 | A reset link issued by an administrator expires after 24 hours | 1 hour, as for an emailed link | AD-12 says resets expire and gives no period; a link passed on by hand needs longer | |
-| CA-30 | 1.13 | The recovery code expires after 1 hour | 15 minutes or 24 hours | No source gives a period; it is used at once by the person who ran the command | |
-| CA-31 | 1.14 | The log exports as a CSV file of the filtered entries | JSON, or the whole log regardless of filter | FR-71 says "export" without a format; CSV matches the estimate export | |
-| CA-33 | 1.15 | Session period accepts 15 minutes to 30 days; invitation life accepts 1 to 30 days | No bounds | FR-70 makes both settable and gives no bounds | |
-| CA-35 | 1.15 | A saved secret shows its last 4 characters | Fully masked | UX S-33 says "only its last characters" without a count | |
-| CA-38 | 1.17 | An emailed reset link expires after 1 hour | 24 hours, as for an administrator's link | AD-12 says resets expire and gives no period | |
-| CA-39 | 1.17 | "Forgot password" gives the same reply for every email and sends at most 3 messages per account per hour | No sending limit | NFR-5 forbids revealing whether an email has an account; no source limits sends | |
-| CB-01 | 2.1 | Scope name 1 to 80 characters | 120 characters | No source gives a length; the name must fit the frame chip and list rows | |
-| CB-06 | 2.9 | Unfinished upload discarded after 7 days | 24 hours | Matches Cloudflare's own multipart behaviour seen in experiment R6, so both hosts agree | |
-| CB-07 | 2.9 | Unreferenced completed file removed by a daily clean-up once 24 hours old | Remove after 7 days | 24 hours leaves time for a retried save to reference the file | |
-| CB-13 | 2.11 | Fixture has 25 plans and 20 targeted zones on the busiest plan | 30 plans and 10 zones | PRD acceptance profile allows 20 to 30 plans; 20 zones is the workload of experiment R2 | |
-| CB-17 | 2.14 | Time allowance for one calculation is 10 seconds | 30 seconds | Equal to the PRD target for the busiest plan | |
-| CB-20 | 2.16 | Form wording "Do not enter passwords or access codes for the site's systems." | A longer explanation behind a help link | NFR-5 keeps site credentials out of notes; free text can only be guided | |
-| CB-21 | 2.18 | Undo and redo cover the last 40 edits in the open page | 100 edits | 40 is the prototype's limit; FR-21 limits undo to the current session | |
-| CB-25 | 2.20 | Prototype project file limit 100 MiB | 250 MiB | The prototype's own limit for these files | |
-| CB-28 | 2.22 | Trusted-proxy list defaults to the bundled web server only | Trust any private-network address | Forwarded headers cannot then be forged by another machine | |
-| CB-31 | 2.24 | Smoke suite is a named list of ten cases, one or more per area of Epics 1 and 2 | Run the full server test suite against the image | A named list makes "covered" checkable and keeps the run short | |
-| CB-36 | 2.26 | 50 forced kills | 100 | Experiment R8 used 45; rounded up | |
-| CB-37 | 2.26 | At least 20 power cuts on a virtual-machine disk, and NFS as the network disk | 50 cuts, and SMB as well | R12 names the kinds of disk but no count; 20 matches the PRD's trial size | |
-| CB-40 | 3.5 | Analysis strip checked at 1440 × 900 and 1280 × 720 | 1440 × 900 only | 1440 × 900 is the audit size; 1280 × 720 is a common smaller laptop | |
-| CB-41 | 3.6 | Schedule CSV holds the rows and columns shown and names project, basis and export time | Always export every column | NFR-6 asks deliverables to state what they show | |
-| CB-42 | 3.6 | "Scrolling stays responsive" means no main-thread task over 200 ms while scrolling 600 rows | 50 ms | Below the PRD's 250 ms feedback target, so a click during scrolling still meets it | |
-| CC-01 | 4.1 | Revision identifiers read "Rev A", "Rev B" in order of saving within the scope, never reused | A number per project, or the name alone | The UX frame example reads "Issued: Rev B"; no source defines the identifier | |
-| CC-19 | 4.10 | Reviewer name is required, at most 80 characters | Optional name, or a longer limit | Prevents an anonymous decision; 80 is a conventional display-name limit | |
-| CC-20 | 4.10 | Comment limit 2,000 characters; 200 comments per link | Higher or no limits | Bounds what an unauthenticated link can write; no source gives figures | |
-| CC-22 | 4.11 | Invalid link tokens are slowed with the sign-in figures: 20 from one address in 15 minutes, then 1 minute doubling to 15 | Separate, stricter figures for links | NFR-5 asks for abuse limits on unauthenticated access; reusing the sign-in figures keeps one rule | |
-| CC-23 | 4.11 | Messages: "This link is no longer valid" (revoked or replaced), "This link has expired" (expired) | One message for all three | No source text exists; separate wording tells the reviewer whether to ask for more time | |
-| CC-30 | 4.15 | A package's decision cutoff is the time generation started | The time the last volume was verified | FR-34 requires an explicit cutoff but does not say which moment it is | |
-| CD-02 | 5.1 | At 200% zoom: top row, chip, bottom navigation and form fields operable, nothing cut off, no sideways scrolling of forms | Judge "readable" by eye | NFR-3 asks for readable forms at 200% zoom and gives no measure | |
-| CD-03 | 5.3 | A device added after issue reads "Not in the issued design" in the comparison | Show blank issued values | The PRD is silent; blank values would read as a requirement | |
-| CD-05 | 5.4 | The "Work started with no issued design" warning shows on the Overview and beside both issued-design chips | Overview only | No source says where the project shows it | |
-| CD-15 | 5.12 | Experiment R4 conditions: 25 MiB photo, 400 kbit/s upload, two forced drops | 1 Mbit/s and one drop | The architecture names no profile; 25 MiB is the photo limit and 400 kbit/s a common slow-mobile setting | |
-| CD-21 | 5.18 | Attention count = open issues, deferred included, plus checks flagged Needs review, Retest required or Needs definition in the active scope | Also count unfinished work | Follows the state model's attention indicators; unfinished work would give every active project a large number | |
-| CD-27 | 5.21 | Availability shown to two decimal places and compared with the target before rounding | Whole percentages | The PRD example needs no decimals; rounding must not make a missed target look met | |
-| CD-38 | 5.25 | Label "not saved: scope closed" for a stale-tab save into a closed scope, kept for review | Reuse "not saved: no active scope — reopen first" | Same form as the PRD's rule for an archived project under FR-42 | |
-| CD-36 | 5.28 | Label "not saved: device cancelled or corrected" for a stale mark or attempt onto such a device | Two labels, one for each case | Follows the "not saved: …" form used for other refused saves | |
-| CD-37 | 5.28 | The per-field conflict comparison fits a 360 px wide screen without sideways scrolling | 320 px | The UX asks for a comparison that fits a phone and names no width | |
-| CE-01 | 6.2 | At most 5,000 data rows per inventory file | No row limit, only the 10 MiB size limit | The PRD sets only a file size and says 600 devices is not a ceiling; a row bound keeps browser parsing predictable. | |
-| CE-06 | 6.6 | Field list filters named "Awaiting placement" and "Not site-confirmed" | "Unplaced" and "Unverified" | The PRD addendum asks for filtering by verification state and gives no labels. | |
-| CE-14 | 6.10 | A planned removal not yet recorded is listed as "Removal not recorded" | "Not removed" | The state model completes a Remove by the recorded removal; no source gives the row's wording. | |
-| CE-16 | 6.11 | A refused save onto a removed device is labelled "not saved: device removed" | "not saved: device archived" | Follows the wording pattern of the other refused-save labels. | |
-| CE-25 | 6.16 | A refused save into an archived project is labelled "not saved: project archived" and is not retried | Retry after un-archiving | Follows the wording and behaviour of the other refused-save labels. | |
-| CE-30 | 6.17 | Warranty term in whole months, minimum 1 | Days, or months and years | FR-65's example is a 12-month warranty. | |
-| CE-34 | 6.19 | A service scope's default name is "Service visit" followed by the date | "Service" followed by the issue identifier | FR-65 asks for a default name and gives none. | |
-| CF-06 | 8.4 | An unswitched copy is kept until an administrator discards or replaces it; one per project | Delete an unswitched copy after 7 days | AD-13 gives no period for a copy that is not switched; one copy bounds storage | |
-| CF-09 | 8.6 | The full-size project is 7.5 to 8 GiB stored, made of distinct-content files | Any size the script reports as 8 GiB | Identical files are stored once, so the stored size must be measured | |
-| CF-12 | 8.7 | The recovery notice stays until an administrator dismisses it | Hide it after 30 days | FR-34 requires the notice and gives no duration | |
-| CF-16 | 8.10 | A finished portable backup is kept for download for 24 hours | 7 days | No source gives a period; short holding limits unbudgeted storage | |
-| CF-22 | 8.14 | Usage warning at 90% of the 8 GiB budget | 80% | PRD says "warn before exceeding" and gives no threshold | |
-| CF-33 | 9.13 | 30 minutes without a result ends the wait and starts cancellation | 60 minutes | Allows for a queued run and a full deploy; no source gives a limit | |
-| CF-36 | 10.1 | The small functional project has about 50 devices | About 20 | PRD asks for a small functional project and gives no size | |
+| CA-41 | 1.1 | An object stops itself at most once in 30 seconds; a mismatched call within that time is refused without a further stop | No limit on stops | AD-20 (K20 fix 4) limits stops to one in a short interval so that an object restarted on the same code does not restart over and over, and gives no length | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-01 | 1.2 | Set-up code is random, at least 20 characters, printed once in the deployment output | A shorter code, or one the installer chooses | AD-12 says only that a one-time code is shown in the deployment output; no length is given | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-03 | 1.2 | Password: 12 to 128 characters, not equal to the email, no composition rules | 8-character minimum, or composition rules | Architecture section 15 left the rule open; current published guidance favours length over composition | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-04 | 1.2 | Installation name is 1 to 80 characters | A longer bound | No source gives a bound; fits a sign-in page heading | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-05 | 1.2 | Wrong set-up codes: after 5 from one address, that address waits 1 minute, doubling to 15 minutes; after 100 within an hour from all addresses, every attempt waits out the hour | No limit on set-up attempts | No source limits set-up attempts; same pattern as sign-in; a single count for all addresses would let anyone lock the installer out (review of Epic 1, A5 and its check) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-07 | 1.3 | Sign-in wait: after 5 failures in a row per email or 20 per address in 15 minutes; 1 minute doubling to 15; same wait for unknown emails | Other counts, or a fixed wait | AD-12 says "slowed per account and per address" and gives no figures | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-08 | 1.3 | Median sign-in on Cloudflare is under 1 second over 20 sign-ins | A different time bound | The architecture gives no time bound for sign-in; experiment R9 measured about 0.36 s for the hash alone | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-58 | 1.3 | A refusal for an email with no account checks a fixed stand-in hash, and median refusal times for the two cases are within 100 ms; Forgot password replies before sending | Uniform wording only | NFR-5 forbids revealing whether an email has an account; the time taken would otherwise reveal it (review of Epic 1, A1) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-09 | 1.4 | Invitation lasts 7 days by default | 3 days or 14 days | FR-67 leaves the period to the administrator and names no default | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-55 | 1.4 | Link secrets hold at least 32 random bytes and the administrator recovery code at least 20 random characters; only SHA-256 hashes are stored; link pages send no referrer and clear the secret from the address bar (standing rule 14) | No stated strength or handling | AD-12 states hashing for sessions, recovery codes and tokens only (review of Epic 1, A7) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-11 | 1.5 | 10 recovery codes in a set | 8 or 12 | FR-67 names recovery codes without a count | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-12 | 1.5 | Codes are 6 digits on a 30-second step; one step either side is accepted | Accept the current step only | Standard authenticator-app settings; AD-12 says only "time-based codes" | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-46 | 1.5 | After a correct password, a pending sign-in token, hashed and bound to the browser, lasts 5 minutes and allows only the second step | No stated lifetime | AD-12 gives the second step without saying what carries the state between steps (review of Epic 1, A12) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-18 | 1.6 | A session ends after 24 hours without use by default | 8 hours or 7 days | FR-67 leaves the period to the administrator and names no default | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-47 | 1.6 | A session ends 30 days after sign-in whatever its use; a new session token is issued at sign-in and after the second step | Idle limit only, and one token for the session's life | FR-67 gives only a period without use; a stolen cookie would otherwise never expire (review of Epic 1, A14) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-48 | 1.6 | A deliberate sign-out warns about and removes pending input; input not reclaimed within 7 days is removed | Pending input is kept indefinitely | CA-20 keeps input for its account with no end; on a shared device it would stay readable (review of Epic 1, A15) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-21 | 1.7 | Project name is 1 to 120 characters; duplicate names are allowed | Names must be unique | No source gives a bound; properties can share names | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-24 | 1.11 | A reset link issued by an administrator expires after 24 hours | 1 hour, as for an emailed link | AD-12 says resets expire and gives no period; a link passed on by hand needs longer | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-30 | 1.13 | The recovery code expires after 1 hour | 15 minutes or 24 hours | No source gives a period; it is used at once by the person who ran the command | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-31 | 1.14 | The log exports as a CSV file of the filtered entries | JSON, or the whole log regardless of filter | FR-71 says "export" without a format; CSV matches the estimate export | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-56 | 1.14 | Failed sign-ins from one address within a minute are logged as one entry with a count; CSV cells beginning with = + - @ are prefixed with an apostrophe; the export is paged and 100,000 entries complete on Cloudflare | One entry per failure and a plain export | FR-71 keeps every entry for the life of the installation; unauthenticated requests could otherwise grow it without limit (review of Epic 1, A18) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-33 | 1.15 | Session period accepts 15 minutes to 30 days; invitation life accepts 1 to 30 days | No bounds | FR-70 makes both settable and gives no bounds | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-35 | 1.15 | A saved secret shows its last 4 characters | Fully masked | UX S-33 says "only its last characters" without a count | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-38 | 1.17 | An emailed reset link expires after 1 hour | 24 hours, as for an administrator's link | AD-12 says resets expire and gives no period | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-39 | 1.17 | "Forgot password" gives the same reply for every email and sends at most 3 messages per account per hour | No sending limit | NFR-5 forbids revealing whether an email has an account; no source limits sends | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-53 | 1.17 | Forgot password limited to 10 requests per network address per hour; the installation sends at most 100 messages an hour in total | Only the per-account limit of CA-39 | CA-39 limits one account only; without more, the installation can be used to flood its own users and get its email service suspended (review of Epic 1, A11) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-42 | 1.18 | SMTP connect times out after 10 seconds and each reply after 30 seconds | 30 seconds to connect, 60 seconds for each reply | No source gives a limit; a mail server that accepts and never replies would otherwise hang the test message until a platform limit ends it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CG-02 | 1.19 | Token expiry 90 days by default, at most 1 year, maximum lowerable by an administrator | No expiry, or a fixed lifetime | Sprint change proposal choice D2 | Yes (Kevin, sprint change proposal, 2026-11-19) |
+| CG-04 | 1.19 | 300 requests a minute per token, then "too many requests" with the time to wait | A lower or higher limit, or none | NFR-5 under amendment 1.3 asks for a limit and names none; generous for one agent, low enough to stop a runaway loop | Yes (Kevin, 2026-11-19) |
+| CG-06 | 1.19 | Tokens start with ssat_ and hold at least 32 random bytes | No prefix | A prefix lets secret scanners and people recognise a leaked token | Yes (Kevin, 2026-11-19) |
+| CG-07 | 1.19 | An expired or revoked token stays listed, greyed, for 30 days | Removed at once | Lets the owner see why an agent stopped working | Yes (Kevin, 2026-11-19) |
+| CG-13 | 1.19 | All of one person's tokens together: 600 requests a minute; at most 10 active tokens per person | No cap per person | Stops the per-token limit being multiplied (review E33, A20) | Yes (Kevin, 2026-11-19) |
+| CG-14 | 1.19 | 20 refused token requests a minute from one address, then 429 | No limit on failed tokens | Throttles token guessing (review E32) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-33 | 1.19 | Operation identifiers kept 24 hours per token; reuse with a different request refused; an identifier carries its time, measured on the server's clock: more than 5 minutes ahead is refused, older than 24 hours is refused as expired, and a result is kept until 24 hours after its identifier's time | Kept for ever | Bounds storage while covering any retry (second review F22) | Yes (Kevin, applying the second review, 2026-11-19) |
 
-**Readings of a source (142).**
+*Epic 2: One shared project online (12)*
 
-| ID | Story | Choice | Alternative | Why |
-| --- | --- | --- | --- | --- |
-| CA-02 | 1.2 | Redeploying to an installation with no users issues a new set-up code and the earlier one stops working | The first code stays valid until set-up is completed | AD-21 forbids regenerating the code only once an administrator exists; a lost code must be replaceable |
-| CA-10 | 1.4 | Inviting an email that already has an account, active or deactivated, is refused; re-inviting a pending email replaces the earlier link | Allow several live invitations for one email | FR-67 gives each person one account, so a second account or a second live link for one email would duplicate it |
-| CA-14 | 1.5 | The authenticator secret is encrypted with the deployment key | Stored unencrypted in the installation object | AD-17 states the key for settings secrets; the same protection is applied to two-step secrets |
-| CA-15 | 1.5 | Wrong second-step and recovery codes share the limit and wait of wrong passwords | A separate limit for the second step | AD-12 slows "failed sign-ins"; a failed second step is read as one |
-| CA-16 | 1.6 | A password change signs out every other session and keeps the current one | End every session, the current one included | AD-12 says sessions end on password change; the person changing it is read as staying signed in |
-| CA-17 | 1.6 | A session shows a country or city only where the host supplies one | Always show a place, from an address lookup | UX section 17.3 asks for place of last use; a self-hosted server has no location source |
-| CA-19 | 1.6 | Only requests that result from something the person does (opening a page, saving, uploading, any deliberate action) count as use of the session; automatic checks for other people's changes do not, so a page left open still reaches the 24-hour idle limit | Every request that passes sign-in counts as use | FR-67 says "a period without use" without defining use; open pages check for changes every few seconds, which would otherwise keep a session alive indefinitely |
-| CA-20 | 1.6 | Pending input stays bound to its account: a different account signing in on that page neither sees nor sends it, and it is offered again when the first account signs in on that browser | Discard it when a different account signs in | FR-67 covers only the same user signing in again; FR-69 attributes each action to its own account |
-| CA-22 | 1.7 | An administrator who sees exactly one project is also sent straight to it | Administrators always land on the list | UX decision D11 says "a user with exactly one project" without excluding administrators |
-| CA-23 | 1.9 | Only active accounts that have accepted their invitation count as administrators for the last-administrator rule | An invited administrator counts | FR-68 says "the last administrator"; an account nobody can yet sign in to cannot administer |
-| CA-25 | 1.11 | A password reset ends all the account's sessions and leaves two-step verification on | A reset also turns two-step verification off | AD-12 ends sessions on password change; FR-70 lists two-step reset as a separate control |
-| CA-26 | 1.11 | After an administrator resets two-step verification, the old recovery codes stop working | Old recovery codes stay valid | FR-70 says "reset"; read as leaving nothing of the old set-up usable |
-| CA-28 | 1.11 | Deactivation cancels the account's unused invitation and reset links; a link opened for a deactivated account is refused | Links stay valid and work after reactivation | FR-67 says deactivation prevents sign-in; a link that sets a password would be a way back in |
-| CA-29 | 1.13 | The recovery code lets the named administrator set a new password and resets their two-step verification | The code resets the password only | The confirmed recovery command must cover a lost phone as well as a lost password |
-| CA-32 | 1.14 | A failed sign-in entry records the network address, and the email only when it matches an account; otherwise "unknown address" and the text entered is not stored | Record the text entered in every case | FR-71 forbids passwords in entries, and a person may type a password into the email field |
-| CA-34 | 1.15 | A changed session period applies to existing sessions on their next request; a changed invitation life applies only to invitations issued afterwards | Both apply only to new sessions and invitations | The FR-70 Check says "changes the session period and sees it take effect" |
-| CA-36 | 1.15 | Turning off project creation by standard users leaves existing projects and their members unchanged | Projects created by standard users lose their Editor | FR-68 states the setting and is silent on turning it off |
-| CA-37 | 1.15 | Settings states beside the Google mapping key that it is visible in signed-in users' browsers | No notice | FR-70 says secrets are never shown again in full; a browser map key cannot be kept from the browser, so the exception is stated |
-| CA-40 | 1.18 | SMTP is offered only if R13 passes on both hosts | Offer SMTP on whichever host passes | AD-18 says SMTP "is not promised until it passes"; NFR-7 asks both hosts to behave the same |
-| CB-02 | 2.2 | Capacity inputs are saved to the server and the Capacity dialog keeps working | Hide the Capacity dialog until the capacity story | The prototype saves capacity inputs with the project and FR-19 is existing capability |
-| CB-03 | 2.2 | Cost entry, named revisions and review are not offered in a shared project until their own stories build them | Keep them working with data held only in the browser | Browser-only data in a shared project would be unsaved and unattributed, against FR-21 and FR-69 |
-| CB-04 | 2.6 | The last floor and the last building of a project cannot be deleted | Allow a project with no floor or building | The prototype refuses to remove the final floor, and the PRD describes no project without a floor or building |
-| CB-05 | 2.6 | A revision restore deletes and renames no building or floor | Restore returns names and removes floors added later | FR-22 restores a design without deleting later records |
-| CB-08 | 2.10 | An Editor sets Proposed or Existing by hand | Existing only through the existing-site survey story | The prototype's status field does this and the state model allows a surveyed device to start at Existing |
-| CB-09 | 2.10 | A device once saved as Existing keeps a "recorded as existing" mark | Judge only the current lifecycle value | FR-55 decides Delete draft from origin and history, not a current flag |
-| CB-10 | 2.10 | "Room or area" is an optional free-text field on every device | Location means floor and map position only | FR-7 lists location among device details and the UX field search covers room |
-| CB-11 | 2.10 | Current installation shows Existing; Proposed design shows Existing and Proposed | Proposed design shows Proposed only | PRD state model, before planned actions exist |
-| CB-12 | 2.10 | A device that is or has been Existing has no delete control until correction exists | Keep the prototype's free deletion for every device | FR-55 allows deletion only of drafts never surveyed as existing |
-| CB-14 | 2.12 | "Controls stay usable" means feedback within 250 ms while a calculation runs | A longest-task bound of 50 ms | 250 ms is the PRD's target for selection and direct-edit feedback |
-| CB-15 | 2.13 | Target met and Shortfall are decided by bounding with edge cells, then one refinement at half spacing, then Uncertain near target | Flag any result within 2 points of the target | NFR-4 requires refine or flag; bounding by edge cells is the conservative method |
-| CB-16 | 2.13 | Not demonstrated when the target is unmet and a camera in range was left out | Show Shortfall with a note | FR-15 separates an unmet target from one that was not fully assessed |
-| CB-18 | 2.15 | A route with an unassigned end stays in cable totals and is listed for review | Leave it out of totals until reassigned | FR-55 keeps cable records and marks unassigned ends; nothing is dropped silently |
-| CB-22 | 2.19 | A route is deleted with a draft device only if selected, with no survey entry and no other assigned end | Never delete a route with a device | FR-55 allows a disposable draft cable only when explicitly selected and independently eligible |
-| CB-23 | 2.19 | A floor whose only devices are deleted drafts counts as unused, and undoing such a deletion is refused once the floor is gone | A deleted draft blocks floor deletion while its Undo is available | FR-55 says not to recreate deleted floors |
-| CB-24 | 2.20 | Importing the same prototype file twice creates two projects | Refuse or warn on a second import | The old file carries no project identity that can be trusted |
-| CB-27 | 2.22 | The application itself refuses any request that did not arrive over HTTPS | Rely on the web server's redirect alone | FR-66 allows redirect or refusal; refusing in the application also protects an operator's own proxy |
-| CB-29 | 2.23 | Self-hosted deployment key is kept in a key file in its own folder, generated on first start unless the operator has placed one there | The operator must always supply the key as a setting | AD-17 keeps the key apart from the records it protects; a generated key is never weak |
-| CB-30 | 2.23 | With records present and the key file missing, the server refuses to start | Start with stored secrets unreadable and a warning | A new key must never be generated over existing data, and a silent start would hide the loss |
-| CB-32 | 2.25 | A stored file whose hash or size no longer matches is reported as damaged, not served | Serve it and log a warning | AD-16 gives the disk store a stored hash and size; this is their use |
-| CB-33 | 2.25 | The server refuses to start when the backup location is unset or is the live files folder | Start and show a warning in Administration | AD-13 says the self-hosted backup area must be apart from the live data; backups in the live folder would be lost with it |
-| CB-34 | 2.26 | A second application container on a records volume in use refuses to start | Allow it and rely on file locking | Experiment R12 covers durability and locking; two writers risk damage |
-| CB-38 | 3.1 | Until field recording exists, the Installation view only sets the default basis | Hide the view switch until Epic 5 | UX 5.3 describes the switch as a change of emphasis, not of permission |
-| CB-39 | 3.3 | Approval state has five values: Approved, Changes requested, Bypassed, Awaiting decision, No review | Three values, without Changes requested and No review | FR-23 to FR-25 allow a request for changes and a design with no reviewer; the UX status table lists no approval family |
-| CC-02 | 4.1 | Saving a revision is refused while the saving user has Unsaved or Conflict items | Save without those edits and say which were left out | FR-22 says the user's pending edits are resolved first; refusing never yields a snapshot that silently omits edits |
-| CC-04 | 4.1 | Revisions in an imported prototype file become revisions of the project's first scope | List them as attachments outside any scope | FR-22 requires existing project-format migration, and the first scope is the only one an imported project has |
-| CC-05 | 4.2 | A restore can be undone only by the person who restored, in the same session, and only if no restored item has changed since | A restore that any Editor can reverse later | FR-22 says a restore stays reversible; AD-7 limits undo to a person's own session edits |
-| CC-08 | 4.4 | A camera whose template was edited shows that the template has changed and takes new values only when an Editor applies them | Ask on every template edit which cameras to update | FR-47 forbids silent change and speaks of explicitly applying changed values |
-| CC-09 | 4.4 | A result that needs a missing optical value shows as not assessed with the input named | Hide the result | FR-47 says incomplete templates must not silently become generic specifications |
-| CC-10 | 4.4 | A revision restore leaves templates unchanged; a restored camera holds the optical values recorded in the revision | Restore templates to their state at the revision | FR-47 says a template edit leaves saved revisions unchanged, so the revision carries the camera's own values |
-| CC-11 | 4.6 | With a camera that has no bitrate, the storage and bandwidth totals read Incomplete with a count | Show a total of the known cameras with a footnote | FR-19 says missing data is never zero; same wording as the estimate's unpriced lines in the UX |
-| CC-12 | 4.6 | Bitrate, recording percentage and retention are design content: a revision holds them and a restore returns them | Treat them as project settings a restore leaves alone | FR-22 restores a prior design, and the capacity summary printed from a revision must match it |
-| CC-15 | 4.8 | A Viewer whose assignment was reassigned while their page was open has the decision refused, with their text kept | Accept it and label it as made after reassignment | FR-24 lets a Viewer decide only as the assignee |
-| CC-16 | 4.9 | A revision's review state follows what is recorded on it: No review with nothing recorded, Awaiting decision after a request, then Approved or Changes requested from the latest decision | Show Request changes as Awaiting decision | FR-24 allows a change decision and FR-23 allows no reviewer, so each needs a state of its own |
-| CC-18 | 4.10 | A reviewer link is created for one saved revision and for the named person assigned as design reviewer | Links for any named person, with no assignment | FR-24 gives a link to each designated reviewer who has no account, and FR-23 makes that person an assignee |
-| CC-24 | 4.12 | A revision can be issued while a requested review is still awaiting a decision | Require a decision or a bypass before issuing | FR-25 and FR-61: approval is optional and never a gate |
-| CC-25 | 4.13 | A superseded revision can be made current again; history shows both designations | Require saving a new revision to go back | FR-61 lets an Editor deliberately designate a different issue |
-| CC-27 | 4.13 | A decision by an account on a superseded revision is kept and labelled "after it was superseded" | Refuse decisions on superseded revisions | FR-24 keeps every decision; the label stops it reading as approval of the current reference |
-| CC-28 | 4.14 | A cancelled device's estimate line moves to a "Cancelled" group outside the total; an Editor can tick it as a committed cost, which then counts | Remove the line entirely | FR-55 removes a cancelled proposal from totals while retaining committed cost |
-| CC-29 | 4.14 | A reason is required for a cancellation, a correction and a reversal | Optional reason | FR-55 says "with a short reason"; taken as mandatory |
-| CC-31 | 4.15 | Survey notes, measurements and photos are printed as recorded up to the time the revision was saved | Print survey evidence up to the decision cutoff | FR-34 forbids substituting later edits into a package; only decisions are given a later cutoff |
-| CC-32 | 4.17 | An edition fails when the volumes generated so far reach 1 GiB, and stored volumes are discarded | Estimate the size first and refuse before generating | The addendum says to stop and report failure if the full edition cannot fit; AD-11 generates one volume at a time, so the total is not known beforehand |
-| CC-33 | 4.17 | An edition upload follows the plan-upload rule when a session ends (parts kept, resumes after the same account signs in); closing the tab discards it, because the generated volumes are gone | Discard the parts whenever the session ends | Sessions ending must not lose pending input; a generated edition cannot be chosen again like a plan file |
-| CC-34 | 4.17 | The 5-minute target is measured on generation only, not upload | Measure generation and upload together | The addendum measures processing separately from transfer |
-| CD-01 | 5.1 | The field-shell or desktop choice on a tablet or laptop is remembered in that browser | Ask on each visit | UX decision D3 leaves the switch to the person; remembering it keeps their choice |
-| CD-04 | 5.4 | Configured can be set before Installed, with a neutral notice and nothing blocked | Require Installed first | The state model keeps the two facts separate and its warnings block nothing |
-| CD-07 | 5.8 | A saved revision's snapshot holds the checklist definitions in force and each device's scoped checks; the Design package uses those | Package reads the working definitions | FR-34 generates from a fixed source; live definitions would make an edition unrepeatable |
-| CD-08 | 5.9 | A measured value must be a number in the unit the check defines | Free text for value and unit | FR-30 asks for value and units, and a tolerance can only be compared with a number |
-| CD-09 | 5.9 | With a tolerance defined and the value outside it, Pass is not offered | Warn and still allow Pass | FR-30: a result that does not meet its expectation is Fail |
-| CD-10 | 5.9 | An outcome submitted against a definition changed since the page loaded is returned, not recorded | Record it against the old wording and flag Retest required | FR-44 requires each attempt to record the criteria actually tested |
-| CD-11 | 5.10 | A corrected attempt stays visible, marked corrected, and is no longer counted | Corrected attempt still counted until a retest | FR-31: corrections preserve prior evidence |
-| CD-12 | 5.10 | A mistaken correction of an attempt or an issue can be reversed with a reason, both entries kept | Only device cancellations and corrections are reversible | Applies the confirmed rule for device records to the other corrected records |
-| CD-16 | 5.13 | A device's own recorded change flags Retest required; devices whose routes end on changed shared equipment are flagged Needs review | Every affected check flagged Needs review | FR-28 separates changed equipment from known affected connected devices; routes are the only recorded association at this point |
-| CD-17 | 5.13 | An obstruction or zone-target change flags Needs review the checks that name that zone, range or obstruction | Flag the image checks of every camera viewing the zone | FR-28 says "corresponding field checks"; a named reference is the only recorded link |
-| CD-18 | 5.14 | Removing a passed check's expected result shows Needs definition and stops counting the pass | Keep counting the earlier Pass | FR-29: an undefined expected result cannot produce a Pass; FR-44: old attempts are not rewritten |
-| CD-19 | 5.17 | Corrective work is a dated entry on the issue: what was done, by whom and when | Infer it from a field change on the linked device | FR-46 requires recorded corrective work and does not say where it is recorded |
-| CD-22 | 5.20 | An end recorded before the planned duration has elapsed is a stop and asks for the reason | Accept it as a short full run | FR-64: a Pass needs the full planned duration, and only stops carry reasons |
-| CD-23 | 5.20 | A run keeps the definition in force at its start; its covered devices are the Existing devices in the covered selection at that moment | Use the definition and devices as they stand when availability is calculated | FR-64 says a later definition change rewrites no outcome; the weighting needs a fixed device count |
-| CD-24 | 5.20 | A covered device cancelled during a run is treated like a moved one: listed on the run, stage flagged, run not stopped | Ignore cancellations | FR-64 covers an actual change to covered equipment |
-| CD-26 | 5.20 | One open run per stage; a second start is refused | Allow parallel runs of a stage | FR-64: a stage has one current outcome, and overlapping runs would judge the same hours twice |
-| CD-39 | 5.21 | Where counted outages overlap, a device affected by more than one is counted once for the shared time | Sum the weighted entries and cap at 100% | FR-64: overlapping entries are not counted twice, applied per device under weighting |
-| CD-28 | 5.22 | A correction to an ended run's log rewrites no outcome; the recalculated figure is shown beside the recorded one and the stage is flagged Needs review | Recalculate the outcome | FR-44: an old outcome is never changed |
-| CD-29 | 5.24 | A run still open at closing is stopped with the reason "Scope closed" and has no outcome | Leave the run open after closing | FR-64 permits closing with outstanding items while a stage is running; a fixed record cannot hold an open run |
-| CD-30 | 5.25 | With no active scope an issue can be raised, deferred, resolved, reopened and corrected; Include now is unavailable | Raising only | The confirmed rule allows raising issues; Include now adds work to a scope that does not exist |
-| CD-31 | 5.25 | "Design edits" refused with no active scope include checklist, site-check and reliability definitions and the estimate | Only plan and device edits | Each belongs to a work scope under FR-45 |
-| CD-33 | 5.25 | Closing a scope does not by itself change reviewer links to its design revisions; a link already read-only because its revision is superseded, its review bypassed or its assignment reassigned stays read-only | Make the links read-only once the scope is closed | FR-24 ends a link only by replacement, revocation or expiry; a decision changes no design content |
-| CD-34 | 5.26 | Final acceptance is recorded on the fixed closeout record after closing, never before | Offer it as a step before closing | FR-24 reviews a fixed closeout revision; FR-32 says a missing approval does not prevent closure |
-| CD-35 | 5.27 | A pre-closeout preview is generated from a fixed preview record written at one consistent point | Generate the preview straight from live records | FR-34 allows only a fixed source; FR-33 requires a Draft, In progress preview |
-| CE-02 | 6.2 | Cancel and step controls respond within 250 ms while a file is parsed | A longest-task bound in milliseconds | The PRD's 250 ms feedback target is applied to "controls stay usable" during parsing. |
-| CE-03 | 6.4 | A source asset ID identifies a device only when unique in the file and in the project | Unique in the project only | FR-58 says "reliably unique" without defining it. |
-| CE-04 | 6.4 | A row with no identifier matches the device an earlier import created from an identical row, by a stored fingerprint of its mapped values; otherwise it is New. The fingerprint only identifies the device: the row is Unchanged only when its values equal the device's current record, otherwise Changed | Send every row without an identifier to Needs review on re-import | FR-58 forbids extra devices on re-import and forbids identity by name alone. |
-| CE-05 | 6.4 | Group-level select only for New and Unchanged rows without errors | Group select for Changed rows too | The UX specification limits group select to "straightforward rows". |
-| CE-07 | 6.7 | Bulk cleanup is recorded in the project's change log, open to project members | Record it in the administrator's activity log as well | FR-59 asks for "an activity record"; FR-71's log is administrator-only and separate from project history. |
-| CE-08 | 6.7 | Only the person who ran a cleanup can undo it, in the same session | Any Editor can undo it later | FR-59 applies the own-session undo of FR-21 and FR-55. |
-| CE-09 | 6.7 | A revision restore returns drafts removed by a cleanup but not import-created records | A restore returns neither | FR-22 returns deleted drafts; imported records are existing equipment, which a restore never changes. |
-| CE-10 | 6.8 | Service or reconfigure work is recorded with the scope's Installed mark; lifecycle and location do not change | A separate "Service done" mark | The state model keeps one work-recorded fact per device per scope for every Work now action. |
-| CE-11 | 6.8 | Reversing Installed on a device that was already existing clears the scope's mark, keeps it Existing, and returns a relocated device to its earlier location | No reversal on such devices; a field change is recorded instead | FR-55 says reversal to Proposed does not apply to existing equipment but gives no way to undo a mistaken mark on it. |
-| CE-12 | 6.10 | Preselected category: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only | None and Retain give Inspect or test only | FR-45 says "preselect planned changes" and the state model forbids Work now for None and Retain. |
-| CE-13 | 6.10 | Core checks are required by default for Work now devices only; Inspect or test only gets the checks an Editor selects; Reference only gets none | Core checks also required by default for Inspect or test only | FR-45 says selected inspections "can have checks" and reference equipment is not recommissioned. |
-| CE-15 | 6.10 | A reason is asked only when a change moves an item out of Work now | A reason for every category change | FR-45 asks for a reason "for meaningful changes" without defining them. |
-| CE-17 | 6.12 | Cable ends flagged Needs connection review count in the project list's attention count | Shown only inside the project | The state model lists Needs connection review among the attention indicators. |
-| CE-18 | 6.13 | A restored device returns as Existing with condition Unknown | Keep the condition it had when removed | The state model says restoration does not verify the installation. |
-| CE-19 | 6.13 | A restored device's checks are flagged Retest required | Flag them Needs review | FR-36 says old tests are not evidence of the restored installation, and FR-28 lists return to service as a retest cause. |
-| CE-21 | 6.13 | Restoring a device is refused while no scope is active | Allow it and record it with no scope | Restoration is a recorded site fact like removal, and with no active scope only issues, warranties and service visits can be recorded. |
-| CE-23 | 6.15 | A revision of an earlier scope cannot be designated the new scope's current issued design | Allow it with a warning | FR-61 designates a revision "for the active work scope". |
-| CE-24 | 6.16 | Archiving is refused while an inventory import or a package generation is running | Let the job finish in an archived project | An archived project cannot be edited (FR-37), and a running job would still be writing to it. |
-| CE-27 | 6.17 | End date is the start date plus the term, and In warranty includes the end date | In warranty ends the day before the end date | FR-65 says the end date is calculated; the UX example reads "runs to 12 Nov 2027". |
-| CE-29 | 6.17 | A warranty on a scope not yet closed, with no start date entered, shows Not started | Show Unknown | FR-65 says a warranty is Not started until its start date, which defaults to a closeout date that does not exist yet. |
-| CE-31 | 6.18 | A visit time cannot be earlier than the reported time, and neither can be in the future | Accept any times | FR-65 visits record what happened; scheduling is outside the proof of concept. |
-| CE-32 | 6.18 | With no scope active, an existing visit can be corrected but a new one needs Start service visit | Record new visits with no scope | FR-65 routes a visit with no active scope through Start service visit. |
-| CE-35 | 7.4 | A revision restore returns door links where the door or the component is Proposed and leaves links between two Existing records unchanged | A restore leaves every link unchanged | FR-22 restores design content and never changes recorded facts; a link can be either. |
-| CE-36 | 7.6 | A revision restore leaves closets and their grouping unchanged | A restore returns closets as design content | FR-22's list of restored content names proposed port assignments but not closets. |
-| CE-37 | 7.7 | When two people claim one port, the first save wins and the second is kept as a pending edit in conflict | Refuse the second claim outright | FR-51 says both must not succeed silently and pending edits are retained. |
-| CE-38 | 7.8 | After a removal the former port keeps its allocation until someone releases or reassigns it | Show it as Reserved | FR-53 says the port is not declared free; it does not say what it shows. |
-| CE-39 | 7.8 | A proposed device with only a planned port assignment can be deleted as a draft, releasing its own reservation; a current assignment blocks deletion | Any port assignment blocks Delete draft | FR-55 asks for a dependency preview and release of the proposal's own planned reservation. |
-| CE-40 | 7.9 | A revision restore returns proposed runs with their segments and risers and leaves existing runs unchanged | A restore leaves risers unchanged, like floors | FR-22 restores proposed routes and never changes recorded routes. |
-| CF-01 | 8.1 | "No live site passwords in backups" is tested as: no record shape has a field for one | Scan free-text notes for likely passwords | NFR-5 keeps site credentials out of backups, and free text cannot be policed by a test |
-| CF-02 | 8.2 | A Cloudflare deployment with no second bucket fails, naming it | Start with backups shown as Failed | AD-13 requires a separate backup area on Cloudflare; a deployment without one cannot meet it |
-| CF-03 | 8.2 | Only the most recent "before an update" backup is kept beside the seven | Keep every pre-update backup | AD-13 says seven "plus one" |
-| CF-05 | 8.3 | Archiving and un-archiving are refused while a backup or restore job for the project runs; a due backup waits for an archive | Let them interleave | AD-13 exports a project at one consistent point, so a backup or restore must hold one archive state |
-| CF-07 | 8.5 | A "before restore" backup of the working project is taken before the switch; the most recent one per project is kept in addition to the seven daily generations, is replaced by a later restore of the same project, and can be discarded by an administrator | Switch with no extra backup | FR-34 requires a backup before destructive maintenance |
-| CF-08 | 8.5 | A save from a page open before the switch is refused, shown as "not saved: project was restored", not retried | Apply it to the restored project if the base version matches | NFR-1 and NFR-2: a stale save must not silently mix lost work into the recovery point, and must stay visible |
-| CF-10 | 8.7 | The operator supplies the kept deployment key to the destination, which generates none | Destination makes a new key and re-encrypts | AD-21: the key is created only when absent |
-| CF-11 | 8.7 | Recovery also cancels invitation and password-reset links issued before it | Leave them valid until they expire | AD-13 ends every session and cancels every reviewer link on recovery; a link revoked after the recovery point would otherwise work again |
-| CF-14 | 8.8 | Catalogue entry with no backup: listed as not recovered; backup with no catalogue entry: recovered with no members | Stop the whole recovery on any mismatch | FR-34 requires restore checks and FR-68 gives access only by membership; nothing is dropped silently or opened to anyone |
-| CF-17 | 8.11 | An import gives the project a new identity and records the source's | Keep the source identity | AD-14: import creates a new project; importing twice, or beside the source, would otherwise give two projects one identity |
-| CF-18 | 8.11 | A standard user who imports becomes the new project's Editor | Import creates a project with no members | FR-68: import "follows the same rule" as project creation |
-| CF-19 | 8.12 | A replaced project keeps its identity and its members | Members are cleared and set again | Memberships are installation data and not in a portable backup (AD-14) |
-| CF-20 | 8.12 | Replacement is refused unless the backup's identity is the live project's own | Allow any backup after a typed confirmation | FR-68 separates replacing a live project from importing; the check stops the wrong project being replaced, and import as new remains |
-| CF-21 | 8.14 | A package generation that reaches the remaining budget fails there and its parts are discarded | Estimate the size by a dry run first | Volumes are generated one at a time (AD-11), so no size exists beforehand |
-| CF-24 | 9.4 | The marker records whether installation has begun; an earlier version restores only if it has | Restore whenever the marker names another version | AD-20: the marker records whether installation has begun, and an earlier version restores only when it has |
-| CF-25 | 9.6 | A release is offered only if its version is higher than the installed one | Offer the newest listed release whatever is installed | NFR-8: an installation never runs a version older than its data |
-| CF-26 | 9.6 | A failed or malformed check keeps the last good result and shows the failure time and reason | Clear the result and show "Unknown" | FR-72 shows whether a newer release exists; a failed check must not show a false or stale answer as current |
-| CF-27 | 9.7 | Update, Back up now and Restore are disabled while any of the three runs; a due daily backup waits | Queue them | AD-21 stops changes of every kind and takes one complete backup; a second maintenance job would change what that backup holds |
-| CF-28 | 9.8 | Sign-in is not offered while changes are stopped; existing sessions stay valid | Allow sign-in during the update | FR-72 stops "changes of every kind"; a sign-in writes a session and a log entry that a return would lose |
-| CF-29 | 9.8 | An edit the new version cannot accept stays listed as not saved, and the page asks for a reload without reloading itself | Reload automatically after the update | FR-21 and NFR-2 keep pending input visible; an automatic reload would discard it |
-| CF-30 | 9.10 | Going back after an update that passed its checks is a documented command-line procedure | A "Return to previous version" control on Software | AD-20 says going back means restoring the pre-update backup with the earlier version, and the UX specifies no control for it |
-| CF-31 | 9.10 | After power loss or a killed updater: accept changes again if installation had not begun, otherwise return | Always restore the backup | AD-21: a failure before installation resumes normal work, and a failure after it returns to the earlier version and the backup |
-| CF-32 | 9.12 | The workflow asks the installation immediately before deploying; a withdrawn or different marker stops it | Rely on cancelling the run through GitHub | AD-20: the workflow asks immediately before deploying whether the marker still stands and stops if it was withdrawn |
-| CF-34 | 9.14 | Manual steps start with "Prepare for a manual update", which stops changes, backs up and sets the marker | Manual steps use Back up now and a hand restore, with no marker | AD-20: a manual Cloudflare update starts with this step so that the manual path has the same way back |
-| CF-35 | 10.1 | A fixture change after confirmation makes a new manifest version and affected runs are repeated | Forbid any change | PRD says not to simplify the agreed workload to claim a pass |
-| CF-37 | 10.2 | "Controls stay usable" is measured as the 250 ms feedback target, 19 of 20, during import, analysis and export | No main-thread task over 200 ms | PRD sets 250 ms for selection and button feedback |
-| CF-38 | 10.9 | "Same features and rules" is checked against a named list of screens and nine refusals | Repeat every story's criteria on both hosts | NFR-7 needs an observable comparison; the full runs are already repeated on the self-hosted host |
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CB-01 | 2.1 | Scope name 1 to 80 characters | 120 characters | No source gives a length; the name must fit the frame chip and list rows | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-06 | 2.9 | Unfinished upload discarded after 7 days | 24 hours | Matches Cloudflare's own multipart behaviour seen in experiment R6, so both hosts agree | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-07 | 2.9 | Unreferenced completed file removed by a daily clean-up once 7 days old | 24 hours | Matches CB-06 and outlasts pending input held until its account signs in again | Changed to 7 days (Claude, accepted on Kevin's instruction, 2026-11-19): pending input can wait longer than 24 hours for its account to sign in again (CA-18, CA-20) |
+| CB-13 | 2.11 | Fixture has 25 plans and 20 targeted zones on the busiest plan | 30 plans and 10 zones | PRD acceptance profile allows 20 to 30 plans; 20 zones is the workload of experiment R2 | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-17 | 2.14 | Time allowance for one calculation is 30 seconds; 10 seconds stays the measured target | 10 seconds | The PRD target for the busiest plan is measured, not enforced as a cut-off | Changed to 30 seconds (Claude, accepted on Kevin's instruction, 2026-11-19): at 10 seconds a plan that misses the PRD target never shows a result |
+| CB-20 | 2.16 | Form wording "Do not enter passwords or access codes for the site's systems." | A longer explanation behind a help link | NFR-5 keeps site credentials out of notes; free text can only be guided | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-21 | 2.18 | Undo and redo cover the last 40 edits in the open page | 100 edits | 40 is the prototype's limit; FR-21 limits undo to the current session | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-25 | 2.20 | Prototype project file limit 100 MiB | 250 MiB | The prototype's own limit for these files | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-28 | 2.22 | Trusted-proxy list defaults to the bundled web server only | Trust any private-network address | Forwarded headers cannot then be forged by another machine | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-31 | 2.24 | Smoke suite is a named list of ten cases, one or more per area of Epics 1 and 2 | Run the full server test suite against the image | A named list makes "covered" checkable and keeps the run short | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-36 | 2.26 | 50 forced kills | 100 | Experiment R8 used 45; rounded up | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-37 | 2.26 | At least 20 power cuts on a virtual-machine disk, and NFS as the network disk | 50 cuts, and SMB as well | R12 names the kinds of disk but no count; 20 matches the PRD's trial size | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 3: A workspace that holds the whole job (3)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CB-40 | 3.5 | Analysis strip checked at 1440 × 900 and 1280 × 720 | 1440 × 900 only | 1440 × 900 is the audit size; 1280 × 720 is a common smaller laptop | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-41 | 3.6 | Schedule CSV holds the rows and columns shown and names project, basis and export time | Always export every column | NFR-6 asks deliverables to state what they show | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-42 | 3.6 | "Scrolling stays responsive" means no main-thread task over 200 ms while scrolling 600 rows | 50 ms | Below the PRD's 250 ms feedback target, so a click during scrolling still meets it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 4: Design, estimate and issue (6)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CC-01 | 4.1 | Revision identifiers read "Rev A", "Rev B" in order of saving within the scope, never reused | A number per project, or the name alone | The UX frame example reads "Issued: Rev B"; no source defines the identifier | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-19 | 4.10 | Reviewer name is required, at most 80 characters | Optional name, or a longer limit | Prevents an anonymous decision; 80 is a conventional display-name limit | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-20 | 4.10 | Comment limit 2,000 characters; 200 comments per link | Higher or no limits | Bounds what an unauthenticated link can write; no source gives figures | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-22 | 4.11 | Invalid link tokens are slowed with the sign-in figures: 20 from one address in 15 minutes, then 1 minute doubling to 15 | Separate, stricter figures for links | NFR-5 asks for abuse limits on unauthenticated access; reusing the sign-in figures keeps one rule | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-23 | 4.11 | Messages: "This link is no longer valid" (revoked or replaced), "This link has expired" (expired) | One message for all three | No source text exists; separate wording tells the reviewer whether to ask for more time | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-30 | 4.15 | A package's decision cutoff is the time generation started | The time the last volume was verified | FR-34 requires an explicit cutoff but does not say which moment it is | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 5: Install, test and close out in the field (9)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CD-02 | 5.1 | At 200% zoom: top row, chip, bottom navigation and form fields operable, nothing cut off, no sideways scrolling of forms | Judge "readable" by eye | NFR-3 asks for readable forms at 200% zoom and gives no measure | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-03 | 5.3 | A device added after issue reads "Not in the issued design" in the comparison | Show blank issued values | The PRD is silent; blank values would read as a requirement | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-05 | 5.4 | The "Work started with no issued design" warning shows on the Overview and beside both issued-design chips | Overview only | No source says where the project shows it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-15 | 5.12 | Experiment R4 conditions: 25 MiB photo, 400 kbit/s upload, two forced drops | 1 Mbit/s and one drop | The architecture names no profile; 25 MiB is the photo limit and 400 kbit/s a common slow-mobile setting | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-21 | 5.18 | Attention count = open issues, deferred included, plus checks flagged Needs review, Retest required or Needs definition in the active scope | Also count unfinished work | Follows the state model's attention indicators; unfinished work would give every active project a large number | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-27 | 5.21 | Availability shown to two decimal places and compared with the target before rounding | Whole percentages | The PRD example needs no decimals; rounding must not make a missed target look met | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-38 | 5.25 | Label "not saved: scope closed" for a stale-tab save into a closed scope, kept for review | Reuse "not saved: no active scope — reopen first" | Same form as the PRD's rule for an archived project under FR-42 | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-36 | 5.28 | Label "not saved: device cancelled or corrected" for a stale mark or attempt onto such a device | Two labels, one for each case | Follows the "not saved: …" form used for other refused saves | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-37 | 5.28 | The per-field conflict comparison fits a 360 px wide screen without sideways scrolling | 320 px | The UX asks for a comparison that fits a phone and names no width | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 6: Existing sites and return visits (11)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CE-01 | 6.2 | At most 5,000 data rows per inventory file | No row limit, only the 10 MiB size limit | The PRD sets only a file size and says 600 devices is not a ceiling; a row bound keeps browser parsing predictable. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-50 | 6.2 | The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server | No limit on uncompressed size | A small compressed file can expand far beyond memory; one limit keeps people's and agents' imports identical (CodeRabbit, pull request 3) |  |
+| CE-06 | 6.6 | Field list filters named "Awaiting placement" and "Not site-confirmed" | "Unplaced" and "Unverified" | The PRD addendum asks for filtering by verification state and gives no labels. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-14 | 6.10 | A planned removal not yet recorded is listed as "Removal not recorded" | "Not removed" | The state model completes a Remove by the recorded removal; no source gives the row's wording. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-16 | 6.11 | A refused save onto a removed device is labelled "not saved: device removed" | "not saved: device archived" | Follows the wording pattern of the other refused-save labels. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-25 | 6.16 | A refused save into an archived project is labelled "not saved: project archived" and is not retried | Retry after un-archiving | Follows the wording and behaviour of the other refused-save labels. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-30 | 6.17 | Warranty term in whole months, minimum 1 | Days, or months and years | FR-65's example is a 12-month warranty. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-34 | 6.19 | A service scope's default name is "Service visit" followed by the date | "Service" followed by the issue identifier | FR-65 asks for a default name and gives none. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-42 | 6.20 | A record may hold several external tickets | One per record | A visit often has a customer ticket and an internal work order (E2) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-43 | 6.20 | Ticket number required, 1 to 100 characters, kept as typed | A numeric or patterned number | Ticket identifiers vary between trackers (E3) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-44 | 6.20 | Link optional, http or https only, at most 2,000 characters | Any link, or no link | Blocks script links; keeps the server out of the tracker (E4) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+
+*Epic 8: Backups and recovery (5)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-06 | 8.4 | An unswitched copy is kept until an administrator discards or replaces it; one per project | Delete an unswitched copy after 7 days | AD-13 gives no period for a copy that is not switched; one copy bounds storage | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-09 | 8.6 | The full-size project is 7.5 to 8 GiB stored, made of distinct-content files | Any size the script reports as 8 GiB | Identical files are stored once, so the stored size must be measured | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-12 | 8.7 | The recovery notice stays until an administrator dismisses it | Hide it after 30 days | FR-34 requires the notice and gives no duration | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-16 | 8.10 | A finished portable backup is kept for download for 24 hours | 7 days | No source gives a period; short holding limits unbudgeted storage | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-22 | 8.14 | Usage warning at 90% of the 8 GiB budget | 80% | PRD says "warn before exceeding" and gives no threshold | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 9: Install from published instructions and update from the interface (6)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-40 | 9.3 | If the version being installed has not reached the installation 10 minutes after the yes, the installation returns by itself | 30 minutes | AD-20 (K20 fix 1) gives no period; a deployment normally answers within seconds, and every minute waited is a minute with changes stopped; R11 measures the real time | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-41 | 9.3 | A prepared update record with no yes within 30 minutes is withdrawn by the installation itself | 60 minutes | AD-20 (K21) puts a limit on every waiting state and gives no value; 30 minutes allows for a queued GitHub run, as the earlier limit did | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-42 | 9.3 | The time limit after the yes, after arrival, and for a stopping or returning record is three times the estimate shown before the update, at least 30 minutes and at most 5 hours | A fixed 60 minutes | AD-20 (K21) derives the limit from the estimate; the maximum stays under GitHub's 6-hour job limit | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-43 | 9.4 | A project that refuses a call for a version difference is called again after 35 seconds, up to 3 times, before it counts as failed | Count it as failed at once | Story 1.1 lets an object refuse for 30 seconds after a stop; a refusal then is not a conversion failure | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-46 | 9.8 | An edit the new version cannot accept reads "not saved: this edit does not fit the updated version of Site Survey Design" | "not saved: changed by an update" | Standing rule 11 asks each new refusal reason to state its wording; no source gives one | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-47 | 9.10 | If no container answers a request to return within 60 seconds, the updater starts the earlier image | 5 minutes | AD-20 (K22) gives no period; a running container answers within seconds | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 10: Acceptance (1)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-36 | 10.1 | The small functional project has about 50 devices | About 20 | PRD asks for a small functional project and gives no size | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 11: Work with AI agents (9)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CG-15 | 11.1 | Public description and OAuth routes: 60 requests a minute from one address | No limit | Unauthenticated routes reach the installation object (review E34) | Yes (Kevin, 2026-11-19) |
+| CG-17 | 11.2 | Tool names at most 64 letters, digits, underscores and hyphens; at most 60 tools, grouped above that | No limit | MCP clients limit tool names and counts (review A9) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-26 | 11.2 | The MCP endpoint supports the protocol revisions named in the instructions: the current one when built and the one before; JSON replies; no session identifier | Only the newest revision; streamed replies | Clients lag the specification; a stateless endpoint suits both hosts (review A8, A26) | Yes (Kevin, 2026-11-19) |
+| CG-18 | 11.3 | A calculation fits one request when it uses at most half of every configured limit | Fits when under the limit | Leaves room for larger floors (review A18) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-19 | 11.3 | Counts and categories equal; areas and percentages within 0.1 percent or 0.1 percentage points | Exactly equal | JavaScript engines may differ in the last digits of maths functions (review A17) | Yes (Kevin, 2026-11-19) |
+| CG-34 | 11.3 | Jobs for agents: given up after 1 hour, results kept 24 hours, at most 3 running per token and 5 per person | No limits | One agent must not exhaust alarms or storage (second review F23, F24) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-16 | 11.4 | Agent upload at most 10 MiB and 5,000 data rows, the same limits as a person's inventory file (CE-01); removed if not applied within 24 hours | 25 MiB with a 5,000-row limit of its own | The PRD caps an inventory file at 10 MiB, and agents must get the same results as people (FR-77) | Changed to 10 MiB with no row limit of its own (Kevin, 2026-11-19); people's 5,000-row limit (CE-01) applies to agents too, found by CodeRabbit's review of pull request 3 |
+| CG-32 | 11.4 | Upload address: single use, valid 10 minutes, bound to the token and project | A longer life, or reuse | Short enough not to become a standing credential (second review B15, F25) | Yes (Kevin, applying the second review, 2026-11-19) |
+| CG-36 | 11.7 | Client registration: 20 an hour per address; unused registrations removed after 30 days | No limits | Open registration needs abuse limits (second review B20) | Yes (Kevin, 2026-11-19) |
+
+**Readings of a source (159).**
+
+*Epic 1: Install, sign in and manage people (29)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CA-02 | 1.2 | Redeploying to an installation with no users issues a new set-up code and the earlier one stops working | The first code stays valid until set-up is completed | AD-21 forbids regenerating the code only once an administrator exists; a lost code must be replaceable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-45 | 1.2 | Deploying again with a new set-up code resets the count of wrong codes, and the waiting message says so | The count survives a new code | CA-02 issues a new code on redeploy; a lock that a new code does not clear leaves the installer no way in (review of Epic 1, A5) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-52 | 1.2 | The deploy command asks a public open-or-closed set-up route before issuing a set-up code, finds an existing deployment key in the Worker's secret list and never replaces it; the installation refuses encrypted values under a key whose fingerprint does not match | The deploy command keeps its own record | AD-21 says both are created only when absent without saying how absence is learned; the set-up page already shows whether set-up is open (review of Epic 1, A9) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-43 | 1.3 | Every rate and failure count is kept in the installation object, one instance per installation on both hosts: sign-in, set-up-code, recovery-code, Forgot-password and email counts in its storage, raised before the check; token request rates in its memory, where a restart resets them; a per-address check in the Worker's own memory is only an extra guard | Counts in each Worker copy's memory | AD-12 and AD-22 say counts are kept but not where; Worker memory is per copy on Cloudflare, so a limit kept there does not hold (review of Epic 1, A4) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-10 | 1.4 | Inviting an email that already has an account, active or deactivated, is refused; re-inviting a pending email replaces the earlier link | Allow several live invitations for one email | FR-67 gives each person one account, so a second account or a second live link for one email would duplicate it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-14 | 1.5 | The authenticator secret is encrypted with the deployment key | Stored unencrypted in the installation object | AD-17 states the key for settings secrets; the same protection is applied to two-step secrets | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-15 | 1.5 | Wrong second-step and recovery codes share the limit and wait of wrong passwords | A separate limit for the second step | AD-12 slows "failed sign-ins"; a failed second step is read as one | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-16 | 1.6 | A password change signs out every other session and keeps the current one | End every session, the current one included | AD-12 says sessions end on password change; the person changing it is read as staying signed in | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-17 | 1.6 | A session shows a country or city only where the host supplies one | Always show a place, from an address lookup | UX section 17.3 asks for place of last use; a self-hosted server has no location source | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-19 | 1.6 | Only requests that result from something the person does (opening a page, saving, uploading, any deliberate action) count as use of the session; automatic checks for other people's changes do not, so a page left open still reaches the 24-hour idle limit | Every request that passes sign-in counts as use | FR-67 says "a period without use" without defining use; open pages check for changes every few seconds, which would otherwise keep a session alive indefinitely | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-20 | 1.6 | Pending input stays bound to its account: a different account signing in on that page neither sees nor sends it, and it is offered again when the first account signs in on that browser | Discard it when a different account signs in | FR-67 covers only the same user signing in again; FR-69 attributes each action to its own account | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-22 | 1.7 | An administrator who sees exactly one project is also sent straight to it | Administrators always land on the list | UX decision D11 says "a user with exactly one project" without excluding administrators | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-23 | 1.9 | Only active accounts that have accepted their invitation count as administrators for the last-administrator rule | An invited administrator counts | FR-68 says "the last administrator"; an account nobody can yet sign in to cannot administer | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-25 | 1.11 | A password reset ends all the account's sessions and leaves two-step verification on | A reset also turns two-step verification off | AD-12 ends sessions on password change; FR-70 lists two-step reset as a separate control | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-26 | 1.11 | After an administrator resets two-step verification, the old recovery codes stop working | Old recovery codes stay valid | FR-70 says "reset"; read as leaving nothing of the old set-up usable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-28 | 1.11 | Deactivation cancels the account's unused invitation and reset links; a link opened for a deactivated account is refused | Links stay valid and work after reactivation | FR-67 says deactivation prevents sign-in; a link that sets a password would be a way back in | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-29 | 1.13 | The recovery code lets the named administrator set a new password and resets their two-step verification | The code resets the password only | The confirmed recovery command must cover a lost phone as well as a lost password | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-32 | 1.14 | A failed sign-in entry records the network address, and the email only when it matches an account; otherwise "unknown address" and the text entered is not stored | Record the text entered in every case | FR-71 forbids passwords in entries, and a person may type a password into the email field | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-34 | 1.15 | A changed session period applies to existing sessions on their next request; a changed invitation life applies only to invitations issued afterwards | Both apply only to new sessions and invitations | The FR-70 Check says "changes the session period and sees it take effect" | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-36 | 1.15 | Turning off project creation by standard users leaves existing projects and their members unchanged | Projects created by standard users lose their Editor | FR-68 states the setting and is silent on turning it off | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-37 | 1.15 | Settings states beside the Google mapping key that it is visible in signed-in users' browsers | No notice | FR-70 says secrets are never shown again in full; a browser map key cannot be kept from the browser, so the exception is stated | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-57 | 1.17 | Links the installation sends use its public address, recorded at set-up and changeable in Settings, never a request header | Build links from the request's host | No source says which address a link uses; a request's host can be forged (review of Epic 1, A10) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CA-40 | 1.18 | SMTP is offered only if R13 passes on both hosts | Offer SMTP on whichever host passes | AD-18 says SMTP "is not promised until it passes"; NFR-7 asks both hosts to behave the same | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CG-01 | 1.19 | Two token kinds, read-only and read-and-draft, each optionally limited to named projects | One kind with per-action permissions | Sprint change proposal choice D1 | Yes (Kevin, sprint change proposal, 2026-11-19) |
+| CG-05 | 1.19 | A request carrying both a session cookie and a token is refused | Prefer the token, or the session | A request with two identities has no single actor to record | Yes (Kevin, 2026-11-19) |
+| CG-20 | 1.19 | Lowering the maximum lifetime shortens existing tokens beyond it, counted from creation | Existing tokens keep their expiry | A policy change should apply at once (review A13, E27) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-22 | 1.19 | A public route ignores a token; reviewer-link and update-secret routes refuse one | Refuse a token everywhere it is not needed | Every route class needs a defined answer (review E31) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-24 | 1.19 | A token cannot create a project | A read-and-draft token may create one | Creating a project adds a membership and a place for data; a person should decide (review A12) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-25 | 1.19 | Recovering the whole installation revokes every token | Tokens return to the recovery point | Matches ending every session on recovery and cannot resurrect a revoked token (review E30) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+
+*Epic 2: One shared project online (22)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CB-02 | 2.2 | Capacity inputs are saved to the server and the Capacity dialog keeps working | Hide the Capacity dialog until the capacity story | The prototype saves capacity inputs with the project and FR-19 is existing capability | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-03 | 2.2 | Cost entry, named revisions and review are not offered in a shared project until their own stories build them | Keep them working with data held only in the browser | Browser-only data in a shared project would be unsaved and unattributed, against FR-21 and FR-69 | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-04 | 2.6 | The last floor and the last building of a project cannot be deleted | Allow a project with no floor or building | The prototype refuses to remove the final floor, and the PRD describes no project without a floor or building | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-05 | 2.6 | A revision restore deletes and renames no building or floor | Restore returns names and removes floors added later | FR-22 restores a design without deleting later records | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-08 | 2.10 | An Editor sets Proposed or Existing by hand | Existing only through the existing-site survey story | The prototype's status field does this and the state model allows a surveyed device to start at Existing | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-09 | 2.10 | A device once saved as Existing keeps a "recorded as existing" mark | Judge only the current lifecycle value | FR-55 decides Delete draft from origin and history, not a current flag | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-10 | 2.10 | "Room or area" is an optional free-text field on every device | Location means floor and map position only | FR-7 lists location among device details and the UX field search covers room | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-11 | 2.10 | Current installation shows Existing; Proposed design shows Existing and Proposed | Proposed design shows Proposed only | PRD state model, before planned actions exist | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-12 | 2.10 | A device that is or has been Existing has no delete control until correction exists | Keep the prototype's free deletion for every device | FR-55 allows deletion only of drafts never surveyed as existing | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-14 | 2.12 | "Controls stay usable" means feedback within 250 ms while a calculation runs | A longest-task bound of 50 ms | 250 ms is the PRD's target for selection and direct-edit feedback | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-15 | 2.13 | Target met and Shortfall are decided by bounding with edge cells, then one refinement at half spacing, then Uncertain near target | Flag any result within 2 points of the target | NFR-4 requires refine or flag; bounding by edge cells is the conservative method | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-16 | 2.13 | Not demonstrated when the target is unmet and a camera in range was left out | Show Shortfall with a note | FR-15 separates an unmet target from one that was not fully assessed | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-18 | 2.15 | A route with an unassigned end stays in cable totals and is listed for review | Leave it out of totals until reassigned | FR-55 keeps cable records and marks unassigned ends; nothing is dropped silently | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-22 | 2.19 | A route is deleted with a draft device only if selected, with no survey entry and no other assigned end | Never delete a route with a device | FR-55 allows a disposable draft cable only when explicitly selected and independently eligible | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-23 | 2.19 | A floor whose only devices are deleted drafts counts as unused, and undoing such a deletion is refused once the floor is gone | A deleted draft blocks floor deletion while its Undo is available | FR-55 says not to recreate deleted floors | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-24 | 2.20 | Importing the same prototype file twice creates two projects | Refuse or warn on a second import | The old file carries no project identity that can be trusted | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-27 | 2.22 | The application itself refuses any request that did not arrive over HTTPS | Rely on the web server's redirect alone | FR-66 allows redirect or refusal; refusing in the application also protects an operator's own proxy | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-29 | 2.23 | Self-hosted deployment key is kept in a key file in its own folder, generated on first start unless the operator has placed one there | The operator must always supply the key as a setting | AD-17 keeps the key apart from the records it protects; a generated key is never weak | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-30 | 2.23 | With records present and the key file missing, the server refuses to start | Start with stored secrets unreadable and a warning | A new key must never be generated over existing data, and a silent start would hide the loss | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-32 | 2.25 | A stored file whose hash or size no longer matches is reported as damaged, not served | Serve it and log a warning | AD-16 gives the disk store a stored hash and size; this is their use | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-33 | 2.25 | The server refuses to start when the backup location is unset or is the live files folder | Start and show a warning in Administration | AD-13 says the self-hosted backup area must be apart from the live data; backups in the live folder would be lost with it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-34 | 2.26 | A second application container on a records volume in use refuses to start | Allow it and rely on file locking | Experiment R12 covers durability and locking; two writers risk damage | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 3: A workspace that holds the whole job (2)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CB-38 | 3.1 | Until field recording exists, the Installation view only sets the default basis | Hide the view switch until Epic 5 | UX 5.3 describes the switch as a change of emphasis, not of permission | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CB-39 | 3.3 | Approval state has five values: Approved, Changes requested, Bypassed, Awaiting decision, No review | Three values, without Changes requested and No review | FR-23 to FR-25 allow a request for changes and a design with no reviewer; the UX status table lists no approval family | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 4: Design, estimate and issue (20)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CC-02 | 4.1 | Saving a revision is refused while the saving user has Unsaved or Conflict items | Save without those edits and say which were left out | FR-22 says the user's pending edits are resolved first; refusing never yields a snapshot that silently omits edits | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-04 | 4.1 | Revisions in an imported prototype file become revisions of the project's first scope | List them as attachments outside any scope | FR-22 requires existing project-format migration, and the first scope is the only one an imported project has | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-05 | 4.2 | A restore can be undone only by the person who restored, in the same session, and only if no restored item has changed since | A restore that any Editor can reverse later | FR-22 says a restore stays reversible; AD-7 limits undo to a person's own session edits | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-08 | 4.4 | A camera whose template was edited shows that the template has changed and takes new values only when an Editor applies them | Ask on every template edit which cameras to update | FR-47 forbids silent change and speaks of explicitly applying changed values | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-09 | 4.4 | A result that needs a missing optical value shows as not assessed with the input named | Hide the result | FR-47 says incomplete templates must not silently become generic specifications | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-10 | 4.4 | A revision restore leaves templates unchanged; a restored camera holds the optical values recorded in the revision | Restore templates to their state at the revision | FR-47 says a template edit leaves saved revisions unchanged, so the revision carries the camera's own values | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-11 | 4.6 | With a camera that has no bitrate, the storage and bandwidth totals read Incomplete with a count | Show a total of the known cameras with a footnote | FR-19 says missing data is never zero; same wording as the estimate's unpriced lines in the UX | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-12 | 4.6 | Bitrate, recording percentage and retention are design content: a revision holds them and a restore returns them | Treat them as project settings a restore leaves alone | FR-22 restores a prior design, and the capacity summary printed from a revision must match it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-15 | 4.8 | A Viewer whose assignment was reassigned while their page was open has the decision refused, with their text kept | Accept it and label it as made after reassignment | FR-24 lets a Viewer decide only as the assignee | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-16 | 4.9 | A revision's review state follows what is recorded on it: No review with nothing recorded, Awaiting decision after a request, then Approved or Changes requested from the latest decision | Show Request changes as Awaiting decision | FR-24 allows a change decision and FR-23 allows no reviewer, so each needs a state of its own | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-18 | 4.10 | A reviewer link is created for one saved revision and for the named person assigned as design reviewer | Links for any named person, with no assignment | FR-24 gives a link to each designated reviewer who has no account, and FR-23 makes that person an assignee | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-24 | 4.12 | A revision can be issued while a requested review is still awaiting a decision | Require a decision or a bypass before issuing | FR-25 and FR-61: approval is optional and never a gate | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-25 | 4.13 | A superseded revision can be made current again; history shows both designations | Require saving a new revision to go back | FR-61 lets an Editor deliberately designate a different issue | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-27 | 4.13 | A decision by an account on a superseded revision is kept and labelled "after it was superseded" | Refuse decisions on superseded revisions | FR-24 keeps every decision; the label stops it reading as approval of the current reference | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-28 | 4.14 | A cancelled device's estimate line moves to a "Cancelled" group outside the total; an Editor can tick it as a committed cost, which then counts | Remove the line entirely | FR-55 removes a cancelled proposal from totals while retaining committed cost | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-29 | 4.14 | A reason is required for a cancellation, a correction and a reversal | Optional reason | FR-55 says "with a short reason"; taken as mandatory | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-31 | 4.15 | Survey notes, measurements and photos are printed as recorded up to the time the revision was saved | Print survey evidence up to the decision cutoff | FR-34 forbids substituting later edits into a package; only decisions are given a later cutoff | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-32 | 4.17 | An edition fails when the volumes generated so far reach 1 GiB, and stored volumes are discarded | Estimate the size first and refuse before generating | The addendum says to stop and report failure if the full edition cannot fit; AD-11 generates one volume at a time, so the total is not known beforehand | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-33 | 4.17 | An edition upload follows the plan-upload rule when a session ends (parts kept, resumes after the same account signs in); closing the tab discards it, because the generated volumes are gone | Discard the parts whenever the session ends | Sessions ending must not lose pending input; a generated edition cannot be chosen again like a plan file | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CC-34 | 4.17 | The 5-minute target is measured on generation only, not upload | Measure generation and upload together | The addendum measures processing separately from transfer | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 5: Install, test and close out in the field (24)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CD-01 | 5.1 | The field-shell or desktop choice on a tablet or laptop is remembered in that browser | Ask on each visit | UX decision D3 leaves the switch to the person; remembering it keeps their choice | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-04 | 5.4 | Configured can be set before Installed, with a neutral notice and nothing blocked | Require Installed first | The state model keeps the two facts separate and its warnings block nothing | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-07 | 5.8 | A saved revision's snapshot holds the checklist definitions in force and each device's scoped checks; the Design package uses those | Package reads the working definitions | FR-34 generates from a fixed source; live definitions would make an edition unrepeatable | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-08 | 5.9 | A measured value must be a number in the unit the check defines | Free text for value and unit | FR-30 asks for value and units, and a tolerance can only be compared with a number | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-09 | 5.9 | With a tolerance defined and the value outside it, Pass is not offered | Warn and still allow Pass | FR-30: a result that does not meet its expectation is Fail | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-10 | 5.9 | An outcome submitted against a definition changed since the page loaded is returned, not recorded | Record it against the old wording and flag Retest required | FR-44 requires each attempt to record the criteria actually tested | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-11 | 5.10 | A corrected attempt stays visible, marked corrected, and is no longer counted | Corrected attempt still counted until a retest | FR-31: corrections preserve prior evidence | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-12 | 5.10 | A mistaken correction of an attempt or an issue can be reversed with a reason, both entries kept | Only device cancellations and corrections are reversible | Applies the confirmed rule for device records to the other corrected records | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-16 | 5.13 | A device's own recorded change flags Retest required; devices whose routes end on changed shared equipment are flagged Needs review | Every affected check flagged Needs review | FR-28 separates changed equipment from known affected connected devices; routes are the only recorded association at this point | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-17 | 5.13 | An obstruction or zone-target change flags Needs review the checks that name that zone, range or obstruction | Flag the image checks of every camera viewing the zone | FR-28 says "corresponding field checks"; a named reference is the only recorded link | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-18 | 5.14 | Removing a passed check's expected result shows Needs definition and stops counting the pass | Keep counting the earlier Pass | FR-29: an undefined expected result cannot produce a Pass; FR-44: old attempts are not rewritten | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-19 | 5.17 | Corrective work is a dated entry on the issue: what was done, by whom and when | Infer it from a field change on the linked device | FR-46 requires recorded corrective work and does not say where it is recorded | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-22 | 5.20 | An end recorded before the planned duration has elapsed is a stop and asks for the reason | Accept it as a short full run | FR-64: a Pass needs the full planned duration, and only stops carry reasons | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-23 | 5.20 | A run keeps the definition in force at its start; its covered devices are the Existing devices in the covered selection at that moment | Use the definition and devices as they stand when availability is calculated | FR-64 says a later definition change rewrites no outcome; the weighting needs a fixed device count | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-24 | 5.20 | A covered device cancelled during a run is treated like a moved one: listed on the run, stage flagged, run not stopped | Ignore cancellations | FR-64 covers an actual change to covered equipment | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-26 | 5.20 | One open run per stage; a second start is refused | Allow parallel runs of a stage | FR-64: a stage has one current outcome, and overlapping runs would judge the same hours twice | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-39 | 5.21 | Where counted outages overlap, a device affected by more than one is counted once for the shared time | Sum the weighted entries and cap at 100% | FR-64: overlapping entries are not counted twice, applied per device under weighting | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-28 | 5.22 | A correction to an ended run's log rewrites no outcome; the recalculated figure is shown beside the recorded one and the stage is flagged Needs review | Recalculate the outcome | FR-44: an old outcome is never changed | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-29 | 5.24 | A run still open at closing is stopped with the reason "Scope closed" and has no outcome | Leave the run open after closing | FR-64 permits closing with outstanding items while a stage is running; a fixed record cannot hold an open run | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-30 | 5.25 | With no active scope an issue can be raised, deferred, resolved, reopened and corrected; Include now is unavailable | Raising only | The confirmed rule allows raising issues; Include now adds work to a scope that does not exist | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-31 | 5.25 | "Design edits" refused with no active scope include checklist, site-check and reliability definitions and the estimate | Only plan and device edits | Each belongs to a work scope under FR-45 | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-33 | 5.25 | Closing a scope does not by itself change reviewer links to its design revisions; a link already read-only because its revision is superseded, its review bypassed or its assignment reassigned stays read-only | Make the links read-only once the scope is closed | FR-24 ends a link only by replacement, revocation or expiry; a decision changes no design content | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-34 | 5.26 | Final acceptance is recorded on the fixed closeout record after closing, never before | Offer it as a step before closing | FR-24 reviews a fixed closeout revision; FR-32 says a missing approval does not prevent closure | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CD-35 | 5.27 | A pre-closeout preview is generated from a fixed preview record written at one consistent point | Generate the preview straight from live records | FR-34 allows only a fixed source; FR-33 requires a Draft, In progress preview | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 6: Existing sites and return visits (25)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CE-02 | 6.2 | Cancel and step controls respond within 250 ms while a file is parsed | A longest-task bound in milliseconds | The PRD's 250 ms feedback target is applied to "controls stay usable" during parsing. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-03 | 6.4 | A source asset ID identifies a device only when unique in the file and in the project | Unique in the project only | FR-58 says "reliably unique" without defining it. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-04 | 6.4 | A row with no identifier matches the device an earlier import created from an identical row, by a stored fingerprint of its mapped values; otherwise it is New. The fingerprint only identifies the device: the row is Unchanged only when its values equal the device's current record, otherwise Changed | Send every row without an identifier to Needs review on re-import | FR-58 forbids extra devices on re-import and forbids identity by name alone. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-05 | 6.4 | Group-level select only for New and Unchanged rows without errors | Group select for Changed rows too | The UX specification limits group select to "straightforward rows". | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-07 | 6.7 | Bulk cleanup is recorded in the project's change log, open to project members | Record it in the administrator's activity log as well | FR-59 asks for "an activity record"; FR-71's log is administrator-only and separate from project history. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-08 | 6.7 | Only the person who ran a cleanup can undo it, in the same session | Any Editor can undo it later | FR-59 applies the own-session undo of FR-21 and FR-55. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-09 | 6.7 | A revision restore returns drafts removed by a cleanup but not import-created records | A restore returns neither | FR-22 returns deleted drafts; imported records are existing equipment, which a restore never changes. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-10 | 6.8 | Service or reconfigure work is recorded with the scope's Installed mark; lifecycle and location do not change | A separate "Service done" mark | The state model keeps one work-recorded fact per device per scope for every Work now action. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-11 | 6.8 | Reversing Installed on a device that was already existing clears the scope's mark, keeps it Existing, and returns a relocated device to its earlier location | No reversal on such devices; a field change is recorded instead | FR-55 says reversal to Proposed does not apply to existing equipment but gives no way to undo a mistaken mark on it. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-12 | 6.10 | Preselected category: Add new, Relocate, Service or reconfigure, Replace and Remove give Work now; None and Retain give Reference only | None and Retain give Inspect or test only | FR-45 says "preselect planned changes" and the state model forbids Work now for None and Retain. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-13 | 6.10 | Core checks are required by default for Work now devices only; Inspect or test only gets the checks an Editor selects; Reference only gets none | Core checks also required by default for Inspect or test only | FR-45 says selected inspections "can have checks" and reference equipment is not recommissioned. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-15 | 6.10 | A reason is asked only when a change moves an item out of Work now | A reason for every category change | FR-45 asks for a reason "for meaningful changes" without defining them. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-17 | 6.12 | Cable ends flagged Needs connection review count in the project list's attention count | Shown only inside the project | The state model lists Needs connection review among the attention indicators. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-18 | 6.13 | A restored device returns as Existing with condition Unknown | Keep the condition it had when removed | The state model says restoration does not verify the installation. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-19 | 6.13 | A restored device's checks are flagged Retest required | Flag them Needs review | FR-36 says old tests are not evidence of the restored installation, and FR-28 lists return to service as a retest cause. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-21 | 6.13 | Restoring a device is refused while no scope is active | Allow it and record it with no scope | Restoration is a recorded site fact like removal, and with no active scope only issues, warranties and service visits can be recorded. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-23 | 6.15 | A revision of an earlier scope cannot be designated the new scope's current issued design | Allow it with a warning | FR-61 designates a revision "for the active work scope". | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-24 | 6.16 | Archiving is refused while an inventory import or a package generation is running | Let the job finish in an archived project | An archived project cannot be edited (FR-37), and a running job would still be writing to it. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-27 | 6.17 | End date is the start date plus the term, and In warranty includes the end date | In warranty ends the day before the end date | FR-65 says the end date is calculated; the UX example reads "runs to 12 Nov 2027". | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-29 | 6.17 | A warranty on a scope not yet closed, with no start date entered, shows Not started | Show Unknown | FR-65 says a warranty is Not started until its start date, which defaults to a closeout date that does not exist yet. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-31 | 6.18 | A visit time cannot be earlier than the reported time, and neither can be in the future | Accept any times | FR-65 visits record what happened; scheduling is outside the proof of concept. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-32 | 6.18 | With no scope active, an existing visit can be corrected but a new one needs Start service visit | Record new visits with no scope | FR-65 routes a visit with no active scope through Start service visit. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-41 | 6.20 | Named "External ticket", with a hint naming a customer's service desk or your own tracker | "Customer ticket", or "Ticket" | Fits both customers' tickets and in-house trackers (proposal E1) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-45 | 6.20 | The same number may be on several records, each showing "also on" | Refuse a repeated number | One customer ticket can cover several faults (E5) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+| CE-46 | 6.20 | Removing an external ticket is a history entry; the earlier value stays | Remove it outright | NFR-1 and AD-5 (E6) | Yes (Kevin, sprint change proposal on external tickets, 2026-11-19) |
+
+*Epic 7: Extended modelling (6)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CE-35 | 7.4 | A revision restore returns door links where the door or the component is Proposed and leaves links between two Existing records unchanged | A restore leaves every link unchanged | FR-22 restores design content and never changes recorded facts; a link can be either. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-36 | 7.6 | A revision restore leaves closets and their grouping unchanged | A restore returns closets as design content | FR-22's list of restored content names proposed port assignments but not closets. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-37 | 7.7 | When two people claim one port, the first save wins and the second is kept as a pending edit in conflict | Refuse the second claim outright | FR-51 says both must not succeed silently and pending edits are retained. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-38 | 7.8 | After a removal the former port keeps its allocation until someone releases or reassigns it | Show it as Reserved | FR-53 says the port is not declared free; it does not say what it shows. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-39 | 7.8 | A proposed device with only a planned port assignment can be deleted as a draft, releasing its own reservation; a current assignment blocks deletion | Any port assignment blocks Delete draft | FR-55 asks for a dependency preview and release of the proposal's own planned reservation. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CE-40 | 7.9 | A revision restore returns proposed runs with their segments and risers and leaves existing runs unchanged | A restore leaves risers unchanged, like floors | FR-22 restores proposed routes and never changes recorded routes. | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 8: Backups and recovery (14)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-01 | 8.1 | "No live site passwords in backups" is tested as: no record shape has a field for one | Scan free-text notes for likely passwords | NFR-5 keeps site credentials out of backups, and free text cannot be policed by a test | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-02 | 8.2 | A Cloudflare deployment with no second bucket fails, naming it | Start with backups shown as Failed | AD-13 requires a separate backup area on Cloudflare; a deployment without one cannot meet it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-03 | 8.2 | The "before an update" backup of the last successful update is kept until the next successful update, and the one of an attempt under way until it ends | Keep only the most recent pre-update backup | AD-13 says seven "plus one"; an aborted attempt must not replace the backup that the manual way back after a broken update needs (CF-30) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-05 | 8.3 | Archiving and un-archiving are refused while a backup or restore job for the project runs; a due backup waits for an archive | Let them interleave | AD-13 exports a project at one consistent point, so a backup or restore must hold one archive state | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-07 | 8.5 | A "before restore" backup of the working project is taken before the switch; the most recent one per project is kept in addition to the seven daily generations, is replaced by a later restore of the same project, and can be discarded by an administrator | Switch with no extra backup | FR-34 requires a backup before destructive maintenance | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-08 | 8.5 | A save from a page open before the switch is refused, shown as "not saved: project was restored", not retried | Apply it to the restored project if the base version matches | NFR-1 and NFR-2: a stale save must not silently mix lost work into the recovery point, and must stay visible | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-10 | 8.7 | The operator supplies the kept deployment key to the destination, which generates none | Destination makes a new key and re-encrypts | AD-21: the key is created only when absent | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-11 | 8.7 | Recovery also cancels invitation and password-reset links issued before it | Leave them valid until they expire | AD-13 ends every session and cancels every reviewer link on recovery; a link revoked after the recovery point would otherwise work again | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-14 | 8.8 | Catalogue entry with no backup: listed as not recovered; backup with no catalogue entry: recovered with no members | Stop the whole recovery on any mismatch | FR-34 requires restore checks and FR-68 gives access only by membership; nothing is dropped silently or opened to anyone | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-17 | 8.11 | An import gives the project a new identity and records the source's | Keep the source identity | AD-14: import creates a new project; importing twice, or beside the source, would otherwise give two projects one identity | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-18 | 8.11 | A standard user who imports becomes the new project's Editor | Import creates a project with no members | FR-68: import "follows the same rule" as project creation | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-19 | 8.12 | A replaced project keeps its identity and its members | Members are cleared and set again | Memberships are installation data and not in a portable backup (AD-14) | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-20 | 8.12 | Replacement is refused unless the backup's identity is the live project's own | Allow any backup after a typed confirmation | FR-68 separates replacing a live project from importing; the check stops the wrong project being replaced, and import as new remains | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-21 | 8.14 | A package generation that reaches the remaining budget fails there and its parts are discarded | Estimate the size by a dry run first | Volumes are generated one at a time (AD-11), so no size exists beforehand | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 9: Install from published instructions and update from the interface (10)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-25 | 9.6 | A release is offered only if its version is higher than the installed one | Offer the newest listed release whatever is installed | NFR-8: an installation never runs a version older than its data | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-26 | 9.6 | A failed or malformed check keeps the last good result and shows the failure time and reason | Clear the result and show "Unknown" | FR-72 shows whether a newer release exists; a failed check must not show a false or stale answer as current | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-27 | 9.7 | Update, Back up now and Restore are disabled while any of the three runs; a due daily backup waits | Queue them | AD-21 stops changes of every kind and takes one complete backup; a second maintenance job would change what that backup holds | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-28 | 9.8 | Sign-in is not offered while changes are stopped; existing sessions stay valid | Allow sign-in during the update | FR-72 stops "changes of every kind"; a sign-in writes a session and a log entry that a return would lose | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-29 | 9.8 | An edit the new version cannot accept stays listed as not saved, and the page asks for a reload without reloading itself | Reload automatically after the update | FR-21 and NFR-2 keep pending input visible; an automatic reload would discard it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-45 | 9.8 | During an update an administrator's S-35 shows the progress list instead of the full-page notice | The full-page notice for everyone | The UX full-page notice applies to every page, but FR-72 and story 9.5a show the administrator the progress of the steps | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-30 | 9.10 | Going back after an update that passed its checks is a documented command-line procedure | A "Return to previous version" control on Software | AD-20 says going back means restoring the pre-update backup with the earlier version, and the UX specifies no control for it | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-31 | 9.10 | After power loss or a killed updater: a stopping record resumes its backup; a prepared one is withdrawn; an installing one continues on the new container, returns by the arrival deadline on the old one, or starts the new image if neither runs | Always restore the backup | AD-21: a failure before installation resumes normal work; AD-20 (K20): once installing, the installation finishes or fails the update by itself | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-32 | 9.12 | The workflow asks the installation immediately before deploying; with no prepared record for its attempt it stops | Rely on cancelling the run through GitHub | AD-20: the run that will deploy asks whether its attempt still stands, and the installation answers yes only to a prepared record with that identifier | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-34 | 9.14 | Manual steps start with "Prepare for a manual update", which writes the record as stopping, stops changes, backs up and makes it prepared | Manual steps use Back up now and a hand restore, with no record | AD-20: a manual Cloudflare update starts with this step so that the manual path has the same way back | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 10: Acceptance (3)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CF-35 | 10.1 | A fixture change after confirmation makes a new manifest version and affected runs are repeated | Forbid any change | PRD says not to simplify the agreed workload to claim a pass | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-37 | 10.2 | "Controls stay usable" is measured as the 250 ms feedback target, 19 of 20, during import, analysis and export | No main-thread task over 200 ms | PRD sets 250 ms for selection and button feedback | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+| CF-38 | 10.9 | "Same features and rules" is checked against a named list of screens and nine refusals | Repeat every story's criteria on both hosts | NFR-7 needs an observable comparison; the full runs are already repeated on the self-hosted host | Yes (Claude, accepted on Kevin's instruction, 2026-11-19) |
+
+*Epic 11: Work with AI agents (4)*
+
+| ID | Story | Choice | Alternative | Why | Kevin's decision |
+| --- | --- | --- | --- | --- | --- |
+| CG-08 | 11.1 | Removing or renaming a field of /api/v1/ needs a new version prefix | Allow changes announced in release notes | Agents built against the description break silently otherwise | Yes (Kevin, 2026-11-19) |
+| CG-23 | 11.1 | The API description is served only while agent access is on, without the server's version | Always served, with the version | Avoids revealing the route surface and version of an installation that does not use agents (review A24) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
+| CG-35 | 11.2 | Refusal order on /mcp: preflight answered without a token, then 405, access off, 401 from any origin, protocol 400; no Origin refusal, because /mcp accepts no cookie and runs nothing without a token | Any order | Makes tests deterministic and lets OAuth discovery see 401 first (second review B11) | Yes (Kevin, 2026-11-19); Origin step removed after CodeRabbit's review of pull request 3 found it blocked browser preflight and OAuth discovery |
+| CG-21 | 11.5 | Text a member copies from an entered-text field becomes that member's text | Copied text stays marked | The member who copies it vouches for it (review E15) | Yes (Kevin, applying the review of Epic 11, 2026-11-19) |
 
 ## Numbering changes from draft 0.6
 
@@ -4838,6 +5534,7 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 1.10 (part) | 1.16 | Require two-step verification for everyone |
 | 1.10 (part) | 1.17 | Optional email and forgotten passwords |
 | 1.10 (part) | 1.18 | Experiment R13: email by SMTP on both hosts |
+| 1.10 (part) | 1.19 | Personal access tokens for agents |
 | 2.2 (part) | 2.2 | Save edits to the shared project and show the save state |
 | 2.2 (part) | 2.3 | Keep unsaved edits through a lost connection, lost access or an ended session |
 | 2.3 | 2.4 | See other people's changes within seconds |
@@ -4934,6 +5631,7 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 6.12 (part) | 6.17 | Warranty records |
 | 6.12 (part) | 6.18 | Service visits |
 | 6.12 (part) | 6.19 | Start a service visit when no scope is active |
+| 6.12 (part) | 6.20 | External tickets on issues, visits and warranties |
 | 7.2 (part) | 7.2 | Pan/tilt/zoom cameras: stored positions and the resting view |
 | 7.2 (part) | 7.3 | Pan/tilt/zoom cameras: reach on demand |
 | 7.3 | 7.4 | Doors and gates with linked components |
@@ -4958,8 +5656,8 @@ Stories that were split, added or moved down by a split. A story not listed kept
 | 8.4 (part) | 8.12 | Replace a live project from a portable backup |
 | 8.4 (part) | 8.13 | Experiment R5 and moving a project between hosts |
 | 8.5 | 8.14 | Limits and usage |
-| 9.3 (part) | 9.3 | Data conversions between versions |
-| 9.3 (part) | 9.4 | The pending-update marker and the way back to backed-up data |
+| 9.3 (part) | 9.3 | The update record and one version at a time |
+| 9.3 (part) | 9.4 | Data conversions, the health check and the way back to backed-up data |
 | 9.3 (part) | 9.5 | Experiment R14: a new runtime reads the previous release's data |
 | 9.4 | 9.6 | Installed version and update check |
 | 9.5 (part) | 9.7 | Update a self-hosted installation with one action |
@@ -4989,3 +5687,5 @@ Stories that were split, added or moved down by a split. A story not listed kept
 - **Draft 0.5** settled the epic order with Kevin and moved the self-hosted image into Epic 2.
 - **Draft 0.6** applied the first independent review: user-story sentences and Notes lines throughout, criteria moved to the stories that can test them, missing parts of requirements added, edge-case handling added.
 - **Draft 0.7** applies the second independent review and Kevin's twelve decisions: contradictions between stories removed, hidden dependencies fixed, the update path on Cloudflare corrected, criteria grouped under five labels, large stories split and renumbered, and the choices reduced to those that are really open, each with an ID.
+- **Draft 0.7, revised 2026-11-19 for the review of Epic 1:** an adversarial review of Epic 1 ([review of Epic 1](review-epic-1.md), 21 findings) was applied in full on Kevin's instruction. Sign-in, set-up, two-step verification, sessions, reset and recovery, the activity log, email and tokens were tightened; standing rule 2 gained token and account management as person-only routes; standing rules 13 and 14 were added; and CA-13 was widened and CA-43 to CA-58 added, each Claude's recommendation accepted on Kevin's instruction.
+- **Draft 0.7, revised 2026-11-20 for browser tests:** through `bmad-correct-course` Kevin approved automated browser tests with Playwright (architecture K24): standing rule 15, the definition of done, and evidence in story 1.2 that sets them up.

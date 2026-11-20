@@ -218,7 +218,7 @@ Covers: FR-4 (retained original), FR-6 (retained source PDF), NFR-2, AD-3, AD-4.
 - A floor that holds a stored plan cannot be deleted, and the refusal lists the plan.
 **Limits and values**
 - An unfinished upload is discarded after 7 days. (CB-06)
-- A completed file that no record references is removed by a daily clean-up once it is 24 hours old. (CB-07)
+- A completed file that no record references is removed by a daily clean-up once it is 7 days old. (CB-07)
 **Access and restore**
 - A revision restore deletes no stored file.
 
@@ -343,7 +343,7 @@ Covers: NFR-4, AD-9, experiment R2. Screens: S-05.
 - A calculation that would exceed its time allowance is shown as Incomplete with the reason.
 - Sampling is never coarsened to finish in time.
 **Limits and values**
-- The time allowance for one calculation is 10 seconds. (CB-17)
+- The time allowance for one calculation is 30 seconds; 10 seconds remains the target that is measured. (CB-17)
 **Access and restore**
 - A revision restore does not bring back saved summaries; they are recalculated from the restored inputs.
 **Evidence to record**
@@ -736,7 +736,7 @@ Covers: NFR-3, UX section 10, audit findings A2, A3, A5, A6.
 - The text contrast measurements are recorded for every screen that exists at this story.
 - The marker, icon and focus-ring contrast measurements are recorded against both the plan and aerial imagery.
 
-Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1a). Screens added later meet these rules under standing rule 5.
+Notes: Left to later stories: the 44 px touch targets of the field shell (story 5.1a). Screens added later meet these rules under standing rule 5. The axe checks of standing rule 15 cover each new screen from story 1.2 on; this story makes the full pass, including the prototype's existing screens.
 
 ### Story 3.4: Plan workspace regrouped
 

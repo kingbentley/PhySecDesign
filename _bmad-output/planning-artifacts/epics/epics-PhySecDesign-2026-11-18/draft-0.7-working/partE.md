@@ -57,6 +57,7 @@ Covers: FR-62 (file and sheet selection, unsupported files), AD-10. Screens: S-0
 **Limits and values**
 - An inventory file can be at most 10 MiB.
 - An inventory file can hold at most 5,000 data rows. (CE-01)
+- The shared parser refuses a workbook whose uncompressed contents are over 100 MiB, in the browser and on the server, before it parses the workbook. (CE-50)
 
 **Evidence to record**
 - The fixture script of story 2.7b also produces a 600-row inventory as .xlsx and as .csv.
@@ -542,6 +543,48 @@ Covers: FR-65 (service scope), FR-38 (reopening in one step), FR-26 (field chang
 
 **Limits and values**
 - A service scope is named "Service visit" followed by the date, and the name can be changed. (CE-34)
+
+### Story 6.12d: External tickets on issues, visits and warranties
+
+As a technician, I want to note the customer's or our own ticket number, with its link, on an issue, a service visit or a warranty, so that anyone can go from Site Survey Design to the ticket in the other system.
+
+Covers: FR-78, FR-46, FR-65, FR-33 (package option), NFR-5 (links), AD-22 (links never fetched). Screens: S-18, S-19, S-37, S-24.
+
+**Core behaviour**
+- An issue, a service visit and a warranty each gain an "External tickets" list, with the hint "A ticket in another system, such as your customer's service desk or your own tracker". (CE-41)
+- Add asks for a ticket number and an optional link, and notes that a link may carry the tracker's own access; a record may hold several external tickets. (CE-42)
+- The number is shown exactly as typed and matched, for search, duplicates and "also on", ignoring case and surrounding spaces. (CE-43)
+- Each entry shows the number and, when it has a link, the link's host beside a link icon that opens the link in a new tab without sending the project's address.
+- An entry an agent added shows the agent mark.
+- An external ticket whose number is also on another record of the same project shows "also on" with a link to each such record; archived records are labelled and deleted ones are left out. (CE-45)
+- Adding, changing and removing an external ticket are history entries with actor and time, and a removed one stays in the record's history; adding a removed number again is a new entry. (CE-46)
+- Searching the Issues list by a ticket number finds issues by their own external tickets and those of their service visits.
+- The Issues list shows the first external ticket of each issue with "+N" for more.
+- Members' CSV exports of issues, visits and warranties include their external tickets in two columns, numbers and links, each listing a record's tickets in the same order with one per line inside the cell, without "also on".
+- Making a Design or Closeout package offers "Include external tickets", off by default; with it off the package shows none, with it on it shows each with its number and link as text and no "also on". (CE-47)
+- The field shell's issue and visit forms show and add external tickets as on desktop, and a change made without a connection is queued like other field edits.
+- A record after its closeout cutoff still accepts external tickets on its live copy, and the fixed closeout copy never changes.
+
+**Refusals and edge cases**
+- A link is trimmed, and is refused with "Enter a web address starting with https:// or http://" unless its scheme is `https` or `http` (in any case) and it has a host; control characters are refused. (CE-44)
+- A link with a user name or password is refused with "Remove the user name and password from the link". (CE-48)
+- A number already on the record is refused with "This ticket is already listed", and a number of only spaces, or one containing a line break, a tab or another control character, is refused.
+- "Also on" never names a record in another project. (CE-49)
+- A change or removal of an external ticket that changed since it was read is refused with "changed since", showing the current value.
+- A queued change refused when the connection returns, because the record changed or the number is already listed, is shown to the technician with the reason.
+- In a CSV export, a number or link starting with `=`, `+`, `-` or `@`, or with the full-width form of any of them, is written so that a spreadsheet does not run it as a formula; the method is checked in Excel, LibreOffice and Google Sheets, with a test for each such leading character.
+- The server never makes a request to an external ticket's link: a test adds a link to a test server and finds no request reaches it while the ticket is added, shown, searched or exported.
+- The reviewer view never shows external tickets. (CE-47)
+- A package already made, and a closeout record, keep the external tickets they held at their cutoff, checked by hash after one is added and another removed.
+- Two people adding different external tickets to one record at the same moment both keep theirs.
+
+**Limits and values**
+- A ticket number has 1 to 100 characters. (CE-43)
+- A link has at most 2,000 characters, counted after an international host name is converted to its ASCII form, and that form is shown as the host. (CE-44)
+
+**Access and restore**
+- A revision restore leaves external tickets unchanged.
+- External tickets travel in the project's portable backup; on restore their links are checked again by the rules above, a user name and password are removed from a restored link first and the person restoring is told how many links were changed, a link that still fails is kept as text without a link, and "also on" is worked out again.
 
 ## Epic 7: Extended modelling
 

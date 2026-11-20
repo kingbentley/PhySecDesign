@@ -16,6 +16,43 @@ Open http://127.0.0.1:4174/
     npm run build
     npm run test:sites
 
+`npm run dev` serves the app through the Worker locally with Cloudflare's Vite plugin, so `/api/v1/status` answers in development. The local review service still runs in the Vite server and answers `/api/reviews/` first.
+
+## Server build and hosts
+
+One TypeScript Worker build serves the app and the API on both hosts: Cloudflare, and self-hosted under `workerd`, Cloudflare's open-source runtime.
+
+| Folder | Contents |
+| --- | --- |
+| `src/` | The React app (JavaScript, unchanged). |
+| `shared/` | TypeScript shared by browser and server: the release and data-format version, reason codes and their wording, the entered-text type, and the route declarations with their input and reply schemas. |
+| `server/` | The Worker: `index.ts` (entry), `api/` (routing through the declarations), `objects/` (the shared object base: data-format version, conversion runner, version rule, alarm schedule, object-call helper), `project-room/` and `installation/` (the two Durable Object classes), `files/` and `update/` (the file-store and update interfaces, the only place for host-specific code). |
+| `deploy/cloudflare/` | `wrangler.jsonc` for Cloudflare. |
+| `deploy/selfhost/` | `config.capnp` for `workerd` and the self-hosted smoke test. |
+| `server-tests/` | Server tests run inside the Workers runtime with Vitest and `@cloudflare/vitest-plugin`. |
+| `worker/`, `scripts/prepare-sites-build.mjs`, `.openai/` | The separate static Sites package, unchanged. |
+
+Every server address apart from the app's pages and files is under `/api/v1/` (plus `/mcp` and `/.well-known/`, none declared yet) and is declared in `shared/routes.ts`. Every refusal is `{ "error": { "code", "message", "field"? } }` and never repeats an entered value. The deployed Worker refuses `/api/reviews/` with `not_available`; review links work only in the Vite development server for now.
+
+Commands:
+
+    npm test                  # the unit tests in tests/ (not the Sites test, which needs a build)
+    npm run typecheck         # TypeScript in shared/, server/ and server-tests/
+    npm run test:server       # server tests inside the Workers runtime
+    npm run build             # dist/client (app), dist/worker (Worker bundle), dist/server and dist/.openai (Sites package)
+    npm run test:sites        # the Sites package test, after a build
+    npm run smoke:selfhost    # after a build: runs dist/worker under workerd, restarts it, and checks the saved value
+
+Deploy to Cloudflare (Workers Paid plan; sign in once with `npx wrangler login`). The configuration names the Worker `site-studio`; the test installation uses another name:
+
+    npm run deploy:cloudflare -- --name site-studio-test
+
+Run self-hosted after a build (Linux in production, inside the Docker image of a later story):
+
+    npx workerd serve deploy/selfhost/config.capnp --directory-path do-storage=/var/lib/site-studio/do --directory-path assets=dist/client --socket-addr http=127.0.0.1:8787
+
+Both host configurations declare only the two SQLite Durable Object classes, `ProjectRoom` and `Installation`, and no D1, Workflows, Queues, cron triggers or KV; a server test checks this. Dependency versions are pinned exactly; continuous integration (`.github/workflows/test.yml`) installs from the lock file and runs every command above.
+
 ## Try the workflow
 
 1. Open **Manage** in the Project sidebar. Rename the project, add a building, and add or select a floor. A new building starts with a blank ground floor; additional floors start without a drawing.

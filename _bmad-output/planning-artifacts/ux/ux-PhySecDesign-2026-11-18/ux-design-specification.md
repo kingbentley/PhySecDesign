@@ -1,14 +1,14 @@
 ---
 title: "Site Survey Design — UX Design Specification"
-status: draft 0.5, aligned with final PRD 1.2 after its review on 2026-11-18; design decisions D1-D14 confirmed by Kevin
+status: draft 0.6, 2026-11-19; draft 0.5 aligned with final PRD 1.2 after its review on 2026-11-18, design decisions D1-D14 confirmed by Kevin; section 18 added for PRD amendment 1.3 (agent access) and section 19 for amendment 1.4 (external tickets), not yet reviewed
 created: 2026-11-18
-inputs: "final PRD 1.2 (FR-1–72, NFR-1–8, SM-1–6)"
+inputs: "final PRD 1.2 (FR-1–72, NFR-1–8, SM-1–6) with amendments 1.3 (FR-73–77, SM-7) and 1.4 (FR-78)"
 method: BMAD Create UX, followed by hand (the BMAD skills are not installed in the cloud checkout)
 ---
 
 # Site Survey Design — UX Design Specification
 
-This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–65 and, in section 17, FR-66–72. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
+This document turns the [PRD](../../prds/prd-PhySecDesign-2026-11-16/prd.md) into screens, flows and interface rules. It covers FR-1–65, in section 17 FR-66–72, in section 18 FR-73–77, and in section 19 FR-78. It adds no product scope. Where it makes a choice the PRD leaves open, the choice is listed under [Confirmed design decisions](#12-confirmed-design-decisions). Kevin confirmed all of them, D1 to D14, on 2026-11-18.
 
 Three kinds of statement are kept apart throughout:
 
@@ -16,7 +16,7 @@ Three kinds of statement are kept apart throughout:
 - **Required** — what the PRD asks for, cited by FR or NFR number.
 - **Proposed** — the design this document sets out to meet the requirement. The nine choices in section 12 are confirmed; the rest of the design detail is open to review on the canvas.
 
-Screens are numbered S-01 to S-37, and S-F1 to S-F7 for the field, so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
+Screens are numbered S-01 to S-40, and S-F1 to S-F7 for the field, so architecture, epics and stories can refer to them. The key screens are drawn on a design canvas; see [Visual designs](#13-visual-designs).
 
 ## 1. Summary
 
@@ -607,3 +607,65 @@ Other signed-in users see a banner before the update starts ("An update starts i
 | S-30 Users, S-31 Projects, S-32 Reviewer links, S-33 Settings, S-34 Backups | FR-70 |
 | S-36 Activity | FR-71 |
 | S-35 Software | FR-72, NFR-8 |
+
+## 18. Agent access (amendment 1.3)
+
+PRD amendment 1.3 lets AI agents act for a person through an API and an MCP endpoint (FR-73–77; architecture AD-22). Agents have no screens of their own; people need three places to control them, and every place that shows who did something must show when an agent did it. The screens and the rules below were approved with the [sprint change proposal](../../sprint-change-proposal-2026-11-19.md) on 2026-11-19; their layout is proposed and open to review on the canvas, where they are not yet drawn.
+
+### 18.1 My account: Access tokens (S-38, FR-73)
+
+- A section of My account (S-29). While agent access is off it reads "Agent access is turned off for this installation", offers no Create token, and still lists the person's tokens with Revoke.
+- **Create token** opens a panel: a name (for example "Claude on my laptop"), the kind (Read only, or Read and draft, with one line on what each allows and that approving, issuing, closing out and recording results always need a person), Projects (all of mine, or chosen ones), and Expires (90 days by default, up to the installation's maximum).
+- After creation the token is shown once with Copy, the addresses of the API and the MCP endpoint with Copy, and "You will not see this token again." Closing the panel without copying asks for confirmation.
+- The list shows each token's name, kind, projects, expiry, created and last used, with Revoke. An expired or revoked token stays listed, greyed, for 30 days.
+
+- **Connector consent (OAuth, optional).** After sign-in, a page names the connector as "calls itself ‹name›", shows the redirect address's host prominently, the token kind, projects and expiry to grant (90 days unless changed), with Allow and Deny.
+
+### 18.2 Administration: Settings, Agent access (S-39, FR-76)
+
+- A group in Settings (S-33): Agent access On or Off (Off in a new installation), the maximum token lifetime (1 year unless lowered), and the API and MCP endpoint addresses to give to agents.
+- A line under the switch states where agents can connect from: on a private network, only agents running inside it.
+- Turning access off states that every token stops working at once and is kept, so that turning it on again restores those that have not expired or been revoked meanwhile.
+
+### 18.3 Administration: Users, a person's tokens (S-40, FR-73)
+
+- A user's detail (S-30) gains Tokens: name, kind, projects, expiry and last used, with Revoke. The Users table gains a count of active tokens.
+- Deactivating a user states that their tokens stop working with the account.
+
+### 18.4 Showing agent actions (FR-74, FR-75)
+
+- Wherever an actor is shown (History in S-04, S-20 records, review and field records, packages, S-36 Activity), an agent's action reads as the owner's name followed by "via agent" and the token's name, with a small agent mark.
+- Activity (S-36) gains an "Agent actions" filter.
+- An item an agent placed or changed is not marked verified, installed or tested by that change; the existing status language already shows those states only when a person records them.
+
+### 18.5 Status language additions
+
+| Family | Values | Appearance |
+| --- | --- | --- |
+| Attribution | Via agent | The agent mark and "via agent ‹token name›" after the owner's name. |
+| Token | Active, Expires soon, Expired, Revoked | Chip in the token lists; Expires soon within 7 days. |
+
+### 18.6 Requirements coverage for amendment 1.3
+
+| Screens | Requirements |
+| --- | --- |
+| S-38 Access tokens, S-40 a user's tokens | FR-73 |
+| S-04 History, S-20, S-36 Activity, packages | FR-74 |
+| No screen: refusals reach the agent, not a person | FR-75, FR-77 |
+| S-39 Agent access | FR-76 |
+
+## 19. External tickets (amendment 1.4)
+
+PRD amendment 1.4 (FR-78) lets issues, service visits and warranties carry references to tickets in other systems, such as a customer's service desk or the organisation's own tracker. Approved with the [sprint change proposal](../../sprint-change-proposal-2026-11-19-external-tickets.md) on 2026-11-19; the layout is proposed and open to review. No new screen is needed.
+
+- **Name.** "External ticket", with the hint "A ticket in another system, such as your customer's service desk or your own tracker".
+- **S-18 Issues and S-19 visits and warranties.** An "External tickets" list with Add. Add asks for the ticket number and an optional link. Each entry shows the number, the link's host beside a link icon that opens the tracker in a new tab without sending the project's address, the agent mark when an agent added it, and "also on" naming other records in the same project with the same number (archived ones labelled; never shown in exports or packages). The Add form notes that a link may carry the tracker's own access. Removing one asks for confirmation and leaves it in the record's history.
+- **Issues list (S-18).** A column shows the first external ticket with "+N" for more.
+- **Field shell.** The issue and visit forms on a phone show the same list; the link opens in the phone's browser.
+- **Packages (S-37).** An option "Include external tickets", off by default. Reviewer view (S-24) never shows them.
+- **Refusals.** A link that is not a web address with a host is refused with "Enter a web address starting with https:// or http://". A link with a user name or password is refused with "Remove the user name and password from the link". A number already on the record is refused with "This ticket is already listed".
+- **Search.** Searching the Issues list by a ticket number also finds issues whose service visits carry it, ignoring case and spaces.
+
+| Screens | Requirements |
+| --- | --- |
+| S-18, S-19, S-37, S-F field forms | FR-78 |

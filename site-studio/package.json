@@ -3,21 +3,39 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
+    "test": "node scripts/run-unit-tests.mjs",
     "test:sites": "node --test tests/sites-worker.test.mjs",
+    "test:server": "vitest run --config server-tests/vitest.config.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "smoke:selfhost": "node deploy/selfhost/smoke.mjs",
+    "deploy:cloudflare": "npm run build && wrangler deploy",
     "predev": "node scripts/copy-pdf-assets.mjs",
     "prebuild": "node scripts/copy-pdf-assets.mjs"
   },
   "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
+    "@phosphor-icons/react": "2.1.10",
     "@vitejs/plugin-react": "5.0.4",
-    "leaflet": "^1.9.4",
+    "leaflet": "1.9.4",
     "pdfjs-dist": "6.5.438",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "vite": "6.4.2"
+    "vite": "6.4.2",
+    "zod": "4.6.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.70.0",
+    "@cloudflare/vitest-plugin": "1.8.4",
+    "@cloudflare/workers-types": "5.20261117.1",
+    "typescript": "5.9.3",
+    "vitest": "5.1.1",
+    "workerd": "1.20261117.1",
+    "wrangler": "4.164.0"
   }
 }

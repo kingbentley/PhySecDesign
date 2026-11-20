@@ -1,0 +1,37 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  site-studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: site-studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site-studio/package-lock.json
+      - name: Install from the lock file
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Type check
+        run: npm run typecheck
+      - name: Server tests in the Workers runtime
+        run: npm run test:server
+      - name: Build
+        run: npm run build
+      - name: Sites package test
+        run: npm run test:sites
+      - name: Self-hosted smoke test
+        run: npm run smoke:selfhost

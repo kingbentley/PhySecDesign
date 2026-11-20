@@ -1,0 +1,11 @@
+// R11 part 2: the same throwaway Worker as part 1, deployed with Wrangler instead of the REST API.
+// VERSION is overridden on each deploy with --var VERSION:<letter>. The Probe class already exists (migration v1).
+{
+  "name": "site-studio-experiments",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "durable_objects": { "bindings": [{ "name": "PROBE", "class_name": "Probe" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }],
+  "vars": { "VERSION": "A" }
+}
