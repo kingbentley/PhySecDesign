@@ -2,9 +2,9 @@
 title: 'Story 1.3, spec 1: Sign-in data, rules and storage'
 type: 'feature'
 created: '2026-11-20'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
-baseline_commit: ''
+baseline_commit: '61040af0ee56023e6b6726a64fba237e400772dd'
 review_loop_iteration: 0
 story_key: '1-3-sign-in-and-sign-out'
 context:
@@ -83,13 +83,13 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `site-studio/shared/signin.ts` -- input schema (email ≤ 254 code points after `normaliseEmail`; password ≤ 1,024 UTF-16 units before normalisation), limits, wait and clearing functions -- standing rule 6.
-- [ ] `site-studio/shared/refusal.ts` -- `signin_failed` "That email and password do not match."; `signin_wait` "Too many attempts. Wait before trying again." (A-19); `signin_busy`.
-- [ ] `site-studio/server/auth/session.ts` -- token (≥ 32 random bytes), SHA-256, session and clearing cookie lines (D-1, D-4, E-15).
-- [ ] `site-studio/server/auth/marker.ts` -- marker cookie line `__Host-<prefix>-m-<id>`, account id, random marker id and expiry, HMAC-SHA-256 under the object's key, 1 year, renewed at sign-in (D-3, A-5, D-2 amended).
-- [ ] `site-studio/server/auth/password.ts` -- random stand-in; one-at-a-time queue for hashing and verifying, set-up included, at most 20 waiting, released in `finally`, with an active count for tests (D-5 amended).
-- [ ] `site-studio/server/installation/signInStore.ts`, `Installation.ts` -- tables (sessions, email-key, address and marker failures, tickets, identity with the marker and email-key keys), indexed times, bounded pruning; ops `signInAttempt`, `completeSignIn`, a read-only `sessionInfo`, `endSession`, each taking `now`.
-- [ ] `site-studio/server-tests/signin-rules.test.ts`, `signin-store.test.ts`, `session-token.test.ts`, `hash-queue.test.ts` -- matrix rows.
+- [x] `site-studio/shared/signin.ts` -- input schema (email ≤ 254 code points after `normaliseEmail`; password ≤ 1,024 UTF-16 units before normalisation), limits, wait and clearing functions -- standing rule 6.
+- [x] `site-studio/shared/refusal.ts` -- `signin_failed` "That email and password do not match."; `signin_wait` "Too many attempts. Wait before trying again." (A-19); `signin_busy`.
+- [x] `site-studio/server/auth/session.ts` -- token (≥ 32 random bytes), SHA-256, session and clearing cookie lines (D-1, D-4, E-15).
+- [x] `site-studio/server/auth/marker.ts` -- marker cookie line `__Host-<prefix>-m-<id>`, account id, random marker id and expiry, HMAC-SHA-256 under the object's key, 1 year, renewed at sign-in (D-3, A-5, D-2 amended).
+- [x] `site-studio/server/auth/password.ts` -- random stand-in; one-at-a-time queue for hashing and verifying, set-up included, at most 20 waiting, released in `finally`, with an active count for tests (D-5 amended).
+- [x] `site-studio/server/installation/signInStore.ts`, `Installation.ts` -- tables (sessions, email-key, address and marker failures, tickets, identity with the marker and email-key keys), indexed times, bounded pruning; ops `signInAttempt`, `completeSignIn`, a read-only `sessionInfo`, `endSession`, each taking `now`.
+- [x] `site-studio/server-tests/signin-rules.test.ts`, `signin-store.test.ts`, `session-token.test.ts`, `hash-queue.test.ts` -- matrix rows.
 
 **Acceptance Criteria:**
 - Given a completed sign-in, when the sessions table is read, then it holds a 64-hex token hash and no token.
@@ -101,3 +101,35 @@ context:
 **Commands** (in `site-studio/`):
 - `npm test && npm run typecheck && npm run test:server` -- pass
 - `npm run build && npm run test:sites && npm run smoke:selfhost` -- pass
+
+## Build Notes
+
+- One file outside the task list changed: `site-studio/server-tests/setup-store.test.ts` (story 1.2), whose CAP-11 test pinned exactly four installation-object operations. Its expected list now names the four sign-in operations too; nothing else in it changed. No test from before story 1.2 changed.
+- For spec 2: `HashQueueBusy` is not yet mapped to `signin_busy` anywhere, set-up included (see `deferred-work.md`). `prefixedCookies` passes the last 64 well-formed session and marker cookies to the object. `completeSignIn` returns the new session token and the signed marker for the Worker's cookies; only the token's hash is stored. A cookie named with another installation's identifier is ignored by `sessionInfo` and `endSession` (not flagged for clearing), so that installation's session on the same host is left alone (CAP-10); spec 2 decides how CAP-3's "names with another identifier ... cleared" applies.
+- Verification on 2026-11-20 after the review patches: `npm test` 151 passed; `npm run typecheck` clean; `npm run test:server` 18 files, 216 tests passed; `npm run build`, `npm run test:sites` (4 passed) and `npm run smoke:selfhost` passed.
+
+## Review Triage Log
+
+Review round 1 (2026-11-20): Blind Hunter (BH), Edge Case Hunter (EC) and Verification Gap (VG) layers on the diff against `61040af`. Verdicts are the triager's.
+
+| # | Layer | Finding | Verdict | Evidence | Route |
+|---|---|---|---|---|---|
+| 1 | VG, EC | Set-up's handler does not catch `HashQueueBusy` now that `hashPassword` is queued | medium | `handlers.ts:84` has no catch and the router catches only the JSON parse; the fix is in a handler, which this spec's Never excludes; unreachable before spec 2's routes | defer (spec 2) |
+| 2 | EC | Over 20 prefixed cookies: the live session or marker is dropped | medium | `prefixedCookies` kept the first 20, and browsers send older cookies first, so stale cookies from re-created installations push out the live ones; SPEC says the Worker passes every prefixed cookie | patch |
+| 3 | VG | No test drops an overlong prefixed cookie name | low | The only overlong case in `session-token.test.ts` is a value; removing the name bound broke no test | patch (with 2) |
+| 4 | BH | `IDENTIFIER_PATTERN` exported but unused | low | Grep finds no use | patch (with 2: the name filter now uses it) |
+| 5 | BH, VG | `signin_busy` message is a comma splice and is not pinned by a test | low | `refusal.ts`; the other two sign-in messages are pinned in `signin-rules.test.ts` | patch |
+| 6 | BH | Hash identity in the ticket is the salt only | low | E-22 holds only while every rehash draws a new salt; recording salt and hash together is a direct correction | patch |
+| 7 | BH, EC | Sign-in email has no bound before `normaliseEmail` | low | The router caps bodies at 1 MiB (`router.ts:10`), so trimming and lower-casing is cheap; a raw bound would refuse values SPEC's Assumptions say take the one-message path | reject |
+| 8 | EC | A rejected key import is cached for the object's lifetime | low | Importing 32 random bytes as an HMAC key does not fail in practice, and the fix adds a branch | reject |
+| 9 | EC, BH | `endSession` takes no `now` | false | `endSession` has no time-dependent behaviour, so no test needs to inject time (V-18's purpose); the ops read `Date.now()` as set-up's do | reject |
+| 10 | BH | A busy queue after counting leaves the attempt counted | false | SPEC accepts it: "a race that fills it after counting leaves the count raised", and Assumptions (E-17) | reject |
+| 11 | BH | A correct 20th attempt from an address stretches the other 19 rows | low | Real: the stretch is written before the outcome is known and is not undone on success. It needs exactly 20 failures within 15 minutes followed by the correct password, and undoing it needs each row's previous clearing time | reject |
+| 12 | BH | The unknown address lets storage grow without limit | false | Rows are bounded by request rate × 24 hours, the inherent cost of D-11's counts; each attempt prunes up to 20 expired rows per table against at most one email row and one ticket created | reject |
+| 13 | BH | Ticket consumption and the session write are two transactions | false | No await separates them, so nothing can interleave in the object; a fault after consumption leaves the ticket spent, which is the intended once-only rule | reject |
+| 14 | BH | `lastWork()` can mix interleaved operations | low | Diagnostic for one test that runs attempts in sequence; no user effect; fixing it means plumbing results through each call | reject |
+| 15 | BH | A non-scrypt stored hash returns `false` without a check | false | Code from before this change; `users` rows are written only by `createFirstAdministrator` with scrypt | reject |
+| 16 | BH | `setup-store.test.ts` changed but not in the task list; op list duplicated | low | The story 1.2 test pinned exactly four ops, and the smallest change was to update its list; the change is named in the build report. Deduplicating means restructuring an earlier story's test | reject |
+| 17 | BH | `sessionInfo` and `endSession` import the HMAC keys just to read the identifier | false | The keys are imported once per object start and cached; D-4 amended forbids writes, not key import | reject |
+| 18 | BH | Marker expiry regex accepts more than safe-integer digits | false | Only signed values are accepted, and the object signs only real millisecond times, so `Number(expiry)` is exact for every accepted marker | reject |
+| 19 | BH | Constructor draws three random values on every wake; no test of an existing installation gaining the identity row | low | 48 random bytes per wake is negligible, and `INSERT OR IGNORE` after `CREATE TABLE IF NOT EXISTS` covers an installation from before story 1.3; standing rule 8 re-creates pre-release installations anyway | reject |
