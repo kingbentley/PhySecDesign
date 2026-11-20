@@ -1,0 +1,42 @@
+- id: "1"
+  title: Data, rules and storage
+  description: >-
+    Shared set-up input rules (D-4), scrypt hashing, the installation object's tables for users,
+    set-up settings and wrong-code counts, and nodejs_compat in both host configs. Covers CAP-5,
+    CAP-6, the storage half of CAP-7 and CAP-11 in SPEC.md.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: ""
+- id: "2"
+  title: Routes, retry and deploy command
+  description: >-
+    The set-up state and set-up routes, the origin and header check, the HTTPS redirect (D-1), the
+    callObject retry rule (D-2), the wrong-code limits (D-3) and the deploy script that issues the
+    code. Covers CAP-1, CAP-2, CAP-4, the route half of CAP-7, CAP-8 and CAP-9 in SPEC.md.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    The deployed check of the version-stop reason belongs to story 4; until then, implement the
+    D-2 rule so that writes are not retried unless the reason is distinguished.
+- id: "3"
+  title: Playwright and the set-up page
+  description: >-
+    Playwright set up in desktop Chromium and WebKit with an iPhone viewport with axe, the CI job,
+    and the S-25 set-up page with its already-complete state (D-5), shipped with its browser tests.
+    Covers CAP-3, CAP-12 and the screen side of CAP-4 and CAP-7 in SPEC.md.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    No manual-only check of the page (D-6). The local set-up code is a local secret, never
+    committed.
+- id: "4"
+  title: Acceptance on Cloudflare
+  description: >-
+    Deploy two test Workers and run the deployed checks: CAP-10, the deployed parts of CAP-1, CAP-4
+    and CAP-9, the D-2 reason check, scrypt memory under two concurrent hashes and the Workers Paid
+    plan; record the results.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Deploy only to the 'PhySec Site Studio' test account; delete the extra Worker afterwards unless
+    the spec says to keep it.
