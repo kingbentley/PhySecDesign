@@ -298,7 +298,7 @@ export function RevisionReviewPage({ access }) {
   const invalid = !access.id;
 
   return <main className="shared-review-page">
-    <header className="shared-review-page-header"><BrandMark size={29}/><strong>PhySec</strong><span>Revision review</span></header>
+    <header className="shared-review-page-header"><BrandMark size={30}/><strong>PhySec</strong><span>Revision review</span></header>
     <div className="shared-review-page-content">
       {!room ? <div className="shared-review-start" role={loadError || invalid ? 'alert' : 'status'}>
         <div><h1>{invalid ? 'Invalid review link' : loadError ? 'Review unavailable' : 'Opening revision review'}</h1>
