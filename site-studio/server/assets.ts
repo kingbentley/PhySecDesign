@@ -41,8 +41,10 @@ export async function serveAsset(request: Request, env: Env): Promise<Response> 
   } else {
     response = await env.ASSETS.fetch(request);
     // A path without an extension is a page or a directory; a disk service answers a directory
-    // with a listing, which is never served.
-    if (response.ok && !hasExtension(servedPath) && !isHtml(response)) {
+    // with a listing, which is never served. A script without an extension, as the local
+    // development server sends for /@vite/client now that every request reaches the Worker first,
+    // is not a listing.
+    if (response.ok && !hasExtension(servedPath) && !isHtml(response) && !isScript(response)) {
       await response.body?.cancel();
       response = new Response("Not found", { status: 404 });
     }
@@ -70,6 +72,10 @@ function hasExtension(path: string): boolean {
 
 function isHtml(response: Response): boolean {
   return response.headers.get("content-type")?.startsWith("text/html") ?? false;
+}
+
+function isScript(response: Response): boolean {
+  return response.headers.get("content-type")?.startsWith("text/javascript") ?? false;
 }
 
 function isRedirect(response: Response): boolean {

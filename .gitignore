@@ -34,3 +34,6 @@ dist/
 /experiments/r14-runtime-upgrade/runtimes/
 /experiments/*/data*/
 /experiments/**/*.out
+
+# Temporary self-hosted configuration written by the smoke test (holds a throwaway set-up code).
+/site-studio/deploy/selfhost/.smoke-*.capnp

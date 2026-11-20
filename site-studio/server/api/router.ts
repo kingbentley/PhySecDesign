@@ -1,10 +1,11 @@
-import { checkInput, routesForPath, type RouteDeclaration } from "../../shared/routes";
+import { APP_HEADER, APP_HEADER_VALUE, checkInput, routesForPath, type RouteDeclaration } from "../../shared/routes";
 import type { Env } from "../env";
 import { jsonResponse, refusalBodyResponse, refusalResponse } from "../http";
-import { HANDLERS, type HandlerResult } from "./handlers";
+import { HANDLERS, type HandlerResult, type RequestContext } from "./handlers";
 
 // Answers every request under /api/v1/, /mcp and /.well-known/ through the route declarations:
-// find the declaration, check the input against its schema, run the handler, check the reply.
+// find the declaration, check the origin rule where it applies, check the input against its
+// schema, run the handler, check the reply.
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
@@ -17,16 +18,19 @@ export async function handleApi(request: Request, env: Env): Promise<Response> {
     return refusalResponse("method_not_allowed", { headers: { allow: candidates.map((c) => c.method).join(", ") } });
   }
 
+  // Before the body is read: another site's page cannot drive this request (standing rule 13).
+  if (route.appOriginOnly && !isFromAppOrigin(request, url)) return refusalResponse("origin_refused");
+
   const raw = await readInput(request, url, route);
   if (!raw.ok) return refusalResponse("invalid_input");
   const input = checkInput(route.input, raw.value);
   if (!input.ok) return refusalResponse("invalid_input", { field: input.field });
 
   const handler = HANDLERS[route.id as keyof typeof HANDLERS] as
-    | ((input: unknown, env: Env) => Promise<HandlerResult<unknown>>)
+    | ((input: unknown, env: Env, context: RequestContext) => Promise<HandlerResult<unknown>>)
     | undefined;
   if (!handler) return refusalResponse("not_found");
-  const result = await handler(input.value, env);
+  const result = await handler(input.value, env, { request, url });
   if (!result.ok) return refusalBodyResponse(result.body);
 
   const reply = route.reply.safeParse(result.value);
@@ -35,6 +39,17 @@ export async function handleApi(request: Request, env: Env): Promise<Response> {
     return refusalResponse("internal_error");
   }
   return jsonResponse(reply.data);
+}
+
+/**
+ * True when a request comes from the app's own page: its `Origin` equals the origin of the
+ * address it was sent to, and it carries the app's header. A browser sends `Origin` on every
+ * cross-origin request and on same-origin POSTs, and another site cannot add the header without
+ * a CORS preflight, which the server never grants.
+ */
+export function isFromAppOrigin(request: Request, url: URL): boolean {
+  const origin = request.headers.get("origin");
+  return origin !== null && origin === url.origin && request.headers.get(APP_HEADER) === APP_HEADER_VALUE;
 }
 
 export async function readInput(

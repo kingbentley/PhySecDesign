@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SETUP_STATES, setupInput } from "./setup";
 
 // Route declarations (AD-22). Every server address other than the app's own pages and files is
 // declared here with its method, path, input schema and reply schema. Only three address spaces
@@ -21,7 +22,16 @@ export interface RouteDeclaration<Input extends z.ZodType = z.ZodType, Reply ext
   input: Input;
   reply: Reply;
   summary: string;
+  /**
+   * Refuses the request unless it comes from the app's own origin and carries the app's header
+   * (standing rule 13): requests made before a session exists that create one or an account.
+   */
+  appOriginOnly?: boolean;
 }
+
+/** The header the app's own page adds to requests that must come from it (standing rule 13). */
+export const APP_HEADER = "x-site-survey-design";
+export const APP_HEADER_VALUE = "1";
 
 /** True when a path lies in one of the address spaces the server answers itself. */
 export function isServerPath(path: string): boolean {
@@ -50,6 +60,12 @@ export const statusReply = z
 
 export type StatusReply = z.infer<typeof statusReply>;
 
+/** Whether set-up is open, and nothing else (CA-52). */
+export const setupStateReply = z.object({ state: z.enum(SETUP_STATES) }).strict();
+
+/** What a completed set-up confirms: the installation's name and the administrator's email. */
+export const setupReply = z.object({ installationName: z.string(), email: z.string() }).strict();
+
 export const ROUTES = {
   status: declareRoute({
     id: "status",
@@ -58,6 +74,23 @@ export const ROUTES = {
     input: z.object({}).strict(),
     reply: statusReply,
     summary: "The running release and the installation's data format and creation time.",
+  }),
+  setupState: declareRoute({
+    id: "setupState",
+    method: "GET",
+    path: "/api/v1/setup/state",
+    input: z.object({}).strict(),
+    reply: setupStateReply,
+    summary: "Whether set-up is open (no user exists yet) or closed. Public and read-only.",
+  }),
+  setup: declareRoute({
+    id: "setup",
+    method: "POST",
+    path: "/api/v1/setup",
+    input: setupInput,
+    reply: setupReply,
+    summary: "Creates the first administrator and names the installation, given the set-up code.",
+    appOriginOnly: true,
   }),
 } as const;
 

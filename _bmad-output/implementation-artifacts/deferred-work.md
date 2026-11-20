@@ -35,3 +35,24 @@
 - source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/1-data-rules-and-storage.md`
   summary: During a deploy, Worker copies running the old and the new set-up code may alternate their fingerprints at the installation object, each change resetting the wrong-code counts and the tickets, and the old code keeps working briefly through the old copies.
   evidence: Real but bounded to the minutes after a deploy (experiment R11: old code keeps running for minutes). Settle in story 1.2 spec 2 (for example, the object keeps the newest fingerprint by deploy time and refuses an older one) and check on a deployed installation in spec 4.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/2-routes-retry-and-deploy-command.md`
+  summary: Self-hosted, behind a web server that terminates TLS, the Worker may see `http://` and an internal host while the set-up page sends `Origin: https://<public address>`, so the origin rule (standing rule 13) would refuse every set-up and the recorded public address would be wrong.
+  evidence: Unverified (maybe-false, medium if true). The set-up route compares `Origin` with the request URL's origin and records that origin (CA-57). Settle in stories 2.21/2.22: either the web server forwards the public host and scheme so the Worker's request URL is the public one, or the Worker takes them from a configured proxy only.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/2-routes-retry-and-deploy-command.md`
+  summary: Self-hosted, a client can send its own `CF-Connecting-IP` header, and rotating it gives a fresh per-address wrong-code count for each value.
+  evidence: Real if the bundled web server passes the header through. On Cloudflare the header is set by Cloudflare. The installation-wide cap of 100 per hour still holds, and self-hosted set-up is refused until story 2.21 issues a code. Stories 2.21/2.22 must make the web server set or strip the header (or add the configured-proxy rule).
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/2-routes-retry-and-deploy-command.md`
+  summary: The deploy command's own wiring (Wrangler's output file, `wrangler secret put SETUP_CODE --name <worker>` with the code on standard input, the `--url` option) runs in no automated test.
+  evidence: Real but low: only `runDeploy` and its helpers are unit-tested with Wrangler and the network stubbed, as spec 2 required. Story 1.2 spec 4 runs the command against the test account; check there that a first deploy prints a code, a redeploy with no users prints a new one, and a redeploy with an administrator prints none.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/2-routes-retry-and-deploy-command.md`
+  summary: Item (d) above (old and new code fingerprints alternating during a deploy) stays open after spec 2.
+  evidence: Not cheap at the routes: "keep the newest fingerprint" needs a deploy time beside the secret, and a Cloudflare rollback restores the older secret (AD-21), which would then block set-up until the next deploy. Spec 4 should measure how long old copies keep answering after a deploy and whether the old code is refused at once; decide then whether the bounded window needs handling.
+
+- source_spec: `_bmad-output/specs/spec-story-1-2-set-up-a-new-installation/stories/2-routes-retry-and-deploy-command.md`
+  summary: Item 1 above (`callObject` retrying after any reset) is now handled as D-2 says: a write is retried only when the error carries the version-stop reason; a bare reset retries only calls marked idempotent. What remains is the deployed check that the reason reaches the caller on Cloudflare.
+  evidence: In the local runtime the reason does reach the caller (`server-tests/call-retry.test.ts`). If spec 4 finds that Cloudflare drops it, writes are never retried and a version stop during a set-up request answers `internal_error`; the installer then tries again.
+

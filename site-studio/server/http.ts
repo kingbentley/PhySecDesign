@@ -18,7 +18,12 @@ export function refusalResponse(
   return refusalBodyResponse(refusalBody(code, { field: options.field }), options.headers);
 }
 
+/**
+ * A refusal body as an HTTP response. A refusal that imposes a wait also carries it as
+ * `Retry-After`: the body's `retryAfterSeconds`, or the fixed wait of an `updating` refusal.
+ */
 export function refusalBodyResponse(body: RefusalBody, headers: Record<string, string> = {}): Response {
-  const extra = body.error.code === "updating" ? { "retry-after": String(UPDATING_RETRY_AFTER_SECONDS), ...headers } : headers;
+  const wait = body.error.retryAfterSeconds ?? (body.error.code === "updating" ? UPDATING_RETRY_AFTER_SECONDS : undefined);
+  const extra = wait === undefined ? headers : { "retry-after": String(wait), ...headers };
   return jsonResponse(body, REFUSALS[body.error.code].status, extra);
 }
