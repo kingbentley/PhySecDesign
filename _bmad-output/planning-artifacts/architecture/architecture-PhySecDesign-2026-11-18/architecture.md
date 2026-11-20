@@ -347,7 +347,7 @@ Because it is made of the application's own records and not of database files, t
 ### AD-19 — One public repository; signed releases built by GitHub Actions (confirmed; revised)
 
 - The source is published in the GitHub repository under its MIT licence. Kevin makes the repository public when the first release is ready (K15).
-- A version tag starts a workflow that runs the test suite and the browser tests, builds the one Worker bundle, builds the Docker image from that bundle and a pinned version of the open-source runtime, runs the self-hosted smoke suite against the image, signs both, and publishes a GitHub Release with notes.
+- A version tag starts a workflow that runs the test suite, builds the one Worker bundle, runs the browser tests against that bundle, builds the Docker image from the same bundle and a pinned version of the open-source runtime, runs the self-hosted smoke suite against the image, signs both, and publishes a GitHub Release with notes.
 - The image is published to GitHub's container registry. Signing is keyless and tied to this repository's release workflow (K14).
 - Each release states the data-format version it needs, the runtime version it pins, and whether it changes a Durable Object class (AD-21).
 

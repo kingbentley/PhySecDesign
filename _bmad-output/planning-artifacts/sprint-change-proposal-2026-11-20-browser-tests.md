@@ -132,7 +132,9 @@ OLD:
 > A version tag starts a workflow that runs the test suite, builds the one Worker bundle, …
 
 NEW:
-> A version tag starts a workflow that runs the test suite and the browser tests, builds the one Worker bundle, …
+> A version tag starts a workflow that runs the test suite, builds the one Worker bundle, runs the browser tests against that bundle, builds the Docker image from the same bundle, …
+
+(Corrected after CodeRabbit's review of pull request 7: the browser tests need the built bundle, so they run after it is built, and the same bundle is published.)
 
 **Section 10, layout**
 
