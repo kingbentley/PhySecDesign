@@ -10,6 +10,12 @@
 // is closed. Self-hosted installations get their set-up code in story 2.21; here a random code for
 // this run only is given to workerd through a temporary copy of the configuration (next to the
 // original, so its `embed` path still resolves), deleted afterwards and never committed.
+//
+// Story 1.3: before the restart it signs in, and after it finds the same cookie still signed in
+// (V-11); it fails one sign-in for an email with no account before the restart and four after,
+// then finds the wait (V-17: these requests carry no address, so this is the email's count, D-11);
+// it signs out and finds the old cookie no longer signed in; and it runs the password probe in
+// deploy/probe/ under workerd against the committed fixture (D-6).
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -18,6 +24,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as workerd from "workerd";
+import { verifyFixtureUnderWorkerd } from "../probe/probe.mjs";
 
 // The workerd package is CommonJS; its binary path is the `default` export of module.exports.
 const workerdBinary = typeof workerd.default === "string" ? workerd.default : workerd.default.default;
@@ -33,6 +40,11 @@ const { version } = JSON.parse(readFileSync(path.join(root, "package.json"), "ut
 const FETCH_TIMEOUT_MS = 2000;
 // One scrypt hash (128 MiB, N = 131,072) can take a few seconds on a slow runner.
 const SETUP_TIMEOUT_MS = 30_000;
+// Test data for this run only.
+const ADMIN_EMAIL = "smoke-admin@example.test";
+const ADMIN_PASSWORD = randomBytes(12).toString("hex");
+const UNKNOWN_EMAIL = "smoke-nobody@example.test";
+const WRONG_PASSWORD = randomBytes(12).toString("hex");
 
 class SmokeFailure extends Error {}
 
@@ -53,22 +65,38 @@ try {
     await checkRefusal(base);
     await checkNoListing(base);
     await completeSetup(base);
-    return status;
+    const cookies = await signIn(base);
+    await expectSession(base, cookies, true);
+    await failSignIn(base, 1);
+    return { status, cookies };
   });
-  console.log(`first start: release ${first.release}, createdAt ${first.installation.createdAt}, set-up completed`);
+  console.log(`first start: release ${first.status.release}, createdAt ${first.status.installation.createdAt}, set-up completed, signed in`);
 
   const second = await withServer(base, port, async () => {
     const status = await readStatus(base);
     const state = await readSetupState(base);
     if (state !== "closed") fail(`After the restart set-up is ${state}, not closed: the administrator did not persist.`);
+    // The same cookie is still signed in: the identifier and the session survived (V-11).
+    await expectSession(base, first.cookies, true);
+    // One failure before the restart and four after reach the wait (V-17).
+    await failSignIn(base, 4);
+    await expectWait(base);
+    await signOut(base, first.cookies);
+    await expectSession(base, first.cookies, false);
     return status;
   });
-  console.log(`after restart: createdAt ${second.installation.createdAt}, set-up closed`);
+  console.log(`after restart: createdAt ${second.installation.createdAt}, set-up closed, still signed in, counts kept, signed out`);
 
-  if (second.installation.createdAt !== first.installation.createdAt) {
+  const probe = await verifyFixtureUnderWorkerd();
+  console.log(`password probe under workerd: fixture ${probe.fixture ? "verified" : "refused"}, wrong password ${probe.wrongPassword ? "verified" : "refused"}`);
+
+  const createdAt = first.status.installation.createdAt;
+  const dataFormat = first.status.installation.dataFormat;
+
+  if (second.installation.createdAt !== createdAt) {
     fail("The installation's createdAt changed across the restart: storage did not persist.");
   }
-  if (second.installation.dataFormat !== first.installation.dataFormat) fail("The data format changed across the restart.");
+  if (second.installation.dataFormat !== dataFormat) fail("The data format changed across the restart.");
   console.log("Self-hosted smoke test passed: the value saved on first start was read back after a restart.");
 } catch (error) {
   console.error(`Self-hosted smoke test failed: ${error instanceof SmokeFailure ? error.message : error?.stack ?? error}`);
@@ -106,17 +134,108 @@ async function completeSetup(base) {
       code: setupCode,
       installationName: "Smoke Test Installation",
       name: "Smoke Test Administrator",
-      email: "smoke-admin@example.test",
-      password: randomBytes(12).toString("hex"),
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
     }),
     signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
   });
   const body = await response.json().catch(() => null);
-  if (response.status !== 200 || body?.installationName !== "Smoke Test Installation" || body?.email !== "smoke-admin@example.test") {
+  if (response.status !== 200 || body?.installationName !== "Smoke Test Installation" || body?.email !== ADMIN_EMAIL) {
     // The reply never holds the code or the password, so it is safe to print.
     fail(`POST /api/v1/setup answered ${response.status}: ${JSON.stringify(body)}`);
   }
   if ((await readSetupState(base)) !== "closed") fail("Set-up is still open after it completed.");
+}
+
+function fromApp(base, cookies = {}) {
+  const headers = { "content-type": "application/json", origin: base, "x-site-survey-design": "1" };
+  const cookie = cookieHeader(cookies);
+  if (cookie) headers.cookie = cookie;
+  return headers;
+}
+
+function cookieHeader(cookies) {
+  return Object.entries(cookies)
+    .map(([name, value]) => `${name}=${value}`)
+    .join("; ");
+}
+
+/** The cookies a browser would keep: set ones by name, cleared ones (Max-Age=0) removed. */
+function keptCookies(response, jar = {}) {
+  const next = { ...jar };
+  for (const line of response.headers.getSetCookie()) {
+    const [pair] = line.split(";");
+    const name = pair.slice(0, pair.indexOf("=")).trim();
+    if (/;\s*max-age=0\b/i.test(line)) delete next[name];
+    else next[name] = pair.slice(pair.indexOf("=") + 1).trim();
+  }
+  return next;
+}
+
+// Signs the administrator in: the reply sets the session cookie and the marker. Cookie values and
+// the password are never printed.
+async function signIn(base) {
+  const response = await fetch(base + "/api/v1/session/sign-in", {
+    method: "POST",
+    headers: fromApp(base),
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200 || body?.name !== "Smoke Test Administrator") fail(`POST /api/v1/session/sign-in answered ${response.status}: ${JSON.stringify(body)}`);
+  const cookies = keptCookies(response);
+  const names = Object.keys(cookies);
+  if (names.length !== 2 || !names.some((name) => name.includes("-m-"))) fail(`The sign-in reply set ${names.length} cookies, not a session and a marker.`);
+  return cookies;
+}
+
+async function expectSession(base, cookies, signedIn) {
+  const response = await get(base + "/api/v1/session", { headers: { cookie: cookieHeader(cookies) } });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200 || body?.signedIn !== signedIn) {
+    fail(`GET /api/v1/session answered ${response.status} with signedIn ${body?.signedIn}, expected ${signedIn}.`);
+  }
+  if (signedIn && body.name !== "Smoke Test Administrator") fail("The session read did not name the administrator.");
+}
+
+/** Fails `count` sign-ins for an email with no account; each must get the one refusal. */
+async function failSignIn(base, count) {
+  for (let index = 0; index < count; index += 1) {
+    const response = await fetch(base + "/api/v1/session/sign-in", {
+      method: "POST",
+      headers: fromApp(base),
+      body: JSON.stringify({ email: UNKNOWN_EMAIL, password: WRONG_PASSWORD }),
+      signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+    });
+    const body = await response.json().catch(() => null);
+    if (response.status !== 401 || body?.error?.code !== "signin_failed") fail(`A wrong sign-in answered ${response.status}: ${body?.error?.code}`);
+  }
+}
+
+async function expectWait(base) {
+  const response = await fetch(base + "/api/v1/session/sign-in", {
+    method: "POST",
+    headers: fromApp(base),
+    body: JSON.stringify({ email: UNKNOWN_EMAIL, password: WRONG_PASSWORD }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 429 || body?.error?.code !== "signin_wait" || response.headers.get("retry-after") === null) {
+    fail(`After five failures across the restart the sixth sign-in answered ${response.status}: ${body?.error?.code}; the counts did not persist.`);
+  }
+}
+
+async function signOut(base, cookies) {
+  const response = await fetch(base + "/api/v1/session/sign-out", {
+    method: "POST",
+    headers: fromApp(base, cookies),
+    body: "{}",
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200 || body?.signedIn !== false) fail(`POST /api/v1/session/sign-out answered ${response.status}: ${JSON.stringify(body)}`);
+  const cleared = response.headers.getSetCookie();
+  if (cleared.length !== 1 || !/;\s*max-age=0\b/i.test(cleared[0])) fail("The sign-out reply did not clear the session cookie alone.");
 }
 
 function get(url, init = {}) {

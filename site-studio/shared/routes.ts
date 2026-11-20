@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SETUP_STATES, setupInput } from "./setup";
+import { signInInput } from "./signin";
 
 // Route declarations (AD-22). Every server address other than the app's own pages and files is
 // declared here with its method, path, input schema and reply schema. Only three address spaces
@@ -27,6 +28,12 @@ export interface RouteDeclaration<Input extends z.ZodType = z.ZodType, Reply ext
    * (standing rule 13): requests made before a session exists that create one or an account.
    */
   appOriginOnly?: boolean;
+  /**
+   * The route reads the session cookie (story 1.3, V-12): the router passes it the request's session
+   * and marker cookies, and no other route gets them. A route so flagged that is not a GET must also
+   * be `appOriginOnly` (standing rule 13); `server-tests/signin-declarations.test.ts` sweeps for it.
+   */
+  readsSessionCookie?: boolean;
 }
 
 /** The header the app's own page adds to requests that must come from it (standing rule 13). */
@@ -66,6 +73,23 @@ export const setupStateReply = z.object({ state: z.enum(SETUP_STATES) }).strict(
 /** What a completed set-up confirms: the installation's name and the administrator's email. */
 export const setupReply = z.object({ installationName: z.string(), email: z.string() }).strict();
 
+/**
+ * The public session read (story 1.3, CAP-1, E-11): whether the caller is signed in, the account's
+ * name if so, and the installation's name, `null` while set-up is open. Never the token.
+ */
+export const sessionReply = z.discriminatedUnion("signedIn", [
+  z.object({ signedIn: z.literal(false), installationName: z.string().nullable() }).strict(),
+  z.object({ signedIn: z.literal(true), name: z.string(), installationName: z.string().nullable() }).strict(),
+]);
+
+export type SessionReply = z.infer<typeof sessionReply>;
+
+/** What a sign-in confirms: the account's name. The token and the marker travel only as cookies. */
+export const signInReply = z.object({ name: z.string() }).strict();
+
+/** What a sign-out confirms: the caller is no longer signed in (D-13). */
+export const signOutReply = z.object({ signedIn: z.literal(false) }).strict();
+
 export const ROUTES = {
   status: declareRoute({
     id: "status",
@@ -91,6 +115,38 @@ export const ROUTES = {
     reply: setupReply,
     summary: "Creates the first administrator and names the installation, given the set-up code.",
     appOriginOnly: true,
+  }),
+  // Sign-in and sign-out (story 1.3).
+  session: declareRoute({
+    id: "session",
+    method: "GET",
+    path: "/api/v1/session",
+    input: z.object({}).strict(),
+    reply: sessionReply,
+    summary:
+      "Whether the caller is signed in, the account's name if so, and the installation's name. Public and read-only; " +
+      "clears this installation's session cookie when it names no live session.",
+    readsSessionCookie: true,
+  }),
+  signIn: declareRoute({
+    id: "signIn",
+    method: "POST",
+    path: "/api/v1/session/sign-in",
+    input: signInInput,
+    reply: signInReply,
+    summary: "Signs in with an email and password, setting the session cookie and the browser marker.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  signOut: declareRoute({
+    id: "signOut",
+    method: "POST",
+    path: "/api/v1/session/sign-out",
+    input: z.object({}).strict(),
+    reply: signOutReply,
+    summary: "Ends the presented session, if any, and clears the session cookie. Always succeeds; keeps the marker.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
   }),
 } as const;
 

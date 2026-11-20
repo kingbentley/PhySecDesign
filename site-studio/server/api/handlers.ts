@@ -3,23 +3,44 @@ import { RELEASE } from "../../shared/release";
 import { refusalBody, type RefusalBody, type RefusalCode, REFUSALS } from "../../shared/refusal";
 import { ROUTES } from "../../shared/routes";
 import { normaliseSetupCode, type SetupState } from "../../shared/setup";
-import { hashPassword } from "../auth/password";
+import { markerCookieLine } from "../auth/marker";
+import {
+  hashPassword,
+  HashQueueBusy,
+  hashQueue,
+  standInPasswordHash,
+  verifyPassword,
+  type CurrentPasswordHash,
+} from "../auth/password";
+import { clearSessionCookieLine, sessionCookieLine } from "../auth/session";
 import { setupCodeFingerprint, setupCodesMatch } from "../auth/setupCode";
 import { INSTALLATION_NAME, type Env } from "../env";
 import type { InstallationStatus } from "../installation/Installation";
 import type { FirstAdministratorCreated, SetupAttemptCounted } from "../installation/setupStore";
+import type { SessionEnded, SessionInfo, SignInAttemptCounted, SignInCompleted } from "../installation/signInStore";
 import { callObject } from "../objects/call";
 import { clientAddressKey } from "./clientAddress";
 
 // One handler per declared route. The mapped type makes a declared route without a handler, or a
 // handler without a declaration, a type error.
 
-export type HandlerResult<T> = { ok: true; value: T } | { ok: false; status: number; body: RefusalBody };
+/**
+ * A handler's answer: a value or a refusal, with any cookies it sets or clears as whole
+ * `Set-Cookie` lines, which the router appends one by one (story 1.3, A-9).
+ */
+export type HandlerResult<T> = ({ ok: true; value: T } | { ok: false; status: number; body: RefusalBody }) & {
+  cookies?: readonly string[];
+};
 
 /** What a handler knows about the request beyond its checked input. */
 export interface RequestContext {
   request: Request;
   url: URL;
+  /**
+   * The request's cookies whose names have the session prefix, by name; empty unless the route is
+   * declared `readsSessionCookie`. The installation object uses the ones named with its identifier.
+   */
+  cookies: Record<string, string>;
 }
 
 type Routes = typeof ROUTES;
@@ -69,6 +90,9 @@ export const HANDLERS: RouteHandlers = {
       return refused(state.value.state === "closed" ? "setup_closed" : "setup_code_not_configured");
     }
 
+    // A full hash queue is refused as busy before the attempt is counted, as at sign-in (D-5 amended).
+    if (!hashQueue.hasRoom()) return refused("signin_busy");
+
     // The fingerprint of the CONFIGURED code, never of the entered one (server/auth/setupCode.ts).
     const fingerprint = await setupCodeFingerprint(configured);
     const attempt = await callObject<SetupAttemptCounted>(namespace, id, "setupAttempt", {
@@ -80,8 +104,16 @@ export const HANDLERS: RouteHandlers = {
     // Both codes are normalised first: spaces and dashes removed, upper case (setupCodesMatch).
     if (!(await setupCodesMatch(input.code, configured))) return refused("setup_code_wrong");
 
-    // The schema has already normalised the password to NFKC (D-9, shared/setup.ts).
-    const passwordHash = await hashPassword(input.password);
+    // The schema has already normalised the password to NFKC (D-9, shared/setup.ts). The hash goes
+    // through the isolate's hash queue; a full queue is the busy refusal, as at sign-in (D-5
+    // amended). The counted attempt stays counted, as for any failure after counting (E-17).
+    let passwordHash: CurrentPasswordHash;
+    try {
+      passwordHash = await hashPassword(input.password, context.request.signal);
+    } catch (error) {
+      if (error instanceof HashQueueBusy) return refused("signin_busy");
+      throw error;
+    }
     const created = await callObject<FirstAdministratorCreated>(namespace, id, "createFirstAdministrator", {
       fingerprint,
       ticket: attempt.value.ticket,
@@ -95,5 +127,76 @@ export const HANDLERS: RouteHandlers = {
     });
     if (!created.ok) return created;
     return { ok: true, value: { installationName: created.value.installationName, email: created.value.email } };
+  },
+
+  // The public session read (story 1.3, CAP-1, CAP-3). Read-only (D-4 amended), so the object call
+  // is retried once after a bare reset (E-6). A dead cookie under this installation's own name is
+  // "not signed in" and cleared (D-7 amended); a cookie named with another installation's
+  // identifier is ignored and never cleared (criterion 17, CAP-10).
+  async session(_input, env, context) {
+    const { namespace, id } = installation(env);
+    const result = await callObject<SessionInfo>(namespace, id, "sessionInfo", { cookies: context.cookies }, { idempotent: true });
+    if (!result.ok) return result;
+    const info = result.value;
+    if (info.signedIn) {
+      return { ok: true, value: { signedIn: true, name: info.account.name, installationName: info.installationName } };
+    }
+    return {
+      ok: true,
+      value: { signedIn: false, installationName: info.installationName },
+      cookies: info.clearSession ? [clearSessionCookieLine(info.identifier)] : [],
+    };
+  },
+
+  // The sign-in request (story 1.3, CAP-2, CAP-6, CAP-7). The router has already checked the origin
+  // and the app's header, then the input. Order: a full hash queue is refused as busy before
+  // anything is counted (D-5 amended); the installation object counts the attempt, or refuses it
+  // with a wait, and answers the stored hash or the stand-in signal with a ticket; the password is
+  // checked here, through the queue, against the stored hash or the stand-in, so both take the same
+  // steps (CAP-6); the object completes with the ticket and the outcome only, refusing a stand-in
+  // ticket whatever the outcome. Neither call is retried after a bare reset (V-16).
+  async signIn(input, env, context) {
+    if (!hashQueue.hasRoom()) return refused("signin_busy");
+    const { namespace, id } = installation(env);
+    const attempt = await callObject<SignInAttemptCounted>(namespace, id, "signInAttempt", {
+      email: input.email,
+      address: clientAddressKey(context.request),
+      cookies: context.cookies,
+    });
+    if (!attempt.ok) return attempt;
+
+    const stored = attempt.value.standIn || attempt.value.passwordHash === null ? standInPasswordHash() : attempt.value.passwordHash;
+    let correct: boolean;
+    try {
+      // The schema has already normalised the password to NFKC (story 1.2's D-9).
+      correct = await verifyPassword(input.password, stored, context.request.signal);
+    } catch (error) {
+      // A race filled the queue after counting: the count stays raised (D-5 amended).
+      if (error instanceof HashQueueBusy) return refused("signin_busy");
+      throw error;
+    }
+
+    const completed = await callObject<SignInCompleted>(namespace, id, "completeSignIn", {
+      ticket: attempt.value.ticket,
+      outcome: correct ? "success" : "failure",
+    });
+    if (!completed.ok) return completed;
+    const done = completed.value;
+    return {
+      ok: true,
+      value: { name: done.account.name },
+      cookies: [sessionCookieLine(done.identifier, done.sessionToken), markerCookieLine(done.identifier, done.marker)],
+    };
+  },
+
+  // The sign-out request (story 1.3, CAP-5, D-13). After the origin check it always succeeds and
+  // clears this installation's session cookie, whether the session was live, already ended,
+  // unknown or absent. Ending a session is safe to repeat, so the call is retried once after a bare
+  // reset (E-6). The marker is kept: no marker cookie is sent (D-3).
+  async signOut(_input, env, context) {
+    const { namespace, id } = installation(env);
+    const result = await callObject<SessionEnded>(namespace, id, "endSession", { cookies: context.cookies }, { idempotent: true });
+    if (!result.ok) return result;
+    return { ok: true, value: { signedIn: false }, cookies: [clearSessionCookieLine(result.value.identifier)] };
   },
 };
