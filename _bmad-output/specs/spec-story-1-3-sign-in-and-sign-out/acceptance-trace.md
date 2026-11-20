@@ -1,35 +1,36 @@
 # Acceptance trace: story 1.3 criteria to capabilities
 
-Each criterion of story 1.3 (epics draft 0.7) in the story's order, with the capability whose `success` proves it and the spec (from `stories.yaml`) that delivers the evidence. The criteria are shortened here; the story's wording governs. "Where checked": S = server test in Cloudflare's runtime (`server-tests/`), B = Playwright browser test in desktop Chromium and WebKit iPhone (`browser-tests/`), D = deployed Cloudflare test installation, H = self-hosted smoke test under workerd, U = unit test in Node (`tests/`).
+Each criterion of story 1.3 (epics draft 0.7) in the story's order, with the capability whose `success` proves it and the spec (from `stories.yaml`) that delivers the evidence. The criteria are shortened here; the story's wording governs. "Where checked": S = server test in Cloudflare's runtime (`server-tests/`), B = Playwright browser test in desktop Chromium and WebKit iPhone (`browser-tests/`), D = deployed Cloudflare test installation, H = self-hosted smoke test under workerd, U = unit test in Node (`tests/`). Review findings are cited A-n, E-n, V-n; held findings H-n are listed in `SPEC.md`.
 
 | # | Group | Criterion (short) | CAP | Where checked | Spec |
 |---|---|---|---|---|---|
-| 1 | Core | With an administrator, anyone not signed in sees the sign-in page with the installation's name | CAP-1 | B; S (public session route returns the name) | 2, 3 |
-| 2 | Core | The story 1.2 administrator signs in with email and password | CAP-2 | S, B, H, D | 2, 3, 4 |
-| 3 | Core | Cookie: HttpOnly, Secure, SameSite=Lax, `__Host-` plus installation identifier, no Domain, path `/` | CAP-3 | S (`Set-Cookie` parsed); D (observed on `https://`) | 2, 4 |
-| 4 | Core | Server stores only a hash of the token; a new token at each sign-in (CA-47) | CAP-3 | S (sessions table read; two sign-ins, two tokens) | 1, 2 |
-| 5 | Core | Account menu in the existing header shows the name and Sign out | CAP-4 | B | 3 |
-| 6 | Core | Sign out ends the session; a later request with its cookie is refused | CAP-5 | S, B | 2, 3 |
-| 7 | Refusal | Wrong email or password: one message, whether or not the email has an account | CAP-2 | S (identical status, code and body), B (message shown) | 2, 3 |
-| 8 | Refusal | Unknown email checked against a stand-in hash; medians of 20 refusals per case within 100 ms (CA-58) | CAP-6 | S (timing test) | 2 |
-| 9 | Refusal | After repeated failures attempts wait, and the page says how long (CA-07) | CAP-7 | S (wait and seconds), B (wait stated) | 1, 2, 3 |
+| 1 | Core | With an administrator, anyone not signed in sees the sign-in page with the installation's name | CAP-1 | B (including `/setup` after set-up, A-25); S (session read returns the name, `null` while set-up is open, E-11). Holds with D-7's two exceptions (session unreadable, reviewer links) until story 1.8's gate; their reach is held (H-1, H-9) | 2, 3 |
+| 2 | Core | The story 1.2 administrator signs in with email and password | CAP-2 | S (also with the email in another case and spacing and the password in another Unicode form, V-9; 128-emoji and NFKC-shrinking passwords, A-10, E-10), B, H, D | 2, 3, 4 |
+| 3 | Core | Cookie: HttpOnly, Secure, SameSite=Lax, `__Host-` plus installation identifier, no Domain, path `/` | CAP-3 | S (`getSetCookie()` after the HSTS copy, A-9); D (observed on `https://`) | 2, 4 |
+| 4 | Core | Server stores only a hash of the token; a new token at each sign-in (CA-47) | CAP-3 | S (sessions table read; two sign-ins, two tokens; sign-in carrying X issues Y and X no longer signs in, V-8; reply for X held, H-1) | 1, 2 |
+| 5 | Core | Account menu in the existing header shows the name and Sign out | CAP-4 | B (44 px targets on iPhone, A-24; 80-character name, E-19) | 3 |
+| 6 | Core | Sign out ends the session; a later request with its cookie is refused | CAP-5 | S (session row gone); B (browser cookie store empty of the session cookie in both browsers, E-15). The reply to the old cookie and sign-out with an ended session are held (H-1, H-8) | 2, 3 |
+| 7 | Refusal | Wrong email or password: one message, whether or not the email has an account | CAP-2 | S (identical status, code and body, also for an inactive account with the right password, V-9), B (message shown) | 2, 3 |
+| 8 | Refusal | Unknown email checked against a stand-in hash; medians of 20 refusals per case within 100 ms (CA-58) | CAP-6 | S (interleaved after warm-up, each median ≥ 150 ms, failing control recorded once, A-21, V-2; a verifying stand-in still refused, A-1, E-4) | 1, 2 |
+| 9 | Refusal | After repeated failures attempts wait, and the page says how long (CA-07) | CAP-7 | S (wait and seconds), B (wait stated, with an unknown email and its own address, V-15) | 1, 2, 3 |
 | 10 | Refusal | The wait is the same for an email with no account | CAP-7 | S | 1, 2 |
 | 11 | Refusal | A successful sign-in clears that email's count | CAP-7 | S | 1, 2 |
-| 12 | Refusal | Counts by email and by address in installation storage, not from logs, so they apply to unknown emails (CA-43) | CAP-7 | S (store tests, restart) | 1 |
-| 13 | Refusal | Counted before the check, lowered only when correct; attempts sent at once cannot all pass (CA-43) | CAP-7 | S (simultaneous attempts) | 1, 2 |
-| 14 | Refusal | Marker: while an email waits, a browser with its marker is held only per address; test locks then signs in (CA-44) | CAP-8 | S (marker cookie sent by the test) | 1, 2 |
-| 15 | Refusal | Cookie requests that change anything, and sign-in, refused without the app's origin and header (standing rule 13) | CAP-9 | S (sign-in, sign-out) | 2 |
-| 16 | Refusal | Account of one deployed installation cannot sign in to another; a cookie from one is refused by the other | CAP-10 | D (two Workers); S (foreign identifier or unknown token refused) | 2, 4 |
-| 17 | Refusal | Two installations on one host with different ports each keep their own session | CAP-10 | B (two local servers, one browser context) | 3 |
+| 12 | Refusal | Counts by email and by address in installation storage, not from logs, so they apply to unknown emails (CA-43) | CAP-7 | S (store tests, restart, HMAC keys, bounded pruning, A-13, A-14); H (counts across a workerd restart, V-17) | 1, 2 |
+| 13 | Refusal | Counted before the check, lowered only when correct; attempts sent at once cannot all pass (CA-43) | CAP-7 | S (simultaneous attempts with no cookies, A-6; no retry of counting or completing after a bare reset, V-16) | 1, 2 |
+| 14 | Refusal | Marker: while an email waits, a browser with its marker is held only per address; test locks then signs in (CA-44) | CAP-8 | S (marker `Set-Cookie` parsed, renewed, absent from sign-out, expired marker ignored, V-1); B (the same in a real cookie store, V-1) | 1, 2, 3 |
+| 15 | Refusal | Cookie requests that change anything, and sign-in, refused without the app's origin and header (standing rule 13) | CAP-9 | S (sign-in, sign-out; declaration sweep, V-12). The session read's last-use write is held (H-5) | 2 |
+| 16 | Refusal | Account of one deployed installation cannot sign in to another; a cookie from one is refused by the other | CAP-10 | D (two Workers with different administrator emails; check 6b sends A's token under B's name, V-4); S (foreign identifier or unknown token refused) | 2, 4 |
+| 17 | Refusal | Two installations on one host with different ports each keep their own session | CAP-10 | B (one extra server pair per project, both sessions and both markers kept, A-5, V-14). Isolation between them is held (H-4) | 3 |
 | 18 | Limits | Failure message reads "That email and password do not match." | CAP-2 | S (refusal wording), B (on screen) | 2, 3 |
 | 19 | Limits | Wait starts after 5 in a row for one email or 20 from one address within 15 minutes (CA-07) | CAP-7 | S (pure rule tests and store tests; D-2) | 1 |
 | 20 | Limits | Wait is 1 minute, doubling to 15 minutes (CA-07) | CAP-7 | S | 1 |
-| 21 | Limits | Fields labelled, 16 px text, password-manager fillable | CAP-1 | B (labels, computed font size, `autocomplete` and `name` attributes) | 3 |
-| 22 | Access and restore | A revision restore leaves sessions unchanged | CAP-11 | S (sessions only in the installation object; no restore operation writes it) | 1 |
+| 21 | Limits | Fields labelled, 16 px text, password-manager fillable | CAP-1 | B (labels, computed font size, `autocomplete` and `name` attributes; removing `autocomplete` fails the suite, V-22) | 3 |
+| 22 | Access and restore | A revision restore leaves sessions unchanged | CAP-11 | S (only the listed operations touch the sessions table, A-4, V-13); B (restore a named revision, account menu still shows the name, V-13) | 1, 3 |
 | 23 | Evidence | Deployed: scrypt accepted without platform error; median sign-in under 1 s over 20 (CA-08) | CAP-12 | D | 4 |
-| 24 | Evidence | Deployed: of 25 wrong sign-ins for one email at once, at most 5 checked, 20 receive the wait (CA-43) | CAP-12 | D; S (same shape locally) | 2, 4 |
-| 25 | Evidence | A password hash made on one host verifies on the other | CAP-13 | S, H, D (committed fixture and probes, D-6) | 2, 4 |
-| — | Standing rule 15 | Browser tests for the screens, Chromium and WebKit iPhone, axe clean on sign-in page and account menu | CAP-14 | B; CI job | 3 |
-| — | D-9 | Set-up done page: "Sign in with the email and password you just chose." with a Sign in link; two story 1.2 assertions updated | CAP-14 | B | 3 |
+| 24 | Evidence | Deployed: of 25 wrong sign-ins for one email at once, at most 5 checked, 20 receive the wait (CA-43) | CAP-12 | D (exactly 5 and 20, no cookies, 25 connections, run last against A, V-19; with a marker at most 20, A-6); S (same shape locally) | 2, 4 |
+| 25 | Evidence | A password hash made on one host verifies on the other | CAP-13 | S, H, D (fixture made under workerd by `deploy/probe/`, verified through `verifyPassword`, wrong password fails on each, D-6, A-22, V-3) | 2, 4 |
+| — | Standing rule 15 | Browser tests for the screens, Chromium and WebKit iPhone, axe clean on sign-in page and account menu | CAP-14 | B; CI job; three deliberate breakages each fail the suite (V-22) | 3 |
+| — | D-9 | Set-up done page: "Sign in with the email and password you just chose." with a plain Sign in link to `/` replacing "Open Site Survey Design"; two story 1.2 assertions updated | CAP-14 | B (link asserted in `signin.spec.mjs` with mocked replies, V-20) | 3 |
+| — | D-5 | One hash at a time per isolate, set-up included | Constraints | S (peak active count 1, A-12, V-7) | 1 |
 
 Every capability is reached by at least one criterion; CAP-14 comes from standing rule 15 rather than a story criterion. The story's Covers line (FR-67 sign-in and sign-out, NFR-5, AD-12, R9, S-26) is met by CAP-1 to CAP-13.
