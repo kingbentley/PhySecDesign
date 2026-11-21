@@ -1,9 +1,10 @@
-// Serves the built Worker for one Playwright project (story 1.2, K24): `wrangler dev` on the
-// build's own configuration (dist/worker/wrangler.json), on 127.0.0.1, with a fresh, empty state
-// folder and that project's set-up code. Usage: node browser-tests/serve.mjs <project> <port>
+// Serves the built Worker for one Playwright test server (story 1.2, K24; story 1.3 adds a pair per
+// project): `wrangler dev` on the build's own configuration (dist/worker/wrangler.json), on
+// https://127.0.0.1, with a fresh, empty state folder and that server's set-up code.
+// Usage: node browser-tests/serve.mjs <server> <port>
 //
-// The code comes from the environment (playwright.config.mjs generates one per project and run)
-// and is written only to a mode-600 `.dev.vars` in browser-tests/.local/<project>/, which git
+// The code comes from the environment (playwright.config.mjs generates one per server and run)
+// and is written only to a mode-600 `.dev.vars` in browser-tests/.local/<server>/, which git
 // ignores; it is never printed or committed. No route resets state: each run starts afresh here.
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -43,6 +44,10 @@ const child = spawn(
     "--env-file", vars,
     "--ip", "127.0.0.1",
     "--port", port,
+    // Over HTTPS (story 1.3, D-10): WebKit keeps a `Secure` cookie set over http://127.0.0.1 but
+    // never sends it back, so the session would not hold. Wrangler's own local certificate is
+    // self-signed; Playwright accepts it (`ignoreHTTPSErrors`). `Secure` is never omitted.
+    "--local-protocol", "https",
     "--show-interactive-dev-session=false",
     "--log-level", "warn",
   ],

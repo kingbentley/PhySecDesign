@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Cube, CaretDown, CaretRight, Buildings, TreeStructure, Stack, Eye, EyeSlash, LockKey, LockKeyOpen, FileImage, UploadSimple, DownloadSimple, VideoCamera, CreditCard, Lightbulb, Cursor, Ruler, MagnifyingGlass, Crosshair, Plus, Minus, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, X, Check, CheckCircle, WarningCircle, Trash, MapTrifold, MapPin, ArrowSquareOut, ShieldCheck, ArrowsOut, NavigationArrow, DotsThree, Info, GearSix, Door, BellRinging, Phone, Network, HardDrives, Path, Package, PlusCircle, Wall, Polygon, NotePencil, ArrowUUpLeft, ArrowUUpRight } from '@phosphor-icons/react';
 import { BrandMark } from './BrandMark.jsx';
+import { AccountMenu } from './AccountMenu.jsx';
 import MapCanvas from './MapCanvas.jsx';
 import AddressSearch from './AddressSearch.jsx';
 import AlignmentGuide from './AlignmentGuide.jsx';
@@ -54,7 +55,9 @@ function Modal({title,description,children,onClose,wide=false,className=''}) {
   useEffect(()=>{const previous=document.activeElement;dialog.current?.showModal();return()=>previous?.focus?.()},[]);
   return <dialog ref={dialog} aria-label={title} className={'modal '+(wide?'wide':'')+' '+className} onCancel={e=>{e.preventDefault();onClose()}} onClick={e=>{if(e.target===e.currentTarget)onClose()}}><div className="modal-heading"><div><h2>{title}</h2>{description&&<p>{description}</p>}</div><IconButton label="Close dialog" onClick={onClose}><X size={20}/></IconButton></div>{children}</dialog>
 }
-export function App(){
+// `account` is the signed-in person ({ name }) with `onSignedOut`, or null where there is no
+// server (the Sites package), which has no account menu (story 1.3).
+export function App({ account = null, onSignedOut } = {}){
   const { project, revisions, setProject, replaceProject, setActiveFloor, addRevision, removeRevision,
     undo, redo, undoTarget, redoTarget, ready, saveStatus, error: saveError } = useProjectStore();
   const floor=project.floors.find(f=>f.id===project.activeFloorId)||project.floors[0];
@@ -648,6 +651,7 @@ export function App(){
       <span className={'draft-status '+(saveStatus==='error'?'save-error':'')} title={saveError||'Saved in this browser on this device'}><span className={'status-dot '+(saveStatus!=='saved'?'changed':'')}/>{saveStatus==='saved'?'Saved locally':saveStatus==='error'?'Save failed':'Saving…'}</span>
       <button className="button secondary export-button" onClick={openExport}><DownloadSimple size={18}/>Export</button>
       <button className="button primary" onClick={()=>{setModal('review');setActiveTab('Review')}}>Review design<ArrowSquareOut size={16}/></button>
+      {account && <AccountMenu name={account.name} onSignedOut={onSignedOut}/>}
     </header>
     <nav inert={alignment?true:undefined} className="workflow-nav" aria-label="Project workflow">
       <div className="revision-edit-controls" role="group" aria-label="Edit history">

@@ -61,8 +61,8 @@ function Finished({ installationName, email }) {
         <div><dt>Installation</dt><dd data-testid="setup-done-installation">{installationName}</dd></div>
         <div><dt>Administrator</dt><dd data-testid="setup-done-email">{email}</dd></div>
       </dl>
-      <p className="setup-lead" data-testid="setup-done-next">Signing in arrives in a coming update; until then the app opens as before.</p>
-      <a className="setup-button" href="/">Open Site Survey Design</a>
+      <p className="setup-lead" data-testid="setup-done-next">Sign in with the email and password you just chose.</p>
+      <a href="/">Sign in</a>
     </Frame>
   );
 }
@@ -187,8 +187,12 @@ function SetupForm({ onDone, onClosed }) {
   );
 }
 
-/** The set-up address's page. `initialState` is what the state route said: open, closed or unknown. */
-export default function SetupPage({ initialState }) {
+/**
+ * The set-up address's page. `initialState` is what the state route said: open, closed or unknown.
+ * `onStateRead`, when given, receives what Try again reads instead of this page showing it, so the
+ * app can route it from whichever address the page was shown at (story 1.3, D-7 amended again).
+ */
+export default function SetupPage({ initialState, onStateRead }) {
   const [view, setView] = useState(() => (initialState === 'open' ? { kind: 'form' } : { kind: initialState }));
 
   useEffect(() => {
@@ -203,6 +207,7 @@ export default function SetupPage({ initialState }) {
 
   async function retry() {
     const state = await readSetupState();
+    if (onStateRead) return onStateRead(state);
     setView(state === 'open' ? { kind: 'form' } : { kind: state, attempt: Date.now() });
   }
 

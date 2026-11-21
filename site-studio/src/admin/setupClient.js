@@ -18,6 +18,7 @@ import {
   setupCodeField,
 } from '../../shared/setup.ts';
 import { APP_HEADER, APP_HEADER_VALUE } from '../../shared/routes.ts';
+import { waitWording } from './waitWording.js';
 
 const SETUP_URL = '/api/v1/setup';
 
@@ -72,17 +73,8 @@ export function checkSetupFields(values) {
   return { errors, input };
 }
 
-/** "1 minute", "2 minutes 30 seconds", "45 seconds"; "a few minutes" when the wait is unknown. */
-export function waitWording(seconds) {
-  const number = Number(seconds);
-  if (seconds === undefined || seconds === null || !Number.isFinite(number) || number <= 0) return 'a few minutes';
-  const whole = Math.ceil(number);
-  const minutes = Math.floor(whole / 60);
-  const rest = whole % 60;
-  const part = (count, unit) => `${count} ${unit}${count === 1 ? '' : 's'}`;
-  if (minutes === 0) return part(rest, 'second');
-  return rest === 0 ? part(minutes, 'minute') : `${part(minutes, 'minute')} ${part(rest, 'second')}`;
-}
+// Moved to its own module for the sign-in page (story 1.3); still exported from here.
+export { waitWording };
 
 const GENERAL = {
   setup_code_wrong: 'That set-up code is not correct. Check the code from the deployment output and try again.',

@@ -2,9 +2,9 @@
 title: 'Story 1.3, spec 3: Sign-in page, account menu and browser tests'
 type: 'feature'
 created: '2026-11-20'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
-baseline_commit: ''
+baseline_commit: '8e5b361e69755dd68c35f2eb4bb8ce096bb7f655'
 review_loop_iteration: 0
 story_key: '1-3-sign-in-and-sign-out'
 context:
@@ -78,16 +78,55 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] Check the real `__Host-` session cookie in both projects on `http://127.0.0.1`, and in Chrome under `npm run dev` on `http://localhost`; record the results here. If WebKit drops it: `wrangler dev --local-protocol https` in `serve.mjs`, `ignoreHTTPSErrors` in both projects and in `webServer`, `https` base and readiness URLs for every server including the extra pairs (D-10, A-16, E-20). Never omit `Secure`.
-- [ ] `site-studio/src/admin/signInClient.js`, `SignInPage.jsx`, `signin.css` -- S-26.
-- [ ] `site-studio/src/admin/setupState.js` -- tell "no server" (404, or not the declared JSON) apart from "cannot be checked" (network failure, timeout, 5xx, `updating`) (D-7 amended again).
-- [ ] `site-studio/src/main.jsx` -- set-up state and session read routing (D-7 amended and amended again, D-14), with story 1.2's "Set-up cannot be checked" page at every address, the "Sign-in cannot be checked" page, `hashchange` on the sign-in page, `visibilitychange` re-read (D-16).
-- [ ] `site-studio/src/AccountMenu.jsx`, `src/App.jsx` header -- name and Sign out.
-- [ ] `site-studio/src/admin/SetupPage.jsx`, `browser-tests/setup.spec.mjs` -- D-9 text, the plain Sign in link, the two D-9 assertions, and the test at lines 265–276 rewritten to the "Set-up state fails" row (a 500 at `/` shows "Set-up cannot be checked", not the prototype); nothing else in `setup.spec.mjs` changes.
-- [ ] `site-studio/browser-tests/playwright.config.mjs`, `serve.mjs` -- the extra server pair per project.
-- [ ] `site-studio/browser-tests/signin.spec.mjs` -- matrix rows and axe on the page and the open menu.
-- [ ] `site-studio/tests/signin-client.test.mjs` -- refusal mapping and wait wording.
-- [ ] Deliberate breakages, each run once and reverted: drop the `autocomplete` attributes; show "No account with that email"; leave the account menu out of the header. Record each failing test's name here (V-22).
+- [x] Check the real `__Host-` session cookie in both projects on `http://127.0.0.1`, and in Chrome under `npm run dev` on `http://localhost`; record the results here. If WebKit drops it: `wrangler dev --local-protocol https` in `serve.mjs`, `ignoreHTTPSErrors` in both projects and in `webServer`, `https` base and readiness URLs for every server including the extra pairs (D-10, A-16, E-20). Never omit `Secure`.
+  - **Result (2026-11-20, Playwright 1.63.0, built Worker under `wrangler dev` on `http://127.0.0.1`):** desktop Chromium kept both cookies (`Secure`, `HttpOnly`) and sent them back: the session read answered `signedIn: true`. WebKit (iPhone 15 profile) stored both cookies but did not send them back: the session read answered `signedIn: false`. So WebKit drops it in effect, and the HTTPS change was made: `--local-protocol https` in `serve.mjs`, `ignoreHTTPSErrors` in both projects and every `webServer`, `https` base and readiness URLs for all six servers. Over `https://127.0.0.1` both browsers keep and send the cookies. `Secure` is never omitted.
+  - **`http://localhost`:** checked with Playwright's Chromium, not Kevin's own Chrome, against the built Worker under `wrangler dev --ip localhost` over plain HTTP (the same server code `npm run dev` runs, with a throwaway state folder so the workstation's own dev state was not touched): both cookies kept and sent, session read `signedIn: true`. Kevin's own Chrome under `npm run dev` is still to be checked by him.
+- [x] `site-studio/src/admin/signInClient.js`, `SignInPage.jsx`, `signin.css` -- S-26.
+- [x] `site-studio/src/admin/setupState.js` -- tell "no server" (404, or not the declared JSON) apart from "cannot be checked" (network failure, timeout, 5xx, `updating`) (D-7 amended again).
+- [x] `site-studio/src/main.jsx` -- set-up state and session read routing (D-7 amended and amended again, D-14), with story 1.2's "Set-up cannot be checked" page at every address, the "Sign-in cannot be checked" page, `hashchange` on the sign-in page, `visibilitychange` re-read (D-16).
+- [x] `site-studio/src/AccountMenu.jsx`, `src/App.jsx` header -- name and Sign out.
+- [x] `site-studio/src/admin/SetupPage.jsx`, `browser-tests/setup.spec.mjs` -- D-9 text, the plain Sign in link, the two D-9 assertions, and the test at lines 265–276 rewritten to the "Set-up state fails" row (a 500 at `/` shows "Set-up cannot be checked", not the prototype); nothing else in `setup.spec.mjs` changes.
+- [x] `site-studio/browser-tests/playwright.config.mjs`, `serve.mjs` -- the extra server pair per project.
+- [x] `site-studio/browser-tests/signin.spec.mjs` -- matrix rows and axe on the page and the open menu.
+- [x] `site-studio/tests/signin-client.test.mjs` -- refusal mapping and wait wording.
+- [x] Deliberate breakages, each run once and reverted: drop the `autocomplete` attributes; show "No account with that email"; leave the account menu out of the header. Record each failing test's name here (V-22).
+  - **Results (2026-11-20, full `playwright test` run on a fresh build for each, then reverted and rebuilt):**
+    - `autocomplete` attributes removed from `SignInPage.jsx`: failed in both projects, "signed out, the sign-in page names the installation and asks only for email and password, with no prototype" (`toHaveAttribute`). 2 failed, 36 passed, 32 not run (the serial file stops at its first failure).
+    - "No account with that email." shown in place of the failure message: failed in both projects, "a wrong password and an unknown email get the same one message, which repeats nothing typed" (`toHaveText`). 2 failed, 40 passed, 28 not run.
+    - Account menu left out of the `App.jsx` header: failed in both projects, "signing in opens the app with an account menu holding the name and Sign out" (`account-name` not found). 2 failed, 44 passed, 24 not run.
+
+**Implementation notes (2026-11-20).**
+- `SetupPage.jsx` gained one optional prop besides D-9, `onStateRead`: Try again on "Set-up cannot be checked" hands its new reading to `main.jsx`, which routes it from whichever address the page was shown at (open: the set-up form at `/setup`; closed: the session read, or "already complete" at `/setup`; no server: the prototype). Without it the page could not leave `/` correctly.
+- `waitWording` moved unchanged from `setupClient.js` to `src/admin/waitWording.js` (still re-exported by `setupClient.js`), so `signInClient.js` and `tests/signin-client.test.mjs` load it under `node --test` without the set-up rules (shared/routes.ts and shared/setup.ts use extensionless imports Node cannot resolve). For the same reason `signInClient.js` loads the app header from `shared/routes.ts` only when it sends a request, and the session read's shape check is written in `setupState.js` without imports, keeping zod out of the prototype's bundle.
+- The account menu's styles are in `src/account-menu.css`. On a phone (at most 500 px) it tightens the header's gap to 6 px and shortens the name, so the 44 px trigger fits inside the iPhone 15 viewport; nothing else in the header changes.
+- In `setup.spec.mjs` the title of the test with D-9's second assertion now says "the app shows the sign-in page" instead of "the app is the prototype", to match the changed assertion.
+- `signin.spec.mjs` sets its own 90 s test timeout: on this workstation the first test, which meets six freshly started servers, took over 30 s.
+- Axe in `signin.spec.mjs` runs on the whole sign-in and "Sign-in cannot be checked" pages, and on `.account-menu` only with the menu open, because the prototype's existing workspace is outside this story.
+- After review: `scripts/run-unit-tests.mjs` passes `--experimental-strip-types`, because `tests/signin-client.test.mjs` is the first unit test that imports a `.ts` file and the engines floor (Node 22.13) does not strip types by default. This file is outside the task list.
+
+## Review Triage Log
+
+Review of 2026-11-20 (loop iteration 0): Blind Hunter (BH), Edge Case Hunter (EC), Verification Gap (VG). Diff since `8e5b361`.
+
+| # | Source | Finding | Verdict | Evidence | Route |
+|---|--------|---------|---------|----------|-------|
+| 1 | BH, EC, VG other | `readJson` treats a non-404 4xx refusal (401, 403 `https_required`/`origin_refused`, 429) on the set-up state or session read as "no server" and opens the prototype | false | The two GET reads can refuse only with 404 (`not_found`) or 5xx: `origin_refused` applies only to `appOriginOnly` routes (`server/api/router.ts:23`), and a page over plain HTTP gets a 308 to HTTPS (`server/httpsRedirect.ts`), so its same-origin reads never meet `https_required`. A proxy's own 4xx page is not the declared JSON, which the frozen text counts as no server. | reject |
+| 2 | BH, EC (twice, one a claim) | A connection dropped while the body is read (a `TypeError`, signal not aborted) counts as "no server" | medium | `readJson`'s catch checked only `signal.aborted`, contrary to its comment and D-7 amended (a network failure cannot be checked). | patch: fixed; a read failure not named `SyntaxError` is now "cannot be checked", unit case added. The first fix tested `instanceof SyntaxError` and failed the WebKit "no server" test, because WebKit throws a `DOMException` named `SyntaxError`; it now tests the error's name |
+| 3 | BH | Exact-key checks on the state, session and sign-in replies fail open if a later release adds a field | low | The frozen text makes "a reply that is not the declared JSON" no server, and spec 2 makes each reply equal its declared shape (V-10); a story that widens a reply changes the page with it. A stale tab during an update is unlikely and recovers on reload. | reject |
+| 4 | BH, EC | Another account is detected only by a changed display name (visibility re-read, `App` key) | medium | Real: the session reply has no account identifier; unreachable while story 1.3 has one account. Fixing it needs a route change, which this spec's Never excludes. | defer (`deferred-work.md`) |
+| 5 | BH | Sign-out leaves the browser's local project for the next person | false | D-7 and the story's Non-goals keep the local project for whoever signs in next until Epic 2 (story 1.7's CA-49 clears it later). | reject |
+| 6 | BH | The cookie task is ticked while Kevin's own Chrome under `npm run dev` was not checked (Playwright Chromium on `http://localhost` was used) | low | True, and stated in the task's result note above. The fix would edit this build's spec; the open check is reported to the orchestrator for Kevin. | reject (reported) |
+| 7 | BH, VG | Try again on "Set-up cannot be checked" is tested only for an "open" reading; the "closed" route (sign-in page at `/`, already complete at `/setup`) is unguarded | medium | Only `setup.spec.mjs`'s test clicks Try again, before set-up completes. | patch: test added to `signin.spec.mjs` |
+| 8 | BH, VG | D-16's "signed in from another tab while on the sign-in page opens the app" branch is untested (the different-account reload too) | medium | Only the signed-in → signed-out case was tested. | patch: test added; the different-account test goes with row 4 |
+| 9 | VG | The sign-in page's own field checks (messages, `aria-invalid`, focus, nothing sent) are untested | medium | No test submitted empty or malformed fields. | patch: test added |
+| 10 | VG other | `tests/signin-client.test.mjs` imports `shared/refusal.ts`, which plain `node --test` loads only from Node 22.18; engines floor is 22.13 | medium | No other unit test imports `.ts`; the runner passed no flag. | patch: `--experimental-strip-types` in `scripts/run-unit-tests.mjs` |
+| 11 | BH | Serial mode stops the file at its first failure, hiding later failures | low | True, but deliberate: each server holds one installation and the marker test must lock the email last. Restructuring is more than a direct fix. | reject |
+| 12 | BH | On a phone the trigger shows only a few letters of an ordinary name | low | True at 500 px or less; E-19 asks for truncation in the header with the full name in the menu and the `title`. Widening needs header layout changes, which the spec's Never excludes. | reject |
+| 13 | BH | The account menu does not close when focus leaves it | low | A disclosure panel need not close on focus loss; Escape and outside clicks close it. A `focusout` guard adds a branch for a rare case. | reject |
+| 14 | BH, EC (twice) | Overlapping session reads (visibility, Try again, StrictMode's double effect) can apply out of order | low | Needs a read to start before and finish after a sign-out within one request's time; StrictMode's two reads give the same answer. A sequence guard adds state. | reject |
+| 15 | EC | Closing the menu while a sign-out is pending and failing, then reopening, clears the error unseen | low | Real: the trigger cleared the error. Fix is a deletion. | patch: fixed |
+| 16 | BH | The wait assertion accepts only "1 minute" or "59 seconds" and may flake on a slow run | low | The sixth request could reach the server more than 2 s after the fifth failure. | patch: accepts 50–59 seconds |
+| 17 | BH | The D-9 link test compares the exact `outerHTML` | false | The frozen matrix asks for exactly a plain `<a href="/">Sign in</a>`. | reject |
 
 **Acceptance Criteria:**
 - Given both Playwright projects, when the suite runs, then every matrix row passes and axe reports no serious or critical violation on the sign-in page, on the "Sign-in cannot be checked" page and with the account menu open.
@@ -99,3 +138,5 @@ context:
 - `npm test && npm run typecheck && npm run test:server` -- pass
 - `npm run test:browser` -- pass in `chromium` and `webkit-iphone`
 - `npm run build && npm run test:sites && npm run smoke:selfhost` -- pass
+
+**Recorded after review fixes (2026-11-20, Windows workstation, Node 24.18.0):** `npm test` 160 passed; `npm run typecheck` clean; `npm run test:server` 23 files, 260 tests passed (no server file changed afterwards); `npm run test:browser` 76 passed, 38 in `chromium` and 38 in `webkit-iphone`; `npm run build`, `npm run test:sites` (4 passed) and `npm run smoke:selfhost` passed. The deliberate breakages above were run before the review fixes.
