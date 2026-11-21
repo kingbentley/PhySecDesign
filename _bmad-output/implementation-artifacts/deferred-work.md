@@ -119,6 +119,12 @@
   summary: On Windows, builds (`npm run build` and the deploy command's build) intermittently fail with "[vite:esbuild-transpile] remove …\esbuild-<hash>: The process cannot access the file because it is being used by another process".
   evidence: Real (2026-11-20, third workstation run). Most likely an antivirus file lock on esbuild's temporary file. In a fresh worktree (`C:\ss12d`) every build failed; in an earlier worktree with `TEMP`/`TMP` pointed at a private folder some builds still failed and passed on retry (one deploy needed three attempts). Retrying works; pointing `TEMP`/`TMP` at a private folder helped partly. Options for later: a README note for Windows (retry, exclude the build's temporary folder from antivirus scanning), or a retry in the build script.
 
+## Deferred from: code review of spec-story-1-3-sign-in-and-sign-out (2026-11-20)
+
+- source_spec: `_bmad-output/specs/spec-story-1-3-sign-in-and-sign-out/code-review.md` (group 1)
+  summary: With no client address (no `CF-Connecting-IP`), the sign-in email failure rows have no bound. D-11 exempts the unknown address from the address limit. Each attempt for a new email still writes a row kept 24 hours below the threshold, and pruning removes only expired rows.
+  evidence: Real. It is not reachable on Cloudflare, where the address is always present, but it is reachable in local runs and when self-hosted behind a proxy that does not pass the address. Growth is about one row per scrypt check per isolate. Story 2.22's client-address rule (the dependency D-11 records) should bound it, for example with a cap on rows for the unknown address or an installation-wide limit.
+
 ## Story 1.3 spec review (2026-11-20): overlaps with later stories
 
 Three independent reviews of the story 1.3 spec (`review-adversarial.md` findings A-1 to A-25, `review-edge-cases.md` E-1 to E-22, `review-verification-gaps.md` V-1 to V-22, all in `_bmad-output/specs/spec-story-1-3-sign-in-and-sign-out/`). Kevin asked that any finding overlapping another story be noted here for future agents; on 2026-11-20 he accepted all nine rulings on them ("Accept all nine"), and the entries below say what each later story must do. Each entry names the later stories, checked against `epics.md` draft 0.7. Kevin's decisions D-1 to D-10 of story 1.3 are unchanged by all of these.

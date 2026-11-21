@@ -9,6 +9,7 @@ import { HASH_QUEUE_MAX_WAITING, hashPassword, hashQueue, type PasswordHash } fr
 import { markerCookieName } from "../server/auth/marker";
 import { newSessionToken, sessionCookieName, sessionTokenHash } from "../server/auth/session";
 import { HSTS_HEADER, HSTS_VALUE } from "../server/httpsRedirect";
+import type { Env } from "../server/env";
 import type { Installation } from "../server/installation/Installation";
 import { SESSIONS_TABLE, SIGNIN_TABLES } from "../server/installation/signInStore";
 import {
@@ -21,6 +22,7 @@ import {
   refusalOf,
   seedAccount,
   SETUP_PATH,
+  SIGN_IN_PATH,
   setCookiesOf,
   signedIn,
   signIn,
@@ -511,6 +513,93 @@ describe("POST /api/v1/setup with a full hash queue", { timeout: 60_000 }, () =>
     // No administrator was created, so set-up is still open and works once the queue has room.
     await completeSetup(installed, { email: EMAIL, password: PASSWORD });
   });
+
+  it("answers signin_busy when the queue fills after the attempt is counted, leaving it counted (story 1.3 code review)", async () => {
+    let release: (() => Promise<void>) | null = null;
+    const installed = installationFor("setup-busy-race", async (operation, _init, send) => {
+      const response = await send();
+      if (operation === "setupAttempt" && release === null) release = fillHashQueue();
+      return response;
+    });
+    let response: Response;
+    try {
+      response = await post(installed.env, SETUP_PATH, setupBody(installed));
+    } finally {
+      if (release) await (release as () => Promise<void>)();
+    }
+    expect(response.status).toBe(503);
+    expect(response.headers.get("retry-after")).toBe("5");
+    expect(await refusalOf(response, [installed.setupCode, PASSWORD, EMAIL])).toEqual({ code: "signin_busy", message: REFUSALS.signin_busy.message });
+    expect(installed.calls.get("setupAttempt")).toBe(1);
+    expect(installed.calls.get("createFirstAdministrator")).toBeUndefined();
+    await completeSetup(installed, { email: EMAIL, password: PASSWORD });
+  });
+});
+
+function setupBody(installed: Installed) {
+  return { code: installed.setupCode, installationName: "Acme Security", name: "Dana Admin", email: EMAIL, password: PASSWORD };
+}
+
+/** Holds the hash queue's running slot (nothing waiting) until released. */
+function holdHashSlot() {
+  let release!: () => void;
+  const running = hashQueue.run(() => new Promise<void>((resolve) => (release = resolve)));
+  expect(hashQueue.stats().active).toBe(1);
+  return async () => {
+    release();
+    await running;
+  };
+}
+
+async function until(condition: () => boolean, what: string) {
+  const deadline = Date.now() + 10_000;
+  while (!condition()) {
+    if (Date.now() > deadline) throw new Error(`Timed out waiting for ${what}.`);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+}
+
+/** A POST from the app whose signal the test can abort, as a client disconnecting does. */
+function abortablePost(target: Env, path: string, body: unknown, signal: AbortSignal): Promise<Response> {
+  const headers = { "content-type": "application/json", origin: ORIGIN, [APP_HEADER]: APP_HEADER_VALUE };
+  return handleRequest(new Request(ORIGIN + path, { method: "POST", headers, body: JSON.stringify(body), signal }), target);
+}
+
+describe("a request whose client goes away while it waits for the hash queue (enable_request_signal)", { timeout: 60_000 }, () => {
+  for (const kind of ["sign-in", "set-up"] as const) {
+    it(`${kind}: leaves the queue without hashing and answers quietly, the attempt staying counted`, async () => {
+      const installed = kind === "sign-in" ? await seeded("abort-signin") : installationFor("abort-setup");
+      const release = holdHashSlot();
+      const controller = new AbortController();
+      let response: Response;
+      try {
+        const waitingBefore = hashQueue.stats().waiting;
+        const pending =
+          kind === "sign-in"
+            ? abortablePost(installed.env, SIGN_IN_PATH, { email: EMAIL, password: PASSWORD }, controller.signal)
+            : abortablePost(installed.env, SETUP_PATH, setupBody(installed), controller.signal);
+        await until(() => hashQueue.stats().waiting === waitingBefore + 1, "the request to wait in the hash queue");
+        controller.abort();
+        expect(hashQueue.stats().waiting).toBe(waitingBefore);
+        response = await pending;
+      } finally {
+        await release();
+      }
+      expect(response.status).toBe(503);
+      expect(response.headers.getSetCookie()).toEqual([]);
+      expect(await refusalOf(response, [installed.setupCode, PASSWORD, EMAIL])).toEqual({ code: "signin_busy", message: REFUSALS.signin_busy.message });
+      if (kind === "sign-in") {
+        expect(installed.calls.get("signInAttempt")).toBe(1);
+        expect(installed.calls.get("completeSignIn")).toBeUndefined();
+        expect((await countsOf(installed)).byEmail.map((row) => row.failures)).toEqual([1]);
+        expect(await sessionsOf(installed)).toEqual([]);
+      } else {
+        expect(installed.calls.get("setupAttempt")).toBe(1);
+        expect(installed.calls.get("createFirstAdministrator")).toBeUndefined();
+        await completeSetup(installed, { email: EMAIL, password: PASSWORD });
+      }
+    });
+  }
 });
 
 describe("POST /api/v1/session/sign-out", { timeout: 60_000 }, () => {

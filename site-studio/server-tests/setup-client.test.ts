@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { checkSetupFields, FIELD_MESSAGES, submitSetup, waitWording } from "../src/admin/setupClient.js";
 import { isSetupPath, readSetupState, STATE_TIMEOUT_MS } from "../src/admin/setupState.js";
+import { REFUSALS } from "../shared/refusal";
 
 // The set-up page's own logic (story 1.2, spec 5): wording, refusal handling and the state check,
 // with a stub fetcher in place of the server. The page's flows run in browser-tests/.
@@ -55,6 +56,11 @@ describe("submitSetup", () => {
   it("says the server is updating, as a general refusal", async () => {
     const { fetcher } = stubFetcher({ status: 503, body: { error: { code: "updating", message: "x" } } });
     expect(await submitSetup(INPUT, fetcher)).toEqual({ kind: "refused", message: "Site Survey Design is updating. Try again in a moment.", focus: null });
+  });
+
+  it("says the server is busy when the password hash queue is full (story 1.3, D-5 amended)", async () => {
+    const { fetcher } = stubFetcher({ status: 503, body: { error: { code: "signin_busy", message: "x" } }, headers: { "retry-after": "5" } });
+    expect(await submitSetup(INPUT, fetcher)).toEqual({ kind: "refused", message: REFUSALS.signin_busy.message, focus: null });
   });
 
   it("puts a server refusal of the password on the password field", async () => {

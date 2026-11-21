@@ -26,8 +26,9 @@ const config :Workerd.Config = (
 const siteStudio :Workerd.Worker = (
   modules = [(name = "index.js", esModule = embed "../../dist/worker/index.js")],
   compatibilityDate = "2026-11-01",
-  # Node.js-compatible APIs, for scrypt password hashing (K19). Keep equal to the Cloudflare flags.
-  compatibilityFlags = ["nodejs_compat"],
+  # Node.js-compatible APIs, for scrypt password hashing (K19); enable_request_signal aborts a
+  # request's signal when the client disconnects (D-5 amended). Keep equal to the Cloudflare flags.
+  compatibilityFlags = ["nodejs_compat", "enable_request_signal"],
   bindings = [
     (name = "ASSETS", service = "assets"),
     (name = "PROJECT_ROOM", durableObjectNamespace = "ProjectRoom"),

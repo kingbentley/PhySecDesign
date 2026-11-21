@@ -272,7 +272,12 @@ export class SignInStore {
         .one();
       const [marker, email] = await Promise.all([importHmacKey(fromBase64(row.marker_key)), importHmacKey(fromBase64(row.email_key))]);
       return { identifier: row.installation_id, marker, email };
-    })();
+    })().catch((error: unknown) => {
+      // Not kept: a failed read or import is tried again by the next call, rather than failing
+      // every sign-in, read and sign-out until the object is evicted (story 1.3 code review).
+      this.keys = null;
+      throw error;
+    });
     return this.keys;
   }
 

@@ -56,6 +56,16 @@ function refused(code: RefusalCode): { ok: false; status: number; body: RefusalB
   return { ok: false, status: REFUSALS[code].status, body: refusalBody(code) };
 }
 
+/**
+ * A hash that did not run: the queue was full (`HashQueueBusy`), or the client went away while it
+ * waited and its request signal aborted (`enable_request_signal`). Both answer the busy refusal,
+ * the same for every email; after a disconnect nobody reads it, but no internal error is raised
+ * or logged for it.
+ */
+function busyOrGone(): { ok: false; status: number; body: RefusalBody } {
+  return refused("signin_busy");
+}
+
 function installation(env: Env) {
   return { namespace: env.INSTALLATION, id: env.INSTALLATION.idFromName(INSTALLATION_NAME) };
 }
@@ -111,7 +121,7 @@ export const HANDLERS: RouteHandlers = {
     try {
       passwordHash = await hashPassword(input.password, context.request.signal);
     } catch (error) {
-      if (error instanceof HashQueueBusy) return refused("signin_busy");
+      if (error instanceof HashQueueBusy || context.request.signal.aborted) return busyOrGone();
       throw error;
     }
     const created = await callObject<FirstAdministratorCreated>(namespace, id, "createFirstAdministrator", {
@@ -171,8 +181,9 @@ export const HANDLERS: RouteHandlers = {
       // The schema has already normalised the password to NFKC (story 1.2's D-9).
       correct = await verifyPassword(input.password, stored, context.request.signal);
     } catch (error) {
-      // A race filled the queue after counting: the count stays raised (D-5 amended).
-      if (error instanceof HashQueueBusy) return refused("signin_busy");
+      // A race filled the queue after counting, or the client went away while waiting: the count
+      // stays raised and the ticket expires unused (D-5 amended, E-17).
+      if (error instanceof HashQueueBusy || context.request.signal.aborted) return busyOrGone();
       throw error;
     }
 
