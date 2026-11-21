@@ -88,7 +88,7 @@ Record each check's outcome, times, Worker names and the two administrator email
 
 **Not run or not shown.**
 - The browser steps of the success signal (the sign-in page, the account menu) were not driven on Cloudflare. This spec's checks are API checks; the page and menu are covered by spec 3's browser tests in local runs.
-- Check 9 does not tell the marker's count apart from the email's (see its row). So CAP-12's last sentence is met as the spec's pass column words it (5 checked, 20 waits), but the deployed run does not show that the marker's count is what limits it. The server tests do (`signin-store.test.ts`, `signin-routes.test.ts`). Whether a deployed CA-44 check is wanted is Kevin's call (`deferred-work.md`).
+- Check 9 does not tell the marker's count apart from the email's (see its row). So CAP-12's last sentence is met as the spec's pass column words it (5 checked, 20 waits), but the deployed run does not show that the marker's count is what limits it. The server tests do (`signin-store.test.ts`, `signin-routes.test.ts`). Kevin accepted the server-test coverage for this on 2026-11-20 ("Accept the server-test coverage for check 9's marker count"), so no deployed CA-44 check is planned.
 - D-5's memory claim (five hashes at once without the queue) stays unproven, as SPEC.md plans. Check 9 and check 4 ran five real checks in one burst through the queue without error, which says nothing about running without it.
 
 ## Implementation Notes
