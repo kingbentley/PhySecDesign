@@ -38,6 +38,8 @@ describe("sign-in refusals", () => {
     assert.deepEqual(signInOutcome(400, refusal("invalid_input", { field: "password" })), { kind: "field", field: "password" });
     assert.equal(signInOutcome(400, refusal("invalid_input", { field: "other" })).message, SIGN_IN_MESSAGES.invalid_input);
     assert.equal(signInOutcome(503, refusal("signin_busy")).message, SIGN_IN_MESSAGES.busy);
+    // The set-up page uses the same words (server-tests/setup-client.test.ts).
+    assert.equal(SIGN_IN_MESSAGES.busy, "Site Survey Design is busy. Try again in a moment.");
     assert.equal(signInOutcome(403, refusal("origin_refused")).message, SIGN_IN_MESSAGES.origin_refused);
     assert.equal(signInOutcome(503, refusal("updating")).message, SIGN_IN_MESSAGES.updating);
     assert.equal(signInOutcome(405, refusal("method_not_allowed")).message, SIGN_IN_MESSAGES.not_found);
@@ -76,21 +78,38 @@ describe("start-up reads", () => {
     assert.equal(await readSetupState(reply(200, { state: "closed" })), "closed");
     assert.equal(await readSetupState(reply(404, "")), "none");
     assert.equal(await readSetupState(reply(200, "<!doctype html>", "text/html")), "none");
-    assert.equal(await readSetupState(reply(200, { state: "open", users: 0 })), "none");
+    assert.equal(await readSetupState(reply(200, { state: "maybe" })), "none");
+    // A field a later release adds does not hide the state (story 1.3 code review).
+    assert.equal(await readSetupState(reply(200, { state: "open", users: 0 })), "open");
+    assert.equal(await readSetupState(reply(404, refusal("not_found"))), "none");
     assert.equal(await readSetupState(reply(500, "")), "unknown");
     assert.equal(await readSetupState(reply(503, refusal("updating"))), "unknown");
+    // Only a server answers in the refusal envelope: fail closed (story 1.3 code review).
+    assert.equal(await readSetupState(reply(403, refusal("https_required"))), "unknown");
+    assert.equal(await readSetupState(reply(401, refusal("not_signed_in"))), "unknown");
+    assert.equal(await readSetupState(reply(429, refusal("signin_wait"))), "unknown");
+    assert.equal(await readSetupState(reply(403, "<html>Forbidden</html>", "text/html")), "none");
     assert.equal(await readSetupState(async () => { throw new TypeError("network"); }), "unknown");
     const never = (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => reject(new Error("aborted"))));
     assert.equal(await readSetupState(never, { timeoutMs: 20 }), "unknown");
   });
 
-  test("the session: signed in, signed out, no server or cannot be checked", async () => {
+  test("the session: signed in, signed out, or cannot be checked, never no server (fail closed)", async () => {
     assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", installationName: "Harbourside" })),
       { kind: "signedIn", name: "Robin", installationName: "Harbourside" });
     assert.deepEqual(await readSession(reply(200, { signedIn: false, installationName: "Harbourside" })),
       { kind: "signedOut", installationName: "Harbourside" });
-    assert.deepEqual(await readSession(reply(404, refusal("not_found"))), { kind: "none" });
-    assert.deepEqual(await readSession(reply(200, "<!doctype html>", "text/html")), { kind: "none" });
+    // A field a later story adds is ignored.
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", installationName: "Harbourside", role: "administrator" })),
+      { kind: "signedIn", name: "Robin", installationName: "Harbourside" });
+    // The session is read only after the set-up state answered, so a server is there: a 404, a page
+    // that is not JSON, a reply of the wrong shape or a 4xx refusal cannot be checked.
+    assert.deepEqual(await readSession(reply(404, refusal("not_found"))), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(404, "")), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(200, "<!doctype html>", "text/html")), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(200, { signedIn: "yes" })), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(403, refusal("origin_refused"))), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(429, refusal("signin_wait"))), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(500, "")), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(503, refusal("updating"))), { kind: "unknown" });
     assert.deepEqual(await readSession(async () => { throw new TypeError("network"); }), { kind: "unknown" });
@@ -103,11 +122,12 @@ describe("start-up reads", () => {
     assert.deepEqual(await readSession(never, { timeoutMs: 20 }), { kind: "unknown" });
   });
 
-  test("only the declared session reply is accepted", () => {
+  test("the declared session reply is accepted, with any extra field ignored", () => {
     assert.equal(isSessionReply({ signedIn: false, installationName: null }), true);
     assert.equal(isSessionReply({ signedIn: true, name: "Robin", installationName: "Harbourside" }), true);
     assert.equal(isSessionReply({ signedIn: true, installationName: "Harbourside" }), false);
-    assert.equal(isSessionReply({ signedIn: false, installationName: "x", token: "y" }), false);
+    assert.equal(isSessionReply({ signedIn: false, installationName: "x", role: "y" }), true);
+    assert.equal(isSessionReply({ signedIn: false }), false);
     assert.equal(isSessionReply({ signedIn: "yes", installationName: null }), false);
     assert.equal(isSessionReply([]), false);
   });

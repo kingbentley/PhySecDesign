@@ -82,8 +82,9 @@ const GENERAL = {
     'Set-up is not available yet: no set-up code has been issued for this installation. Deploy again to get one.',
   origin_refused: "Set-up must be sent from this installation's own page. Open the set-up page from its address and try again.",
   updating: 'Site Survey Design is updating. Try again in a moment.',
-  // Story 1.3, D-5 amended: the password hash queue is full; the same message as at sign-in.
-  signin_busy: 'Site Survey Design is busy. Try again shortly.',
+  // Story 1.3, D-5 amended: the password hash queue is full; the same message as the sign-in page's
+  // (`SIGN_IN_MESSAGES.busy` in signInClient.js).
+  signin_busy: 'Site Survey Design is busy. Try again in a moment.',
   // D-7: the request reached a copy of the server that still has the earlier code.
   setup_code_replaced: 'A new set-up code was issued moments ago. Wait about a minute, then try again with the newest code.',
   // D-8: only over HTTPS.

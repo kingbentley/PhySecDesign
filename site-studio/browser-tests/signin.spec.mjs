@@ -191,8 +191,10 @@ test("after too many attempts for an email with no account the page states the w
     const reply = page.waitForResponse("**/api/v1/session/sign-in");
     await fillSignIn(page, email, `wrong password number ${attempt}`);
     expect((await reply).status(), `attempt ${attempt}`).toBe(401);
-    // The page has shown the refusal (and emptied the password) before the next attempt is typed.
+    // The page has shown the refusal and emptied the password before the next attempt is typed. The
+    // message is the same each time, so the emptied field is what shows this attempt was handled.
     await expect(page.getByRole("alert")).toHaveText(ONE_MESSAGE);
+    await expect(page.getByLabel("Password")).toHaveValue("");
   }
   const reply = page.waitForResponse("**/api/v1/session/sign-in");
   await fillSignIn(page, email, "wrong password number 6");
@@ -209,6 +211,8 @@ test("signing in opens the app with an account menu holding the name and Sign ou
   await fillSignIn(page, `  ${ADMIN.email.toUpperCase()} `, ADMIN.password);
   const trigger = page.locator(".account-trigger");
   await expect(page.getByTestId("account-name")).toHaveText(ADMIN.name);
+  // A screen reader hears what the button is for, with the name (story 1.3 code review).
+  await expect(page.getByRole("button", { name: `Account: ${ADMIN.name}` })).toBeVisible();
   await expect(page.locator(".studio-label")).toHaveText("Site Survey Design");
   const minimum = minimumTarget(testInfo);
   const triggerBox = await trigger.boundingBox();
@@ -227,6 +231,11 @@ test("signing in opens the app with an account menu holding the name and Sign ou
   await page.keyboard.press("Escape");
   await expect(page.getByRole("group", { name: "Account" })).toHaveCount(0);
   await expect(trigger).toBeFocused();
+  // A press outside the menu closes it too (story 1.3 code review).
+  await openAccountMenu(page);
+  // The header's top-left corner: outside the menu, and on screen in both viewports.
+  await page.mouse.click(2, 2);
+  await expect(page.getByRole("group", { name: "Account" })).toHaveCount(0);
 });
 
 test("signing out shows the sign-in page, removes the session cookie and keeps the marker", async ({ page, context }, testInfo) => {
@@ -250,6 +259,10 @@ test("when the server does not confirm sign-out the page stays signed in and say
   await expect(page.getByRole("group", { name: "Account" }).getByRole("alert")).toHaveText("You are still signed in. Try again.");
   await expect(page.getByTestId("account-name")).toHaveText(ADMIN.name);
   await expect(signInHeading(page)).toHaveCount(0);
+  // The message described that attempt only: reopening the menu does not show it again.
+  await page.keyboard.press("Escape");
+  await openAccountMenu(page);
+  await expect(page.getByRole("group", { name: "Account" }).getByRole("alert")).toHaveCount(0);
 });
 
 test("a session ended elsewhere shows the sign-in page, not the prototype, and its cookie is cleared", async ({ page, context, playwright }, testInfo) => {
@@ -336,12 +349,14 @@ test("an 80-character name is cut short in the header and shown in full in the m
   await expectAccessible(page, ".account-menu");
 });
 
-test("where there is no server the prototype opens: a session read or set-up state answering 404 or not JSON", async ({ page }, testInfo) => {
+// Only the set-up state read, the first one, can find no server. A session read that answers 404 or
+// not JSON comes after set-up has answered, so it shows "Sign-in cannot be checked" instead (fail
+// closed, story 1.3 code review; the next test).
+test("where there is no server the prototype opens: the set-up state answering 404 or not JSON", async ({ page }, testInfo) => {
   const [server] = servers(testInfo);
   const cases = [
-    ["**/api/v1/session", { status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "x" } }) }],
-    ["**/api/v1/session", { status: 200, contentType: "text/html", body: "<!doctype html><title>x</title>" }],
     ["**/api/v1/setup/state", { status: 404, body: "" }],
+    ["**/api/v1/setup/state", { status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "x" } }) }],
     ["**/api/v1/setup/state", { status: 200, contentType: "text/html", body: "<!doctype html><title>x</title>" }],
   ];
   for (const [pattern, reply] of cases) {
@@ -362,6 +377,11 @@ test("when the session read cannot be checked the page says so, offers Try again
     ["a 503 updating", (route) => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { code: "updating", message: "x" } }) })],
     ["a failed request", (route) => route.abort("connectionrefused")],
     ["no answer within 5 seconds", () => new Promise(() => {})],
+    // Fail closed (story 1.3 code review): set-up has answered, so a server is there.
+    ["a 404 after set-up answered", (route) => route.fulfill({ status: 404, body: "" })],
+    ["a 403 refusal", (route) => route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ error: { code: "origin_refused", message: "x" } }) })],
+    ["a reply of the wrong shape", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ signedIn: "yes" }) })],
+    ["a page that is not JSON", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>x</title>" })],
   ];
   for (const [name, handler] of failures) {
     await page.route("**/api/v1/session", handler);

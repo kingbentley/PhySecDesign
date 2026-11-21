@@ -78,3 +78,89 @@
 - **This installation's cookie over 512 characters is ignored, not cleared** (edge-case hunter): low. The person simply reads as signed out, and the next sign-in overwrites the cookie.
 - **A query string on `GET /api/v1/session` is refused** (edge-case hunter): false. The page never adds one (`src/admin/setupState.js:13`). The strict empty input matches the set-up state route, by design.
 - **Sign-out without a JSON body is refused** (edge-case hunter): false. The app's client always sends `{}` with the app headers (`src/admin/signInClient.js:116-126`). A bodiless POST is not a path the app uses.
+
+## Group 2: page, account menu and browser tests
+
+`site-studio/src`, `site-studio/browser-tests`, `site-studio/tests`: 16 files, +1,327 / −87, at `120e82e`. **Result:** 1 decision needed, 4 patch, 0 defer, 19 rejected.
+
+### Review Findings
+
+- [ ] [Review][Decision] The "no server" fallback opens the prototype on a real server [`site-studio/src/admin/setupState.js:25-50, 85-109`]
+  - **The code:** the start-up reads decide whether a server exists. In `readJson` a 5xx, `updating`, a network failure or a timeout is "cannot be checked". Every other non-success reply is `NO_SERVER` (`if (!response.ok) return NO_SERVER`), and so is any reply that is not exactly the declared shape (`isSessionReply`, the one-key check in `readSetupState`). "No server" opens the prototype with no sign-in page.
+  - **How a real server reaches it:**
+    1. A 4xx refusal in the server's own JSON envelope, for example a 401/403 from an access gateway in front of a self-hosted installation, a 429, or `origin_refused`/`https_required`.
+    2. After the set-up state has answered `closed` (so a server is known to be there), the session read answering 404 or an unexpected shape. Durable Object copies running code from before story 1.3 can do this for minutes after a deploy or rollback (R11).
+    3. A later story adding a field to the session reply (the menu's comment says the role comes later). The exact-keys check would turn that into "no server" unless someone remembers to change it, and no test ties it to `sessionReply` in `shared/routes.ts`.
+  - **What the spec says:** SPEC.md's note on D-7 amended reads "no server" as "the session read answers 404 or a reply that is not the declared JSON", and lists the cannot-be-checked cases as a network failure, 5 seconds, a 5xx or `updating`. The code follows that literally. D-7 amended's ruling itself says "the prototype opens only where there is no server", which these three cases contradict.
+  - **What tests cover:** only 404 and non-JSON replies are tested as "no server".
+  - **Options:**
+    1. Fail closed once a server has shown itself. A reply in the server's refusal envelope (`{ error: { code } }`), and any session read after the set-up state answered `open` or `closed` that is not the declared reply, show "cannot be checked". "No server" stays for 404 and non-JSON on the first read. The shape checks accept extra keys, so a later field does not hide sign-in. Tests cover each case.
+    2. Only make the refusal envelope (case 1) "cannot be checked", and leave cases 2 and 3 as the note reads.
+    3. Keep the note's literal reading, and record cases 1 to 3 as accepted.
+  - **Sources:** acceptance auditor, edge-case hunter, blind hunter.
+  - **Resolved (Kevin, 2026-11-21): option 1, fail closed.**
+    - It follows D-7 amended's ruling ("the prototype opens only where there is no server") where the note's literal reading departs from it.
+    - The Sites package still counts as no server: its worker (`worker/index.js`) answers an API read with the assets' plain 404. `npm run dev` answers it with the HTML page, which is non-JSON on the first read.
+    - It becomes the first patch below.
+- [x] [Review][Patch] Fail closed once a server has shown itself [`site-studio/src/admin/setupState.js`, `site-studio/src/main.jsx`, `site-studio/tests/signin-client.test.mjs`, `site-studio/browser-tests/signin.spec.mjs`]
+  - A reply in the refusal envelope (`{ error: { code } }`, any status) is "cannot be checked".
+  - A session read made after the set-up state answered `open` or `closed` is "cannot be checked" whenever it is not the declared reply, including a 404 or non-JSON reply.
+  - The shape checks accept extra keys, so a later field does not hide sign-in.
+  - "No server" stays for a 404 or non-JSON reply to the set-up state read.
+  - Unit tests cover each case, and a browser test covers a closed set-up state followed by a 404 session read.
+  - **Applied:**
+    - In `readJson`, a 404 is no server, and a refusal envelope with any other status cannot be checked. `readSession` never answers "no server": it is made only after the set-up state answered (at start-up, on Try again and on the visibility re-read), so a 404, non-JSON or wrong-shape reply is `unknown`.
+    - `isSessionReply` and `readSetupState` ignore extra fields.
+    - Unit tests in `tests/signin-client.test.mjs` cover 401, 403 and 429 refusals, a 404, non-JSON and wrong shape on the session read, and an extra field on each read.
+    - The "Sign-in cannot be checked" browser test adds a 404, a 403 refusal and a wrong-shape session read.
+    - The comment in `main.jsx` says the new rule.
+- [x] [Review][Patch] The two pages word the busy refusal differently [`site-studio/src/admin/setupClient.js`]
+  - **The gap:** the set-up page now says "Site Survey Design is busy. Try again shortly." (the server's message), and its comment says this is the sign-in page's message. The sign-in page says "Site Survey Design is busy. Try again in a moment." (`signInClient.js:19`). The node test compares the sign-in page with its own constant, so it cannot catch the difference.
+  - **The fix:** this review's group 1 patch introduced the mismatch. Use the sign-in page's wording on the set-up page, correct the comment, and pin both texts in their tests.
+  - **Sources:** acceptance auditor, edge-case hunter, verification gap, blind hunter.
+  - **Applied:** the set-up page says "Site Survey Design is busy. Try again in a moment.". Both `setup-client.test.ts` and `signin-client.test.mjs` pin that sentence.
+- [x] [Review][Patch] A failed sign-out's error is still shown when the menu is reopened [`site-studio/src/AccountMenu.jsx:16, 63`]
+  - **The gap:** `error` is cleared only when a new sign-out starts. After a failure, closing and reopening the menu shows "You are still signed in. Try again." although nothing has been tried since.
+  - **The fix:** clear the error whenever the menu opens or closes.
+  - **Sources:** edge-case hunter, blind hunter.
+  - **Applied:** `setMenu()` clears it for the trigger, Escape and a press outside. The "sign-out not confirmed" browser test reopens the menu and finds no alert.
+- [x] [Review][Patch] No test closes the account menu by clicking outside it [`site-studio/browser-tests/signin.spec.mjs`]
+  - **The gap:** the menu closes on a `pointerdown` outside it (`AccountMenu.jsx:23`), but every test closes it with Escape or never closes it. Deleting the listener would pass the suite.
+  - **The fix:** a test that opens the menu, clicks elsewhere in the header, and finds the "Account" group gone.
+  - **Source:** verification gap.
+  - **Applied:** the account-menu test reopens the menu, clicks the header's label, and finds the group gone.
+- [x] [Review][Patch] The account menu's trigger does not say it is the account menu [`site-studio/src/AccountMenu.jsx:56-68`]
+  - **The gap:** its accessible name is only the person's name, so a screen reader announces "Robin Example, collapsed, button", with nothing saying it opens the account menu.
+  - **The fix:** give the trigger an accessible name such as "Account: ‹name›" (the visible text unchanged), and have a test find it by role and that name.
+  - **Source:** blind hunter.
+  - **Applied:** the trigger has `aria-label="Account: ‹name›"`, and the account-menu test finds it by that role and name.
+
+**Verification after the group 2 patches (2026-11-21, Windows workstation, Node 24.18.0):**
+- `npm test` (160), `npm run typecheck`, `npm run test:server` (264), `npm run test:sites` and `npm run smoke:selfhost` passed.
+- `npm run test:browser`: 76 passed, 38 in `chromium` and 38 in `webkit-iphone`, on the third run. The two failed runs before it:
+  - **First run:** two failures.
+    - The old browser test "where there is no server the prototype opens" still expected a session-read 404 to open the prototype, which Kevin's fail-closed decision reverses. It now covers the set-up state only, and its session-read cases moved to the "Sign-in cannot be checked" test.
+    - In WebKit the outside-click step clicked `.studio-label`, which is hidden on the iPhone viewport. It now clicks the header's top-left corner.
+  - **Second run:** in WebKit, "after too many attempts … states the wait" submitted an empty password. Every refusal shows the same message, so from the second attempt on, the alert check passed on the previous attempt's alert, and the next password was typed before the page emptied the field. The test now also waits for the empty field. This race was already in spec 3's test, not added by this review.
+
+### Rejected
+
+- **Accounts are told apart by display name** (edge-case hunter; blind hunter): rejected as already recorded. `deferred-work.md` holds it from spec 3: unreachable with one account, and it is for story 1.4 or 1.6 to add an account identifier to the session reply.
+- **A signed-out re-read ignores a changed installation name** (edge-case hunter): low. The installation's name cannot change in story 1.3.
+- **One Escape closes both the menu and a prototype dialog** (edge-case hunter): low. The menu and a modal are not normally open together, and nothing is lost.
+- **An empty name would show a blank menu** (edge-case hunter): false. Names are at least one character after trimming (`personNameField`), so the server never sends an empty one.
+- **The page is blank while the set-up and session reads are pending, up to 5 s each** (edge-case hunter; blind hunter): low. Story 1.2's set-up read already rendered nothing while pending, and a waiting state would be a new screen part.
+- **`signInPorts` with more than two entries collides** (edge-case hunter): false. The configuration has exactly two.
+- **The hanging-route test may exceed the default timeout** (edge-case hunter): low. It passes in both projects. Raise the timeout if it ever fails.
+- **Local projects are not cleared at sign-out** (blind hunter): false as a defect. SPEC.md's non-goals and D-7 keep the browser's local project for whoever signs in next until Epic 2, and story 1.7's CA-49 clears it later.
+- **A sign-out chunk that fails to load reads as "still signed in"** (blind hunter): low. It needs a deploy during an open session, and reloading fixes it.
+- **`signin.spec.mjs` runs serially and the last test leaves the administrator locked** (blind hunter): low. It is test hygiene with no failing case. Serial mode keeps the shared server's counts predictable.
+- **The browser tests do not show `signin_busy`, a server field refusal or a network failure on the page** (blind hunter): low. `tests/signin-client.test.mjs` covers the mapping of each refusal, and standing rule 15 puts refusal details in lower-level tests.
+- **`submitSignIn` and `requestSignOut` are not called with a fake fetcher** (blind hunter): low. Both run against the built Worker in the browser suite, so a wrong header, method or body would fail it.
+- **The two-installations test does not assert exactly two session cookies** (blind hunter): low. Each browser context starts empty, so a leftover cookie cannot occur.
+- **The set-up done page's "Sign in" link may be under 44 px on the iPhone** (acceptance auditor): rejected. D-9 and A-8 chose a plain link in place of the button. Making it a button-sized target would edit Kevin's decision.
+- **The Sign out button's width is not checked** (acceptance auditor): low. Its height is checked, and the button spans the panel's width.
+- **No test at 200% zoom for the sign-in page or the cannot-be-checked page** (acceptance auditor): low. The 80-character-name test runs at the narrow width that 200% zoom gives, and the pages are single-column forms.
+- **The three deliberate breakages are not evidenced** (acceptance auditor): false. Spec 3's file records them (`stories/3-sign-in-page-account-menu-and-browser-tests.md:92`).
+- **"No account with that email" is not asserted absent in the browser** (acceptance auditor): low. The page shows only the client's mapped messages, which the node test pins.
+- **The comment says browser requests have no `CF-Connecting-IP`, which is unverified under `wrangler dev`** (acceptance auditor): low. The suite stays far under 20 failures from any one address either way.

@@ -3,9 +3,13 @@
 // carry the pages or their rules.
 //
 // Each read tells "no server" apart from "cannot be checked" (story 1.3, D-7 amended and amended
-// again): a 404, or a reply that is not the declared JSON, means there is no server here (as in the
-// Sites package), and the prototype opens; a network failure, no answer within 5 seconds, a 5xx or
-// an `updating` refusal means the server could not say, and the app shows a page with Try again.
+// again). Only the set-up state read, the first one, can find no server: a 404, or a reply that is
+// not the declared JSON, means there is no server here (as in the Sites package), and the prototype
+// opens. A network failure, no answer within 5 seconds, a 5xx, or any reply in the server's refusal
+// envelope means the server could not say, and the app shows a page with Try again. The session
+// read is made only once the set-up state has answered, so a server is known to be there: any reply
+// to it that is not the declared one cannot be checked (fail closed, story 1.3 code review).
+// Extra fields in a reply are ignored, so a later field does not hide the sign-in page.
 
 /** The set-up page's address. */
 export const SETUP_PATH = '/setup';
@@ -23,9 +27,10 @@ const NO_SERVER = Symbol('no server');
 const CANNOT_CHECK = Symbol('cannot check');
 
 /**
- * Fetches a JSON read and returns its body, `NO_SERVER` or `CANNOT_CHECK`. A 404 or a reply that is
- * not JSON is no server; a failure to answer, a 5xx or an `updating` refusal cannot be checked.
- * Any other reply that is not a success is not this server's declared reply either: no server.
+ * Fetches a JSON read and returns its body, `NO_SERVER` or `CANNOT_CHECK`. A 404, a reply that is
+ * not JSON, or another failure that is not in the refusal envelope is no server; a failure to
+ * answer, a 5xx, or a refusal envelope (`{ error: { code } }`) with any other status cannot be
+ * checked, because only a server answers in that envelope.
  */
 async function readJson(fetcher, url, signal) {
   let response;
@@ -35,6 +40,7 @@ async function readJson(fetcher, url, signal) {
     return CANNOT_CHECK;
   }
   if (response.status >= 500) return CANNOT_CHECK;
+  if (response.status === 404) return NO_SERVER;
   let body;
   try {
     body = await response.json();
@@ -44,7 +50,7 @@ async function readJson(fetcher, url, signal) {
     // JSON as a DOMException named "SyntaxError", not a SyntaxError instance, so the name decides.
     return signal?.aborted || error?.name !== 'SyntaxError' ? CANNOT_CHECK : NO_SERVER;
   }
-  if (body?.error?.code === 'updating') return CANNOT_CHECK;
+  if (typeof body?.error?.code === 'string') return CANNOT_CHECK;
   if (!response.ok) return NO_SERVER;
   return body;
 }
@@ -72,37 +78,36 @@ export async function readSetupState(fetcher = fetch, { timeoutMs = STATE_TIMEOU
   const body = await withTimeout((signal) => readJson(fetcher, STATE_URL, signal), timeoutMs);
   if (body === CANNOT_CHECK) return 'unknown';
   if (body === NO_SERVER) return 'none';
-  const keys = body && typeof body === 'object' ? Object.keys(body) : [];
-  if (keys.length === 1 && (body.state === 'open' || body.state === 'closed')) return body.state;
+  if (body && typeof body === 'object' && !Array.isArray(body) && (body.state === 'open' || body.state === 'closed')) return body.state;
   return 'none';
 }
 
 /**
  * True when `body` is the session read's declared reply (`sessionReply` in shared/routes.ts, kept
  * free of imports here so the prototype's bundle stays small): `{ signedIn: false, installationName }`
- * or `{ signedIn: true, name, installationName }`, with no other keys.
+ * or `{ signedIn: true, name, installationName }`. Other fields are ignored, so a field a later
+ * story adds does not make the read fail.
  */
 export function isSessionReply(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
   const name = body.installationName;
   if (!(name === null || typeof name === 'string')) return false;
-  const keys = Object.keys(body).sort().join(',');
-  if (body.signedIn === false) return keys === 'installationName,signedIn';
-  if (body.signedIn === true) return typeof body.name === 'string' && keys === 'installationName,name,signedIn';
+  if (body.signedIn === false) return true;
+  if (body.signedIn === true) return typeof body.name === 'string';
   return false;
 }
 
 /**
  * Reads the session (story 1.3). Resolves to one of:
- * `{ kind: 'signedIn', name, installationName }`, `{ kind: 'signedOut', installationName }`,
- * `{ kind: 'none' }` where there is no server (the prototype opens) or `{ kind: 'unknown' }` when
- * the server could not say (the "Sign-in cannot be checked" page). The session cookie itself is
- * never readable here: it is `HttpOnly`.
+ * `{ kind: 'signedIn', name, installationName }`, `{ kind: 'signedOut', installationName }`, or
+ * `{ kind: 'unknown' }` when the server could not say (the "Sign-in cannot be checked" page). It is
+ * read only after the set-up state has answered, so a server is there: a 404, a reply that is not
+ * JSON or not the declared reply is `unknown` too, never "no server" (fail closed). The session
+ * cookie itself is never readable here: it is `HttpOnly`.
  */
 export async function readSession(fetcher = fetch, { timeoutMs = STATE_TIMEOUT_MS } = {}) {
   const body = await withTimeout((signal) => readJson(fetcher, SESSION_URL, signal), timeoutMs);
-  if (body === CANNOT_CHECK) return { kind: 'unknown' };
-  if (body === NO_SERVER || !isSessionReply(body)) return { kind: 'none' };
+  if (body === CANNOT_CHECK || body === NO_SERVER || !isSessionReply(body)) return { kind: 'unknown' };
   return body.signedIn
     ? { kind: 'signedIn', name: body.name, installationName: body.installationName }
     : { kind: 'signedOut', installationName: body.installationName };

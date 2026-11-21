@@ -18,12 +18,18 @@ export function AccountMenu({ name, onSignedOut }) {
   const trigger = useRef(null);
   const panelId = useId();
 
+  // Opening or closing the menu clears a failed sign-out's message: it described that attempt only.
+  function setMenu(next) {
+    setError('');
+    setOpen(next);
+  }
+
   useEffect(() => {
     if (!open) return undefined;
-    const outside = (event) => { if (!root.current?.contains(event.target)) setOpen(false); };
+    const outside = (event) => { if (!root.current?.contains(event.target)) setMenu(false); };
     const escape = (event) => {
       if (event.key !== 'Escape') return;
-      setOpen(false);
+      setMenu(false);
       trigger.current?.focus();
     };
     document.addEventListener('pointerdown', outside);
@@ -59,8 +65,9 @@ export function AccountMenu({ name, onSignedOut }) {
         className="account-trigger"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
+        aria-label={`Account: ${name}`}
         title={name}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setMenu(!open)}
       >
         <UserCircle size={20} aria-hidden="true"/>
         <span className="account-name" data-testid="account-name">{name}</span>
