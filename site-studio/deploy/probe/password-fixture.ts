@@ -15,7 +15,7 @@ export const PASSWORD_FIXTURE: {
   madeAt: string;
   hash: PasswordHash | null;
 } = {
-  origin: "Made by `node deploy/probe/probe.mjs make`: the probe built by Wrangler 4.164.0 and served by workerd 1.20261117.1 (the self-hosted runtime), with compatibility date 2026-11-01 and nodejs_compat.",
+  origin: "Made by `node deploy/probe/probe.mjs make`: the probe built by Wrangler 4.164.0 and served by workerd 1.20261117.1 (the self-hosted runtime), with compatibility date 2026-11-01 and nodejs_compat. enable_request_signal was added to the app's and the probe's flags afterwards (story 1.3 code review, 2026-11-21); it changes only whether an incoming request's signal aborts on disconnect, not scrypt's output, and the fixture verified with it under workerd in the self-hosted smoke test of 2026-11-21.",
   host: "Self-hosted runtime (workerd) on the development workstation (Windows 11, x64), run locally.",
   madeAt: "2026-11-20",
   hash: {

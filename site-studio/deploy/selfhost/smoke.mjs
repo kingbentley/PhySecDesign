@@ -45,6 +45,8 @@ const ADMIN_EMAIL = "smoke-admin@example.test";
 const ADMIN_PASSWORD = randomBytes(12).toString("hex");
 const UNKNOWN_EMAIL = "smoke-nobody@example.test";
 const WRONG_PASSWORD = randomBytes(12).toString("hex");
+/** The browser marker's cookie names start with this; the session cookie's do not (story 1.3, D-3). */
+const MARKER_PREFIX = "__Host-ssd-m-";
 
 class SmokeFailure extends Error {}
 
@@ -185,7 +187,7 @@ async function signIn(base) {
   if (response.status !== 200 || body?.name !== "Smoke Test Administrator") fail(`POST /api/v1/session/sign-in answered ${response.status}: ${JSON.stringify(body)}`);
   const cookies = keptCookies(response);
   const names = Object.keys(cookies);
-  if (names.length !== 2 || !names.some((name) => name.includes("-m-"))) fail(`The sign-in reply set ${names.length} cookies, not a session and a marker.`);
+  if (names.length !== 2 || !names.some((name) => name.startsWith(MARKER_PREFIX))) fail(`The sign-in reply set ${names.length} cookies, not a session and a marker.`);
   return cookies;
 }
 
@@ -234,8 +236,16 @@ async function signOut(base, cookies) {
   });
   const body = await response.json().catch(() => null);
   if (response.status !== 200 || body?.signedIn !== false) fail(`POST /api/v1/session/sign-out answered ${response.status}: ${JSON.stringify(body)}`);
+  // Exactly one Set-Cookie, clearing the session cookie (not the marker) with its full attributes.
+  const sessionName = Object.keys(cookies).find((name) => !name.startsWith(MARKER_PREFIX));
   const cleared = response.headers.getSetCookie();
-  if (cleared.length !== 1 || !/;\s*max-age=0\b/i.test(cleared[0])) fail("The sign-out reply did not clear the session cookie alone.");
+  const [pair, ...attributes] = (cleared[0] ?? "").split(";").map((part) => part.trim().toLowerCase());
+  const clearing =
+    cleared.length === 1 &&
+    sessionName !== undefined &&
+    pair === `${sessionName.toLowerCase()}=` &&
+    ["max-age=0", "path=/", "secure", "httponly", "samesite=lax"].every((attribute) => attributes.includes(attribute));
+  if (!clearing) fail("The sign-out reply did not clear the session cookie alone, with its full attributes.");
 }
 
 function get(url, init = {}) {

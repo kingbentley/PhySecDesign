@@ -143,6 +143,51 @@
     - In WebKit the outside-click step clicked `.studio-label`, which is hidden on the iPhone viewport. It now clicks the header's top-left corner.
   - **Second run:** in WebKit, "after too many attempts … states the wait" submitted an empty password. Every refusal shows the same message, so from the second attempt on, the alert check passed on the previous attempt's alert, and the next password was typed before the page emptied the field. The test now also waits for the empty field. This race was already in spec 3's test, not added by this review.
 
+## Group 3: deploy, probe, smoke test and the spec 4 script
+
+`site-studio/deploy`, `site-studio/scripts`, `experiments/story-1-3-cloudflare-acceptance`: 9 files, +654 / −13, at `d635abe`. **Result:** 0 decision needed, 3 patch, 0 defer, 18 rejected.
+
+### Review Findings
+
+- [x] [Review][Patch] No test requires `enable_request_signal` [`site-studio/server-tests/host-config-flags.test.ts:16-22`]
+  - **The gap:** the flag test checks that the Cloudflare flags contain `nodejs_compat` and that the self-hosted list equals them, and the probe checks that its own flags equal the app's. Removing `enable_request_signal` from all three files passes every test. The abort route tests use the test's own signal, so they pass without the flag.
+  - **The fix:** assert that the Cloudflare flags contain `enable_request_signal`. The existing equality check carries it to the self-hosted list.
+  - **Source:** verification gap.
+  - **Applied:** `host-config-flags.test.ts` asserts it, and its title names both flags.
+- [x] [Review][Patch] The fixture's recorded origin no longer names the probe's flags [`site-studio/deploy/probe/password-fixture.ts:18`]
+  - **The gap:** the origin says the fixture was made "with compatibility date 2026-11-01 and nodejs_compat". The probe's flags now also hold `enable_request_signal`, added by group 1's patch after the fixture was made.
+  - **The fix:** add to the origin that the flag was added afterwards, that it does not change scrypt's output, and that the fixture verified with it under workerd (the smoke test of 2026-11-21). The fixture stays as it is.
+  - **Sources:** acceptance auditor, edge-case hunter, blind hunter.
+  - **Applied:** one sentence added to `PASSWORD_FIXTURE.origin`. The hash, salt and `madeAt` are unchanged.
+- [x] [Review][Patch] The smoke test's sign-out check does not name the cookie it cleared [`site-studio/deploy/selfhost/smoke.mjs:237-238`]
+  - **The gap:** it fails with "did not clear the session cookie alone" but checks only that one `Set-Cookie` has `Max-Age=0`, so clearing the marker instead would pass. The route tests check this exactly; the smoke test is the self-hosted run of it.
+  - **The fix:** check that the cleared cookie is the session cookie (the name from sign-in without `m-`), with the full clearing attributes.
+  - **Sources:** acceptance auditor, edge-case hunter, blind hunter.
+  - **Applied:** `signOut` in `smoke.mjs` requires exactly one `Set-Cookie`, naming the session cookie, with `Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Lax`. `signIn` finds the marker by its `__Host-ssd-m-` prefix (`MARKER_PREFIX`).
+
+**Verification after the group 3 patches (2026-11-21):** `npm test` (160), `npm run typecheck`, `npm run test:server` (264), `npm run build` and `npm run smoke:selfhost` passed. The smoke test passed with the stricter sign-out check, and the probe verified the fixture under workerd. The first smoke run failed because `MARKER_PREFIX` was declared below the code that runs at load; it was moved up with the other constants. The browser suite was not rerun: none of its files, or the app's, changed in this group.
+
+### Rejected
+
+- **`checks.mjs` script robustness** (edge-case hunter; blind hunter): rejected as carried. The findings are no request timeout, a TypeError when state is missing, no check of `check8`'s argument, a password overwritten by re-running `setup-x`, a mis-parsed `Set-Cookie` without `=`, and the burst's "sent" time being the first reply's. Spec 4's review triaged each one (its rows 7, 16 to 18 and 20 to 23): the script is a throwaway, run once against Workers since deleted, and kept as it ran. Spec 4's record explains the "sent" time.
+- **An inherited command name such as `toString` runs a prototype method** (edge-case hunter): low. The script is run by hand with the documented names.
+- **`check1` checks the reply's key but not the name's value** (blind hunter): low. Spec 4's record prints the reply, `{"name":"Administrator A"}`.
+- **`checks.mjs` has no `check2`** (edge-case hunter's claim): false as a defect. Spec 4's record says check 2 came from `wrangler tail`, kept only as its pass/fail fact, as the run's rules required.
+- **Check 9 cannot tell the marker's count from the email's** (acceptance auditor; blind hunter): rejected as already accepted. Kevin accepted the server-test coverage on 2026-11-20 (spec 4's record, `deferred-work.md`).
+- **The probe's compatibility check ignores the self-hosted configuration** (acceptance auditor; edge-case hunter, with its claim on the `wrangler.jsonc` comment): false. `host-config-flags.test.ts` holds the self-hosted flags equal to the Cloudflare ones, and `probe.mjs` holds the probe's equal to the Cloudflare ones, so all three stay equal.
+- **`compatibilityOf()` would read a commented-out setting** (edge-case hunter; blind hunter): low. No such line exists in either file.
+- **Another process could take the probe's port before workerd binds it** (edge-case hunter): low. It is a local test run on a freshly freed port.
+- **The probe waits 5 s if workerd was already killed by a signal** (edge-case hunter): low. It costs time only, on a failure path.
+- **On Windows a drive-letter case difference could stop `probe.mjs` running when called directly** (edge-case hunter): low. Node gives both paths the same case, and the smoke test calls `runProbe` directly anyway.
+- **`workerd` without a string export throws a TypeError** (edge-case hunter): low. The pinned package exports one, and a change would fail loudly.
+- **The deployed probe serves `/make` to anyone, and its errors are uncaught** (acceptance auditor; edge-case hunter; blind hunter): low. The probe is deployed only for spec 4's check, and was deleted within two minutes (spec 4's record).
+- **`/verify` returns `navigator.userAgent`, which nothing reads** (blind hunter): false. Spec 4's record uses it to show the check ran on Cloudflare (`"runtime":"Cloudflare-Workers"`).
+- **The probe only proves one direction** (blind hunter): false as a defect. CAP-13 asks for a fixture made under the self-hosted runtime that verifies on each host, which is what is done.
+- **The smoke test's marker check `includes("-m-")` could match a session cookie** (edge-case hunter; verification gap): false. Identifiers are 32 hex digits (`IDENTIFIER_PATTERN`), so a session cookie's name cannot contain `-m-`.
+- **The smoke test does not treat a past `Expires` as cleared** (edge-case hunter): false. The server clears only with `Max-Age=0` (`clearSessionCookieLine`).
+- **The burst checks do not assert the wait's wording** (acceptance auditor): low. The route tests in Cloudflare's runtime pin the message; the deployed check is about counts.
+- **`run-unit-tests.mjs` runs every node test with `--experimental-strip-types`** (acceptance auditor; blind hunter): low. No older test file changed and all pass; the warning appears only on Node 22.13 to 22.17.
+
 ### Rejected
 
 - **Accounts are told apart by display name** (edge-case hunter; blind hunter): rejected as already recorded. `deferred-work.md` holds it from spec 3: unreachable with one account, and it is for story 1.4 or 1.6 to add an account identifier to the session reply.
