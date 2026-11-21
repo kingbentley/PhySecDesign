@@ -604,7 +604,16 @@ describe("accounts and the installation's name are outside project revisions (CA
 
     // The installation object's operations are exactly these; none restores a revision.
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
-    expect(operations).toEqual(["createFirstAdministrator", "setupAttempt", "setupState", "status"]);
+    expect(operations).toEqual([
+      "completeSignIn",
+      "createFirstAdministrator",
+      "endSession",
+      "sessionInfo",
+      "setupAttempt",
+      "setupState",
+      "signInAttempt",
+      "status",
+    ]);
     expect(operations.some((operation) => /restore|revision/i.test(operation))).toBe(false);
 
     // Revisions belong to project rooms, which hold no account or settings table and no operation.

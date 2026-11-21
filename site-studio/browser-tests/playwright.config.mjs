@@ -2,10 +2,15 @@ import { randomInt } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
 
 // Browser tests (story 1.2, K24, standing rule 15): the built app served locally by Cloudflare's
-// runtime, in desktop Chromium and in WebKit with an iPhone profile. Each project has its own
-// server, empty state folder and set-up code, generated here for each run and kept in this
-// process's environment so that Playwright's worker processes, which load this file again and
-// inherit the environment, see the same code. Nothing is written outside browser-tests/.local/.
+// runtime, in desktop Chromium and in WebKit with an iPhone profile. Each server has its own empty
+// state folder and set-up code, generated here for each run and kept in this process's environment
+// so that Playwright's worker processes, which load this file again and inherit the environment,
+// see the same code. Nothing is written outside browser-tests/.local/.
+//
+// Each project has three servers (story 1.3, A-20, V-14): its own for setup.spec.mjs, and a pair
+// for signin.spec.mjs, which uses the first for the sign-in tests and both for the test of two
+// installations on one host with different ports. Every server is served over HTTPS (D-10): WebKit
+// keeps a `Secure` cookie set over http://127.0.0.1 but never sends it back.
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function generatedCode() {
@@ -15,26 +20,45 @@ function generatedCode() {
 }
 
 const PROJECTS = [
-  { name: "chromium", port: 8791, use: { ...devices["Desktop Chrome"] } },
-  { name: "webkit-iphone", port: 8792, use: { ...devices["iPhone 15"] } },
+  { name: "chromium", port: 8791, signInPorts: [8793, 8794], use: { ...devices["Desktop Chrome"] } },
+  { name: "webkit-iphone", port: 8792, signInPorts: [8795, 8796], use: { ...devices["iPhone 15"] } },
 ];
 
-for (const project of PROJECTS) {
-  const key = setupCodeVariable(project.name);
+/** Every server: `id` names its state folder and its set-up code's variable. */
+const SERVERS = PROJECTS.flatMap((project) => [
+  { id: project.name, port: project.port },
+  ...project.signInPorts.map((port, index) => ({ id: `${project.name}-signin-${"ab"[index]}`, port })),
+]);
+
+const origin = (port) => `https://127.0.0.1:${port}`;
+
+for (const server of SERVERS) {
+  const key = setupCodeVariable(server.id);
   process.env[key] ??= generatedCode();
 }
 
-/** The environment variable holding a project's set-up code for this run. */
-export function setupCodeVariable(projectName) {
-  return `SETUP_CODE_FOR_TESTS_${projectName.replace(/-/g, "_").toUpperCase()}`;
+/** The environment variable holding a server's set-up code for this run (a project's own server has the project's name). */
+export function setupCodeVariable(serverId) {
+  return `SETUP_CODE_FOR_TESTS_${serverId.replace(/-/g, "_").toUpperCase()}`;
+}
+
+/** The two sign-in servers of a project: `{ origin, code }` each, the first used for most tests. */
+export function signInServers(projectName) {
+  const project = PROJECTS.find((candidate) => candidate.name === projectName);
+  if (!project) throw new Error(`No project named ${projectName}.`);
+  return project.signInPorts.map((port, index) => {
+    const code = process.env[setupCodeVariable(`${project.name}-signin-${"ab"[index]}`)];
+    if (!code) throw new Error("No set-up code for this server: run through playwright.config.mjs.");
+    return { origin: origin(port), code };
+  });
 }
 
 export default defineConfig({
   testDir: ".",
   testMatch: "*.spec.mjs",
   outputDir: "../test-results",
-  // One installation per project, so tests run in order, one at a time; a retried test would
-  // meet a changed installation, so there are no retries and a failure keeps its trace.
+  // One installation per server, so tests run in order, one at a time; a retried test would meet a
+  // changed installation, so there are no retries and a failure keeps its trace.
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -45,15 +69,17 @@ export default defineConfig({
   use: { trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: PROJECTS.map((project) => ({
     name: project.name,
-    use: { ...project.use, baseURL: `http://127.0.0.1:${project.port}` },
+    // Wrangler's local certificate is self-signed.
+    use: { ...project.use, baseURL: origin(project.port), ignoreHTTPSErrors: true },
   })),
-  webServer: PROJECTS.map((project) => ({
-    command: `node browser-tests/serve.mjs ${project.name} ${project.port}`,
+  webServer: SERVERS.map((server) => ({
+    command: `node browser-tests/serve.mjs ${server.id} ${server.port}`,
     cwd: "..",
-    url: `http://127.0.0.1:${project.port}/api/v1/setup/state`,
+    url: `${origin(server.port)}/api/v1/setup/state`,
+    ignoreHTTPSErrors: true,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { SETUP_CODE_FOR_TESTS: process.env[setupCodeVariable(project.name)] },
+    env: { SETUP_CODE_FOR_TESTS: process.env[setupCodeVariable(server.id)] },
     stdout: "ignore",
     stderr: "pipe",
   })),

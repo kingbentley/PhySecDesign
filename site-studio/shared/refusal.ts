@@ -37,6 +37,12 @@ export const REFUSALS = {
   setup_code_replaced: { status: 409, message: "A new set-up code was issued. Try again in a minute." },
   // D-8: a server request that reached Cloudflare over plain HTTP is refused, never redirected.
   https_required: { status: 403, message: "This address must be reached over HTTPS: use https:// instead of http://." },
+  // Sign-in (story 1.3). One message for a wrong email, a wrong password, an inactive account and
+  // every ticket fault (CAP-2, D-5 amended). The wait and the busy refusal are the same for every
+  // email; the page composes the wait's duration itself (A-19, D-8).
+  signin_failed: { status: 401, message: "That email and password do not match." },
+  signin_wait: { status: 429, message: "Too many attempts. Wait before trying again." },
+  signin_busy: { status: 503, message: "Site Survey Design is busy. Try again shortly." },
 } as const satisfies Record<string, { status: number; message: string }>;
 
 export type RefusalCode = keyof typeof REFUSALS;
@@ -53,6 +59,9 @@ export interface RefusalBody {
 
 /** Seconds a caller should wait before resending after an `updating` refusal. */
 export const UPDATING_RETRY_AFTER_SECONDS = 5;
+
+/** Seconds a caller should wait before resending after a `signin_busy` refusal (D-5 amended). */
+export const SIGNIN_BUSY_RETRY_AFTER_SECONDS = 5;
 
 const FIELD_NAME = /^[A-Za-z0-9_.\[\]-]{1,80}$/;
 

@@ -57,6 +57,12 @@ describe("submitSetup", () => {
     expect(await submitSetup(INPUT, fetcher)).toEqual({ kind: "refused", message: "Site Survey Design is updating. Try again in a moment.", focus: null });
   });
 
+  it("says the server is busy when the password hash queue is full (story 1.3, D-5 amended)", async () => {
+    const { fetcher } = stubFetcher({ status: 503, body: { error: { code: "signin_busy", message: "x" } }, headers: { "retry-after": "5" } });
+    // The same words as the sign-in page's busy message (tests/signin-client.test.mjs pins those).
+    expect(await submitSetup(INPUT, fetcher)).toEqual({ kind: "refused", message: "Site Survey Design is busy. Try again in a moment.", focus: null });
+  });
+
   it("puts a server refusal of the password on the password field", async () => {
     const { fetcher } = stubFetcher({ status: 400, body: { error: { code: "invalid_input", message: "x", field: "password" } } });
     expect(await submitSetup(INPUT, fetcher)).toEqual({ kind: "field", field: "password", message: FIELD_MESSAGES.passwordServer });

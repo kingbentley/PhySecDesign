@@ -262,17 +262,36 @@ test("at 200% zoom (640 px wide) the form is one column, with no sideways scroll
   await expectAccessible(page);
 });
 
-test("when the state cannot be read, the prototype opens and the set-up address offers to try again", async ({ page }) => {
+test("when the state cannot be checked, every address says so and offers to try again, with no prototype", async ({ page }) => {
+  // Two cases wait out the 5-second read timeout at each address, so the default 30 s is too close
+  // on a slow WebKit run (30.7 s on 2026-11-21).
+  test.setTimeout(60_000);
+  // Story 1.3, D-7 amended again: only "no server" (a 404 or a reply that is not the declared
+  // JSON) opens the prototype; a 500, a 503 `updating`, a failed request or no answer within 5 s
+  // shows "Set-up cannot be checked", at / and at /setup.
+  const failures = [
+    ["a 500", (route) => route.fulfill({ status: 500, body: "" })],
+    ["a 503 updating", (route) => route.fulfill(refusalReply("updating", {}, 503))],
+    ["a failed request", (route) => route.abort("connectionrefused")],
+    ["no answer within 5 seconds", () => new Promise(() => {})],
+  ];
+  for (const [name, handler] of failures) {
+    await page.route("**/api/v1/setup/state", handler);
+    for (const address of ["/", "/setup"]) {
+      await page.goto(address);
+      await expect(page.getByRole("heading", { name: "Set-up cannot be checked" }), `${name} at ${address}`).toBeVisible();
+      await expect(page.locator(".studio-label")).toHaveCount(0);
+    }
+    await page.unroute("**/api/v1/setup/state");
+  }
   await page.route("**/api/v1/setup/state", (route) => route.fulfill({ status: 500, body: "" }));
   await page.goto("/");
-  await expect(page.locator(".studio-label")).toHaveText("Site Survey Design");
-  await expect(page).not.toHaveURL(/\/setup$/);
-  await page.goto("/setup");
   await expect(page.getByRole("heading", { name: "Set-up cannot be checked" })).toBeVisible();
   await expectAccessible(page);
   await page.unroute("**/api/v1/setup/state");
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByRole("heading", { name: "Set up this installation" })).toBeVisible();
+  await expect(page).toHaveURL(/\/setup$/);
 });
 
 test("completes set-up and confirms the installation's name and the administrator's email", async ({ page }, testInfo) => {
@@ -283,19 +302,20 @@ test("completes set-up and confirms the installation's name and the administrato
   await expect(page.getByRole("heading", { name: "Set-up is complete" })).toBeFocused();
   await expect(page.getByTestId("setup-done-installation")).toHaveText(ADMIN.installationName);
   await expect(page.getByTestId("setup-done-email")).toHaveText(ADMIN.email.toLowerCase());
-  await expect(page.getByTestId("setup-done-next")).toHaveText("Signing in arrives in a coming update; until then the app opens as before.");
+  await expect(page.getByTestId("setup-done-next")).toHaveText("Sign in with the email and password you just chose.");
   await expectNoSidewaysScroll(page);
   await expectAccessible(page);
 });
 
-test("after set-up the set-up address says set-up is already complete, and the app is the prototype", async ({ page }) => {
+test("after set-up the set-up address says set-up is already complete, and the app shows the sign-in page", async ({ page }) => {
   await page.goto("/setup");
   await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeVisible();
   await expect(page.getByRole("textbox")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open Site Survey Design" })).toHaveAttribute("href", "/");
   await expectAccessible(page);
   await page.goto("/");
-  await expect(page.locator(".studio-label")).toHaveText("Site Survey Design");
+  await expect(page.getByRole("heading", { name: `Sign in to ${ADMIN.installationName}` })).toBeVisible();
+  await expect(page.locator(".studio-label")).toHaveCount(0);
   await expect(page).not.toHaveURL(/\/setup$/);
 });
 
