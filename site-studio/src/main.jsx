@@ -117,10 +117,14 @@ function Start() {
   useEffect(() => {
     if (signedState !== "signedIn" && signedState !== "signedOut") return undefined;
     let current = true;
+    // Each check gets a generation; a read that an older check started and that finishes after a
+    // newer one began is ignored, so an out-of-date answer never replaces a newer one.
+    let generation = 0;
     async function visible() {
       if (document.visibilityState !== "visible") return;
+      const mine = ++generation;
       const next = await readSession();
-      if (!current || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
+      if (!current || mine !== generation || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
       const previous = sessionNow.current;
       if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.name !== next.name) {
         location.reload();

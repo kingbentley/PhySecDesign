@@ -107,14 +107,19 @@ describe("the hash queue", () => {
       await Promise.resolve();
       concurrent -= 1;
     };
-    const first = queue.run(async () => {
-      await running.done;
-    });
+    // The first task returns the gate's promise itself, so the queue hands the slot on in the same
+    // turn the gate opens.
+    const first = queue.run(() => running.done);
     const waiting = queue.run(tracked);
+    // Registered on the gate after the queue's own wait: it runs once the slot has been handed on,
+    // before the waiter has resumed, which is the gap this test is about.
+    let late: Promise<void> | undefined;
+    const lateArrived = running.done.then(() => {
+      late = queue.run(tracked);
+    });
     running.release();
     await first;
-    // Arrives after the first finished but before the waiter resumed.
-    const late = queue.run(tracked);
+    await lateArrived;
     await Promise.all([waiting, late]);
     expect(most).toBe(1);
     expect(queue.stats().peakActive).toBe(1);
