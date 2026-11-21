@@ -139,6 +139,22 @@ export const publicAddressField = z
 
 export const setupAttemptInput = z.object({ address: addressField, fingerprint: fingerprintField }).strict();
 
+/**
+ * A password hash the Worker made, as an operation receives it. Pinned to the current parameters
+ * (AD-12, K19): anything else is a caller fault. Set-up and accepting an invitation share it.
+ */
+export const passwordHashInput = z
+  .object({
+    algorithm: z.literal(PASSWORD_HASH_ALGORITHM),
+    n: z.literal(SCRYPT_N),
+    r: z.literal(SCRYPT_R),
+    p: z.literal(SCRYPT_P),
+    keyLength: z.literal(SCRYPT_KEY_LENGTH),
+    salt: base64Field.refine((value) => decodedLength(value) === SCRYPT_SALT_BYTES),
+    hash: base64Field.refine((value) => decodedLength(value) === SCRYPT_KEY_LENGTH),
+  })
+  .strict();
+
 export const createFirstAdministratorInput = z
   .object({
     fingerprint: fingerprintField,
@@ -147,18 +163,7 @@ export const createFirstAdministratorInput = z
     publicAddress: publicAddressField,
     name: personNameField,
     email: emailField,
-    passwordHash: z
-      .object({
-        // Pinned to the current parameters (AD-12, K19): anything else is a caller fault.
-        algorithm: z.literal(PASSWORD_HASH_ALGORITHM),
-        n: z.literal(SCRYPT_N),
-        r: z.literal(SCRYPT_R),
-        p: z.literal(SCRYPT_P),
-        keyLength: z.literal(SCRYPT_KEY_LENGTH),
-        salt: base64Field.refine((value) => decodedLength(value) === SCRYPT_SALT_BYTES),
-        hash: base64Field.refine((value) => decodedLength(value) === SCRYPT_KEY_LENGTH),
-      })
-      .strict(),
+    passwordHash: passwordHashInput,
   })
   .strict();
 
@@ -183,6 +188,38 @@ export interface SetupFailureCounts {
   fingerprint: string | null;
   byAddress: { address: string; failures: number; lastFailureAt: number }[];
   recent: number[];
+}
+
+/**
+ * Inserts an active account with the Worker's password hash, its parameters beside it (story 1.2).
+ * Only set-up's first administrator and an accepted invitation call this (story 1.4, criterion 8).
+ * Answers the new account's random identifier.
+ */
+export function insertUser(
+  sql: SqlStorage,
+  account: { email: string; name: string; role: "administrator" | "standard"; passwordHash: z.output<typeof passwordHashInput> },
+  now: number,
+): string {
+  const userId = crypto.randomUUID();
+  const hash = account.passwordHash;
+  sql.exec(
+    `INSERT INTO ${USERS_TABLE} (id, email, name, role, active, password_algorithm, password_n, password_r,
+       password_p, password_key_length, password_salt, password_hash, created_at)
+     VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    userId,
+    account.email,
+    account.name,
+    account.role,
+    hash.algorithm,
+    hash.n,
+    hash.r,
+    hash.p,
+    hash.keyLength,
+    hash.salt,
+    hash.hash,
+    new Date(now).toISOString(),
+  );
+  return userId;
 }
 
 /** Parses an operation's input or refuses it, naming the field at most. */
@@ -336,25 +373,8 @@ export class SetupStore {
         .exec("DELETE FROM setup_tickets WHERE ticket = ? AND fingerprint = ? AND expires_at > ? RETURNING ticket", input.ticket, input.fingerprint, now)
         .toArray();
       if (consumed.length !== 1) throw new OperationRefusal("setup_code_wrong");
-      const userId = crypto.randomUUID();
       const at = new Date(now).toISOString();
-      const hash = input.passwordHash;
-      this.sql.exec(
-        `INSERT INTO ${USERS_TABLE} (id, email, name, role, active, password_algorithm, password_n, password_r,
-           password_p, password_key_length, password_salt, password_hash, created_at)
-         VALUES (?, ?, ?, 'administrator', 1, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        userId,
-        input.email,
-        input.name,
-        hash.algorithm,
-        hash.n,
-        hash.r,
-        hash.p,
-        hash.keyLength,
-        hash.salt,
-        hash.hash,
-        at,
-      );
+      const userId = insertUser(this.sql, { email: input.email, name: input.name, role: "administrator", passwordHash: input.passwordHash }, now);
       this.sql.exec(
         `INSERT INTO ${SETTINGS_TABLE} (id, installation_name, public_address, set_up_at) VALUES (1, ?, ?, ?)
          ON CONFLICT (id) DO UPDATE SET installation_name = excluded.installation_name,

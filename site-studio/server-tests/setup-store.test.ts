@@ -605,9 +605,12 @@ describe("accounts and the installation's name are outside project revisions (CA
     // The installation object's operations are exactly these; none restores a revision.
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(operations).toEqual([
+      "acceptInvitation",
       "completeSignIn",
       "createFirstAdministrator",
+      "createInvitation",
       "endSession",
+      "invitationInfo",
       "sessionInfo",
       "setupAttempt",
       "setupState",

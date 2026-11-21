@@ -59,7 +59,8 @@ import { SETTINGS_TABLE, USERS_TABLE } from "./setupStore";
 //
 // Sessions (D-4 as amended): the table holds the token's SHA-256, never the token, the sign-in time,
 // the last use (set at sign-in only in this story) and the expiry, 30 days after sign-in. The
-// session read writes nothing.
+// session read writes nothing. Accepting an invitation (story 1.4, invitationStore.ts) starts a
+// session through the same helpers as a completed sign-in.
 //
 // Pruning (A-14, E-17): every row kind has an indexed expiry or clearing time, and expired rows are
 // deleted at most PRUNE_BATCH per table per call, during attempts and completions only.
@@ -128,7 +129,8 @@ const SCHEMA = [
 ];
 
 const addressField = z.string().min(1).max(100);
-const cookiesField = z
+/** The session and marker cookies the Worker passes on, bounded in number and size. */
+export const cookiesField = z
   .record(z.string().min(1).max(MAX_COOKIE_NAME), z.string().max(MAX_COOKIE_VALUE))
   .refine((cookies) => Object.keys(cookies).length <= MAX_PASSED_COOKIES);
 
@@ -162,11 +164,34 @@ export interface SignInCompleted {
   signedInAt: string;
 }
 
+/** An installation role (story 1.2's `users.role`). */
+export type AccountRole = "administrator" | "standard";
+
+/** A new session's token and hash, made before the synchronous write that stores it. */
+export interface PreparedSession {
+  identifier: string;
+  markerKey: CryptoKey;
+  /** Goes only into the `Set-Cookie` line; never logged. */
+  sessionToken: string;
+  tokenHash: string;
+}
+
+/** The account a live session belongs to. */
+export interface LiveSessionAccount {
+  id: string;
+  name: string;
+  role: AccountRole;
+  /** Milliseconds since the epoch. */
+  signedInAt: number;
+}
+
 export type SessionInfo =
   | {
       identifier: string;
       signedIn: true;
       account: { id: string; name: string };
+      /** The account's installation role (story 1.4, D-5). */
+      role: AccountRole;
       /** UTC, ISO 8601. */
       signedInAt: string;
       installationName: string | null;
@@ -447,9 +472,7 @@ export class SignInStore {
    */
   async complete(ticket: string, outcome: "success" | "failure", now: number): Promise<SignInCompleted> {
     this.work = { rowsRead: 0, rowsWritten: 0 };
-    const keys = await this.loadKeys();
-    const sessionToken = newSessionToken();
-    const tokenHash = await sessionTokenHash(sessionToken);
+    const session = await this.prepareSession();
     const freshMarkerId = newMarkerId();
 
     // From here to the end of the write there is no await.
@@ -476,24 +499,80 @@ export class SignInStore {
       if (row.address_failure_id !== null) this.exec(`DELETE FROM ${ADDRESS_FAILURES_TABLE} WHERE id = ?`, row.address_failure_id);
       this.exec(`DELETE FROM ${EMAIL_FAILURES_TABLE} WHERE email_key = ?`, row.email_key);
       if (row.marker_id !== null) this.exec(`DELETE FROM ${MARKER_FAILURES_TABLE} WHERE marker_id = ?`, row.marker_id);
-      if (row.presented_session_hash !== null) this.exec(`DELETE FROM ${SESSIONS_TABLE} WHERE token_hash = ?`, row.presented_session_hash);
-      this.exec(
-        `INSERT INTO ${SESSIONS_TABLE} (token_hash, user_id, signed_in_at, last_used_at, expires_at) VALUES (?, ?, ?, ?, ?)`,
-        tokenHash,
-        user.id,
-        now,
-        now,
-        now + SESSION_MAX_AGE_MS,
-      );
+      this.writeSession(user.id, row.presented_session_hash, session.tokenHash, now);
     });
 
     return {
-      identifier: keys.identifier,
-      sessionToken,
-      marker: await makeMarker(keys.marker, user.id, markerId, now),
+      identifier: session.identifier,
+      sessionToken: session.sessionToken,
+      marker: await this.sessionMarker(session, user.id, markerId, now),
       account: { id: user.id, name: user.name },
       signedInAt: new Date(now).toISOString(),
     };
+  }
+
+  // Starting a session, shared by a completed sign-in and an accepted invitation (story 1.4, D-4).
+  // The cryptography comes before and after the caller's synchronous write: `prepareSession` makes
+  // the token and its hash, `writeSession` (with no await, inside the caller's transaction) ends the
+  // presented session and stores the new one, and `sessionMarker` signs the marker.
+
+  /** A new session token and its hash, with the identifier and marker key, before any write. */
+  async prepareSession(): Promise<PreparedSession> {
+    const keys = await this.loadKeys();
+    const sessionToken = newSessionToken();
+    return { identifier: keys.identifier, markerKey: keys.marker, sessionToken, tokenHash: await sessionTokenHash(sessionToken) };
+  }
+
+  /**
+   * Ends the presented session, if any, and stores the new session's hash with its sign-in time and
+   * last use set to `now` and its expiry 30 days later. Synchronous: call it inside the transaction
+   * that decides the account.
+   */
+  writeSession(userId: string, presentedSessionHash: string | null, tokenHash: string, now: number): void {
+    if (presentedSessionHash !== null) this.exec(`DELETE FROM ${SESSIONS_TABLE} WHERE token_hash = ?`, presentedSessionHash);
+    this.exec(
+      `INSERT INTO ${SESSIONS_TABLE} (token_hash, user_id, signed_in_at, last_used_at, expires_at) VALUES (?, ?, ?, ?, ?)`,
+      tokenHash,
+      userId,
+      now,
+      now,
+      now + SESSION_MAX_AGE_MS,
+    );
+  }
+
+  /** The signed marker for the account just signed in (story 1.3's D-3). */
+  sessionMarker(session: PreparedSession, userId: string, markerId: string, now: number): Promise<string> {
+    return makeMarker(session.markerKey, userId, markerId, now);
+  }
+
+  /**
+   * The hash of the session cookie named with this installation's identifier, or `null` when none
+   * or a malformed one was presented; `presented` says whether that cookie was there at all. A
+   * cookie named with another identifier is not this installation's and is ignored.
+   */
+  async presentedSession(cookies: Record<string, string>): Promise<{ identifier: string; presented: boolean; tokenHash: string | null }> {
+    const keys = await this.loadKeys();
+    const value = cookies[sessionCookieName(keys.identifier)];
+    if (value === undefined) return { identifier: keys.identifier, presented: false, tokenHash: null };
+    return { identifier: keys.identifier, presented: true, tokenHash: isWellFormedToken(value) ? await sessionTokenHash(value) : null };
+  }
+
+  /**
+   * The account of a live session: one stored under this hash, before 30 days after its sign-in,
+   * for an active account. Synchronous and read-only, so a caller can decide and write in one step.
+   */
+  liveSessionAccount(tokenHash: string | null, now: number): LiveSessionAccount | null {
+    if (tokenHash === null) return null;
+    const found = this.sql
+      .exec<{ id: string; name: string; role: string; signed_in_at: number }>(
+        `SELECT u.id AS id, u.name AS name, u.role AS role, s.signed_in_at AS signed_in_at FROM ${SESSIONS_TABLE} s
+           JOIN ${USERS_TABLE} u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.active = 1`,
+        tokenHash,
+        now,
+      )
+      .toArray()[0];
+    if (!found) return null;
+    return { id: found.id, name: found.name, role: found.role as AccountRole, signedInAt: found.signed_in_at };
   }
 
   /**
@@ -504,32 +583,22 @@ export class SignInStore {
    * identifier is not this installation's and is left alone.
    */
   async sessionInfo(cookies: Record<string, string>, now: number): Promise<SessionInfo> {
-    const keys = await this.loadKeys();
+    const { identifier, presented, tokenHash } = await this.presentedSession(cookies);
     const installationName =
       this.sql.exec<{ installation_name: string }>(`SELECT installation_name FROM ${SETTINGS_TABLE} WHERE id = 1`).toArray()[0]?.installation_name ?? null;
-    const presented = cookies[sessionCookieName(keys.identifier)];
-    if (presented === undefined) return { identifier: keys.identifier, signedIn: false, installationName, clearSession: false };
-    if (isWellFormedToken(presented)) {
-      const tokenHash = await sessionTokenHash(presented);
-      const found = this.sql
-        .exec<{ id: string; name: string; signed_in_at: number }>(
-          `SELECT u.id AS id, u.name AS name, s.signed_in_at AS signed_in_at FROM ${SESSIONS_TABLE} s
-             JOIN ${USERS_TABLE} u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.active = 1`,
-          tokenHash,
-          now,
-        )
-        .toArray()[0];
-      if (found) {
-        return {
-          identifier: keys.identifier,
-          signedIn: true,
-          account: { id: found.id, name: found.name },
-          signedInAt: new Date(found.signed_in_at).toISOString(),
-          installationName,
-        };
-      }
+    if (!presented) return { identifier, signedIn: false, installationName, clearSession: false };
+    const found = this.liveSessionAccount(tokenHash, now);
+    if (found) {
+      return {
+        identifier,
+        signedIn: true,
+        account: { id: found.id, name: found.name },
+        role: found.role,
+        signedInAt: new Date(found.signedInAt).toISOString(),
+        installationName,
+      };
     }
-    return { identifier: keys.identifier, signedIn: false, installationName, clearSession: true };
+    return { identifier, signedIn: false, installationName, clearSession: true };
   }
 
   /** Ends a session by its token hash; ending one already gone also succeeds (D-13). */

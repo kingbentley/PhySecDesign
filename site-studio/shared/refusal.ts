@@ -43,6 +43,17 @@ export const REFUSALS = {
   signin_failed: { status: 401, message: "That email and password do not match." },
   signin_wait: { status: 429, message: "Too many attempts. Wait before trying again." },
   signin_busy: { status: 503, message: "Site Survey Design is busy. Try again shortly." },
+  // Invitations (story 1.4, D-3, D-6, D-11). One refusal for a link that is used, replaced,
+  // expired, unknown or malformed. `not_signed_in` and `administrator_only` are a stop-gap that
+  // story 1.8's route classes replace.
+  invitation_email_taken: { status: 409, message: "That email already has an account." },
+  invitation_unusable: {
+    status: 410,
+    message:
+      "This invitation link no longer works. It may have been used, replaced by a newer invitation, or expired. Ask an administrator for a new one.",
+  },
+  not_signed_in: { status: 401, message: "Sign in to do this." },
+  administrator_only: { status: 403, message: "Only an administrator can do this." },
 } as const satisfies Record<string, { status: number; message: string }>;
 
 export type RefusalCode = keyof typeof REFUSALS;
