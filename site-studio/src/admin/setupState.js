@@ -5,9 +5,9 @@
 // Each read tells "no server" apart from "cannot be checked" (story 1.3, D-7 amended and amended
 // again). Only the set-up state read, the first one, can find no server: a 404 (whatever its body)
 // or a reply that is not JSON means there is no server here (as in the Sites package), and the
-// prototype opens. A network failure, no answer within 5 seconds, a 5xx, a reply in the server's
-// refusal envelope with any status other than 404, or JSON that is not the declared reply means a
-// server is there but could not say, and the app shows a page with Try again. The session
+// prototype opens. A network failure, no answer within 5 seconds, a 5xx, a JSON reply with any
+// other failure status (the server's refusal envelope or not), or JSON that is not the declared
+// reply means a server is there but could not say, and the app shows a page with Try again. The session
 // read is made only once the set-up state has answered, so a server is known to be there: any reply
 // to it that is not the declared one cannot be checked (fail closed, story 1.3 code review).
 // Extra fields in a reply are ignored, so a later field does not hide the sign-in page.
@@ -28,10 +28,10 @@ const NO_SERVER = Symbol('no server');
 const CANNOT_CHECK = Symbol('cannot check');
 
 /**
- * Fetches a JSON read and returns its body, `NO_SERVER` or `CANNOT_CHECK`. A 404, a reply that is
- * not JSON, or another failure that is not in the refusal envelope is no server; a failure to
- * answer, a 5xx, or a refusal envelope (`{ error: { code } }`) with any other status cannot be
- * checked, because only a server answers in that envelope.
+ * Fetches a JSON read and returns its body, `NO_SERVER` or `CANNOT_CHECK`. A 404 (whatever its
+ * body) or a reply that is not JSON is no server. A failure to answer, a 5xx, a refusal envelope
+ * (`{ error: { code } }`), or JSON with any other failure status cannot be checked: something
+ * answered in JSON, so the app fails closed.
  */
 async function readJson(fetcher, url, signal) {
   let response;
@@ -51,8 +51,9 @@ async function readJson(fetcher, url, signal) {
     // JSON as a DOMException named "SyntaxError", not a SyntaxError instance, so the name decides.
     return signal?.aborted || error?.name !== 'SyntaxError' ? CANNOT_CHECK : NO_SERVER;
   }
-  if (typeof body?.error?.code === 'string') return CANNOT_CHECK;
-  if (!response.ok) return NO_SERVER;
+  // JSON came back, so something answered: a refusal envelope, or any other failure status (a 4xx
+  // other than 404, for example a gateway's `403 {"message":"Forbidden"}`), cannot be checked.
+  if (typeof body?.error?.code === 'string' || !response.ok) return CANNOT_CHECK;
   return body;
 }
 

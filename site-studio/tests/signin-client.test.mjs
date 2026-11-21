@@ -91,6 +91,9 @@ describe("start-up reads", () => {
     assert.equal(await readSetupState(reply(401, refusal("not_signed_in"))), "unknown");
     assert.equal(await readSetupState(reply(429, refusal("signin_wait"))), "unknown");
     assert.equal(await readSetupState(reply(403, "<html>Forbidden</html>", "text/html")), "none");
+    // JSON with a failure status other than 404, outside the refusal envelope: still something
+    // answered, so it cannot be checked (CodeRabbit, PR 11).
+    assert.equal(await readSetupState(reply(403, { message: "Forbidden" })), "unknown");
     assert.equal(await readSetupState(async () => { throw new TypeError("network"); }), "unknown");
     const never = (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => reject(new Error("aborted"))));
     assert.equal(await readSetupState(never, { timeoutMs: 20 }), "unknown");
@@ -112,6 +115,7 @@ describe("start-up reads", () => {
     assert.deepEqual(await readSession(reply(200, { signedIn: "yes" })), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(403, refusal("origin_refused"))), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(429, refusal("signin_wait"))), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(403, { message: "Forbidden" })), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(500, "")), { kind: "unknown" });
     assert.deepEqual(await readSession(reply(503, refusal("updating"))), { kind: "unknown" });
     assert.deepEqual(await readSession(async () => { throw new TypeError("network"); }), { kind: "unknown" });

@@ -74,8 +74,8 @@ function Signed({ session, onSignedIn, onSignedOut, onRetry }) {
 // administrator exists, /setup (or /setup/) says set-up is complete, whatever the session, and every
 // other address reads the session (story 1.3). A set-up state read that answers 404, or a reply
 // that is not JSON, means there is no server (the Sites package): the prototype opens. Any other
-// failure (a network failure, no answer within 5 seconds, a 5xx, a reply in the server's refusal
-// envelope, or JSON without the declared state) shows "Set-up cannot be checked" with Try again at every address,
+// failure (a network failure, no answer within 5 seconds, a 5xx, a JSON reply with any other
+// failure status, or JSON without the declared state) shows "Set-up cannot be checked" with Try again at every address,
 // without reading the session. The session is read only once a server has answered, so any reply
 // to it that is not the declared one shows "Sign-in cannot be checked" (D-7 amended and amended
 // again; fail closed, story 1.3 code review).
