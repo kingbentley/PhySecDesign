@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { acceptInput, INVITATION_ROLES, invitationSecretField, inviteInput } from "./invitation";
 import { SETUP_STATES, setupInput } from "./setup";
 import { signInInput } from "./signin";
 
@@ -75,11 +76,20 @@ export const setupReply = z.object({ installationName: z.string(), email: z.stri
 
 /**
  * The public session read (story 1.3, CAP-1, E-11): whether the caller is signed in, the account's
- * name if so, and the installation's name, `null` while set-up is open. Never the token.
+ * name, random identifier and installation role if so (story 1.4, D-5), and the installation's
+ * name, `null` while set-up is open. Never the token.
  */
 export const sessionReply = z.discriminatedUnion("signedIn", [
   z.object({ signedIn: z.literal(false), installationName: z.string().nullable() }).strict(),
-  z.object({ signedIn: z.literal(true), name: z.string(), installationName: z.string().nullable() }).strict(),
+  z
+    .object({
+      signedIn: z.literal(true),
+      name: z.string(),
+      accountId: z.string(),
+      role: z.enum(INVITATION_ROLES),
+      installationName: z.string().nullable(),
+    })
+    .strict(),
 ]);
 
 export type SessionReply = z.infer<typeof sessionReply>;
@@ -89,6 +99,30 @@ export const signInReply = z.object({ name: z.string() }).strict();
 
 /** What a sign-out confirms: the caller is no longer signed in (D-13). */
 export const signOutReply = z.object({ signedIn: z.literal(false) }).strict();
+
+/**
+ * What an invitation answers the administrator, once (story 1.4, D-1, D-9): the link, built on the
+ * installation's recorded public address as `<address>/invite#<secret>`, and its expiry, UTC,
+ * ISO 8601. The only reply that holds the secret.
+ */
+export const inviteReply = z.object({ link: z.string(), expiresAt: z.iso.datetime() }).strict();
+
+/** The invitation read's input: the secret, only ever in a JSON body (D-1). */
+export const invitationReadInput = z.object({ secret: invitationSecretField }).strict();
+
+/** What the invitation page shows (D-10): who invited, to which installation, the email, name and role. */
+export const invitationReadReply = z
+  .object({
+    inviterName: z.string(),
+    installationName: z.string(),
+    email: z.string(),
+    name: z.string(),
+    role: z.enum(INVITATION_ROLES),
+  })
+  .strict();
+
+/** What an accepted invitation confirms: the new account's name. The token and marker travel only as cookies. */
+export const acceptInviteReply = z.object({ name: z.string() }).strict();
 
 export const ROUTES = {
   status: declareRoute({
@@ -145,6 +179,40 @@ export const ROUTES = {
     input: z.object({}).strict(),
     reply: signOutReply,
     summary: "Ends the presented session, if any, and clears the session cookie. Always succeeds; keeps the marker.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // Invitations (story 1.4). The secret travels only in a JSON body, never a path or query (D-1).
+  invite: declareRoute({
+    id: "invite",
+    method: "POST",
+    path: "/api/v1/invitations",
+    input: inviteInput,
+    reply: inviteReply,
+    summary:
+      "Invites a person by email, name and role, for a signed-in administrator; answers the link once, with its expiry. " +
+      "Replaces any earlier invitation for the email.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  invitationRead: declareRoute({
+    id: "invitationRead",
+    method: "POST",
+    path: "/api/v1/invitations/read",
+    input: invitationReadInput,
+    reply: invitationReadReply,
+    summary: "Reads a live invitation by its secret: the inviter's name, the installation's name, the email, name and role.",
+    appOriginOnly: true,
+  }),
+  acceptInvite: declareRoute({
+    id: "acceptInvite",
+    method: "POST",
+    path: "/api/v1/invitations/accept",
+    input: acceptInput,
+    reply: acceptInviteReply,
+    summary:
+      "Accepts an invitation with a name and password: creates the account, ends any presented session and signs the person in, " +
+      "setting the session cookie and the browser marker.",
     appOriginOnly: true,
     readsSessionCookie: true,
   }),

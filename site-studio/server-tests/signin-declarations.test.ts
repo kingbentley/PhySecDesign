@@ -23,9 +23,11 @@ describe("the route declarations", () => {
     expect(unguarded([...ROUTE_LIST, broken])).toEqual(["brokenSignOut"]);
   });
 
-  it("declare the three sign-in routes under /api/v1/ with the flag; the session read is the only GET among them", () => {
+  it("declare the three sign-in routes and the invite and accept routes under /api/v1/ with the flag; the session read is the only GET among them", () => {
     const flagged = ROUTE_LIST.filter((route) => route.readsSessionCookie);
     expect(flagged.map((route) => [route.id, route.method]).sort()).toEqual([
+      ["acceptInvite", "POST"],
+      ["invite", "POST"],
       ["session", "GET"],
       ["signIn", "POST"],
       ["signOut", "POST"],
