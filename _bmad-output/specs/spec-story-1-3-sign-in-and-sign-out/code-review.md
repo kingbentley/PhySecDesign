@@ -103,7 +103,7 @@
     - The Sites package still counts as no server: its worker (`worker/index.js`) answers an API read with the assets' plain 404. `npm run dev` answers it with the HTML page, which is non-JSON on the first read.
     - It becomes the first patch below.
 - [x] [Review][Patch] Fail closed once a server has shown itself [`site-studio/src/admin/setupState.js`, `site-studio/src/main.jsx`, `site-studio/tests/signin-client.test.mjs`, `site-studio/browser-tests/signin.spec.mjs`]
-  - A reply in the refusal envelope (`{ error: { code } }`, any status) is "cannot be checked".
+  - A reply in the refusal envelope (`{ error: { code } }`) with any status other than 404 is "cannot be checked". A 404 is "no server" on the set-up state read, whatever its body.
   - A session read made after the set-up state answered `open` or `closed` is "cannot be checked" whenever it is not the declared reply, including a 404 or non-JSON reply.
   - The shape checks accept extra keys, so a later field does not hide sign-in.
   - "No server" stays for a 404 or non-JSON reply to the set-up state read.

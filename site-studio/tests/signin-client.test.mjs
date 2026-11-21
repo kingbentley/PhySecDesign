@@ -78,7 +78,9 @@ describe("start-up reads", () => {
     assert.equal(await readSetupState(reply(200, { state: "closed" })), "closed");
     assert.equal(await readSetupState(reply(404, "")), "none");
     assert.equal(await readSetupState(reply(200, "<!doctype html>", "text/html")), "none");
-    assert.equal(await readSetupState(reply(200, { state: "maybe" })), "none");
+    // JSON without the declared state still comes from a server: fail closed (CodeRabbit, PR 11).
+    assert.equal(await readSetupState(reply(200, { state: "maybe" })), "unknown");
+    assert.equal(await readSetupState(reply(200, {})), "unknown");
     // A field a later release adds does not hide the state (story 1.3 code review).
     assert.equal(await readSetupState(reply(200, { state: "open", users: 0 })), "open");
     assert.equal(await readSetupState(reply(404, refusal("not_found"))), "none");

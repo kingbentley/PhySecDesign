@@ -3,10 +3,11 @@
 // carry the pages or their rules.
 //
 // Each read tells "no server" apart from "cannot be checked" (story 1.3, D-7 amended and amended
-// again). Only the set-up state read, the first one, can find no server: a 404, or a reply that is
-// not the declared JSON, means there is no server here (as in the Sites package), and the prototype
-// opens. A network failure, no answer within 5 seconds, a 5xx, or any reply in the server's refusal
-// envelope means the server could not say, and the app shows a page with Try again. The session
+// again). Only the set-up state read, the first one, can find no server: a 404 (whatever its body)
+// or a reply that is not JSON means there is no server here (as in the Sites package), and the
+// prototype opens. A network failure, no answer within 5 seconds, a 5xx, a reply in the server's
+// refusal envelope with any status other than 404, or JSON that is not the declared reply means a
+// server is there but could not say, and the app shows a page with Try again. The session
 // read is made only once the set-up state has answered, so a server is known to be there: any reply
 // to it that is not the declared one cannot be checked (fail closed, story 1.3 code review).
 // Extra fields in a reply are ignored, so a later field does not hide the sign-in page.
@@ -70,16 +71,17 @@ function withTimeout(read, timeoutMs) {
 
 /**
  * Asks whether set-up is open. Resolves to "open" or "closed"; "none" where there is no server
- * (a 404 or a reply that is not the declared JSON); "unknown" when the server could not say (a
- * network failure, no answer within `timeoutMs`, a 5xx or `updating`), so a server that never
- * answers cannot leave the app blank.
+ * (a 404 or a reply that is not JSON); "unknown" when a server could not say (a network failure,
+ * no answer within `timeoutMs`, a 5xx, a refusal envelope, or JSON without an `open` or `closed`
+ * state), so a server that never answers cannot leave the app blank.
  */
 export async function readSetupState(fetcher = fetch, { timeoutMs = STATE_TIMEOUT_MS } = {}) {
   const body = await withTimeout((signal) => readJson(fetcher, STATE_URL, signal), timeoutMs);
   if (body === CANNOT_CHECK) return 'unknown';
   if (body === NO_SERVER) return 'none';
   if (body && typeof body === 'object' && !Array.isArray(body) && (body.state === 'open' || body.state === 'closed')) return body.state;
-  return 'none';
+  // JSON that is not the declared reply still comes from a server: fail closed.
+  return 'unknown';
 }
 
 /**

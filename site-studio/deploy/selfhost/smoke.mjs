@@ -239,11 +239,13 @@ async function signOut(base, cookies) {
   // Exactly one Set-Cookie, clearing the session cookie (not the marker) with its full attributes.
   const sessionName = Object.keys(cookies).find((name) => !name.startsWith(MARKER_PREFIX));
   const cleared = response.headers.getSetCookie();
-  const [pair, ...attributes] = (cleared[0] ?? "").split(";").map((part) => part.trim().toLowerCase());
+  // Cookie names are case-sensitive, so the name is compared exactly; only the attributes are not.
+  const [pair, ...rest] = (cleared[0] ?? "").split(";").map((part) => part.trim());
+  const attributes = rest.map((attribute) => attribute.toLowerCase());
   const clearing =
     cleared.length === 1 &&
     sessionName !== undefined &&
-    pair === `${sessionName.toLowerCase()}=` &&
+    pair === `${sessionName}=` &&
     ["max-age=0", "path=/", "secure", "httponly", "samesite=lax"].every((attribute) => attributes.includes(attribute));
   if (!clearing) fail("The sign-out reply did not clear the session cookie alone, with its full attributes.");
 }

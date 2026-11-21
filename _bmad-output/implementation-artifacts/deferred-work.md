@@ -123,7 +123,7 @@
 
 - source_spec: `_bmad-output/specs/spec-story-1-3-sign-in-and-sign-out/code-review.md` (group 1)
   summary: With no client address (no `CF-Connecting-IP`), the sign-in email failure rows have no bound. D-11 exempts the unknown address from the address limit. Each attempt for a new email still writes a row kept 24 hours below the threshold, and pruning removes only expired rows.
-  evidence: Real. It is not reachable on Cloudflare, where the address is always present, but it is reachable in local runs and when self-hosted behind a proxy that does not pass the address. Growth is about one row per scrypt check per isolate. Story 2.22's client-address rule (the dependency D-11 records) should bound it, for example with a cap on rows for the unknown address or an installation-wide limit.
+  evidence: Real. It is reachable in local runs and when self-hosted behind a proxy that does not pass the address. It is also reachable on Cloudflare when the zone removes `CF-Connecting-IP` before the Worker, with a request-header transform rule or the "Remove visitor IP headers" managed transform (CodeRabbit on pull request 11, 2026-11-21). With Cloudflare's default settings the header is present. Growth is about one row per scrypt check per isolate. Story 2.22's client-address rule (the dependency D-11 records) should bound it, for example with a cap on rows for the unknown address or an installation-wide limit.
 
 ## Story 1.3 spec review (2026-11-20): overlaps with later stories
 

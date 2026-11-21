@@ -263,6 +263,9 @@ test("at 200% zoom (640 px wide) the form is one column, with no sideways scroll
 });
 
 test("when the state cannot be checked, every address says so and offers to try again, with no prototype", async ({ page }) => {
+  // Two cases wait out the 5-second read timeout at each address, so the default 30 s is too close
+  // on a slow WebKit run (30.7 s on 2026-11-21).
+  test.setTimeout(60_000);
   // Story 1.3, D-7 amended again: only "no server" (a 404 or a reply that is not the declared
   // JSON) opens the prototype; a 500, a 503 `updating`, a failed request or no answer within 5 s
   // shows "Set-up cannot be checked", at / and at /setup.
