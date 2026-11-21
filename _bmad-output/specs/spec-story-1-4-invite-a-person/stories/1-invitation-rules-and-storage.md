@@ -13,7 +13,7 @@ context:
   - '{project-root}/_bmad-output/implementation-artifacts/epic-1-context.md'
 ---
 
-> Builds to Kevin's decisions D-3, D-4, D-6, D-9, D-10 and D-11 (the refusal wordings) in SPEC.md.
+> Builds to Kevin's decisions D-3, D-4, D-6, D-9, D-10 and D-11 (the refusal wordings) in SPEC.md. Amended on 2026-11-21 after the spec review (`review-spec.md`), with Kevin's agreement ("Apply all 29"); each change names its finding.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -28,11 +28,11 @@ context:
 **Always:**
 - Exactly two object classes; new table created if absent under data format 1 (standing rule 8). No host-specific code. Exact versions; no new dependency.
 - Secret: 32 bytes from `crypto.getRandomValues`, base64url without padding (43 characters), generated in `createInvitation` and returned once; only its SHA-256 (64 hex) stored (CA-55).
-- At most one invitation row per email (`UNIQUE`); a re-invite deletes the earlier row and inserts the new one in one transaction (CA-10). A used invitation's row is deleted when it is used (D-3).
+- At most one invitation row per email (`UNIQUE`). Creating an invitation deletes any row for the email, live or expired, before inserting, in one transaction (CA-10; review finding 12). A used invitation's row is deleted when it is used (D-3).
 - Expiry = issue time + 7 days (CA-09), indexed; expired rows pruned in bounded steps (at most 20 per call) in `createInvitation` and `acceptInvitation`, never in `invitationInfo`.
-- `createInvitation` identifies the inviter from this installation's session cookie as `sessionInfo` does, in the same synchronous step as the write: no live session → `not_signed_in`; account not active or not `administrator` → `administrator_only` (D-6).
+- `createInvitation` identifies the inviter from this installation's session cookie as `sessionInfo` does, in the same synchronous step as the write: no live session → `not_signed_in`; an inactive account's session is no live session, so it is `not_signed_in` too, as in `sessionInfo`; an active account that is not `administrator` → `administrator_only` (D-6; review finding 9).
 - An email that matches any `users.email` (after `normaliseEmail`, story 1.3's D-15) → `invitation_email_taken`, field `email`, at invite and again at accept.
-- `acceptInvitation` takes the secret's hash, the name, the Worker's password hash and the presented cookies. In one synchronous transaction: the invitation is live, its email is free, the user is inserted with the invitation's email and role and the given name and hash (story 1.2's columns), the invitation row is deleted, the presented session (this installation's name only) is ended, the new session's hash stored with sign-in and last-use time = now. Returns the session token, the marker for the new account (a fresh marker id) and the identifier (D-4).
+- `acceptInvitation` takes the secret's hash, the name, the Worker's password hash and the presented cookies; its hash input reuses `createFirstAdministratorInput`'s `passwordHash` schema, which pins the scrypt parameters (review finding 10). In one synchronous transaction: the invitation is live, its email is free, the user is inserted with the invitation's email and role and the given name and hash (story 1.2's columns), the invitation row is deleted, the presented session (this installation's name only) is ended, the new session's hash stored with sign-in and last-use time = now. Returns the session token, the marker for the new account (a fresh marker id) and the identifier (D-4).
 - Store operations take `now`. No secret, password, hash or token in a log, refusal or diagnostic.
 - `shared/` and `server/` TypeScript; tests from before story 1.2 unchanged.
 
@@ -43,14 +43,18 @@ context:
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
 | Administrator invites | live admin session; new email; name; role | row: secret hash, email, name, role, inviter id, issued, expires = now + 7 d; returns secret (43 chars), expiry, public address | N/A |
-| Standard user invites | live session of a `standard` account | nothing written | `administrator_only` |
+| Standard user invites | live session of an active `standard` account | nothing written | `administrator_only` |
+| Inactive inviter | session of an account with `active = 0` (set directly) | nothing written (review finding 9) | `not_signed_in` |
 | No session | no, ended, expired, unknown or foreign-named cookie | nothing written | `not_signed_in` |
 | Email has an account | email equal to a user's after trim and lower case | nothing written | `invitation_email_taken`, field `email` |
 | Email differs only in Unicode form | NFC vs NFD of a user's email | not equal (story 1.3's D-15); invitation created | N/A |
 | Re-invite pending email | unused invitation for the email | earlier row gone; earlier hash reads unusable; new hash reads live | N/A |
+| Re-invite after expiry | the email's earlier invitation expired and was not pruned | the new one is created (review finding 12) | N/A |
 | Read live | hash of a live secret | inviter's current name, installation name, email, suggested name, role (D-10) | N/A |
+| Read live after a rename | the inviter's `users.name` changed directly after the invite | the read answers the changed name (D-10; review finding 16) | N/A |
 | Read unusable | unknown, used, replaced or expired hash (at and after 7 days; live just before) | nothing written | `invitation_unusable` |
 | Accept | live hash, name, hash fields, cookies | user inserted (scrypt parameters beside the hash), invitation gone, session row, token, marker, identifier | N/A |
+| Accept an administrator invitation | invitation with role `administrator` | the user is an administrator; `sessionInfo` answers `role: administrator` (review finding 14) | N/A |
 | Accept twice | same hash after success | nothing written | `invitation_unusable` |
 | Accept at once | two accepts for one hash, `Promise.all` | one account, one session; the other refused | `invitation_unusable` |
 | Accept while signed in | presented live session of another account | that session ended; new session for the new account | N/A |
@@ -65,19 +69,19 @@ context:
 
 - `site-studio/shared/setup.ts` -- reuse `emailField`, `normaliseEmail`, `personNameField`, `passwordField`, `passwordEqualsEmail`, `PASSWORD_MIN`, `PASSWORD_MAX`.
 - `site-studio/shared/refusal.ts` -- add the four refusals.
-- `site-studio/server/installation/setupStore.ts` -- `users` and `settings` schema; the user insert in `createFirstAdministrator` to mirror; `parseOperationInput`.
+- `site-studio/server/installation/setupStore.ts` -- `users` and `settings` schema; the user insert in `createFirstAdministrator` to mirror; `createFirstAdministratorInput`'s `passwordHash` schema to reuse; `parseOperationInput`.
 - `site-studio/server/installation/signInStore.ts` -- session lookup in `sessionInfo`, session and marker creation in `complete`; factor a shared "start a session" helper rather than copy it.
 - `site-studio/server/installation/Installation.ts` -- register the new operations.
-- `site-studio/server-tests/setup-store.test.ts`, `signin-store.test.ts`, `helpers.ts`, `signin-helpers.ts` -- patterns; two pinned lists change (brownfield.md).
+- `site-studio/server-tests/setup-store.test.ts`, `signin-store.test.ts`, `helpers.ts`, `signin-helpers.ts` -- patterns; pinned lists and shapes that change are listed in brownfield.md.
 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `site-studio/shared/invitation.ts` -- `INVITATION_TTL_MS` (7 days), `INVITATION_SECRET_LENGTH` (43), `isWellFormedInvitationSecret`, `inviteInput` (`email`, `name`, `role` in `administrator` | `standard`), `invitationSecretField` (1–256 characters), `acceptInput` (`secret`, `name`, `password`), and `passwordRules(password, email)` returning the two story 1.2 rules with `met` flags, for the page's list -- standing rule 6.
+- [ ] `site-studio/shared/invitation.ts` -- `INVITATION_TTL_MS` (7 days), `INVITATION_SECRET_LENGTH` (43), `isWellFormedInvitationSecret`, `inviteInput` (`email`, `name`, `role` in `administrator` | `standard`), `invitationSecretField` (1–256 characters), `acceptInput` = `{ secret: invitationSecretField, name: personNameField, password: passwordField }` (review finding 10), and `passwordRules(password, email)` returning the two story 1.2 rules with `met` flags, for the page's list; with an empty password neither rule is met (review finding 28) -- standing rule 6.
 - [ ] `site-studio/shared/refusal.ts` -- `invitation_email_taken` (409), `invitation_unusable` (410), `not_signed_in` (401), `administrator_only` (403), wording per D-11.
 - [ ] `site-studio/server/installation/invitationStore.ts`, `Installation.ts` -- `invitations` table with indexed `expires_at`; operations `createInvitation`, `invitationInfo` (read-only), `acceptInvitation`, each taking `now`; bounded pruning.
 - [ ] `site-studio/server/installation/signInStore.ts` -- shared session-start helper used by `complete` and `acceptInvitation`; `SessionInfo` signed-in branch gains `role`.
-- [ ] `site-studio/server-tests/invitation-rules.test.ts`, `invitation-store.test.ts` -- matrix rows; `setup-store.test.ts` and `signin-store.test.ts` pinned lists updated (brownfield.md).
+- [ ] `site-studio/server-tests/invitation-rules.test.ts`, `invitation-store.test.ts` -- matrix rows; the pinned lists and shapes in `setup-store.test.ts` and `signin-store.test.ts` updated (brownfield.md).
 
 **Acceptance Criteria:**
 - Given an invitation created at `t`, when it is read at `t + 7 d − 1 ms` it is live, and at `t + 7 d` it is `invitation_unusable` (criterion 15, CA-09).
@@ -86,7 +90,7 @@ context:
 - Given a pending invitation for an email, inviting that email again makes the earlier hash `invitation_unusable` and the new one live (criterion 13, CA-10).
 - Given each registered operation run with fixture input, comparing the invitations table before and after shows that only `createInvitation`, `acceptInvitation` and the bounded pruning change it; `invitationInfo` changes nothing (criterion 16, standing rule 9).
 - Given each registered operation, only `createFirstAdministrator` and `acceptInvitation` insert into `users` (criterion 8, building block).
-- Given a `standard` account's live session, `createInvitation` is refused `administrator_only` and writes nothing (criterion 14, building block).
+- Given an active `standard` account's live session, `createInvitation` is refused `administrator_only` and writes nothing (criterion 14, building block).
 
 ## Verification
 

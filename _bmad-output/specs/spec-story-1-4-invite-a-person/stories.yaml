@@ -10,7 +10,7 @@
   done_checkpoint: true
   invoke_dev_with: >-
     Build to Kevin's decisions D-3, D-4, D-6, D-9, D-10 and D-11 in SPEC.md. No routes, pages
-    or deploys. Two pinned operation lists in earlier tests change (brownfield.md).
+    or deploys. Pinned lists and shapes in earlier tests change as brownfield.md lists.
 - id: "2"
   title: Invitation routes and the page header
   description: >-
@@ -23,6 +23,7 @@
   invoke_dev_with: >-
     Build to D-1, D-2, D-4, D-5 and D-6 in SPEC.md. Writes are never retried after a
     bare reset (story 1.2's D-2 as amended). The secret never appears in a path, query or log.
+    The accept route's id is acceptInvite; the object operation it calls is acceptInvitation.
 - id: "3"
   title: Invite panel, invitation page and browser tests
   description: >-
@@ -32,5 +33,6 @@
   spec_checkpoint: true
   done_checkpoint: true
   invoke_dev_with: >-
-    Build to D-1, D-2, D-3, D-5, D-7, D-8, D-9 and D-11 in SPEC.md. No manual-only
-    page check (standing rule 15). Record the three deliberate breakages' failing test names.
+    Build to D-1, D-2, D-3, D-4, D-5, D-7, D-8, D-9 and D-11 in SPEC.md. No manual-only
+    page check (standing rule 15). Record the four deliberate breakages' failing test names.
+    The invitation tests use signInServers(project)[0], never the baseURL server.
