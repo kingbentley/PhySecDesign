@@ -91,6 +91,35 @@ Record each check's outcome, times, Worker names and the two administrator email
 - Check 9 does not tell the marker's count apart from the email's (see its row). So CAP-12's last sentence is met as the spec's pass column words it (5 checked, 20 waits), but the deployed run does not show that the marker's count is what limits it. The server tests do (`signin-store.test.ts`, `signin-routes.test.ts`). Kevin accepted the server-test coverage for this on 2026-11-20 ("Accept the server-test coverage for check 9's marker count"), so no deployed CA-44 check is planned.
 - D-5's memory claim (five hashes at once without the queue) stays unproven, as SPEC.md plans. Check 9 and check 4 ran five real checks in one burst through the queue without error, which says nothing about running without it.
 
+### Follow-up after the code review (2026-11-21, 18:22–18:30 UTC, Kevin's workstation)
+
+Purpose: the code review added `enable_request_signal` to the compatibility flags and made the start-up reads fail closed (`code-review.md`) after the run above. Kevin asked for a short deployed check before merging. Run by this session, with the same rules as above.
+
+- **Account and build:** `wrangler whoami` showed only "PhySec Site Studio". Before the run the Worker list held only `site-studio-test`, unchanged since 2026-11-20T17:39:41Z. The build is `story/1.3` at `548ca1e`.
+- **Worker:** a temporary `site-studio-test-13c`, deployed 18:23:50–18:24:07 with `node scripts/deploy-cloudflare.mjs --name site-studio-test-13c` (version `673b22c5-fea1-4fe6-b1fb-35ad1b2b9b8a`). Cloudflare accepted the build with `nodejs_compat` and `enable_request_signal`, with no error. It was set up at 18:27:06 with administrator **`admin-c@example.com`** ("Administrator C", installation "Test installation C"). The set-up code and password were held only in scratch files, never shown or recorded, and deleted afterwards.
+- **Scripts:** throwaway, in the session's scratch folder, not committed.
+
+| Time (UTC) | Check | Result |
+|---|---|---|
+| 18:27:06 | Set-up | 200 with the installation's name and email |
+| 18:27:07 | `GET /` | 200 `text/html` |
+| 18:27:07 | Session read with no cookie | 200 `{"signedIn":false,"installationName":"Test installation C"}` |
+| 18:27:07 | Wrong password | 401 `signin_failed` with the one message |
+| 18:27:08 | Sign-in | 200 `{"name":"Administrator C"}`. The session cookie (`Max-Age=2592000`) and the marker (`Max-Age=31536000`) are both `HttpOnly; Secure; SameSite=Lax; Path=/` with no `Domain`, and carry the same identifier |
+| 18:27:08 | Session read with the cookie | signed in, as "Administrator C" |
+| 18:27:08 | Sign-out | 200 `{"signedIn":false}`, with exactly one `Set-Cookie`, clearing the session cookie (`Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Lax`) |
+| 18:27:08 | The old cookie on the session read | not signed in, with the clearing `Set-Cookie` |
+| 18:29:09–18:29:10 | With `wrangler tail` running: a session read, two wrong sign-ins (401 `signin_failed`), a sign-in the client abandoned after 50 ms, and another session read | The tail held 10 events, every outcome `ok`, no exceptions and no error-level logs. The abandoned sign-in did not appear in the tail; it most likely never reached the Worker within 50 ms. |
+
+**What this shows:** Cloudflare deploys and runs the review build with `enable_request_signal`. Set-up, the one sign-in refusal, sign-in with both cookies, the session read, sign-out and the replayed cookie behave as in the first run.
+
+**What it does not show:**
+- A request aborted *while waiting in the hash queue* on Cloudflare. That needs the queue held busy, which a single client cannot arrange; the route tests cover it.
+- The fail-closed start-up in a browser on Cloudflare. That is page logic, covered by the unit and browser tests; the deployed API replies above are the declared ones the page expects.
+- The first tail missed the main run because it connected too late, so the platform-error check rests on the second, shorter tailed run.
+
+**Clean-up:** `wrangler delete --name site-studio-test-13c` (18:29:41–18:29:47) answered "Successfully deleted". The Worker list afterwards holds only `site-studio-test`, with the same times as before, and the scratch files holding the code and logs were deleted.
+
 ## Implementation Notes
 
 - **For Kevin to note (a deviation from the workflow, on this session's judgment, not authorised by anyone).** Step 3 says to hand the spec to an implementation subagent with nothing added. This session did the run itself instead, because the orchestrator's operating rules for the account go beyond this spec: the account check, the before and after Worker lists, touching only Workers created in the run, no recorded secrets, and keeping the tail only as check 2's fact. The dispatch rule forbids passing those to a subagent.
