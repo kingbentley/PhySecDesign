@@ -37,7 +37,7 @@ One blind-hunter layer on the uncommitted diff; 14 findings.
 | 3 | `/invite/` not tested for the new behaviour | low | rejected: both paths go through the one `isInvitePath` check, which the `/invite/` tests already cover |
 | 4 | Signed-out/in transitions at `/invite` untested | false | that behaviour is unchanged by this round (it never reloaded) |
 | 5 | The new browser test never submits | low | rejected: the accept flow is unchanged and tested elsewhere |
-| 6 | `signInClient.js` has the same header-load gap | low, real, old | not fixed: out of scope by instruction (do not change `signInClient.js`); reported to the orchestrator |
+| 6 | `signInClient.js` has the same header-load gap | low, real, old | not fixed in round 1 (out of scope then); fixed on 2026-11-22 at Kevin's request, in a separate commit (story 3's spec, "After round 1") |
 | 7 | Two declined items not in `deferred-work.md` | false for this change | Kevin's decisions; the orchestrator replies on GitHub |
 | 8 | The prompt-path header test checks one function and not the headers | low, real | patched: all three, with the headers sent |
 | 9 | No test for a header load that fails | low, real | patched |

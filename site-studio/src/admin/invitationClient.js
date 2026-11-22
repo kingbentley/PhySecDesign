@@ -5,8 +5,9 @@
 //
 // This module imports nothing from shared/ except refusal.ts, as signInClient.js does, so
 // `tests/invitation-client.test.mjs` runs it under `node --test` (review finding 8); the app's
-// header comes from shared/routes.ts when a request is sent.
+// header comes from shared/routes.ts when a request is sent (`postJson.js`).
 import { REFUSALS } from '../../shared/refusal.ts';
+import { NO_ANSWER, appHeaders, postJson } from './postJson.js';
 
 const INVITE_URL = '/api/v1/invitations';
 const READ_URL = '/api/v1/invitations/read';
@@ -125,54 +126,12 @@ export function acceptOutcome(status, body) {
   }
 }
 
-async function appHeaders() {
-  const { APP_HEADER, APP_HEADER_VALUE } = await import('../../shared/routes.ts');
-  return { 'content-type': 'application/json', accept: 'application/json', [APP_HEADER]: APP_HEADER_VALUE };
-}
-
-async function readBody(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-const NO_ANSWER = Symbol('no answer');
-
 /**
- * Posts `input` as JSON; resolves to `{ status, body }`, or `NO_ANSWER` on a failure or timeout.
- * The deadline covers loading the app's header as well as the request: a header load that stalls
- * gives no answer, and one that finishes after the deadline starts no request (pull request 12,
- * review round 1). `loadHeaders` is replaceable only so a test can stall it.
+ * Posts `input` as JSON under `postJson`'s one deadline, which covers loading the app's header as
+ * well as the request (pull request 12, review round 1); resolves as `postJson` does.
  */
-async function post(fetcher, url, input, timeoutMs, loadHeaders) {
-  const controller = new AbortController();
-  let timer;
-  const deadline = new Promise((resolve) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      resolve(NO_ANSWER);
-    }, timeoutMs);
-  });
-  const attempt = (async () => {
-    const headers = await loadHeaders();
-    if (controller.signal.aborted) return NO_ANSWER;
-    const response = await fetcher(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(input),
-      credentials: 'same-origin',
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    return { status: response.status, body: await readBody(response) };
-  })().catch(() => NO_ANSWER);
-  try {
-    return await Promise.race([attempt, deadline]);
-  } finally {
-    clearTimeout(timer);
-  }
+function post(fetcher, url, input, timeoutMs, loadHeaders) {
+  return postJson(fetcher, url, JSON.stringify(input), { timeoutMs, loadHeaders });
 }
 
 /** Sends the invite request (`{ email, name, role }`); resolves as `inviteOutcome` does. */

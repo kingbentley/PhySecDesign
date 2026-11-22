@@ -221,3 +221,7 @@ CodeRabbit's review of pull request 12; Kevin chose four findings to fix, in one
 The round's BMAD record (`bmad-build`, one-shot route, with its review triage) is `_bmad-output/implementation-artifacts/spec-pr-12-review-round-1.md`.
 
 Not fixed, by Kevin's decision: links built on a recorded `http://` address, a sign-in hint after a retried accept, and the sign-in work counters.
+
+## After round 1: the sign-in client's deadline (2026-11-22)
+
+Kevin asked for the gap found by round 1's own review (row 6 of `spec-pr-12-review-round-1.md`) to be fixed: `signInClient.js` loaded the app's header, and then sent sign-in and sign-out, with no deadline at all. The timed post now lives in `src/admin/postJson.js`, used by both `signInClient.js` and `invitationClient.js` (unchanged behaviour there). Sign-in has 30 seconds (it includes a slow hash, as accepting does) and sign-out 15, header load included; no answer in time shows the existing network message, or keeps the page signed in with its existing "not confirmed" message. Tests: `tests/signin-client.test.mjs` ("the sign-in and sign-out requests (pull request 12)": stalled, late and failed header loads, timeouts, and the reply mapping) and `server-tests/setup-client.test.ts` (the real header from `shared/routes.ts`). Nothing under `server/` or `shared/` changed.

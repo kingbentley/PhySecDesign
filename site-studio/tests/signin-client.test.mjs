@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { REFUSALS } from "../shared/refusal.ts";
-import { SIGN_IN_MESSAGES, signInOutcome, signOutConfirmed, waitMessage } from "../src/admin/signInClient.js";
+import { SIGN_IN_MESSAGES, requestSignOut, signInOutcome, signOutConfirmed, submitSignIn, waitMessage } from "../src/admin/signInClient.js";
 import { waitWording } from "../src/admin/waitWording.js";
 import { isSessionReply, readSession, readSetupState } from "../src/admin/setupState.js";
 
@@ -149,5 +149,70 @@ describe("start-up reads", () => {
     assert.equal(isSessionReply({ signedIn: false }), false);
     assert.equal(isSessionReply({ signedIn: "yes", installationName: null }), false);
     assert.equal(isSessionReply([]), false);
+  });
+});
+
+describe("the sign-in and sign-out requests (pull request 12)", () => {
+  const input = { email: "robin@harbourside.example", password: "a long and correct sign-in passphrase" };
+  const headers = { "content-type": "application/json", accept: "application/json", "x-site-survey-design": "1" };
+  const replying = (status, body, extraHeaders = {}) => {
+    const sent = [];
+    const fetcher = async (url, init) => {
+      sent.push({ url, init });
+      return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...extraHeaders } });
+    };
+    return { fetcher, sent };
+  };
+  const never = (_url, init) => new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted"))));
+
+  // shared/routes.ts uses imports only the bundler and workerd resolve, so here the header load is
+  // a stand-in; server-tests/setup-client.test.ts sends the real header.
+  const loaded = { loadHeaders: async () => headers };
+
+  test("send the loaded headers and map the reply, the Retry-After header included", async () => {
+    const signIn = replying(200, { name: "Robin Example" });
+    assert.deepEqual(await submitSignIn(input, signIn.fetcher, loaded), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(signIn.sent[0].url, "/api/v1/session/sign-in");
+    assert.equal(signIn.sent[0].init.method, "POST");
+    assert.deepEqual(signIn.sent[0].init.headers, headers);
+    assert.deepEqual(JSON.parse(signIn.sent[0].init.body), input);
+    const wait = replying(429, { error: { code: "signin_wait", message: "x" } }, { "retry-after": "60" });
+    assert.equal((await submitSignIn(input, wait.fetcher, loaded)).message, "Too many attempts. Wait 1 minute before trying again.");
+    const signOut = replying(200, { signedIn: false });
+    assert.equal(await requestSignOut(signOut.fetcher, loaded), true);
+    assert.equal(signOut.sent[0].url, "/api/v1/session/sign-out");
+    assert.equal(await requestSignOut(replying(200, { signedIn: true }).fetcher, loaded), false);
+  });
+
+  test("a request with no answer before the deadline is the network message, or an unconfirmed sign-out", async () => {
+    assert.deepEqual(await submitSignIn(input, never, { timeoutMs: 20 }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(never, { timeoutMs: 20 }), false);
+  });
+
+  test("loading the app's header counts against the deadline: stalled, late or failed, no request is started", async () => {
+    let requests = 0;
+    const counted = async () => {
+      requests += 1;
+      return new Response(JSON.stringify({ name: "Robin Example" }), { status: 200 });
+    };
+    const stalled = () => new Promise(() => {});
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 20, loadHeaders: stalled }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 20, loadHeaders: stalled }), false);
+    const late = [];
+    const slow = () => {
+      const loaded = new Promise((resolve) => setTimeout(() => resolve(headers), 60));
+      late.push(loaded.then(() => new Promise((resolve) => setTimeout(resolve, 10))));
+      return loaded;
+    };
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 20, loadHeaders: slow }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 20, loadHeaders: slow }), false);
+    const failing = () => Promise.reject(new Error("chunk failed"));
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 60_000, loadHeaders: failing }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 60_000, loadHeaders: failing }), false);
+    await Promise.all(late);
+    assert.equal(requests, 0);
+    // In time, the request goes out as before.
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 1000, loadHeaders: async () => headers }), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(requests, 1);
   });
 });

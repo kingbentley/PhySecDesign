@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { checkSetupFields, FIELD_MESSAGES, submitSetup, waitWording } from "../src/admin/setupClient.js";
 import { isSetupPath, readSetupState, STATE_TIMEOUT_MS } from "../src/admin/setupState.js";
+import { requestSignOut, submitSignIn } from "../src/admin/signInClient.js";
 
 // The set-up page's own logic (story 1.2, spec 5): wording, refusal handling and the state check,
 // with a stub fetcher in place of the server. The page's flows run in browser-tests/.
@@ -152,5 +153,20 @@ describe("readSetupState", () => {
     expect(isSetupPath("/setup/")).toBe(true);
     expect(isSetupPath("/setupx")).toBe(false);
     expect(isSetupPath("/")).toBe(false);
+  });
+});
+
+// The sign-in client's requests with the real header load, which needs shared/ and so runs here;
+// its deadline and header-load stalls are tested in tests/signin-client.test.mjs (pull request 12).
+describe("submitSignIn and requestSignOut", () => {
+  it("load the app's header from shared/routes.ts and send it", async () => {
+    const sent: RequestInit[] = [];
+    const fetcher = (async (_url: string, init: RequestInit) => {
+      sent.push(init);
+      return new Response(JSON.stringify(sent.length === 1 ? { name: "Robin Example" } : { signedIn: false }), { status: 200 });
+    }) as unknown as typeof fetch;
+    expect(await submitSignIn({ email: "robin@harbourside.example", password: "a long and correct sign-in passphrase" }, fetcher)).toEqual({ kind: "signedIn", name: "Robin Example" });
+    expect(await requestSignOut(fetcher)).toBe(true);
+    for (const init of sent) expect((init.headers as Record<string, string>)["x-site-survey-design"]).toBe("1");
   });
 });
