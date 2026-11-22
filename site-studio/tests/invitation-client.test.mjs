@@ -50,9 +50,12 @@ describe("invitation read", () => {
     assert.deepEqual(readOutcome(400, refusal("invalid_input", { field: "secret" })), { kind: "unusable" });
   });
 
+  test("an update in progress is told apart from a read that cannot be checked (Kevin, 2026-11-21)", () => {
+    assert.deepEqual(readOutcome(503, refusal("updating")), { kind: "updating" });
+  });
+
   test("a 5xx or a refusal of another kind cannot be checked", () => {
     assert.deepEqual(readOutcome(500, ""), { kind: "unknown" });
-    assert.deepEqual(readOutcome(503, refusal("updating")), { kind: "unknown" });
     assert.deepEqual(readOutcome(403, refusal("origin_refused")), { kind: "unknown" });
   });
 });

@@ -79,7 +79,8 @@ export function inviteOutcome(status, body) {
 /**
  * Maps an invitation read's reply to what the page shows. Returns one of
  * `{ kind: 'invitation', invitation }` (`{ inviterName, installationName, email, name, role }`),
- * `{ kind: 'unusable' }` (D-3), or `{ kind: 'unknown' }` ("The invitation cannot be checked").
+ * `{ kind: 'unusable' }` (D-3), `{ kind: 'updating' }` (the update wording with Try again; Kevin,
+ * 2026-11-21), or `{ kind: 'unknown' }` ("The invitation cannot be checked").
  */
 export function readOutcome(status, body) {
   if (status >= 200 && status < 300) {
@@ -94,6 +95,8 @@ export function readOutcome(status, body) {
   const error = refusalOf(body);
   // A secret the input schema refuses (empty or over-long) is a link that does not work either.
   if (error.code === 'invitation_unusable' || (error.code === 'invalid_input' && error.field === 'secret')) return { kind: 'unusable' };
+  // During an update the page says so rather than "check the connection" (Kevin, 2026-11-21).
+  if (error.code === 'updating') return { kind: 'updating' };
   return { kind: 'unknown' };
 }
 

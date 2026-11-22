@@ -499,6 +499,22 @@ test("when the invitation read fails the page says it cannot be checked, and Try
   await expect(joinHeading(page)).toBeVisible();
 });
 
+test("when the invitation read answers updating the page says so, and Try again reads it again", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const link = await createInvitation(playwright, server.origin, { email: emailFor("readupdating"), name: "Uma Updating" });
+  await page.route("**/api/v1/invitations/read", (route) => route.fulfill({
+    status: 503,
+    headers: { "content-type": "application/json", "retry-after": "5" },
+    body: JSON.stringify({ error: { code: "updating", message: "Site Survey Design is updating. Try again in a moment." } }),
+  }));
+  await page.goto(link);
+  await expect(page.getByText("Site Survey Design is updating. Try again in a moment.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The invitation cannot be checked" })).toHaveCount(0);
+  await page.unroute("**/api/v1/invitations/read");
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(joinHeading(page)).toBeVisible();
+});
+
 test("when accepting fails the page says the password may not have been set, and Try again completes it", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const link = await createInvitation(playwright, server.origin, { email: emailFor("acceptfail"), name: "Ari Fail" });

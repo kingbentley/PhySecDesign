@@ -70,7 +70,7 @@ function Unusable() {
   );
 }
 
-function CannotCheck({ onRetry }) {
+function CannotCheck({ onRetry, heading: title = 'The invitation cannot be checked', message = 'The server did not say whether this invitation works. Check the connection and try again.' }) {
   const heading = useFocusOnMount();
   const [checking, setChecking] = useState(false);
   async function retry() {
@@ -80,8 +80,8 @@ function CannotCheck({ onRetry }) {
   }
   return (
     <Frame>
-      <h1 ref={heading} tabIndex={-1}>The invitation cannot be checked</h1>
-      <p className="invitation-lead">The server did not say whether this invitation works. Check the connection and try again.</p>
+      <h1 ref={heading} tabIndex={-1}>{title}</h1>
+      <p className="invitation-lead">{message}</p>
       <button type="button" className="invitation-button" onClick={retry} aria-disabled={checking ? true : undefined}>
         {checking ? 'Checking…' : 'Try again'}
       </button>
@@ -230,7 +230,7 @@ function AcceptForm({ secret, invitation, session, onUnusable }) {
 export default function InvitationPage({ secret, session }) {
   useDocumentTitle();
   const wellFormed = typeof secret === 'string' && isWellFormedInvitationSecret(secret);
-  // 'reopen', 'reading', 'unknown', 'unusable' or 'form'.
+  // 'reopen', 'reading', 'unknown', 'updating', 'unusable' or 'form'.
   const [view, setView] = useState(() => (secret === null || secret === undefined ? { kind: 'reopen' } : wellFormed ? { kind: 'reading' } : { kind: 'unusable' }));
   const live = useRef(true);
   useEffect(() => {
@@ -243,7 +243,7 @@ export default function InvitationPage({ secret, session }) {
     if (!live.current) return;
     if (result.kind === 'invitation') setView({ kind: 'form', invitation: result.invitation });
     else if (result.kind === 'unusable') setView({ kind: 'unusable' });
-    else setView((current) => ({ kind: 'unknown', attempt: (current.attempt ?? 0) + 1 }));
+    else setView((current) => ({ kind: result.kind === 'updating' ? 'updating' : 'unknown', attempt: (current.attempt ?? 0) + 1 }));
   }
 
   useEffect(() => {
@@ -254,6 +254,8 @@ export default function InvitationPage({ secret, session }) {
   if (view.kind === 'reopen') return <Reopen/>;
   if (view.kind === 'unusable') return <Unusable/>;
   if (view.kind === 'unknown') return <CannotCheck key={view.attempt} onRetry={read}/>;
+  // An update in progress: the sign-in page's updating wording, with Try again (Kevin, 2026-11-21).
+  if (view.kind === 'updating') return <CannotCheck key={view.attempt} onRetry={read} heading="Invitation" message={INVITATION_MESSAGES.updating}/>;
   if (view.kind === 'reading') {
     return (
       <Frame>
