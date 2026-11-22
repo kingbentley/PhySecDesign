@@ -504,6 +504,29 @@ describe("accepting an invitation", () => {
     expect(done.marker.split(".")[2]).toMatch(/^[0-9a-f]{32}$/);
   });
 
+  it("rolls back account creation and keeps the previous session and invitation if the new session cannot be saved", async () => {
+    const name = "accept-session-write-fails";
+    const { cookies } = await withAdministrator(name);
+    const invitation = await created(name, { email: "sam@acme.test", cookies }, T0);
+    const before = await snapshot(name);
+
+    // Fail at the session insert, after acceptance has attempted to create the user and consume the link.
+    await runInDurableObject(stubFor(name), (_instance, state) => {
+      state.storage.sql.exec(`CREATE TRIGGER reject_new_session BEFORE INSERT ON ${SESSIONS_TABLE}
+        BEGIN SELECT RAISE(ABORT, 'test session insert failure'); END`);
+    });
+    await expect(acceptAt(name, { secretHash: invitation.secretHash, cookies }, T0 + SECOND))
+      .rejects.toThrow("test session insert failure");
+    expect(await snapshot(name)).toEqual(before);
+
+    await runInDurableObject(stubFor(name), (_instance, state) => {
+      state.storage.sql.exec("DROP TRIGGER reject_new_session");
+    });
+    const done = accepted(await acceptAt(name, { secretHash: invitation.secretHash, cookies }, T0 + 2 * SECOND));
+    expect((await sessionsOf(name)).map((row) => row.user_id)).toEqual([done.account.id]);
+    expect(await invitationRows(name)).toEqual([]);
+  });
+
   it("leaves another installation's session alone", async () => {
     const name = "accept-foreign-session";
     const { cookies } = await withAdministrator(name);

@@ -57,6 +57,20 @@ describe("the invitation page's checks", () => {
     expect(Object.keys(errors)).toEqual(["name"]);
     for (const message of Object.values(ACCEPT_FIELD_MESSAGES)) expect(message).not.toContain(valid.password);
   });
+
+  it("matches Unicode-equivalent confirmations after normalization", () => {
+    const password = "a long caf\u00e9 passphrase";
+    const passwordAgain = "a long cafe\u0301 passphrase";
+    expect(checkAcceptFields({ ...valid, password, passwordAgain }, EMAIL)).toEqual({});
+  });
+
+  it("reports a password rule failure and a mismatched confirmation in the same submit", () => {
+    expect(checkAcceptFields({ name: " ", password: "short", passwordAgain: valid.password }, EMAIL)).toEqual({
+      name: ACCEPT_FIELD_MESSAGES.name,
+      password: ACCEPT_FIELD_MESSAGES.password,
+      passwordAgain: ACCEPT_FIELD_MESSAGES.passwordAgain,
+    });
+  });
 });
 
 describe("the invite panel's checks", () => {

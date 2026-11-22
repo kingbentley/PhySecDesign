@@ -622,6 +622,27 @@ describe("the invitation page", () => {
     });
   }
 
+  it("applies the invitation policy to a cached page response without changing its status or ETag", async () => {
+    const fakeEnv = {
+      ...env,
+      ASSETS: {
+        fetch: async () => new Response(null, {
+          status: 304,
+          headers: { etag: '"invitation-page"', "referrer-policy": "same-origin" },
+        }),
+      },
+    } as unknown as Env;
+    for (const [path, policy] of [["/invite?source=email", "no-referrer"], ["/invite-preview", "same-origin"]]) {
+      const response = await handleRequest(new Request(ORIGIN + path, {
+        headers: { accept: "text/html", "if-none-match": '"invitation-page"' },
+      }), fakeEnv);
+      expect(response.status, path).toBe(304);
+      expect(response.body, path).toBeNull();
+      expect(response.headers.get("etag"), path).toBe('"invitation-page"');
+      expect(response.headers.get("referrer-policy"), path).toBe(policy);
+    }
+  });
+
   it("keeps the header on the HTTPS redirect of a plain HTTP request on Cloudflare", async () => {
     const request = new Request("http://survey.acme.test/invite", { headers: { accept: "text/html" }, cf: { tlsVersion: "" } } as RequestInit);
     const response = await handleRequest(request, env as unknown as Env);
