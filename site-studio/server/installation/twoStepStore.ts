@@ -18,7 +18,7 @@ import { matchingStep } from "../auth/totp";
 import { OperationRefusal } from "../objects/ObjectBase";
 import { deploymentKeyField, type KeyGuard, type KeyStatus, type PendingEncryption } from "./keyGuard";
 import { SETTINGS_TABLE, USERS_TABLE } from "./setupStore";
-import { cookiesField, hashIdentity, type SignInStore } from "./signInStore";
+import { cookiesField, hashIdentity, type SignInStore, type TwoStepAccess } from "./signInStore";
 
 // Two-step storage in the installation object (story 1.5, spec 2: D-5, D-6, D-9, D-10, D-12, D-15,
 // D-22). Tables are created if absent under data format 1 (standing rule 8).
@@ -225,7 +225,7 @@ async function keyAttempt<T>(run: () => Promise<T>): Promise<{ value: T } | { re
   }
 }
 
-export class TwoStepStore {
+export class TwoStepStore implements TwoStepAccess {
   constructor(
     private readonly storage: DurableObjectStorage,
     private readonly signIn: SignInStore,
@@ -269,6 +269,32 @@ export class TwoStepStore {
       this.sql
         .exec<{ secret_ciphertext: string; last_step: number }>(`SELECT secret_ciphertext, last_step FROM ${TWO_STEP_TABLE} WHERE account_id = ?`, accountId)
         .toArray()[0] ?? null
+    );
+  }
+
+  // The sign-in store's access to these rows for the second sign-in step (story 1.5, spec 3).
+
+  /** Synchronous: the account's `two_step` row, or null when two-step verification is off. */
+  secretRow(accountId: string): { secretCiphertext: string; lastStep: number } | null {
+    const row = this.twoStepRow(accountId);
+    return row ? { secretCiphertext: row.secret_ciphertext, lastStep: row.last_step } : null;
+  }
+
+  /** Decrypts the account's `two_step` ciphertext under the key guard (associated data `two-step:<account id>`). */
+  decryptSecret(deploymentKey: string | null | undefined, ciphertext: string, accountId: string): Promise<Uint8Array | null> {
+    return this.keyGuard.decrypt(deploymentKey, ciphertext, `two-step:${accountId}`);
+  }
+
+  /** Synchronous: sets the account's last accepted step (D-6). */
+  setLastStep(accountId: string, step: number): void {
+    this.sql.exec(`UPDATE ${TWO_STEP_TABLE} SET last_step = ? WHERE account_id = ?`, step, accountId);
+  }
+
+  /** Synchronous: deletes the account's recovery code with this hash, once (`DELETE … RETURNING`). */
+  useRecoveryCode(accountId: string, codeHash: string): boolean {
+    return (
+      this.sql.exec(`DELETE FROM ${RECOVERY_CODES_TABLE} WHERE code_hash = ? AND account_id = ? RETURNING code_hash`, codeHash, accountId).toArray()
+        .length > 0
     );
   }
 

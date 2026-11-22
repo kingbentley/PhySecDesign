@@ -66,6 +66,11 @@ export function sessionCookieName(identifier: string): string {
   return `${COOKIE_PREFIX}${identifier}`;
 }
 
+/** The pending sign-in cookie's name (story 1.5, D-2): `__Host-ssd-p-<identifier>`. */
+export function pendingCookieName(identifier: string): string {
+  return `${COOKIE_PREFIX}p-${identifier}`;
+}
+
 /** The session cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, 30 days, no `Domain`. */
 export function sessionCookieLine(identifier: string, token: string): string {
   return `${sessionCookieName(identifier)}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_MAX_AGE_SECONDS}`;

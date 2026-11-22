@@ -898,7 +898,7 @@ describe("secrets in logs (standing rule 14)", () => {
 });
 
 describe("the installation object's operations (criterion 28, standing rule 9)", () => {
-  it("change the two-step tables only in accountCheck, startTwoStep, confirmTwoStep, turnOffTwoStep, renewRecoveryCodes and the bounded pruning", async () => {
+  it("change the two-step tables only in accountCheck, startTwoStep, confirmTwoStep, turnOffTwoStep, renewRecoveryCodes, secondStep and the bounded pruning", async () => {
     const name = "operations";
     const fingerprint = await setupCodeFingerprint("a-two-step-sweep-code");
     const call = (operation: string, input: unknown) => callObject(env.INSTALLATION, idFor(name), operation, input);
@@ -960,7 +960,7 @@ describe("the installation object's operations (criterion 28, standing rule 9)",
       if (operation === "completeSignIn" && result.ok) done = result.value as SignInCompleted;
       if ((await snapshot()) !== before) changed.push(operation);
     }
-    expect(changed.sort()).toEqual(["accountCheck", "confirmTwoStep", "renewRecoveryCodes", "startTwoStep", "turnOffTwoStep"]);
+    expect(changed.sort()).toEqual(["accountCheck", "confirmTwoStep", "renewRecoveryCodes", "secondStep", "startTwoStep", "turnOffTwoStep"]);
     expect(operations.some((operation) => /restore|revision/i.test(operation))).toBe(false);
 
     // Two-step rows live only in the installation object: project rooms have none of the tables.

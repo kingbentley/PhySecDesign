@@ -12,12 +12,14 @@ import {
 import {
   completeSignInInput,
   cookiesInput,
+  secondStepOperationInput,
   signInAttemptInput,
   SignInStore,
   type SessionEnded,
   type SessionInfo,
   type SignInAttemptCounted,
   type SignInCompleted,
+  type SignInCompletion,
 } from "./signInStore";
 import {
   acceptInvitationInput,
@@ -77,6 +79,8 @@ export class Installation extends ObjectBase<Env> {
     this.invitations = new InvitationStore(ctx.storage, this.signIn);
     // After the sign-in store, whose sessions and counting it uses, and the key guard.
     this.twoStep = new TwoStepStore(ctx.storage, this.signIn, this.keyGuard);
+    // The second sign-in step reads and changes the two-step rows through this (story 1.5, spec 3).
+    this.signIn.attachTwoStep(this.twoStep);
 
     this.ops.set("status", {
       run: (): InstallationStatus => {
@@ -120,11 +124,22 @@ export class Installation extends ObjectBase<Env> {
       },
     });
 
-    // Completes an attempt with the ticket and the Worker's outcome only (D-5 amended).
+    // Completes an attempt with the ticket and the Worker's outcome only (D-5 amended). For an
+    // account with two-step verification on it answers a pending token, not a session (story 1.5).
     this.ops.set("completeSignIn", {
-      run: (raw): Promise<SignInCompleted> => {
+      run: (raw): Promise<SignInCompletion> => {
         const input = parseOperationInput(completeSignInInput, raw);
         return this.signIn.complete(input.ticket, input.outcome, Date.now());
+      },
+    });
+
+    // The second sign-in step (story 1.5, spec 3): a code or a recovery code for the presented
+    // pending sign-in, counted as a password is; when right, a new session. The key arrives only in
+    // the input (D-22). A write: never retried after a bare reset.
+    this.ops.set("secondStep", {
+      run: (raw): Promise<SignInCompleted> => {
+        const input = parseOperationInput(secondStepOperationInput, raw);
+        return this.signIn.secondStep(input, Date.now());
       },
     });
 

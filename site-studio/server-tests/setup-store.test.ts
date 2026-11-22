@@ -615,6 +615,7 @@ describe("accounts and the installation's name are outside project revisions (CA
       "endSession",
       "invitationInfo",
       "renewRecoveryCodes",
+      "secondStep",
       "sessionInfo",
       "setupAttempt",
       "setupState",

@@ -24,7 +24,7 @@ import {
   type InvitationInfo,
 } from "../installation/invitationStore";
 import type { FirstAdministratorCreated, SetupAttemptCounted } from "../installation/setupStore";
-import type { SessionEnded, SessionInfo, SignInAttemptCounted, SignInCompleted } from "../installation/signInStore";
+import type { SessionEnded, SessionInfo, SignInAttemptCounted, SignInCompletion } from "../installation/signInStore";
 import { callObject } from "../objects/call";
 import { clientAddressKey } from "./clientAddress";
 
@@ -204,12 +204,15 @@ export const HANDLERS: RouteHandlers = {
       throw error;
     }
 
-    const completed = await callObject<SignInCompleted>(namespace, id, "completeSignIn", {
+    const completed = await callObject<SignInCompletion>(namespace, id, "completeSignIn", {
       ticket: attempt.value.ticket,
       outcome: correct ? "success" : "failure",
     });
     if (!completed.ok) return completed;
     const done = completed.value;
+    // Until the second-step route and its cookie arrive (story 1.5, spec 4), an account with
+    // two-step verification on cannot sign in with the password alone.
+    if (done.kind !== "signedIn") return refused("signin_failed");
     return {
       ok: true,
       value: { name: done.account.name },
