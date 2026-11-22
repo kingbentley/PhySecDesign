@@ -606,17 +606,23 @@ describe("accounts and the installation's name are outside project revisions (CA
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(operations).toEqual([
       "acceptInvitation",
+      "accountCheck",
       "completeSignIn",
+      "confirmTwoStep",
       "createFirstAdministrator",
       "createInvitation",
       "deploymentKeyState",
       "endSession",
       "invitationInfo",
+      "renewRecoveryCodes",
       "sessionInfo",
       "setupAttempt",
       "setupState",
       "signInAttempt",
+      "startTwoStep",
       "status",
+      "turnOffTwoStep",
+      "twoStepState",
     ]);
     expect(operations.some((operation) => /restore|revision/i.test(operation))).toBe(false);
 

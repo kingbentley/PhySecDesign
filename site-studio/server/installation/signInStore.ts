@@ -13,7 +13,7 @@ import {
   signInEmailField,
   SIGNIN_TICKET_TTL_MS,
 } from "../../shared/signin";
-import { HMAC_KEY_BYTES, hmacHex, importHmacKey, makeMarker, markerCookieName, newMarkerId, readMarker } from "../auth/marker";
+import { HMAC_KEY_BYTES, hmacHex, importHmacKey, makeMarker, markerCookieName, newMarkerId, readMarker, type Marker } from "../auth/marker";
 import { fromBase64, PASSWORD_HASH_ALGORITHM, toBase64, type PasswordHash } from "../auth/password";
 import {
   isWellFormedToken,
@@ -244,7 +244,7 @@ interface TicketRow {
 }
 
 /** The identity of a stored hash, kept in a ticket: its salt and its value together (E-22). */
-function hashIdentity(user: { password_salt: string; password_hash: string }): string {
+export function hashIdentity(user: { password_salt: string; password_hash: string }): string {
   return `${user.password_salt}.${user.password_hash}`;
 }
 
@@ -361,6 +361,89 @@ export class SignInStore {
     );
   }
 
+  // The counting of an attempt, callable for another kind of attempt (story 1.5, D-5): a two-step
+  // account action counts its password check exactly as a sign-in attempt for the account's email
+  // key, the browser's usable marker and a known address. The rules are story 1.3's, unchanged.
+
+  /**
+   * The storage-free inputs of counting for one email and the presented cookies: the email's key,
+   * and the marker presented with this installation's identifier when it is valid at `now` (its
+   * account is for the caller to compare).
+   */
+  async countingInputs(email: string, cookies: Record<string, string>, now: number): Promise<{ emailKey: string; marker: Marker | null }> {
+    const keys = await this.loadKeys();
+    const emailKey = await hmacHex(keys.email, normaliseEmail(email));
+    const markerValue = cookies[markerCookieName(keys.identifier)];
+    const marker = markerValue !== undefined ? await readMarker(keys.marker, markerValue, now) : null;
+    return { emailKey, marker };
+  }
+
+  /**
+   * Counts one attempt, or refuses it with `signin_wait` (not counted). Synchronous: call it inside
+   * the caller's transaction, after its cryptography. `markerId` is the presented marker's
+   * identifier when that marker belongs to the attempt's account, else null; a marker whose own
+   * count waits is treated as absent. `address` is the request's address key, `unknown` when absent.
+   * Answers the address failure row (null for an unknown address) and the marker that was counted.
+   */
+  countAttempt(input: { emailKey: string; markerId: string | null; address: string }, now: number): { addressFailureId: number | null; usableMarker: string | null } {
+    const { emailKey, markerId } = input;
+    const emailRow = this.liveCount(EMAIL_FAILURES_TABLE, "email_key", emailKey, now);
+    const markerRow = markerId ? this.liveCount(MARKER_FAILURES_TABLE, "marker_id", markerId, now) : null;
+    const markerWaitEnds = markerRow ? markerRow.last_failure_at + markerWaitMs(markerRow.failures) : 0;
+    // A marker whose own count waits is treated as absent (D-2 amended).
+    const usableMarker = markerId !== null && markerWaitEnds <= now ? markerId : null;
+    const known = input.address !== UNKNOWN_ADDRESS;
+    const address = known
+      ? this.exec<{ n: number; last: number | null }>(
+          `SELECT COUNT(*) AS n, MAX(at) AS last FROM ${ADDRESS_FAILURES_TABLE} WHERE address = ? AND clears_at > ?`,
+          input.address,
+          now,
+        )[0]!
+      : { n: 0, last: null };
+
+    let waitEndsAt = 0;
+    if (usableMarker === null && emailRow) waitEndsAt = Math.max(waitEndsAt, emailRow.last_failure_at + emailWaitMs(emailRow.failures));
+    if (address.last !== null) waitEndsAt = Math.max(waitEndsAt, address.last + addressWaitMs(address.n));
+    const wait = secondsLeft(waitEndsAt, now);
+    if (wait > 0) throw new OperationRefusal("signin_wait", undefined, wait);
+
+    this.raiseCount(EMAIL_FAILURES_TABLE, "email_key", emailKey, emailRow, now, emailClearsAt);
+    if (usableMarker !== null) this.raiseCount(MARKER_FAILURES_TABLE, "marker_id", usableMarker, markerRow, now, markerClearsAt);
+    let addressFailureId: number | null = null;
+    if (known) {
+      const failures = address.n + 1;
+      const heldUntil = addressHeldUntil(now, failures);
+      addressFailureId = this.exec<{ id: number }>(
+        `INSERT INTO ${ADDRESS_FAILURES_TABLE} (address, at, clears_at) VALUES (?, ?, ?) RETURNING id`,
+        input.address,
+        now,
+        heldUntil,
+      )[0]!.id;
+      // Once a wait starts, every failure counted for the address is kept until 15 minutes after
+      // that wait ends (D-2 amended).
+      if (failures >= ADDRESS_FREE_FAILURES) {
+        this.exec(
+          `UPDATE ${ADDRESS_FAILURES_TABLE} SET clears_at = ? WHERE address = ? AND clears_at > ? AND clears_at < ?`,
+          heldUntil,
+          input.address,
+          now,
+          heldUntil,
+        );
+      }
+    }
+    return { addressFailureId, usableMarker };
+  }
+
+  /**
+   * Clears what a successful attempt clears: its own address failure row, the email's count and the
+   * marker's count. Synchronous: call it inside the transaction that decides the success.
+   */
+  clearCounts(counted: { emailKey: string; markerId: string | null; addressFailureId: number | null }): void {
+    if (counted.addressFailureId !== null) this.exec(`DELETE FROM ${ADDRESS_FAILURES_TABLE} WHERE id = ?`, counted.addressFailureId);
+    this.exec(`DELETE FROM ${EMAIL_FAILURES_TABLE} WHERE email_key = ?`, counted.emailKey);
+    if (counted.markerId !== null) this.exec(`DELETE FROM ${MARKER_FAILURES_TABLE} WHERE marker_id = ?`, counted.markerId);
+  }
+
   /**
    * Counts one sign-in attempt before its password is checked, or refuses it with `signin_wait`
    * (not counted). `email` is compared exactly after `normaliseEmail` (D-15); `address` is the
@@ -384,60 +467,17 @@ export class SignInStore {
     const account = user && user.active === 1 ? user : null;
     const markerId = marker && account && marker.accountId === account.id ? marker.markerId : null;
 
-    const emailRow = this.liveCount(EMAIL_FAILURES_TABLE, "email_key", emailKey, now);
-    const markerRow = markerId ? this.liveCount(MARKER_FAILURES_TABLE, "marker_id", markerId, now) : null;
-    const markerWaitEnds = markerRow ? markerRow.last_failure_at + markerWaitMs(markerRow.failures) : 0;
-    // A marker whose own count waits is treated as absent (D-2 amended).
-    const usableMarker = markerId !== null && markerWaitEnds <= now ? markerId : null;
-    const known = input.address !== UNKNOWN_ADDRESS;
-    const address = known
-      ? this.exec<{ n: number; last: number | null }>(
-          `SELECT COUNT(*) AS n, MAX(at) AS last FROM ${ADDRESS_FAILURES_TABLE} WHERE address = ? AND clears_at > ?`,
-          input.address,
-          now,
-        )[0]!
-      : { n: 0, last: null };
-
-    let waitEndsAt = 0;
-    if (usableMarker === null && emailRow) waitEndsAt = Math.max(waitEndsAt, emailRow.last_failure_at + emailWaitMs(emailRow.failures));
-    if (address.last !== null) waitEndsAt = Math.max(waitEndsAt, address.last + addressWaitMs(address.n));
-    const wait = secondsLeft(waitEndsAt, now);
-    if (wait > 0) throw new OperationRefusal("signin_wait", undefined, wait);
-
     const ticket = randomHex(TICKET_BYTES);
     this.storage.transactionSync(() => {
-      this.raiseCount(EMAIL_FAILURES_TABLE, "email_key", emailKey, emailRow, now, emailClearsAt);
-      if (usableMarker !== null) this.raiseCount(MARKER_FAILURES_TABLE, "marker_id", usableMarker, markerRow, now, markerClearsAt);
-      let addressFailureId: number | null = null;
-      if (known) {
-        const failures = address.n + 1;
-        const heldUntil = addressHeldUntil(now, failures);
-        addressFailureId = this.exec<{ id: number }>(
-          `INSERT INTO ${ADDRESS_FAILURES_TABLE} (address, at, clears_at) VALUES (?, ?, ?) RETURNING id`,
-          input.address,
-          now,
-          heldUntil,
-        )[0]!.id;
-        // Once a wait starts, every failure counted for the address is kept until 15 minutes after
-        // that wait ends (D-2 amended).
-        if (failures >= ADDRESS_FREE_FAILURES) {
-          this.exec(
-            `UPDATE ${ADDRESS_FAILURES_TABLE} SET clears_at = ? WHERE address = ? AND clears_at > ? AND clears_at < ?`,
-            heldUntil,
-            input.address,
-            now,
-            heldUntil,
-          );
-        }
-      }
+      const counted = this.countAttempt({ emailKey, markerId, address: input.address }, now);
       this.exec(
         `INSERT INTO ${TICKETS_TABLE} (ticket, user_id, email_key, address_failure_id, marker_id, hash_identity,
            presented_session_hash, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         ticket,
         account?.id ?? null,
         emailKey,
-        addressFailureId,
-        usableMarker,
+        counted.addressFailureId,
+        counted.usableMarker,
         account ? hashIdentity(account) : null,
         presentedSessionHash,
         now + SIGNIN_TICKET_TTL_MS,
@@ -496,9 +536,7 @@ export class SignInStore {
 
     const markerId = row.marker_id ?? freshMarkerId;
     this.storage.transactionSync(() => {
-      if (row.address_failure_id !== null) this.exec(`DELETE FROM ${ADDRESS_FAILURES_TABLE} WHERE id = ?`, row.address_failure_id);
-      this.exec(`DELETE FROM ${EMAIL_FAILURES_TABLE} WHERE email_key = ?`, row.email_key);
-      if (row.marker_id !== null) this.exec(`DELETE FROM ${MARKER_FAILURES_TABLE} WHERE marker_id = ?`, row.marker_id);
+      this.clearCounts({ emailKey: row.email_key, markerId: row.marker_id, addressFailureId: row.address_failure_id });
       this.writeSession(user.id, row.presented_session_hash, session.tokenHash, now);
     });
 
