@@ -1,0 +1,45 @@
+# Brownfield notes: the code story 1.5 builds on
+
+What stories 1.1 to 1.4 left in `site-studio/` that this story depends on or must change, read on 2026-11-22 at `1dd821e` (branch `story/1.5`, cut from `origin/develop`), and checked by the spec review (`review-spec.md`, finding 41 and its closing list). Paths are under `site-studio/`. Line numbers are as read that day.
+
+## Where the plan's assumptions meet the code
+
+| Plan says or assumes | Code has | Consequence |
+|---|---|---|
+| A correct password alone does not sign in (criterion 3) | `SignInStore.complete` (`server/installation/signInStore.ts`) clears the counts and writes the session in one step whenever the outcome is success | `complete` gains a branch: for an account with a `two_step` row it writes a pending row carrying the ticket's bindings, clears nothing, and answers a pending token instead of a session (D-4). The two-step table is owned by the new store; `complete` reads it by its exported name (tables only need to exist when called) |
+| The sign-in reply says a second step is needed (D-12) | `signInReply` is `{ name }` (`shared/routes.ts`); `signInOutcome` in `src/admin/signInClient.js` accepts a success body only when its keys are exactly `name` | The reply becomes a union with `{ secondStep: true }`; `signInOutcome` gains a `secondStep` kind; `tests/signin-client.test.mjs` gains cases, its existing ones unchanged |
+| The pending token is its own cookie (D-2) | `prefixedCookies` (`server/auth/session.ts`) passes only names matching `__Host-ssd-` + optional `m-` + identifier | The pattern admits `p-`; a new `pendingCookieName`, `pendingCookieLine` and `clearPendingCookieLine` sit beside the session's |
+| Counting before checking (CA-15, D-5) | `SignInStore.attempt` raises email, marker and address counts in one synchronous step; `raiseCount`, `liveCount`, the wait functions in `shared/signin.ts` | The second step and the account actions reuse these, made callable from the new store (not copied); the wait and clearing rules stay as story 1.3 left them |
+| The secret is encrypted with a key supplied at deployment (AD-17) | `Env` (`server/env.ts`) has `ASSETS`, the two namespaces and `SETUP_CODE` only; the installation object reads no secret today | `Env` gains `DEPLOYMENT_KEY?: string | null` (spec 1; self-hosted an unset `fromEnvironment` binding is `null`, finding 6). The Worker passes it, only when a non-empty string, in the input of each operation that needs it (D-22); the object does not read it from its own `env`, which on Cloudflare may lag a `wrangler secret put` while the object keeps running |
+| The deploy command creates the key when absent (AD-21, CA-52) | `scripts/deploy-cloudflare.mjs`: `runDeploy` deploys, asks the set-up state, and puts `SETUP_CODE` with `wrangler secret put` on standard input. Wrangler 4.164.0's `secret list --name <worker> --format json` prints `[{ name, type }]` (read in `node_modules/wrangler/wrangler-dist/cli.js`) | `runDeploy` gains `listSecrets`, `askKeyState` and the key steps after the deploy and before the set-up-code steps (spec 6). `runWrangler` (lines 194–200) inherits the child's output and the whole environment, so it gains a captured-output mode and drops `SITE_SURVEY_DEPLOYMENT_KEY` from children (finding 28); `workerName` is checked today only on the open path (lines 133–140) and moves to straight after the deploy (finding 29); `tests/deploy-cloudflare.test.mjs`'s fakes gain a secret list; its existing cases keep passing with a fake list that already holds a key |
+| Self-hosted runs before story 2.23 | `deploy/selfhost/config.capnp` binds no secret; `smoke.mjs` adds `SETUP_CODE` as a `text` binding in a temporary mode-600 copy | `config.capnp` gains `(name = "DEPLOYMENT_KEY", fromEnvironment = "DEPLOYMENT_KEY")` (supported by the pinned `workerd.capnp`, line 757); `smoke.mjs` starts workerd with a per-run key in that variable (D-16); unset, the binding is `null` (lines 757–761). Built by spec 5 |
+| The offer after accepting (criterion 9) | `src/admin/InvitationPage.jsx` line 147: `location.replace('/')` straight after a successful accept | The page reads the two-step state and, only when two-step verification is available, shows the offer in place first; skip or finish then loads `/` (D-11; finding 14) |
+| My account (D-1) | `src/AccountMenu.jsx` holds the name, "Invite a person" (administrators) and Sign out; panels load on demand, as `InvitePanel.jsx` does | A "My account" item loads a new `src/account/MyAccount.jsx` dialog the same way |
+| A QR code is drawn | No QR library in `package.json` | One pinned dependency (D-8), imported only by the set-up view's lazily loaded module, and one pinned dev-only QR decoder for the browser test (finding 8, spec 7) |
+| Crypto | `server/auth/session.ts` has `toBase64Url`, `fromBase64Url`, `sha256Hex`, `randomHex`; `server/auth/marker.ts` HMAC-SHA-256 through `crypto.subtle` | TOTP's HMAC-SHA-1, HKDF and AES-GCM use `crypto.subtle` the same way, in new `server/auth/totp.ts` and `server/auth/deploymentKey.ts` |
+
+## Pieces to reuse
+
+- `server/auth/password.ts`: `hashQueue.hasRoom()`, `verifyPassword(password, stored, signal)`, `HashQueueBusy`; `busyOrGone()` in `server/api/handlers.ts`.
+- `SignInStore`: `prepareSession`, `writeSession`, `sessionMarker` (start the session after the second step), `presentedSession`, `liveSessionAccount` (the account of an action), `emailKey`, `prune`'s pattern and `PRUNE_BATCH`.
+- `server/api/router.ts`: `appOriginOnly`, `readsSessionCookie`, `HandlerResult.cookies`.
+- `src/admin/postJson.js` (`postJson`, `NO_ANSWER`, `appHeaders`), `src/admin/waitWording.js`, the sign-in page's `Frame`, `Field` and alert pattern, the invite panel's dialog, Copy and focus handling, `src/BrandMark.jsx`.
+- `shared/setup.ts`: `characterCount`, `normaliseEmail`; `shared/signin.ts`: wait and clearing functions.
+
+## Existing tests this story must touch
+
+- `server-tests/setup-store.test.ts` pins the installation object's operations list (as story 1.4 found, around line 608): the new operations join it.
+- `server-tests/signin-store.test.ts` line 804 ("is changed only by completeSignIn, acceptInvitation, endSession and the bounded pruning", expected list at line 858): the second step also writes sessions, so the list and the test's name gain it.
+- `server-tests/signin-declarations.test.ts` lines 29–30, the pinned cookie-reading routes: gain the second step and the account two-step routes (the GET state read included, since it reads the cookie).
+- `server-tests/signin-routes.test.ts` and `tests/signin-client.test.mjs`: unchanged for accounts without two-step verification; new cases only.
+- `tests/deploy-cloudflare.test.mjs` (fakes from line 31, `runDeploy(` called at lines 72–148; finding 41): every fake gains `listSecrets`; existing expectations about the set-up code stay.
+- `deploy/selfhost/smoke.mjs` (spec 5): the workerd start gains the environment variable; its checks gain a two-step turn-on and a sign-in with a code before and after the restart, a run without the variable on fresh storage, and a restart with a changed key.
+- `browser-tests/invitation.spec.mjs`: tests that expect the app straight after accepting (they read the account menu after `/` loads) now pass through the offer and choose "Skip for now".
+
+## Test harness facts
+
+- Browser tests: ports 8791–8796 as in `browser-tests/playwright.config.mjs`; each server's gitignored `.dev.vars` (`browser-tests/.local/<server>/`, written by `serve.mjs`; its mode 600 has no effect on Windows, finding 17) gains a per-run test `DEPLOYMENT_KEY`, generated like the set-up codes in the config and kept in the process environment, and the file is removed when the run ends (the one ruled exception to SPEC.md's Never). Shared helpers live in `browser-tests/two-step-helpers.mjs`, never in a `*.spec.mjs` file, which Playwright would register (finding 15). A full run takes about 10 minutes. Opening the same address twice in one document has raced page reloads before: navigate once per test.
+- Codes in browser tests: computed from the key the page shows, by an RFC 6238 implementation in the test helper (Node `crypto`), independent of `shared/`. The last-step rule means a second code within one 30-second step is refused, so tests that need two codes wait for the next step (at most 30 s each); keep such waits few.
+- Server tests run in workerd via `@cloudflare/vitest-plugin` with `deploy/cloudflare/wrangler.jsonc`; a test key is generated when `server-tests/vitest.config.mjs` loads and passed as a binding, never written to a file. Store-level tests construct stores with a key of their choosing (mismatch cases).
+- `npm test` runs `tests/*.test.mjs` under Node with type stripping: a module it loads may import only `shared/refusal.ts` among `shared/` files (story 1.4's finding), so page logic that needs other shared rules is tested in `server-tests/`.
+- On Windows a checkout path longer than about 60 characters breaks the local Durable Object state path; run the browser suite from a short path.
