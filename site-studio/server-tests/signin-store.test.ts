@@ -813,6 +813,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       "completeSignIn",
       "createFirstAdministrator",
       "createInvitation",
+      "deploymentKeyState",
       "endSession",
       "invitationInfo",
       "sessionInfo",
@@ -839,6 +840,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       endSession: async () => ({ cookies: live.cookies }),
       createInvitation: async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: live.cookies }),
       invitationInfo: async () => ({ secretHash: "c".repeat(64) }),
+      deploymentKeyState: async () => ({}),
       acceptInvitation: async () => {
         const created = await call("createInvitation", { email: "accepting@acme.test", name: "Accepting Person", role: "standard", cookies: live.cookies });
         if (!created.ok) throw new Error(created.body.error.code);

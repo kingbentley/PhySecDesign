@@ -693,6 +693,7 @@ describe("the installation object's operations (criteria 8 and 16, standing rule
       ["sessionInfo", async () => ({ cookies: sessionCookies() })],
       ["createInvitation", async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: sessionCookies() })],
       ["invitationInfo", async () => ({ secretHash: await liveHash("read@acme.test") })],
+      ["deploymentKeyState", async () => ({})],
       ["acceptInvitation", async () => ({ secretHash: await liveHash("accept@acme.test"), name: "Accepting Person", passwordHash: madeUpHash(), cookies: {} })],
       ["endSession", async () => ({ cookies: sessionCookies() })],
     ];

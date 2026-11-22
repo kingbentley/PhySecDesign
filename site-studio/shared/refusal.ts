@@ -54,6 +54,33 @@ export const REFUSALS = {
   },
   not_signed_in: { status: 401, message: "Sign in to do this." },
   administrator_only: { status: 403, message: "Only an administrator can do this." },
+  // Two-step verification (story 1.5, D-13, D-21). A wrong or reused code is one message, a wrong
+  // or used recovery code another, and a missing, expired or foreign pending sign-in a third.
+  second_step_code_wrong: {
+    status: 401,
+    message: "That code does not match or was already used. Wait for the next code in your authenticator app and try again.",
+  },
+  second_step_recovery_code_wrong: { status: 401, message: "That recovery code does not match, or it has already been used." },
+  second_step_expired: { status: 401, message: "This sign-in has expired. Sign in again with your email and password." },
+  two_step_password_wrong: { status: 403, message: "That password is not correct." },
+  two_step_code_wrong: {
+    status: 403,
+    message: "That code does not match. Check that the app shows this installation and try the newest code.",
+  },
+  two_step_setup_expired: { status: 409, message: "This set-up has expired or was replaced. Start again." },
+  two_step_already_on: { status: 409, message: "Two-step verification is already on for this account." },
+  two_step_off: { status: 409, message: "Two-step verification is off for this account." },
+  // The deployment key (story 1.5, D-14, D-15): no key and nothing encrypted, or a key that does
+  // not match the fingerprint stored with the first encrypted value (or none once one is stored).
+  deployment_key_missing: {
+    status: 503,
+    message: "Two-step verification is not available on this installation yet: it has no deployment key. Ask an administrator.",
+  },
+  deployment_key_mismatch: {
+    status: 503,
+    message:
+      "Two-step verification cannot be checked on this installation: its deployment key does not match the one its secrets were saved with. Ask an administrator to deploy it again with the original key.",
+  },
 } as const satisfies Record<string, { status: number; message: string }>;
 
 export type RefusalCode = keyof typeof REFUSALS;

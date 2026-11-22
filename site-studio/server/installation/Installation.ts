@@ -28,13 +28,14 @@ import {
   type InvitationCreated,
   type InvitationInfo,
 } from "./invitationStore";
+import { deploymentKeyStateInput, KeyGuard, type DeploymentKeyState } from "./keyGuard";
 
 // The installation object: one per installation, always named "installation" (AD-2). It holds
 // users, sessions, invitations, the project catalogue, settings, tokens, the activity log and the
 // job table as the stories add them. From story 1.2 it holds users, the installation's name and
 // public address, and the set-up code's fingerprint and wrong-code counts; from story 1.3 its
 // identifier, sessions, sign-in failure counts and tickets (signInStore.ts); from story 1.4 its
-// invitations (invitationStore.ts).
+// invitations (invitationStore.ts); from story 1.5 the deployment key's fingerprint (keyGuard.ts).
 
 export interface InstallationStatus {
   dataFormat: number;
@@ -46,9 +47,12 @@ export class Installation extends ObjectBase<Env> {
   readonly setup: SetupStore;
   readonly signIn: SignInStore;
   readonly invitations: InvitationStore;
+  /** The deployment-key guard (story 1.5): the key only ever arrives in an operation's input (D-22). */
+  readonly keyGuard: KeyGuard;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    this.keyGuard = new KeyGuard(ctx.storage);
     this.setup = new SetupStore(ctx.storage);
     // After the set-up store, whose `users` and `settings` tables the sign-in store reads.
     this.signIn = new SignInStore(ctx.storage);
@@ -145,6 +149,15 @@ export class Installation extends ObjectBase<Env> {
       run: (raw): Promise<InvitationAccepted> => {
         const input = parseOperationInput(acceptInvitationInput, raw);
         return this.invitations.acceptInvitation(input, Date.now());
+      },
+    });
+
+    // The public key-state read (story 1.5, D-18 as ruled): whether a fingerprint is stored and
+    // whether the key the Worker passed matches it. Writes nothing, so it may be retried.
+    this.ops.set("deploymentKeyState", {
+      run: (raw): Promise<DeploymentKeyState> => {
+        const input = parseOperationInput(deploymentKeyStateInput, raw ?? {});
+        return this.keyGuard.state(input.deploymentKey);
       },
     });
   }

@@ -609,6 +609,7 @@ describe("accounts and the installation's name are outside project revisions (CA
       "completeSignIn",
       "createFirstAdministrator",
       "createInvitation",
+      "deploymentKeyState",
       "endSession",
       "invitationInfo",
       "sessionInfo",

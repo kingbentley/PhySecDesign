@@ -223,3 +223,10 @@ Three independent reviews of the story 1.3 spec (`review-adversarial.md` finding
 - source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/6-deploy-command-deployment-key.md` (review finding 40)
   summary: An installation deployed before story 1.5 has no `DEPLOYMENT_KEY`. If the update workflow installs story 1.5 or later on it, the key would have to be put during the update, which AD-21 forbids ("no Worker secret may be changed while an update is under way").
   evidence: Real for Epic 9. Later stories: story 9.3 or 9.12 must either refuse to install a release that needs a key the Worker lacks, or put the key before the update begins, using the deploy command's rules (never replace, show once, refuse while encrypted values exist without a key). Status: open, addressed to stories 9.3 and 9.12.
+
+- source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/1-two-step-rules-cryptography-and-key-guard.md`
+  summary: Local `wrangler dev` runs have no `DEPLOYMENT_KEY`, so two-step verification is unavailable there; only the server tests (spec 1), the browser-test servers (spec 7) and the smoke suite (spec 5) get a per-run key.
+  evidence: Story 1.5 spec 1 review, blind-hunter finding; no spec of story 1.5 names a key for a developer's own `npm run dev` or `wrangler dev`.
+- source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/1-two-step-rules-cryptography-and-key-guard.md`
+  summary: `matchingStep` returns the latest of the candidate steps whose code matches, and no test covers two candidates sharing a code; pin it where the last-accepted-step rule is built (spec 2 or 3).
+  evidence: Story 1.5 spec 1 review, verification-gap finding: the window test regenerates the secret until all five codes differ, so first-match and last-match cannot be told apart.
