@@ -88,21 +88,27 @@ export async function readSetupState(fetcher = fetch, { timeoutMs = STATE_TIMEOU
 /**
  * True when `body` is the session read's declared reply (`sessionReply` in shared/routes.ts, kept
  * free of imports here so the prototype's bundle stays small): `{ signedIn: false, installationName }`
- * or `{ signedIn: true, name, installationName }`. Other fields are ignored, so a field a later
- * story adds does not make the read fail.
+ * or `{ signedIn: true, name, accountId, role, installationName }` (story 1.4, D-5). A signed-in
+ * reply without a string `accountId` and a `role` of `administrator` or `standard` is not the
+ * declared reply, so it cannot be checked (fail closed; review finding 2). Other fields are
+ * ignored, so a field a later story adds does not make the read fail.
  */
 export function isSessionReply(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
   const name = body.installationName;
   if (!(name === null || typeof name === 'string')) return false;
   if (body.signedIn === false) return true;
-  if (body.signedIn === true) return typeof body.name === 'string';
+  if (body.signedIn === true) {
+    return typeof body.name === 'string'
+      && typeof body.accountId === 'string'
+      && (body.role === 'administrator' || body.role === 'standard');
+  }
   return false;
 }
 
 /**
  * Reads the session (story 1.3). Resolves to one of:
- * `{ kind: 'signedIn', name, installationName }`, `{ kind: 'signedOut', installationName }`, or
+ * `{ kind: 'signedIn', name, accountId, role, installationName }`, `{ kind: 'signedOut', installationName }`, or
  * `{ kind: 'unknown' }` when the server could not say (the "Sign-in cannot be checked" page). It is
  * read only after the set-up state has answered, so a server is there: a 404, a reply that is not
  * JSON or not the declared reply is `unknown` too, never "no server" (fail closed). The session
@@ -112,6 +118,6 @@ export async function readSession(fetcher = fetch, { timeoutMs = STATE_TIMEOUT_M
   const body = await withTimeout((signal) => readJson(fetcher, SESSION_URL, signal), timeoutMs);
   if (body === CANNOT_CHECK || body === NO_SERVER || !isSessionReply(body)) return { kind: 'unknown' };
   return body.signedIn
-    ? { kind: 'signedIn', name: body.name, installationName: body.installationName }
+    ? { kind: 'signedIn', name: body.name, accountId: body.accountId, role: body.role, installationName: body.installationName }
     : { kind: 'signedOut', installationName: body.installationName };
 }

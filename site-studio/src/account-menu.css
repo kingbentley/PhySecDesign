@@ -13,8 +13,13 @@
 .account-signout{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;margin-top:4px;border:1px solid var(--line);border-radius:6px;color:#17231f;font-size:13px;font-weight:600}
 .account-signout:hover{background:var(--mint)}
 .account-signout[aria-disabled=true]{cursor:progress}
+/* Story 1.4: "Invite a person", for administrators only. */
+.account-item{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;margin-top:4px;border:1px solid var(--line);border-radius:6px;color:#17231f;font-size:13px;font-weight:600}
+.account-item svg{color:var(--teal)}
+.account-item:hover{background:var(--mint)}
+.account-item:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 @media(max-width:850px){
- .account-trigger,.account-signout{min-height:44px}
+ .account-trigger,.account-signout,.account-item{min-height:44px}
  .account-trigger{max-width:140px;padding:0 8px}
 }
 @media(max-width:500px){

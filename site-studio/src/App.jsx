@@ -651,7 +651,7 @@ export function App({ account = null, onSignedOut } = {}){
       <span className={'draft-status '+(saveStatus==='error'?'save-error':'')} title={saveError||'Saved in this browser on this device'}><span className={'status-dot '+(saveStatus!=='saved'?'changed':'')}/>{saveStatus==='saved'?'Saved locally':saveStatus==='error'?'Save failed':'Saving…'}</span>
       <button className="button secondary export-button" onClick={openExport}><DownloadSimple size={18}/>Export</button>
       <button className="button primary" onClick={()=>{setModal('review');setActiveTab('Review')}}>Review design<ArrowSquareOut size={16}/></button>
-      {account && <AccountMenu name={account.name} onSignedOut={onSignedOut}/>}
+      {account && <AccountMenu name={account.name} role={account.role} onSignedOut={onSignedOut}/>}
     </header>
     <nav inert={alignment?true:undefined} className="workflow-nav" aria-label="Project workflow">
       <div className="revision-edit-controls" role="group" aria-label="Edit history">

@@ -1,0 +1,83 @@
+/* The invite panel (S-30) and the invitation page (S-27), story 1.4. White and teal; text at least
+   4.5:1; 16 px fields; 2 px focus ring; 44 px targets on a phone, 32 px or more on desktop. */
+
+/* The invite panel: a dialog over the app. */
+.invite-backdrop{position:fixed;inset:0;z-index:4000;display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 16px;background:#17231f66;overflow-y:auto}
+.invite-panel{width:100%;max-width:460px;padding:22px 24px 24px;display:flex;flex-direction:column;gap:16px;background:#fff;border:1px solid #d9e0db;border-radius:14px;box-shadow:0 18px 48px #183c2240;color:#17231f;font-size:15px;line-height:1.45;white-space:normal;text-align:left}
+.invite-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.invite-header h2{font-size:22px;font-weight:700;line-height:1.2}
+.invite-close{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid #6f7c77;border-radius:8px;background:#fff;color:#17231f;font-size:14px;font-weight:600}
+.invite-close:hover,.invite-secondary:hover{background:#eaf6f1}
+.invite-form,.invite-result{display:flex;flex-direction:column;gap:16px}
+.invite-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.invite-field label,.invite-role legend{font-weight:600}
+.invite-field input,.invite-link{height:44px;width:100%;padding:0 12px;border:1px solid #6f7c77;border-radius:8px;background:#fff;color:#17231f;font-size:16px}
+.invite-field input[aria-invalid="true"]{border:2px solid #b42318}
+.invite-role{margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.invite-role legend{padding:0;margin-bottom:6px}
+.invite-radio{display:flex;align-items:center;gap:10px;min-height:36px;font-size:16px}
+.invite-radio input{width:20px;height:20px;accent-color:#007e73;margin:0}
+.invite-field-error{color:#b42318;font-weight:600;font-size:14px}
+.invite-alert{padding:12px 14px;border:2px solid #b42318;border-radius:8px;background:#fff5f4;color:#8a1c12;font-weight:600}
+.invite-alert-empty{display:none}
+.invite-button{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;min-height:44px;padding:0 20px;border:0;border-radius:8px;background:#007e73;color:#fff;font-size:16px;font-weight:700}
+.invite-button:hover{background:#006c63}
+.invite-button[aria-disabled="true"]{cursor:progress;background:#006c63}
+.invite-secondary{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;min-height:44px;padding:0 18px;border:1px solid #007e73;border-radius:8px;background:#fff;color:#005a52;font-size:16px;font-weight:700}
+.invite-result-heading{font-size:17px;font-weight:700;overflow-wrap:anywhere}
+.invite-result-heading:focus{outline:none}
+.invite-result-heading:focus-visible{outline:2px solid #007e73;outline-offset:4px}
+.invite-link{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:16px;text-overflow:ellipsis}
+.invite-copy-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.invite-copy-status{color:#14532d;font-weight:700}
+.invite-copy-status:empty{display:none}
+.invite-copy-failed{color:#8a1c12}
+.invite-expiry{color:#4f5b57}
+.invite-panel input:focus-visible,.invite-panel button:focus-visible,.invite-alert:focus-visible{outline:2px solid #007e73;outline-offset:2px}
+@media (max-width:850px){
+  .invite-close,.invite-radio{min-height:44px}
+}
+@media (max-width:500px){
+  .invite-backdrop{padding:16px}
+  .invite-panel{padding:18px 16px 20px}
+  .invite-button,.invite-secondary{align-self:stretch}
+}
+
+/* The invitation page (S-27): a centred white card, as the set-up page. */
+body.invitation-open{min-width:0;background:#f6f8f6}
+.invitation-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 16px;color:#17231f;font-size:15px;line-height:1.45}
+.invitation-brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;color:#007e73}
+.invitation-card{width:100%;max-width:620px;padding:32px 36px;background:#fff;border:1px solid #d9e0db;border-radius:14px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.invitation-card h1{font-size:26px;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.invitation-card h1:focus{outline:none}
+.invitation-card h1:focus-visible{outline:2px solid #007e73;outline-offset:4px}
+.invitation-lead{color:#4f5b57;overflow-wrap:anywhere}
+.invitation-summary{margin:0;display:flex;flex-direction:column;gap:8px}
+.invitation-summary div{display:flex;flex-wrap:wrap;gap:4px 12px}
+.invitation-summary dt{font-weight:600;min-width:72px}
+.invitation-summary dd{margin:0;overflow-wrap:anywhere}
+.invitation-notice{padding:12px 14px;border:1px solid #d9e0db;border-radius:8px;background:#f6f8f6}
+.invitation-form{display:flex;flex-direction:column;gap:18px}
+.invitation-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.invitation-field label{font-weight:600}
+.invitation-field input{height:46px;width:100%;padding:0 14px;border:1px solid #6f7c77;border-radius:8px;background:#fff;color:#17231f;font-size:16px}
+.invitation-field input[aria-invalid="true"]{border:2px solid #b42318}
+.invitation-field-error{color:#b42318;font-weight:600;font-size:14px}
+.invitation-rules{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.invitation-rule{display:flex;align-items:center;gap:8px;color:#4f5b57}
+.invitation-rule[data-met="true"]{color:#14532d;font-weight:600}
+.invitation-rule svg{flex:none}
+.invitation-rule-state{font-size:14px}
+.invitation-rule-state::before{content:"· "}
+.invitation-alert{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:12px 14px;border:2px solid #b42318;border-radius:8px;background:#fff5f4;color:#8a1c12;font-weight:600}
+.invitation-alert-empty{display:none}
+.invitation-button{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;min-height:48px;padding:0 22px;border:0;border-radius:8px;background:#007e73;color:#fff;font-size:16px;font-weight:700;text-decoration:none}
+.invitation-button:hover{background:#006c63}
+.invitation-button[aria-disabled="true"]{cursor:progress;background:#006c63}
+.invitation-retry{min-height:44px;padding:0 18px;border:1px solid #8a1c12;border-radius:8px;background:#fff;color:#8a1c12;font-size:16px;font-weight:700}
+.invitation-page input:focus-visible,.invitation-page button:focus-visible,.invitation-page a:focus-visible,.invitation-alert:focus-visible{outline:2px solid #007e73;outline-offset:2px}
+@media (max-width:640px){
+  .invitation-page{padding:24px 16px}
+  .invitation-card{padding:22px 18px}
+  .invitation-button{align-self:stretch}
+}

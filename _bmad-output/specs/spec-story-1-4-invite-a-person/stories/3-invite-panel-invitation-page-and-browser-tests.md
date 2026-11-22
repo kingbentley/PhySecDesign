@@ -2,9 +2,9 @@
 title: 'Story 1.4, spec 3: Invite panel, invitation page and browser tests'
 type: 'feature'
 created: '2026-11-21'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
-baseline_commit: ''
+baseline_commit: '3a7424b68a7d578c7adab6d22d6c8938cbaca842'
 review_loop_iteration: 0
 story_key: '1-4-invite-a-person'
 context:
@@ -87,14 +87,14 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `site-studio/src/admin/invitationClient.js` -- invite, read and accept calls with the app's header; outcome mapping; no message repeats an entered value; imports only `shared/refusal.ts` from `shared/`.
-- [ ] `site-studio/src/admin/InvitePanel.jsx`, `src/AccountMenu.jsx` -- the item and the lazily loaded panel.
-- [ ] `site-studio/src/admin/InvitationPage.jsx`, `src/admin/invitationRules.js`, `src/admin/invitation.css`, `src/main.jsx` -- the page, its rule list's text, the `/invite` branch, the fragment capture, the `accountId` comparison.
-- [ ] `site-studio/src/admin/setupState.js` -- `readSession` and `isSessionReply` for `accountId` and `role`.
-- [ ] `site-studio/tests/invitation-client.test.mjs` -- outcome mapping; `tests/signin-client.test.mjs` gains the `accountId` and `role` cases (brownfield.md).
-- [ ] `site-studio/server-tests/invitation-page-text.test.ts` -- the rule list's text and states from `invitationRules.js` (review finding 8).
-- [ ] `site-studio/browser-tests/invitation.spec.mjs` -- matrix rows, axe on the panel (form and link) and the page (form and unusable), the same-name test for story 1.3's D-16; each test uses its own email.
-- [ ] `site-studio/deploy/selfhost/smoke.mjs` -- `GET /invite` carries `Referrer-Policy: no-referrer` (review finding 5).
+- [x] `site-studio/src/admin/invitationClient.js` -- invite, read and accept calls with the app's header; outcome mapping; no message repeats an entered value; imports only `shared/refusal.ts` from `shared/`.
+- [x] `site-studio/src/admin/InvitePanel.jsx`, `src/AccountMenu.jsx` -- the item and the lazily loaded panel.
+- [x] `site-studio/src/admin/InvitationPage.jsx`, `src/admin/invitationRules.js`, `src/admin/invitation.css`, `src/main.jsx` -- the page, its rule list's text, the `/invite` branch, the fragment capture, the `accountId` comparison.
+- [x] `site-studio/src/admin/setupState.js` -- `readSession` and `isSessionReply` for `accountId` and `role`.
+- [x] `site-studio/tests/invitation-client.test.mjs` -- outcome mapping; `tests/signin-client.test.mjs` gains the `accountId` and `role` cases (brownfield.md).
+- [x] `site-studio/server-tests/invitation-page-text.test.ts` -- the rule list's text and states from `invitationRules.js` (review finding 8).
+- [x] `site-studio/browser-tests/invitation.spec.mjs` -- matrix rows, axe on the panel (form and link) and the page (form and unusable), the same-name test for story 1.3's D-16; each test uses its own email.
+- [x] `site-studio/deploy/selfhost/smoke.mjs` -- `GET /invite` carries `Referrer-Policy: no-referrer` (review finding 5).
 
 **Acceptance Criteria:**
 - Given an administrator signed in, the account menu holds "Invite a person" and it opens the invite panel (criterion 1).
@@ -112,3 +112,87 @@ context:
 - `npm test && npm run typecheck && npm run test:server` -- pass
 - `npm run build && npm run test:sites && npm run test:browser` -- pass in `chromium` and `webkit-iphone`
 - `npm run smoke:selfhost` -- pass, with the `GET /invite` header check (review finding 5)
+
+## Verification record
+
+Final run on 2026-11-21 by the build session, after the review's patches (the last change), each command run in turn in `site-studio/`: `npm test` 171 passed, 0 failed; `npm run typecheck` clean; `npm run test:server` 28 files, 350 tests passed; `npm run build` passed; `npm run test:sites` 4 passed; `npm run test:browser` 130 passed in `chromium` and `webkit-iphone` together (27 in `invitation.spec.mjs` per project, story 1.2's and story 1.3's specs unchanged and passing), none flaky; `npm run smoke:selfhost` passed with the `GET /invite` and `GET /invite/` header check. The `UnknownCA` TLS lines in the browser run's server log are the local servers' self-signed certificate refused by a client, as in earlier stories, and failed nothing. Earlier, during implementation, one `npm run test:server` run timed out once in `setup-store.test.ts`'s scrypt parameter test while a build ran beside it; it passed when re-run and in the final run.
+
+## Deliberate breakages (CAP-10, review finding 19)
+
+Each breakage was applied alone to the built app, before the review's patches, which did not touch the code the breakages changed (the `hashchange` listener added to `invitationAddress.js` does not run when a link is opened in a new page), and `browser-tests/invitation.spec.mjs` run in `chromium` (2026-11-21); the file was restored afterwards. The suite is serial, so the first failing test stops the project; that test is named.
+
+| Breakage | Change made | Failing test |
+|---|---|---|
+| "Invite a person" shown to a standard user | `src/AccountMenu.jsx`: `isAdministrator = true` | accepting with an edited name opens the app as that standard user, with no Invite a person; the used link then no longer works |
+| The secret left in the address bar | `src/admin/invitationAddress.js`: the `history.replaceState` call removed | the link opened in a new browser shows the inviter, the installation, the role and the email, with no fragment in the address bar |
+| The rule list not updating | `src/admin/InvitationPage.jsx`: the list built from `''` instead of the typed password | typing a password turns each rule met only once it is met, and a password breaking one is not sent |
+| The visibility re-read comparing the name | `src/main.jsx`: `previous.name !== next.name` in place of `previous.accountId !== next.accountId` | a tab signed in as one account reloads as another account of the same name signed in from another tab (story 1.3's D-16) |
+
+## Build notes
+
+- Under `wrangler dev --local-protocol https` the Worker sees requests as `http://`, so the public address set-up records in the browser tests is the server's `http://` origin and the invite link starts with it. The tests check the link's host, path and 43-character fragment, and open its path and fragment on the server's `https://` origin. The link is still built on the recorded address (spec 2); nothing in the server changed.
+- Wording this spec leaves open, chosen to match the existing pages: the panel's field hints ("Enter an email address, such as name@example.com, of at most 254 characters.", "Enter the person's name, 1 to 80 characters."), the page's password messages (the set-up page's), the rule states "Met" and "Not yet met", the reload page's line under its heading, and "Checking the invitation…". The panel's `updating` refusal uses the sign-in page's updating text; on the page, an `updating` accept shows the failed-accept message as Always requires, and an `updating` read shows "The invitation cannot be checked" (it is a 503).
+- The secret is captured by `src/admin/invitationAddress.js`, imported first in `src/main.jsx`, so it runs before any other app module.
+
+## Matrix rows to tests
+
+Every test named here is in `site-studio/browser-tests/invitation.spec.mjs` and runs in both `chromium` and `webkit-iphone` unless marked.
+
+| Matrix row | Test |
+|---|---|
+| Administrator opens menu | an administrator's account menu holds Invite a person, which opens a labelled panel that Escape and Close leave with focus on the menu |
+| Standard user opens menu | accepting with an edited name opens the app as that standard user, with no Invite a person; the used link then no longer works |
+| Invite | inviting shows the link once with Copy and the expiry as local date and time; Invite another person starts again (clipboard checked in `chromium` only, CAP-10) |
+| Copy fails | when copying fails the link is selected and the panel says to copy it by hand |
+| Invite existing email | inviting an email that has an account shows the refusal by Email and no link |
+| Invite, no answer | when the invite request gets no answer the panel says so above its button |
+| Open link | the link opened in a new browser shows the inviter, the installation, the role and the email, with no fragment in the address bar |
+| `/invite` headers | the /invite page is served with Referrer-Policy: no-referrer, and / is not; also `deploy/selfhost/smoke.mjs` |
+| Set-up state cannot be checked | with the set-up state not checkable at the link, the page says so and the address bar holds no fragment |
+| Session read cannot be checked | with the session read not checkable at the link, the invitation page still shows |
+| Signed in while opening | the administrator opening a link in their own browser is told that setting the password signs them out |
+| Malformed fragment | a malformed fragment says the link no longer works without asking the server |
+| Typing a password | typing a password turns each rule met only once it is met, and a password breaking one is not sent; the rule text and states also in `server-tests/invitation-page-text.test.ts` |
+| Passwords differ | typing a password turns each rule met only once it is met, and a password breaking one is not sent (its mismatch step) |
+| Accept | accepting with an edited name opens the app as that standard user, with no Invite a person; the used link then no longer works |
+| Accept as an administrator | accepting an administrator invitation gives the new account Invite a person |
+| Accept fails | when accepting fails the page says the password may not have been set, and Try again completes it |
+| Reuse link | accepting with an edited name opens the app as that standard user, with no Invite a person; the used link then no longer works |
+| Expired link | an expired link (the read answering 410) says the link no longer works |
+| Reload after opening | a reload after opening asks to open the link again |
+| Read fails | when the invitation read fails the page says it cannot be checked, and Try again reads it again (aborted and 500) |
+| Session read after sign-in | after a sign-in, a session read answering signed out shows the sign-in page, and one that cannot be checked says so |
+| Same-name account in another tab | a tab signed in as one account reloads as another account of the same name signed in from another tab (story 1.3's D-16) |
+
+Added by the review (rows 14 to 16 and 18 of the triage log), beyond the matrix: "an invite refused as not signed in shows the sign-in page"; "an invite refused for its name shows the message by the Name field"; "an accept refused as unusable replaces the form with the no-longer-works message"; "an accept refused for its password shows the server's message by the Password field"; "a link opened at /invite/ shows the invitation, with no fragment in the address bar"; "a second link opened in a tab already at /invite shows that invitation, with no fragment in the address bar".
+
+Acceptance criteria: criterion 1 → Administrator opens menu; criterion 2 → Invite; criterion 3 → Open link; criterion 5 → Typing a password; criterion 7 → Open link, `/invite` headers, Set-up state cannot be checked; criterion 11 → Reuse link, Expired link; criterion 14 → Standard user opens menu (with spec 2's `administrator_only` route test); axe and the four breakages (CAP-10) → the axe calls in the tests above and the breakage table.
+
+## Review Triage Log
+
+Review of 2026-11-21 (iteration 0): three layers on the code diff since `3a7424b` (blind hunter, edge-case hunter, verification gap). One row per finding.
+
+| # | Layer | Finding | Verdict | Evidence | Outcome |
+|---|---|---|---|---|---|
+| 1 | blind | A pointer-down on the panel's backdrop closes it while the one-time link shows, discarding it | medium | `InvitePanel.jsx` closed on any backdrop pointer-down; D-9 makes the link unrecoverable | fixed (patch): the backdrop no longer closes the panel |
+| 2 | blind | After a timed-out accept, Try again meeting `invitation_unusable` shows the generic unusable page, dropping the "try signing in" hint | low | Real: the second reply replaces the failed-accept message. Needs a first accept to commit after the 30 s timeout; the fix needs wording the spec does not give | rejected: rare, and the failed-accept message already told the person what to do; raised to Kevin as a question |
+| 3 | blind | The reload page says the link "still works until it is used", omitting replacement and expiry | low | Wording chosen in the build, not pinned by the spec | fixed (patch): reworded |
+| 4 | blind | An `updating` read or accept on the page never shows the updating wording | low | The code follows the frozen Always bullets (5xx read → cannot be checked; `updating` accept → failed-accept message), but the wording list puts the updating text under Page | deferred (`deferred-work.md`, waits for Kevin's ruling) |
+| 5 | blind | The unusable heading and detail come from splitting the server message on ". " | false | A change to the message is caught: the browser tests pin the heading "This invitation link no longer works." | rejected |
+| 6 | blind | After sign-in, the session re-read has no busy state or generation guard | low | `SignInPage` ends its busy state before `onSignedIn`'s read; a second click signs in again, harmlessly; both reads ask the same server state | rejected: unlikely (the read is fast) and the fix reworks `SignInPage`'s in-flight guard |
+| 7 | blind | A visibility reload on `/invite` drops the secret mid-form | low | Real only when the same browser holds a session and another tab switches account; the link still works and the page says to open it again | rejected: rare, the harm is a re-open, the fix adds a branch |
+| 8 | blind | The focus trap is untested and the background is not inert | low | `aria-modal` is set and axe passes; focus in, Escape and Close (what the spec asks) are tested | rejected |
+| 9 | blind | The lazy panel load has no busy state; closing the menu meanwhile still opens the panel | low | Real but the chunk is small and local | rejected |
+| 10 | blind | The expiry test checks only the date, from `Date.now()` | medium | The test compared day, month and year only; time unchecked and midnight-sensitive | fixed (patch): compares date and time with the reply's `expiresAt` |
+| 11 | blind | The copy status is never reset, so a second copy announces nothing | low | Direct one-line correction | fixed (patch): reset at each attempt |
+| 12 | blind | The panel's heading name (trimmed) may differ from the server's normalisation | false | `personNameField` is `trimmedText(PERSON_NAME_MAX)` (`shared/setup.ts:67`): the server trims only | rejected |
+| 13 | blind | The smoke suite checks no near-miss path for the header | false | `server-tests/invitation-routes.test.ts:617` checks that `/`, `/invite/other` and `/inviter` carry no header | rejected |
+| 14 | verification-gap | The panel's `not_signed_in` and `invalid_input`-field branches are untested in the page | gap | Filed pre-verified | fixed (patch): two browser tests |
+| 15 | verification-gap | The accept's `invitation_unusable` and field branches are untested in the page | gap | Filed pre-verified | fixed (patch): two browser tests |
+| 16 | verification-gap | `/invite/` with a fragment is untested for the page and the fragment removal | gap | Filed pre-verified | fixed (patch): browser test |
+| 17 | verification-gap | A same-account role change on the visibility re-read is untested | gap | Filed pre-verified, disposition defer: no story 1.4 flow changes a role | deferred (`deferred-work.md`, story 1.9) |
+| 18 | edge-case | A second link opened in a tab already at `/invite` is a hash-only navigation: the new secret stays in the address bar | medium | No reload happens, so `invitationAddress.js` never runs again (standing rule 14) | fixed (patch): `hashchange` reloads at the invite path, with a browser test |
+| 19 | edge-case | Visibility reload on `/invite` after an account switch | low | Same as row 7 | rejected (as row 7) |
+| 20 | edge-case | Role dropping to standard while the panel is open | low | Unreachable in story 1.4 | deferred with row 17 (story 1.9) |
+| 21 | edge-case | Sign-in button re-enabled during the post-sign-in session read | low | Same as row 6 | rejected (as row 6) |
+| 22 | edge-case | The client loads `shared/routes.ts`, though the spec says it imports only `refusal.ts` | false | The spec says "as `signInClient.js` does", and `signInClient.js:87` loads `routes.ts` the same way at request time; the static imports are `refusal.ts` only, so `tests/` loads it in Node (review finding 8's purpose) | rejected |

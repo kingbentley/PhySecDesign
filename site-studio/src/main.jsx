@@ -1,3 +1,7 @@
+// First, before any other module runs or anything is read: at /invite the invitation's secret is
+// taken from the address into memory and the address loses its fragment (story 1.4, D-1, D-8;
+// review finding 3). ES modules run in import order, so this import must stay the first.
+import { invitationSecret, isInvitePath } from "./admin/invitationAddress.js";
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
@@ -6,10 +10,12 @@ import { readReviewLink } from "./reviewClient.js";
 import { SETUP_PATH, isSetupPath, readSession, readSetupState } from "./admin/setupState.js";
 import "./styles.css";
 
-// The set-up page (S-25) and the sign-in page (S-26) load only when they are needed.
+// The set-up page (S-25), the sign-in page (S-26) and the invitation page (S-27) load only when
+// they are needed.
 const SetupPage = lazy(() => import("./admin/SetupPage.jsx"));
 const SignInPage = lazy(() => import("./admin/SignInPage.jsx"));
 const SignInUnknown = lazy(() => import("./admin/SignInPage.jsx").then((module) => ({ default: module.SignInUnknown })));
+const InvitationPage = lazy(() => import("./admin/InvitationPage.jsx"));
 
 // If a page's code cannot be loaded (a dropped connection, or a deploy replaced the files the page
 // was built with), say so instead of leaving the page blank.
@@ -61,8 +67,9 @@ function Signed({ session, onSignedIn, onSignedOut, onRetry }) {
   if (session.kind === "signedIn" || session.kind === "none") {
     const access = readReviewLink(hash);
     if (access) return <RevisionReviewPage key={hash} access={access}/>;
-    const account = session.kind === "signedIn" ? { name: session.name } : null;
-    return <App key={session.kind === "signedIn" ? session.name : "none"} account={account} onSignedOut={onSignedOut}/>;
+    // Keyed on the account's identifier, not its name: two accounts may share a name (CAP-9).
+    const account = session.kind === "signedIn" ? { name: session.name, role: session.role } : null;
+    return <App key={session.kind === "signedIn" ? `account:${session.accountId}` : "none"} account={account} onSignedOut={onSignedOut}/>;
   }
   const access = wellFormedReviewLink(hash);
   if (access) return <RevisionReviewPage key={hash} access={access}/>;
@@ -78,7 +85,8 @@ function Signed({ session, onSignedIn, onSignedOut, onRetry }) {
 // failure status, or JSON without the declared state) shows "Set-up cannot be checked" with Try again at every address,
 // without reading the session. The session is read only once a server has answered, so any reply
 // to it that is not the declared one shows "Sign-in cannot be checked" (D-7 amended and amended
-// again; fail closed, story 1.3 code review).
+// again; fail closed, story 1.3 code review). Once set-up is closed, /invite and /invite/ show the
+// invitation page whatever the session, without waiting for the session read (story 1.4).
 function Start() {
   // { setup: "open" | "closed" | "none" | "unknown", attempt } then, once set-up is closed away
   // from /setup, the session as `readSession` gives it.
@@ -126,11 +134,12 @@ function Start() {
       const next = await readSession();
       if (!current || mine !== generation || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
       const previous = sessionNow.current;
-      if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.name !== next.name) {
+      // Accounts are told apart by their identifier, never their name (story 1.4, CAP-9).
+      if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.accountId !== next.accountId) {
         location.reload();
         return;
       }
-      if (previous?.kind === next.kind && previous?.name === next.name) return;
+      if (previous?.kind === next.kind && previous?.accountId === next.accountId && previous?.name === next.name && previous?.role === next.role) return;
       applySession(next);
     }
     document.addEventListener("visibilitychange", visible);
@@ -149,11 +158,19 @@ function Start() {
     );
   }
   if (setup.state === "none") return <Signed session={{ kind: "none" }}/>;
+  // The invitation page shows whatever the session, without waiting for its read; it renders
+  // whatever the read answers, `unknown` included (story 1.4, D-4; review finding 3).
+  if (isInvitePath(location.pathname)) {
+    return <Lazy page="invitation"><InvitationPage secret={invitationSecret()} session={session}/></Lazy>;
+  }
   if (session === null) return null;
   return (
     <Signed
       session={session}
-      onSignedIn={({ name }) => applySession({ kind: "signedIn", name, installationName: installationName.current })}
+      // The sign-in reply carries only the name, so the session is read once to learn the account's
+      // identifier and role (story 1.4, CAP-9; review finding 29). Signed out shows the sign-in
+      // page again; a read that cannot be checked shows "Sign-in cannot be checked".
+      onSignedIn={async () => applySession(await readSession())}
       onSignedOut={() => applySession({ kind: "signedOut", installationName: installationName.current })}
       onRetry={async () => applySession(await readSession())}
     />
