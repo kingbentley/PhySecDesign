@@ -489,6 +489,10 @@ test("when the invitation read fails the page says it cannot be checked, and Try
     ["a 500", (route) => route.fulfill({ status: 500, body: "" })],
   ]) {
     await page.route("**/api/v1/invitations/read", handler);
+    // Each pass starts from a fresh document. From /invite, going to the link would change only the
+    // fragment, and the page's hashchange reload would then race this pass's checks and the
+    // unroute below (pull request 12, round 1).
+    await page.goto("about:blank");
     await page.goto(link);
     await expect(heading, name).toBeVisible();
     await expect(page.getByText("The server did not say whether this invitation works. Check the connection and try again.")).toBeVisible();
@@ -598,6 +602,33 @@ test("a tab signed in as one account reloads as another account of the same name
   await expect(page.getByTestId("account-name")).toHaveText(ADMIN.name);
   await openAccountMenu(page);
   await expect(inviteItem(page)).toHaveCount(0);
+});
+
+test("at /invite, another account signed in from another tab updates the notice without a reload, keeping the form and what was typed (pull request 12)", async ({ page, context, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const other = { email: emailFor("othertab"), name: "Olive Othertab", password: PASSWORD };
+  await acceptThroughApi(playwright, server.origin, await createInvitation(playwright, server.origin, { email: other.email, name: other.name }), other.name);
+  const link = await createInvitation(playwright, server.origin, { email: emailFor("keepform"), name: "Kit Keepform" });
+  await signInThroughApi(context.request, server.origin);
+  await page.goto(link);
+  await expect(joinHeading(page)).toBeVisible();
+  await expect(page.getByTestId("invitation-signed-in")).toHaveText(`You are signed in as ${ADMIN.name}. Setting this password signs you out.`);
+  await page.getByLabel("Name").fill("Kit Edited");
+  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
+  await page.getByLabel("Password again").fill(PASSWORD);
+  await setVisibility(page, "hidden");
+  await page.evaluate(() => { window.__notReloaded = true; });
+  // Another tab of the same browser signs in as a different account.
+  await signInThroughApi(context.request, server.origin, other);
+  await setVisibility(page, "visible");
+  await expect(page.getByTestId("invitation-signed-in")).toHaveText(`You are signed in as ${other.name}. Setting this password signs you out.`);
+  expect(await page.evaluate(() => window.__notReloaded)).toBe(true);
+  await expect(joinHeading(page)).toBeVisible();
+  await expect(page.getByTestId("invitation-email")).toHaveText(emailFor("keepform"));
+  await expect(page.getByLabel("Name")).toHaveValue("Kit Edited");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveValue(PASSWORD);
+  await expect(page.getByLabel("Password again")).toHaveValue(PASSWORD);
+  await expect(page).toHaveURL(link.split("#")[0]);
 });
 
 const refusalReply = (status, error) => ({ status, contentType: "application/json", body: JSON.stringify({ error }) });

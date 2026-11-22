@@ -130,4 +130,47 @@ describe("the client's requests", () => {
     expect(await submitAccept(accept, unreachable)).toEqual({ kind: "failed" });
     expect(await submitAccept(accept, never, { timeoutMs: 20 })).toEqual({ kind: "failed" });
   });
+
+  it("gives the no-answer outcome when loading the app's header stalls, and starts no request after the deadline (pull request 12, review round 1)", async () => {
+    const input = { email: EMAIL, name: "Sam", role: "standard" };
+    const accept = { secret: SECRET, name: "Sam", password: "a long and good passphrase" };
+    const headers = { "content-type": "application/json", accept: "application/json", "x-site-survey-design": "1" };
+    let requests = 0;
+    const sentHeaders: unknown[] = [];
+    const counted = (async (_url: string, init: RequestInit) => {
+      requests += 1;
+      sentHeaders.push(init.headers);
+      return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch;
+    // A header load that never finishes.
+    const stalled = () => new Promise<typeof headers>(() => {});
+    expect(await submitInvite(input, counted, { timeoutMs: 20, loadHeaders: stalled })).toEqual({ kind: "refused", message: INVITATION_MESSAGES.network });
+    expect(await readInvitation(SECRET, counted, { timeoutMs: 20, loadHeaders: stalled })).toEqual({ kind: "unknown" });
+    expect(await submitAccept(accept, counted, { timeoutMs: 20, loadHeaders: stalled })).toEqual({ kind: "failed" });
+    // A header load that finishes only after the deadline: the outcome is still no answer, and
+    // the request is never started, then or later.
+    const late: Promise<void>[] = [];
+    const slow = () => {
+      const loaded = new Promise<typeof headers>((resolve) => setTimeout(() => resolve(headers), 60));
+      late.push(loaded.then(() => new Promise((resolve) => setTimeout(resolve, 10))));
+      return loaded;
+    };
+    expect(await submitInvite(input, counted, { timeoutMs: 20, loadHeaders: slow })).toEqual({ kind: "refused", message: INVITATION_MESSAGES.network });
+    expect(await readInvitation(SECRET, counted, { timeoutMs: 20, loadHeaders: slow })).toEqual({ kind: "unknown" });
+    expect(await submitAccept(accept, counted, { timeoutMs: 20, loadHeaders: slow })).toEqual({ kind: "failed" });
+    await Promise.all(late);
+    expect(requests).toBe(0);
+    // A header load that fails gives the no-answer outcome at once, with no request.
+    const failing = () => Promise.reject(new Error("chunk failed")) as Promise<typeof headers>;
+    expect(await submitInvite(input, counted, { timeoutMs: 60_000, loadHeaders: failing })).toEqual({ kind: "refused", message: INVITATION_MESSAGES.network });
+    expect(await submitAccept(accept, counted, { timeoutMs: 60_000, loadHeaders: failing })).toEqual({ kind: "failed" });
+    expect(requests).toBe(0);
+    // A header load within the deadline sends each request as before, with the loaded headers.
+    const prompt = async () => headers;
+    await submitInvite(input, counted, { timeoutMs: 1000, loadHeaders: prompt });
+    await readInvitation(SECRET, counted, { timeoutMs: 1000, loadHeaders: prompt });
+    await submitAccept(accept, counted, { timeoutMs: 1000, loadHeaders: prompt });
+    expect(requests).toBe(3);
+    expect(sentHeaders).toEqual([headers, headers, headers]);
+  });
 });

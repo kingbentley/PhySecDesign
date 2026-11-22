@@ -140,44 +140,58 @@ async function readBody(response) {
 
 const NO_ANSWER = Symbol('no answer');
 
-/** Posts `input` as JSON; resolves to `{ status, body }`, or `NO_ANSWER` on a failure or timeout. */
-async function post(fetcher, url, input, timeoutMs) {
+/**
+ * Posts `input` as JSON; resolves to `{ status, body }`, or `NO_ANSWER` on a failure or timeout.
+ * The deadline covers loading the app's header as well as the request: a header load that stalls
+ * gives no answer, and one that finishes after the deadline starts no request (pull request 12,
+ * review round 1). `loadHeaders` is replaceable only so a test can stall it.
+ */
+async function post(fetcher, url, input, timeoutMs, loadHeaders) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
+  let timer;
+  const deadline = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      resolve(NO_ANSWER);
+    }, timeoutMs);
+  });
+  const attempt = (async () => {
+    const headers = await loadHeaders();
+    if (controller.signal.aborted) return NO_ANSWER;
     const response = await fetcher(url, {
       method: 'POST',
-      headers: await appHeaders(),
+      headers,
       body: JSON.stringify(input),
       credentials: 'same-origin',
       cache: 'no-store',
       signal: controller.signal,
     });
     return { status: response.status, body: await readBody(response) };
-  } catch {
-    return NO_ANSWER;
+  })().catch(() => NO_ANSWER);
+  try {
+    return await Promise.race([attempt, deadline]);
   } finally {
     clearTimeout(timer);
   }
 }
 
 /** Sends the invite request (`{ email, name, role }`); resolves as `inviteOutcome` does. */
-export async function submitInvite(input, fetcher = fetch, { timeoutMs = INVITE_TIMEOUT_MS } = {}) {
-  const reply = await post(fetcher, INVITE_URL, input, timeoutMs);
+export async function submitInvite(input, fetcher = fetch, { timeoutMs = INVITE_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
+  const reply = await post(fetcher, INVITE_URL, input, timeoutMs, loadHeaders);
   if (reply === NO_ANSWER) return { kind: 'refused', message: INVITATION_MESSAGES.network };
   return inviteOutcome(reply.status, reply.body);
 }
 
 /** Reads the invitation for `secret`; resolves as `readOutcome` does. */
-export async function readInvitation(secret, fetcher = fetch, { timeoutMs = READ_TIMEOUT_MS } = {}) {
-  const reply = await post(fetcher, READ_URL, { secret }, timeoutMs);
+export async function readInvitation(secret, fetcher = fetch, { timeoutMs = READ_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
+  const reply = await post(fetcher, READ_URL, { secret }, timeoutMs, loadHeaders);
   if (reply === NO_ANSWER) return { kind: 'unknown' };
   return readOutcome(reply.status, reply.body);
 }
 
 /** Sends the accept request (`{ secret, name, password }`); resolves as `acceptOutcome` does. */
-export async function submitAccept(input, fetcher = fetch, { timeoutMs = ACCEPT_TIMEOUT_MS } = {}) {
-  const reply = await post(fetcher, ACCEPT_URL, input, timeoutMs);
+export async function submitAccept(input, fetcher = fetch, { timeoutMs = ACCEPT_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
+  const reply = await post(fetcher, ACCEPT_URL, input, timeoutMs, loadHeaders);
   if (reply === NO_ANSWER) return { kind: 'failed' };
   return acceptOutcome(reply.status, reply.body);
 }

@@ -120,7 +120,9 @@ function Start() {
 
   // D-16: when the tab becomes visible again, read the session again. Signed out shows the sign-in
   // page; another account reloads the app as that account; signed in from another tab opens the
-  // app. A read that fails leaves the page as it is.
+  // app. A read that fails leaves the page as it is. At /invite and /invite/ another account is
+  // applied without a reload, which would lose the secret (already gone from the address) and what
+  // was typed; the page's "You are signed in as" notice follows it (pull request 12, round 1).
   const signedState = session?.kind;
   useEffect(() => {
     if (signedState !== "signedIn" && signedState !== "signedOut") return undefined;
@@ -135,7 +137,8 @@ function Start() {
       if (!current || mine !== generation || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
       const previous = sessionNow.current;
       // Accounts are told apart by their identifier, never their name (story 1.4, CAP-9).
-      if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.accountId !== next.accountId) {
+      if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.accountId !== next.accountId
+        && !isInvitePath(location.pathname)) {
         location.reload();
         return;
       }

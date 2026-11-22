@@ -97,10 +97,15 @@ async function sessionFor(name: string, userId: string, signedInAt = T0): Promis
   return { [sessionCookieName(await identifierOf(name))]: token };
 }
 
-/** An installation with an administrator signed in. */
-async function withAdministrator(name: string) {
+/**
+ * An installation with an administrator signed in at `signedInAt`. A test whose operations run on
+ * the live clock (through `callObject`, or with `Date.now()`) passes `Date.now()`, so its session is
+ * not past its 30 days whenever the test runs; a test that gives every operation its own time keeps
+ * `T0` (pull request 12, review round 1).
+ */
+async function withAdministrator(name: string, signedInAt = T0) {
   const adminId = await seedUser(name, ADMIN_EMAIL);
-  const cookies = await sessionFor(name, adminId);
+  const cookies = await sessionFor(name, adminId, signedInAt);
   return { adminId, cookies };
 }
 
@@ -261,7 +266,7 @@ describe("creating an invitation", () => {
 
   it("for an email with an account, after trim and lower case, is refused invitation_email_taken naming the field, writing nothing (CA-10)", async () => {
     const name = "create-email-taken";
-    const { cookies } = await withAdministrator(name);
+    const { adminId, cookies } = await withAdministrator(name);
     await seedUser(name, "gone@acme.test", { userName: "Gone Person", role: "standard", active: 0 });
     const before = await snapshot(name);
     for (const email of ["  DANA@acme.TEST ", ADMIN_EMAIL, "gone@acme.test"]) {
@@ -269,8 +274,10 @@ describe("creating an invitation", () => {
     }
     expect(await snapshot(name)).toEqual(before);
 
-    // Through the object's call: the refusal names the field and never the email.
-    const refused = await callObject(env.INSTALLATION, idFor(name), "createInvitation", { email: ADMIN_EMAIL, name: "Dana Again", role: "standard", cookies });
+    // Through the object's call, which runs on the live clock, with a session signed in now: the
+    // refusal names the field and never the email.
+    const liveCookies = await sessionFor(name, adminId, Date.now());
+    const refused = await callObject(env.INSTALLATION, idFor(name), "createInvitation", { email: ADMIN_EMAIL, name: "Dana Again", role: "standard", cookies: liveCookies });
     expect(refused.ok ? null : { status: refused.status, body: refused.body }).toEqual({
       status: 409,
       body: { error: { code: "invitation_email_taken", message: "That email already has an account.", field: "email" } },
@@ -462,7 +469,7 @@ describe("accepting an invitation", () => {
 
   it("twice at once creates one account and one session; the other is refused (criterion 10)", async () => {
     const name = "accept-at-once";
-    const { cookies } = await withAdministrator(name);
+    const { cookies } = await withAdministrator(name, Date.now());
     const invitation = await created(name, { email: "sam@acme.test", cookies }, Date.now());
     const input = { secretHash: invitation.secretHash, name: "Sam Person", cookies: {} };
     const results = await Promise.all([
@@ -521,7 +528,7 @@ describe("accepting an invitation", () => {
 
   it("refuses a password hash with other scrypt parameters as invalid input (review finding 10)", async () => {
     const name = "accept-parameters";
-    const { cookies } = await withAdministrator(name);
+    const { cookies } = await withAdministrator(name, Date.now());
     const invitation = await created(name, { email: "sam@acme.test", cookies }, Date.now());
     const before = await snapshot(name);
     for (const [field, value] of [
@@ -669,16 +676,22 @@ describe("the installation object's operations (criteria 8 and 16, standing rule
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(fixtures.map(([operation]) => operation).sort()).toEqual(operations);
 
+    // Users are compared by their identifiers, not their number, so an operation that replaced a
+    // user without changing the count would be seen too (pull request 12, review round 1).
+    const userIds = async () => (await usersOf(name)).map((row) => String(row.id)).sort();
     const changedInvitations: string[] = [];
     const insertedUsers: string[] = [];
     for (const [operation, fixture] of fixtures) {
       const input = await fixture();
-      const before = { invitations: JSON.stringify(await invitationRows(name)), users: (await usersOf(name)).length };
+      const before = { invitations: JSON.stringify(await invitationRows(name)), users: await userIds() };
       const result = await call(operation, input);
       expect(result.ok, `${operation}: ${result.ok ? "" : result.body.error.code}`).toBe(true);
       results.set(operation, result);
       if (JSON.stringify(await invitationRows(name)) !== before.invitations) changedInvitations.push(operation);
-      if ((await usersOf(name)).length > before.users) insertedUsers.push(operation);
+      const after = await userIds();
+      // No operation removes or replaces a user: every identifier from before is still there.
+      expect(before.users.filter((id) => !after.includes(id)), `users ${operation} removed or replaced`).toEqual([]);
+      if (after.some((id) => !before.users.includes(id))) insertedUsers.push(operation);
     }
     expect(changedInvitations.sort()).toEqual(["acceptInvitation", "createInvitation"]);
     expect(insertedUsers.sort()).toEqual(["acceptInvitation", "createFirstAdministrator"]);
