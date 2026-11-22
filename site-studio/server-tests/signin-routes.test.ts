@@ -133,7 +133,8 @@ describe("GET /api/v1/session", { timeout: 60_000 }, () => {
     const text = await response.text();
     for (const value of Object.values(cookies)) expect(text).not.toContain(value);
     const body = JSON.parse(text);
-    expect(body).toEqual({ signedIn: true, name: "Dana Admin", installationName: "Acme Security" });
+    const userId = (await runInDurableObject(installed.stub, (_i, state) => state.storage.sql.exec<{ id: string }>("SELECT id FROM users").one())).id;
+    expect(body).toEqual({ signedIn: true, name: "Dana Admin", accountId: userId, role: "administrator", installationName: "Acme Security" });
     expect(sessionReply.parse(body)).toEqual(body);
   });
 

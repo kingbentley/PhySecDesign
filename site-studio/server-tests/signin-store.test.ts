@@ -18,6 +18,7 @@ import {
   type SignInCompleted,
 } from "../server/installation/signInStore";
 import { SETTINGS_TABLE, USERS_TABLE } from "../server/installation/setupStore";
+import { invitationSecretHash, type InvitationCreated } from "../server/installation/invitationStore";
 import { callObject } from "../server/objects/call";
 import type { ObjectBase } from "../server/objects/ObjectBase";
 import { BELOW_THRESHOLD_CLEAR_MS, MARKER_MAX_AGE_MS, SESSION_MAX_AGE_MS, SIGNIN_TICKET_TTL_MS } from "../shared/signin";
@@ -693,6 +694,7 @@ describe("the session read (D-4 as amended, V-18)", () => {
       identifier,
       signedIn: true,
       account: { id: userId, name: "Dana Admin" },
+      role: "administrator",
       signedInAt: new Date(T0).toISOString(),
       installationName: "Acme Security",
     });
@@ -799,7 +801,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
     expect(await sessionsOf(name)).toHaveLength(2);
   });
 
-  it("is changed only by completeSignIn, endSession and the bounded pruning; sessionInfo changes nothing", async () => {
+  it("is changed only by completeSignIn, acceptInvitation, endSession and the bounded pruning; sessionInfo changes nothing", async () => {
     const name = "sessions-operations";
     const fingerprint = await setupCodeFingerprint("a-set-up-code-for-this-test");
     await seedUser(name, "dana@acme.test");
@@ -807,9 +809,12 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
     const live = await signInAt(name, "dana@acme.test", Date.now());
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(operations).toEqual([
+      "acceptInvitation",
       "completeSignIn",
       "createFirstAdministrator",
+      "createInvitation",
       "endSession",
+      "invitationInfo",
       "sessionInfo",
       "setupAttempt",
       "setupState",
@@ -832,6 +837,15 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       sessionInfo: async () => ({ cookies: live.cookies }),
       completeSignIn: async () => ({ ticket: await ticket(), outcome: "success" }),
       endSession: async () => ({ cookies: live.cookies }),
+      createInvitation: async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: live.cookies }),
+      invitationInfo: async () => ({ secretHash: "c".repeat(64) }),
+      acceptInvitation: async () => {
+        const created = await call("createInvitation", { email: "accepting@acme.test", name: "Accepting Person", role: "standard", cookies: live.cookies });
+        if (!created.ok) throw new Error(created.body.error.code);
+        const { secret } = created.value as InvitationCreated;
+        const passwordHash = { algorithm: "scrypt", n: 131_072, r: 8, p: 1, keyLength: 32, salt: randomBase64(16), hash: randomBase64(32) };
+        return { secretHash: await invitationSecretHash(secret), name: "Accepting Person", passwordHash, cookies: {} };
+      },
     };
     const changed: string[] = [];
     // endSession last, so the live session is there for the others.
@@ -841,7 +855,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       await call(operation, input);
       if (JSON.stringify(await sessionsOf(name)) !== JSON.stringify(before)) changed.push(operation);
     }
-    expect(changed.sort()).toEqual(["completeSignIn", "endSession"]);
+    expect(changed.sort()).toEqual(["acceptInvitation", "completeSignIn", "endSession"]);
 
     // The pruning: an attempt or a completion removes an expired session row; the read does not.
     const expiredHash = "e".repeat(64);

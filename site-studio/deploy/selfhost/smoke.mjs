@@ -283,6 +283,16 @@ async function checkPage(base) {
 
   const deep = await get(base + "/some/app/route", { headers: { accept: "text/html" } });
   if (!deep.ok || !(await deep.text()).includes('<div id="root">')) fail("An app route did not fall back to the page.");
+  if (page.headers.get("referrer-policy") !== null) fail("The app page carries a Referrer-Policy header; only /invite should.");
+
+  // The invitation page (story 1.4, D-2): served with Referrer-Policy: no-referrer.
+  for (const path of ["/invite", "/invite/"]) {
+    const invite = await get(base + path, { headers: { accept: "text/html" } });
+    if (!invite.ok || !(await invite.text()).includes('<div id="root">')) fail(`GET ${path} did not answer the app page (${invite.status}).`);
+    if (invite.headers.get("referrer-policy") !== "no-referrer") {
+      fail(`GET ${path} carries Referrer-Policy ${JSON.stringify(invite.headers.get("referrer-policy"))}, not no-referrer.`);
+    }
+  }
 }
 
 async function checkRefusal(base) {

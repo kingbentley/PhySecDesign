@@ -1,0 +1,38 @@
+- id: "1"
+  title: Invitation rules and storage
+  description: >-
+    Shared invitation rules and the password rule list, four new refusals, and the installation
+    object's invitations table and operations: create (administrators only, refusing an email with
+    an account, replacing a pending one, secret returned once and stored as SHA-256), read, accept
+    in one transaction that creates the account and starts its session, and bounded pruning; role
+    in the session info. Owns criteria 10, 13, 15 and 16 (acceptance-trace.md).
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to Kevin's decisions D-3, D-4, D-6, D-9, D-10 and D-11 in SPEC.md. No routes, pages
+    or deploys. Pinned lists and shapes in earlier tests change as brownfield.md lists.
+- id: "2"
+  title: Invitation routes and the page header
+  description: >-
+    The invite, invitation read and accept routes, the link on the recorded public address, the
+    accepted password hashed through the one queue, session and marker cookies on acceptance,
+    accountId and role in the session reply, Referrer-Policy no-referrer on /invite, the log watch
+    and the no-open-registration sweep. Owns criteria 4, 6, 8, 9 and 12.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-1, D-2, D-4, D-5 and D-6 in SPEC.md. Writes are never retried after a
+    bare reset (story 1.2's D-2 as amended). The secret never appears in a path, query or log.
+    The accept route's id is acceptInvite; the object operation it calls is acceptInvitation.
+- id: "3"
+  title: Invite panel, invitation page and browser tests
+  description: >-
+    "Invite a person" in an administrator's account menu, the invite panel, the /invite page with
+    the live password rule list, the page's account comparison by accountId, and Playwright and axe
+    tests in Chromium and WebKit iPhone. Owns criteria 1, 2, 3, 5, 7, 11 and 14.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-1, D-2, D-3, D-4, D-5, D-7, D-8, D-9 and D-11 in SPEC.md. No manual-only
+    page check (standing rule 15). Record the four deliberate breakages' failing test names.
+    The invitation tests use signInServers(project)[0], never the baseURL server.

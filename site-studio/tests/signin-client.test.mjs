@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { REFUSALS } from "../shared/refusal.ts";
-import { SIGN_IN_MESSAGES, signInOutcome, signOutConfirmed, waitMessage } from "../src/admin/signInClient.js";
+import { SIGN_IN_MESSAGES, requestSignOut, signInOutcome, signOutConfirmed, submitSignIn, waitMessage } from "../src/admin/signInClient.js";
 import { waitWording } from "../src/admin/waitWording.js";
 import { isSessionReply, readSession, readSetupState } from "../src/admin/setupState.js";
 
@@ -100,13 +100,20 @@ describe("start-up reads", () => {
   });
 
   test("the session: signed in, signed out, or cannot be checked, never no server (fail closed)", async () => {
-    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", installationName: "Harbourside" })),
-      { kind: "signedIn", name: "Robin", installationName: "Harbourside" });
+    // Story 1.4 (D-5, CAP-9): the account's identifier and role are passed on.
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", accountId: "acc-1", role: "administrator", installationName: "Harbourside" })),
+      { kind: "signedIn", name: "Robin", accountId: "acc-1", role: "administrator", installationName: "Harbourside" });
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Sam", accountId: "acc-2", role: "standard", installationName: "Harbourside" })),
+      { kind: "signedIn", name: "Sam", accountId: "acc-2", role: "standard", installationName: "Harbourside" });
     assert.deepEqual(await readSession(reply(200, { signedIn: false, installationName: "Harbourside" })),
       { kind: "signedOut", installationName: "Harbourside" });
     // A field a later story adds is ignored.
-    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", installationName: "Harbourside", role: "administrator" })),
-      { kind: "signedIn", name: "Robin", installationName: "Harbourside" });
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", accountId: "acc-1", role: "administrator", installationName: "Harbourside", team: "x" })),
+      { kind: "signedIn", name: "Robin", accountId: "acc-1", role: "administrator", installationName: "Harbourside" });
+    // A signed-in reply without the identifier or a known role cannot be checked (review finding 2).
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", installationName: "Harbourside" })), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", accountId: "acc-1", installationName: "Harbourside" })), { kind: "unknown" });
+    assert.deepEqual(await readSession(reply(200, { signedIn: true, name: "Robin", accountId: "acc-1", role: "owner", installationName: "Harbourside" })), { kind: "unknown" });
     // The session is read only after the set-up state answered, so a server is there: a 404, a page
     // that is not JSON, a reply of the wrong shape or a 4xx refusal cannot be checked.
     assert.deepEqual(await readSession(reply(404, refusal("not_found"))), { kind: "unknown" });
@@ -130,11 +137,82 @@ describe("start-up reads", () => {
 
   test("the declared session reply is accepted, with any extra field ignored", () => {
     assert.equal(isSessionReply({ signedIn: false, installationName: null }), true);
-    assert.equal(isSessionReply({ signedIn: true, name: "Robin", installationName: "Harbourside" }), true);
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", accountId: "acc-1", role: "administrator", installationName: "Harbourside" }), true);
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", accountId: "acc-1", role: "standard", installationName: null }), true);
+    // Story 1.4 (review finding 2): signed in needs a string accountId and a known role.
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", installationName: "Harbourside" }), false);
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", accountId: 7, role: "standard", installationName: "Harbourside" }), false);
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", accountId: "acc-1", role: "owner", installationName: "Harbourside" }), false);
+    assert.equal(isSessionReply({ signedIn: true, name: "Robin", accountId: "acc-1", installationName: "Harbourside" }), false);
     assert.equal(isSessionReply({ signedIn: true, installationName: "Harbourside" }), false);
     assert.equal(isSessionReply({ signedIn: false, installationName: "x", role: "y" }), true);
     assert.equal(isSessionReply({ signedIn: false }), false);
     assert.equal(isSessionReply({ signedIn: "yes", installationName: null }), false);
     assert.equal(isSessionReply([]), false);
+  });
+});
+
+describe("the sign-in and sign-out requests (pull request 12)", () => {
+  const input = { email: "robin@harbourside.example", password: "a long and correct sign-in passphrase" };
+  const headers = { "content-type": "application/json", accept: "application/json", "x-site-survey-design": "1" };
+  const replying = (status, body, extraHeaders = {}) => {
+    const sent = [];
+    const fetcher = async (url, init) => {
+      sent.push({ url, init });
+      return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...extraHeaders } });
+    };
+    return { fetcher, sent };
+  };
+  const never = (_url, init) => new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted"))));
+
+  // shared/routes.ts uses imports only the bundler and workerd resolve, so here the header load is
+  // a stand-in; server-tests/setup-client.test.ts sends the real header.
+  const loaded = { loadHeaders: async () => headers };
+
+  test("send the loaded headers and map the reply, the Retry-After header included", async () => {
+    const signIn = replying(200, { name: "Robin Example" });
+    assert.deepEqual(await submitSignIn(input, signIn.fetcher, loaded), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(signIn.sent[0].url, "/api/v1/session/sign-in");
+    assert.equal(signIn.sent[0].init.method, "POST");
+    assert.deepEqual(signIn.sent[0].init.headers, headers);
+    assert.deepEqual(JSON.parse(signIn.sent[0].init.body), input);
+    const wait = replying(429, { error: { code: "signin_wait", message: "x" } }, { "retry-after": "60" });
+    assert.equal((await submitSignIn(input, wait.fetcher, loaded)).message, "Too many attempts. Wait 1 minute before trying again.");
+    const signOut = replying(200, { signedIn: false });
+    assert.equal(await requestSignOut(signOut.fetcher, loaded), true);
+    assert.equal(signOut.sent[0].url, "/api/v1/session/sign-out");
+    assert.equal(await requestSignOut(replying(200, { signedIn: true }).fetcher, loaded), false);
+  });
+
+  test("a request with no answer before the deadline is the network message, or an unconfirmed sign-out", async () => {
+    assert.deepEqual(await submitSignIn(input, never, { timeoutMs: 20 }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(never, { timeoutMs: 20 }), false);
+  });
+
+  test("loading the app's header counts against the deadline: stalled, late or failed, no request is started", async () => {
+    let requests = 0;
+    const counted = async () => {
+      requests += 1;
+      return new Response(JSON.stringify({ name: "Robin Example" }), { status: 200 });
+    };
+    const stalled = () => new Promise(() => {});
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 20, loadHeaders: stalled }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 20, loadHeaders: stalled }), false);
+    const late = [];
+    const slow = () => {
+      const loaded = new Promise((resolve) => setTimeout(() => resolve(headers), 60));
+      late.push(loaded.then(() => new Promise((resolve) => setTimeout(resolve, 10))));
+      return loaded;
+    };
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 20, loadHeaders: slow }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 20, loadHeaders: slow }), false);
+    const failing = () => Promise.reject(new Error("chunk failed"));
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 60_000, loadHeaders: failing }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    assert.equal(await requestSignOut(counted, { timeoutMs: 60_000, loadHeaders: failing }), false);
+    await Promise.all(late);
+    assert.equal(requests, 0);
+    // In time, the request goes out as before.
+    assert.deepEqual(await submitSignIn(input, counted, { timeoutMs: 1000, loadHeaders: async () => headers }), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(requests, 1);
   });
 });

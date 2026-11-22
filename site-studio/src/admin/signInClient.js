@@ -4,8 +4,10 @@
 // repeats what was typed or says whether an email has an account (AD-22, FR-67).
 //
 // This module imports only files Node can load as they are, so `tests/signin-client.test.mjs` runs
-// it under `node --test`; the app's header comes from shared/routes.ts when a request is sent.
+// it under `node --test`; the app's header comes from shared/routes.ts when a request is sent
+// (`postJson.js`, whose one deadline covers that load and the request).
 import { REFUSALS } from '../../shared/refusal.ts';
+import { NO_ANSWER, appHeaders, postJson } from './postJson.js';
 import { waitWording } from './waitWording.js';
 
 const SIGN_IN_URL = '/api/v1/session/sign-in';
@@ -83,48 +85,29 @@ export function signOutConfirmed(status, body) {
   return status >= 200 && status < 300 && body?.signedIn === false;
 }
 
-async function appHeaders() {
-  const { APP_HEADER, APP_HEADER_VALUE } = await import('../../shared/routes.ts');
-  return { 'content-type': 'application/json', accept: 'application/json', [APP_HEADER]: APP_HEADER_VALUE };
+/**
+ * How long each request may take, loading the app's header included, before it counts as no
+ * answer. Signing in includes a deliberately slow hash, as accepting an invitation does.
+ */
+export const SIGN_IN_TIMEOUT_MS = 30000;
+export const SIGN_OUT_TIMEOUT_MS = 15000;
+
+/**
+ * Sends the sign-in request; resolves as `signInOutcome` does, or refused with the network message
+ * when there is no answer within the deadline (a stalled header load included).
+ */
+export async function submitSignIn(input, fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
+  const reply = await postJson(fetcher, SIGN_IN_URL, JSON.stringify(input), { timeoutMs, loadHeaders });
+  if (reply === NO_ANSWER) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+  return signInOutcome(reply.status, reply.body, reply.retryAfter);
 }
 
-async function readBody(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-/** Sends the sign-in request; resolves as `signInOutcome` does, or refused when unreachable. */
-export async function submitSignIn(input, fetcher = fetch) {
-  let response;
-  try {
-    response = await fetcher(SIGN_IN_URL, {
-      method: 'POST',
-      headers: await appHeaders(),
-      body: JSON.stringify(input),
-      credentials: 'same-origin',
-      cache: 'no-store',
-    });
-  } catch {
-    return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
-  }
-  return signInOutcome(response.status, await readBody(response), response.headers.get('retry-after'));
-}
-
-/** Sends the sign-out request; resolves to true only when the server confirmed it. */
-export async function requestSignOut(fetcher = fetch) {
-  try {
-    const response = await fetcher(SIGN_OUT_URL, {
-      method: 'POST',
-      headers: await appHeaders(),
-      body: '{}',
-      credentials: 'same-origin',
-      cache: 'no-store',
-    });
-    return signOutConfirmed(response.status, await readBody(response));
-  } catch {
-    return false;
-  }
+/**
+ * Sends the sign-out request; resolves to true only when the server confirmed it, and to false
+ * when there is no answer within the deadline (the page then stays signed in and says so).
+ */
+export async function requestSignOut(fetcher = fetch, { timeoutMs = SIGN_OUT_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
+  const reply = await postJson(fetcher, SIGN_OUT_URL, '{}', { timeoutMs, loadHeaders });
+  if (reply === NO_ANSWER) return false;
+  return signOutConfirmed(reply.status, reply.body);
 }

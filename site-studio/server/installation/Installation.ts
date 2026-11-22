@@ -19,12 +19,22 @@ import {
   type SignInAttemptCounted,
   type SignInCompleted,
 } from "./signInStore";
+import {
+  acceptInvitationInput,
+  createInvitationInput,
+  invitationInfoInput,
+  InvitationStore,
+  type InvitationAccepted,
+  type InvitationCreated,
+  type InvitationInfo,
+} from "./invitationStore";
 
 // The installation object: one per installation, always named "installation" (AD-2). It holds
 // users, sessions, invitations, the project catalogue, settings, tokens, the activity log and the
 // job table as the stories add them. From story 1.2 it holds users, the installation's name and
 // public address, and the set-up code's fingerprint and wrong-code counts; from story 1.3 its
-// identifier, sessions, sign-in failure counts and tickets (signInStore.ts).
+// identifier, sessions, sign-in failure counts and tickets (signInStore.ts); from story 1.4 its
+// invitations (invitationStore.ts).
 
 export interface InstallationStatus {
   dataFormat: number;
@@ -35,12 +45,15 @@ export class Installation extends ObjectBase<Env> {
   protected readonly objectKind = "installation";
   readonly setup: SetupStore;
   readonly signIn: SignInStore;
+  readonly invitations: InvitationStore;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.setup = new SetupStore(ctx.storage);
     // After the set-up store, whose `users` and `settings` tables the sign-in store reads.
     this.signIn = new SignInStore(ctx.storage);
+    // After both: invitations read users, settings and sessions, and start sessions (story 1.4).
+    this.invitations = new InvitationStore(ctx.storage, this.signIn);
 
     this.ops.set("status", {
       run: (): InstallationStatus => {
@@ -105,6 +118,33 @@ export class Installation extends ObjectBase<Env> {
       run: (raw): Promise<SessionEnded> => {
         const input = parseOperationInput(cookiesInput, raw);
         return this.signIn.endSession(input.cookies);
+      },
+    });
+
+    // Invitations (story 1.4). Creates one for the presented session's administrator, checking the
+    // inviter in the same step as the write (D-6); answers the secret once. A write: never retried
+    // after a bare reset.
+    this.ops.set("createInvitation", {
+      run: (raw): Promise<InvitationCreated> => {
+        const input = parseOperationInput(createInvitationInput, raw);
+        return this.invitations.createInvitation(input, Date.now());
+      },
+    });
+
+    // Reads a live invitation by its secret's hash: writes nothing, so it may be retried.
+    this.ops.set("invitationInfo", {
+      run: (raw): InvitationInfo => {
+        const input = parseOperationInput(invitationInfoInput, raw);
+        return this.invitations.invitationInfo(input.secretHash, Date.now());
+      },
+    });
+
+    // Accepts an invitation after the Worker hashed the password: creates the account, consumes the
+    // invitation and starts its session in one synchronous step (D-4). A write: never retried.
+    this.ops.set("acceptInvitation", {
+      run: (raw): Promise<InvitationAccepted> => {
+        const input = parseOperationInput(acceptInvitationInput, raw);
+        return this.invitations.acceptInvitation(input, Date.now());
       },
     });
   }

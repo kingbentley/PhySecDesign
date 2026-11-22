@@ -2,7 +2,8 @@ import type { z } from "zod";
 import { RELEASE } from "../../shared/release";
 import { refusalBody, type RefusalBody, type RefusalCode, REFUSALS } from "../../shared/refusal";
 import { ROUTES } from "../../shared/routes";
-import { normaliseSetupCode, type SetupState } from "../../shared/setup";
+import { isWellFormedInvitationSecret } from "../../shared/invitation";
+import { normaliseSetupCode, passwordEqualsEmail, type SetupState } from "../../shared/setup";
 import { markerCookieLine } from "../auth/marker";
 import {
   hashPassword,
@@ -16,6 +17,12 @@ import { clearSessionCookieLine, sessionCookieLine } from "../auth/session";
 import { setupCodeFingerprint, setupCodesMatch } from "../auth/setupCode";
 import { INSTALLATION_NAME, type Env } from "../env";
 import type { InstallationStatus } from "../installation/Installation";
+import {
+  invitationSecretHash,
+  type InvitationAccepted,
+  type InvitationCreated,
+  type InvitationInfo,
+} from "../installation/invitationStore";
 import type { FirstAdministratorCreated, SetupAttemptCounted } from "../installation/setupStore";
 import type { SessionEnded, SessionInfo, SignInAttemptCounted, SignInCompleted } from "../installation/signInStore";
 import { callObject } from "../objects/call";
@@ -149,7 +156,17 @@ export const HANDLERS: RouteHandlers = {
     if (!result.ok) return result;
     const info = result.value;
     if (info.signedIn) {
-      return { ok: true, value: { signedIn: true, name: info.account.name, installationName: info.installationName } };
+      // The account's random identifier and its role (story 1.4, D-5), never the token.
+      return {
+        ok: true,
+        value: {
+          signedIn: true,
+          name: info.account.name,
+          accountId: info.account.id,
+          role: info.role,
+          installationName: info.installationName,
+        },
+      };
     }
     return {
       ok: true,
@@ -209,5 +226,77 @@ export const HANDLERS: RouteHandlers = {
     const result = await callObject<SessionEnded>(namespace, id, "endSession", { cookies: context.cookies }, { idempotent: true });
     if (!result.ok) return result;
     return { ok: true, value: { signedIn: false }, cookies: [clearSessionCookieLine(result.value.identifier)] };
+  },
+
+  // The invite request (story 1.4, CAP-1, CAP-6, CAP-7). The router has already checked the origin
+  // and the app's header, then the input. The installation object decides from the presented session
+  // whether the caller may invite, in the same step as the write (D-6), and answers the secret once
+  // with the recorded public address, on which the link is built, never on a request header (CA-57,
+  // AD-12, D-1). A write: never retried after a bare reset.
+  async invite(input, env, context) {
+    const { namespace, id } = installation(env);
+    const created = await callObject<InvitationCreated>(namespace, id, "createInvitation", {
+      email: input.email,
+      name: input.name,
+      role: input.role,
+      cookies: context.cookies,
+    });
+    if (!created.ok) return created;
+    const address = created.value.publicAddress.replace(/\/+$/, "");
+    return { ok: true, value: { link: `${address}/invite#${created.value.secret}`, expiresAt: created.value.expiresAt } };
+  },
+
+  // The invitation read (story 1.4, CAP-3, CAP-5). A secret not shaped as the server issues them is
+  // unusable without asking the object (D-3); otherwise only its SHA-256 is passed on. Read-only, so
+  // retried once after a bare reset.
+  async invitationRead(input, env) {
+    if (!isWellFormedInvitationSecret(input.secret)) return refused("invitation_unusable");
+    const { namespace, id } = installation(env);
+    const secretHash = await invitationSecretHash(input.secret);
+    const info = await callObject<InvitationInfo>(namespace, id, "invitationInfo", { secretHash }, { idempotent: true });
+    if (!info.ok) return info;
+    const { inviterName, installationName, email, name, role } = info.value;
+    return { ok: true, value: { inviterName, installationName, email, name, role } };
+  },
+
+  // Accepting an invitation (story 1.4, CAP-3, CAP-4, D-4). The router has already checked the
+  // origin and the app's header, then the input (the password is NFKC-normalised by its schema).
+  // Order: a full hash queue is refused as busy before anything else; the invitation is read
+  // (retried once after a bare reset); the password must not equal its email; the password is hashed
+  // through the one queue; the object creates the account, consumes the invitation and starts the
+  // session in one step, never retried after a bare reset. The reply sets the session cookie and the
+  // marker, as a sign-in does.
+  async acceptInvite(input, env, context) {
+    if (!hashQueue.hasRoom()) return refused("signin_busy");
+    if (!isWellFormedInvitationSecret(input.secret)) return refused("invitation_unusable");
+    const { namespace, id } = installation(env);
+    const secretHash = await invitationSecretHash(input.secret);
+    const info = await callObject<InvitationInfo>(namespace, id, "invitationInfo", { secretHash }, { idempotent: true });
+    if (!info.ok) return info;
+    if (passwordEqualsEmail(input.password, info.value.email)) {
+      return { ok: false, status: REFUSALS.invalid_input.status, body: refusalBody("invalid_input", { field: "password" }) };
+    }
+
+    let passwordHash: CurrentPasswordHash;
+    try {
+      passwordHash = await hashPassword(input.password, context.request.signal);
+    } catch (error) {
+      if (error instanceof HashQueueBusy || context.request.signal.aborted) return busyOrGone();
+      throw error;
+    }
+
+    const accepted = await callObject<InvitationAccepted>(namespace, id, "acceptInvitation", {
+      secretHash,
+      name: input.name,
+      passwordHash,
+      cookies: context.cookies,
+    });
+    if (!accepted.ok) return accepted;
+    const done = accepted.value;
+    return {
+      ok: true,
+      value: { name: done.account.name },
+      cookies: [sessionCookieLine(done.identifier, done.sessionToken), markerCookieLine(done.identifier, done.marker)],
+    };
   },
 };
