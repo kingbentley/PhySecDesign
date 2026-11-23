@@ -149,6 +149,14 @@ After the reverts and a rebuild, `second-step.spec.mjs` passed 16 of 16 in both 
 - Existing tests changed: none (`signin.spec.mjs`, `two-step.spec.mjs` and `invitation.spec.mjs` are unchanged). `two-step-helpers.mjs` gained helpers; its existing exports are unchanged.
 - Not run here: a screen reader, a real phone (deferred to story 10.6, D-20), Cloudflare (spec 9).
 
+**Orchestrator rulings, 2026-11-23 (Claude, accepted on Kevin's instruction)**, after the orchestrator's check of `1c3f3d4`:
+1. The code lead's fallback "Site Survey Design" when no installation name is read is accepted as written: it is the product's name, matches the first step's own fallback behaviour, and set-up requires a name, so it should never show. It is added to `wording.md` under "Sign in, second step (S-26)" as a note.
+2. The shared test address (every browser request without its own `CF-Connecting-IP` counted as 127.0.0.1) is owned by story 1.5, the follow-up before its pull request, with the deliberate-breakage audit; not story 10.1, because this story's tests exposed it and the next test file added would trip it again. The `deferred-work.md` entry says the owner is confirmed.
+3. The mode-switch focus check's limit (after a click it cannot tell a layout effect from a passive one) is accepted with no action: the reply-driven checks prove the shared effect.
+Also accepted with no action: the other choices listed below, the two files outside the given list, and the nine rejected triage rows as reasoned.
+
+**The TLS lines in the browser runs** (follow-up to the orchestrator's check, 2026-11-23): the servers print "TLS handshake failed: received fatal alert: CertificateUnknown" for Chromium and "… UnknownCA" for WebKit, once for each new browser connection. Each browser rejects Wrangler's self-signed local certificate and sends that alert, and Playwright's `ignoreHTTPSErrors` then lets the page go ahead. A throwaway probe logged none for 20 requests through Playwright request contexts, and 8 (Chromium) and 11 (WebKit) for one page load. They predate this spec: `signin.spec.mjs` alone logged 614 at `640d17d` and 599 at `1c3f3d4`. No code in this spec causes them beyond opening pages, and the fix belongs to the test servers' set-up (`playwright.config.mjs`, `serve.mjs`), outside this spec's files, so it is recorded in `deferred-work.md`. No code changed.
+
 **Choices this spec did not settle** (implementation and build sessions):
 - The code lead falls back to "Site Survey Design" when the session read gives no installation name. This is text `wording.md` does not have; an installation name is required at set-up, so it is not expected to show (raised with the orchestrator).
 - A late `signedIn` reply after "Back to sign in" still opens the app (the server has signed the person in); any other late reply is ignored, and "Back to sign in" frees the password form at once. The mode switch does nothing while a request is in flight.

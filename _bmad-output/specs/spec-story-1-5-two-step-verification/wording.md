@@ -33,6 +33,7 @@ Reused: `signin_wait` (page wording "Too many attempts. Wait ‹1 minute› befo
 - After `second_step_expired` or a wait the page shows the password form with the refusal's message (the wait as story 1.3 composes it).
 - After `deployment_key_mismatch` on a code: the `deployment_key_mismatch` message, then "You can still sign in with a recovery code."; the page switches to recovery mode (finding 26).
 - Network, updating, origin and other failures: the sign-in page's existing messages (reused, `SIGN_IN_MESSAGES` in `src/admin/signInClient.js`).
+- Note (spec 8; orchestrator ruling, 2026-11-23, Claude, accepted on Kevin's instruction): when the session read gives no installation name, the lead's ‹installation name› reads "Site Survey Design", the product's name. Set-up requires an installation name, so this is not expected to show.
 
 ## Account menu and My account (S-29, this story's part)
 
