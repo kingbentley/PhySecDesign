@@ -24,6 +24,12 @@ While the local installation has no administrator, every address opens the set-u
 
 Once set-up is done, `/setup` says set-up is already complete and the rest of the app is the prototype as before. The local state is in `.wrangler/state`; deleting it starts over.
 
+A server you start yourself (`npm run dev`, or `wrangler dev` with `deploy/cloudflare/wrangler.jsonc`) has no deployment key, so two-step verification (story 1.5) answers that it is not available. To try it locally, add a `DEPLOYMENT_KEY` line to the same `deploy/cloudflare/.dev.vars`: 32 random bytes written as 43 base64url characters. This prints a new one:
+
+    node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
+
+Keep the same key for as long as you keep the local state: two-step secrets saved with one key cannot be read with another. The server tests and `npm run smoke:selfhost` make their own key for each run.
+
 ## Server build and hosts
 
 One TypeScript Worker build serves the app and the API on both hosts: Cloudflare, and self-hosted under `workerd`, Cloudflare's open-source runtime.
@@ -61,7 +67,23 @@ Run self-hosted after a build (Linux in production, inside the Docker image of a
 
     npx workerd serve deploy/selfhost/config.capnp --directory-path do-storage=/var/lib/site-studio/do --directory-path assets=dist/client --socket-addr http=127.0.0.1:8787
 
+Set the `DEPLOYMENT_KEY` environment variable before `workerd` starts: 32 random bytes as 43 base64url characters, made with the Node command under **Run locally**. Never write it into `config.capnp` or another committed file. Without it, two-step verification cannot be turned on. Keep a copy, and give the installation the same key every time it starts: if the key changes, authenticator codes stop working (recovery codes still sign in) until the original key is restored. Story 2.23 replaces the variable with a key file kept by the self-hosted server.
+
 Both host configurations declare only the two SQLite Durable Object classes, `ProjectRoom` and `Installation`, and no D1, Workflows, Queues, cron triggers or KV; a server test checks this. Dependency versions are pinned exactly; continuous integration (`.github/workflows/test.yml`) installs from the lock file and runs every command above.
+
+## The deployment key on Cloudflare
+
+Two-step verification (story 1.5) encrypts each person's authenticator secret with the installation's deployment key. On Cloudflare the key is the Worker secret `DEPLOYMENT_KEY`, and `npm run deploy:cloudflare` looks after it. This behaviour has so far been tested only with stand-ins for Wrangler; spec 9 of story 1.5 confirms it on a real Cloudflare account.
+
+- **One deploy at a time.** Every run first says to run one deploy at a time for a Worker: two at once can each generate a key, and the one printed may not be the one kept.
+- **First deploy.** When the Worker has no key and the installation has saved nothing with one, the command generates a key, prints it once as `Deployment key: …`, and then supplies it to the Worker. Keep a copy outside the Cloudflare account, for example in your organisation's password manager. It is not shown again. If supplying it fails, the command says the key may or may not have been stored: keep it and run the command again with it in `SITE_SURVEY_DEPLOYMENT_KEY`.
+- **Later deploys.** A key already in the Worker is never replaced: the command says the Worker already has one and generates none.
+- **Supplying a key.** To deploy the installation to a new Worker, or to recover it, put the key in the `SITE_SURVEY_DEPLOYMENT_KEY` environment variable for that run. The command checks its form (43 letters, digits, `-` or `_`) before deploying anything, never prints it, and does not pass the variable on to Wrangler; the key reaches Wrangler only on its standard input. If the Worker already has a key, the supplied one is not used; when the installation already holds secrets saved with a key, the command first checks, as below, that the Worker's key is the original, and stops with nothing changed if it is not or if no settled answer comes.
+- **Confirming a restored key.** When the installation already holds secrets saved with a key and the Worker has none, the command refuses to generate one. With the original supplied, it puts the key and then checks it with the installation. The command says first that this takes at least a minute: copies of the Worker on the earlier version keep answering for a while, so it waits until every reply for a full 60 seconds agrees, and gives up after 3 minutes. A match goes on to the set-up code. A supplied key that is not the original is removed from the Worker again, so that a rerun with the original finds no key. If no settled answer comes in time, the key is left in place: run the command again with the same key.
+- **"The Worker already has a deployment key, and it is not the one …".** This comes when you supply a key and the key already in the Worker is not the one the installation's secrets were saved with. The command changes nothing. If you have the original, remove the Worker's key with the command it prints (`wrangler secret delete DEPLOYMENT_KEY --name <worker>`, run as `npx wrangler …` from `site-studio/`), then run the deploy command again with the original in `SITE_SURVEY_DEPLOYMENT_KEY`.
+- **When the command cannot tell.** If listing the Worker's secrets fails, or the installation does not say whether it holds encrypted values, the command generates and supplies nothing and asks you to run it again.
+
+The deploy itself happens before the key steps, so a run that stops at a key step has still deployed the new code. The set-up code follows the key steps only when they succeed.
 
 ## Try the workflow
 
