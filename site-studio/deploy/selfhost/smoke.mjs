@@ -27,6 +27,18 @@
 // storage with a different key finds the key mismatched: a code refused `deployment_key_mismatch`,
 // a recovery code still signing in, and workerd's output holding the mismatch log line once. Codes
 // are computed by this file's own RFC 6238 helper, written independently of server/auth/totp.ts.
+//
+// Waits: a code is accepted only for a step later than the last accepted one, so a code expected to
+// sign in may wait for the next 30-second step (nextCode prints how long). That can happen only for
+// the confirm and the code sign-ins of the first start and the restart, never in the changed-key
+// run, whose refused code never waits, so no wait sits between the mismatch line and its count.
+// SMOKE_FORCE_CODE_WAIT=1 (off by default; read only here) makes the first accepted code take the
+// latest step the installation accepts, so the next code must wait: it exercises the wait.
+//
+// Output: workerd's own output is held in memory, never echoed. On a failure only the event names
+// of its JSON log lines are printed, except when workerd exits before it answers: then its stderr
+// is printed too, without any line holding the set-up code or a key. That output comes before any
+// request is handled, so it holds no code, cookie or token.
 import { spawn } from "node:child_process";
 import { createHmac, randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -70,8 +82,12 @@ const MISMATCH_LINE = JSON.stringify({ event: "deployment_key_mismatch", object:
 // TOTP as the installation uses it (CA-12): 6 digits, a 30-second step, one step either side.
 const TOTP_STEP_MS = 30_000;
 const TOTP_WINDOW = 1;
+/** Exercises nextCode's wait (see the header); off unless the variable is exactly "1". */
+const FORCE_CODE_WAIT = process.env.SMOKE_FORCE_CODE_WAIT === "1";
 
 class SmokeFailure extends Error {}
+/** workerd exited before it answered: its start-up output may say why. */
+class EarlyExit extends SmokeFailure {}
 
 /** The last time step accepted for the administrator's account: a code must be of a later one (D-6). */
 let lastStep = null;
@@ -248,7 +264,8 @@ async function nextCode(secretText, accept) {
     const now = Date.now();
     const current = stepAt(now);
     const lowest = stepAt(now + 2000) - TOTP_WINDOW;
-    const step = lastStep === null ? lowest : Math.max(lastStep + 1, lowest);
+    const first = FORCE_CODE_WAIT ? current + TOTP_WINDOW : lowest;
+    const step = lastStep === null ? first : Math.max(lastStep + 1, lowest);
     if (step <= current + TOTP_WINDOW) {
       lastStep = step;
       return totpCode(secret, step);
@@ -628,7 +645,8 @@ function childEnvironment(key) {
 /**
  * Starts workerd on `storage` with `key` (or none) in its environment, runs `work`, and stops it.
  * Answers `{ value, output }`: what `work` answered and workerd's stdout and stderr together, held
- * in memory and never echoed. On a failure only the event names of its JSON log lines are printed.
+ * in memory and never echoed. On a failure only the event names of its JSON log lines are printed,
+ * except that an exit before answering prints its start-up errors (printStartupErrors).
  */
 async function withServer({ base, port, storage: directory, key }, work) {
   const child = spawn(
@@ -667,23 +685,38 @@ async function withServer({ base, port, storage: directory, key }, work) {
       resolve(null);
     });
   });
-  let failed = false;
+  let failure = null;
   try {
     await waitUntilAnswering(base, () => (exited ? ending : null));
     const value = await work();
     return { value, get output() { return output(); } };
   } catch (error) {
-    failed = true;
+    failure = error;
     throw error;
   } finally {
     if (!exited) child.kill("SIGTERM");
     await Promise.race([exit, delay(5000).then(() => { if (!exited) child.kill("SIGKILL"); })]);
     await exit;
-    if (failed) {
+    if (failure instanceof EarlyExit) printStartupErrors(stderr);
+    else if (failure) {
       const events = eventNames(output());
       console.error(`workerd's log events: ${events.length > 0 ? events.join(", ") : "none"}`);
     }
   }
+}
+
+/**
+ * workerd's stderr when it exited before answering: written before any request was handled, so it
+ * holds no code, cookie or token. A line holding the set-up code or a key is withheld all the same,
+ * in case an error quotes the temporary configuration.
+ */
+function printStartupErrors(stderr) {
+  const lines = stderr.split(/\r?\n/).filter((line) => line.trim() !== "");
+  const secrets = [setupCode, KEY_A, KEY_B];
+  const shown = lines.filter((line) => !secrets.some((secret) => line.includes(secret)));
+  const withheld = lines.length - shown.length;
+  console.error(`workerd's start-up errors (${shown.length} ${shown.length === 1 ? "line" : "lines"}${withheld > 0 ? `, ${withheld} withheld` : ""}):`);
+  for (const line of shown) console.error(`  ${line}`);
 }
 
 /** `exitedHow` answers null while workerd runs, then how it ended. */
@@ -691,7 +724,7 @@ async function waitUntilAnswering(base, exitedHow) {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     const ended = exitedHow();
-    if (ended !== null) fail(`workerd exited before it answered (${ended}).`);
+    if (ended !== null) throw new EarlyExit(`workerd exited before it answered (${ended}).`);
     try {
       const response = await get(base + "/api/v1/status");
       await response.arrayBuffer();
