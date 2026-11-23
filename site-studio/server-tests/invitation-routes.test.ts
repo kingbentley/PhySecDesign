@@ -26,8 +26,12 @@ import {
   signedIn,
   signIn,
   signOut,
+  awayFromStepEnd,
+  startedByRoutes,
+  turnedOnByRoutes,
   type Installed,
 } from "./signin-helpers";
+import { stepAt, totpAt } from "../server/auth/totp";
 
 // The invitation routes (story 1.4, spec 2): invite, read and accept, the session read's new
 // fields, the origin rule, the hash queue, the route sweep, the log watch and the invitation page's
@@ -489,11 +493,42 @@ describe("POST /api/v1/invitations/accept", { timeout: 120_000 }, () => {
   });
 });
 
-describe("the route sweep (criterion 8)", { timeout: 120_000 }, () => {
+describe("the route sweep (criterion 8)", { timeout: 300_000 }, () => {
   it("finds that only setup reaches createFirstAdministrator, only acceptInvite reaches acceptInvitation, and only they add users", async () => {
     type RouteId = keyof typeof ROUTES;
+    // What the two-step routes need before they can answer 200 (story 1.5, spec 4): a started
+    // set-up for the confirm, two-step verification on for turning off and fresh codes, and a
+    // pending sign-in cookie for the second step. Made through the routes before the calls are counted.
+    interface TwoStepPrepared {
+      setupId: string;
+      code: string;
+      cookies?: Record<string, string>;
+    }
+    const prepare: Partial<Record<RouteId, (admin: Admin) => Promise<TwoStepPrepared>>> = {
+      twoStepConfirm: async (admin) => {
+        const started = await startedByRoutes(admin.installed.env, admin.cookies, ADMIN_PASSWORD);
+        await awayFromStepEnd();
+        return { setupId: started.setupId, code: await totpAt(started.secret, stepAt(Date.now())) };
+      },
+      twoStepTurnOff: async (admin) => {
+        await turnedOnByRoutes(admin.installed.env, admin.cookies, ADMIN_PASSWORD);
+        return { setupId: "", code: "" };
+      },
+      twoStepRecoveryCodes: async (admin) => {
+        const on = await turnedOnByRoutes(admin.installed.env, admin.cookies, ADMIN_PASSWORD);
+        return { setupId: "", code: await on.codes.next() };
+      },
+      secondStep: async (admin) => {
+        const on = await turnedOnByRoutes(admin.installed.env, admin.cookies, ADMIN_PASSWORD);
+        const pending = await signIn(admin.installed.env, ADMIN_EMAIL, ADMIN_PASSWORD, { cookies: admin.cookies });
+        expect(pending.status).toBe(200);
+        return { setupId: "", code: await on.codes.next(), cookies: jarFrom(pending, admin.cookies) };
+      },
+    };
+    const none: TwoStepPrepared = { setupId: "", code: "" };
+
     // Valid input for every declared route; a route added without one is a type error.
-    const inputs: Record<RouteId, (secret: string, installed: Installed) => unknown> = {
+    const inputs: Record<RouteId, (secret: string, installed: Installed, two: TwoStepPrepared) => unknown> = {
       status: () => ({}),
       setupState: () => ({}),
       setup: (_secret, installed) => ({
@@ -509,6 +544,13 @@ describe("the route sweep (criterion 8)", { timeout: 120_000 }, () => {
       invite: () => ({ email: "sweep-new@acme.test", name: INVITEE_NAME, role: "standard" }),
       invitationRead: (secret) => ({ secret }),
       acceptInvite: (secret) => ({ secret, name: INVITEE_NAME, password: NEW_PASSWORD }),
+      secondStep: (_secret, _installed, two) => ({ method: "code", code: two.code }),
+      twoStepState: () => ({}),
+      twoStepStart: () => ({ password: ADMIN_PASSWORD }),
+      twoStepConfirm: (_secret, _installed, two) => ({ setupId: two.setupId, code: two.code }),
+      twoStepTurnOff: () => ({ password: ADMIN_PASSWORD }),
+      twoStepRecoveryCodes: (_secret, _installed, two) => ({ password: ADMIN_PASSWORD, code: two.code }),
+      deploymentKeyState: () => ({}),
     };
 
     const reached: Record<string, string[]> = {};
@@ -518,6 +560,7 @@ describe("the route sweep (criterion 8)", { timeout: 120_000 }, () => {
       let installed: Installed;
       let cookies: Record<string, string> = {};
       let secret = "";
+      let two = none;
       if (id === "setup") {
         installed = installationFor(`inv-sweep-${id}`);
       } else {
@@ -525,10 +568,15 @@ describe("the route sweep (criterion 8)", { timeout: 120_000 }, () => {
         installed = admin.installed;
         cookies = route.readsSessionCookie ? admin.cookies : {};
         secret = await invited(admin);
+        const preparation = prepare[id];
+        if (preparation) {
+          two = await preparation(admin);
+          if (two.cookies) cookies = two.cookies;
+        }
       }
       const before = await countRows(installed, USERS_TABLE);
       installed.calls.clear();
-      const input = inputs[id](secret, installed);
+      const input = inputs[id](secret, installed, two);
       const response =
         route.method === "GET"
           ? await get(installed.env, route.path, { cookies })

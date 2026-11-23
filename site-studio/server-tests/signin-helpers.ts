@@ -1,7 +1,10 @@
 import { env } from "cloudflare:workers";
 import { runInDurableObject } from "cloudflare:test";
 import { expect } from "vitest";
-import { APP_HEADER, APP_HEADER_VALUE } from "../shared/routes";
+import { APP_HEADER, APP_HEADER_VALUE, ROUTES } from "../shared/routes";
+import { base32Decode, TOTP_STEP_SECONDS, TOTP_WINDOW } from "../shared/twoStep";
+import { stepAt, totpAt } from "../server/auth/totp";
+import { hashQueue } from "../server/auth/password";
 import type { Env } from "../server/env";
 import { handleRequest } from "../server/index";
 import type { Installation } from "../server/installation/Installation";
@@ -220,4 +223,123 @@ export async function refusalOf(response: Response, entered: string[]) {
 /** Everything a reply shows a client: status, headers and body text. */
 export async function wholeReply(response: Response): Promise<{ status: number; headers: [string, string][]; body: string }> {
   return { status: response.status, headers: [...response.headers.entries()].sort(), body: await response.text() };
+}
+
+// Two-step verification through the routes (story 1.5, spec 4). Codes are computed at run time from
+// the secret the start reply answered; nothing is written to a file.
+
+export const SECOND_STEP_PATH = ROUTES.secondStep.path;
+export const TWO_STEP_PATH = ROUTES.twoStepState.path;
+export const TWO_STEP_START_PATH = ROUTES.twoStepStart.path;
+export const TWO_STEP_CONFIRM_PATH = ROUTES.twoStepConfirm.path;
+export const TWO_STEP_TURN_OFF_PATH = ROUTES.twoStepTurnOff.path;
+export const TWO_STEP_RECOVERY_CODES_PATH = ROUTES.twoStepRecoveryCodes.path;
+export const KEY_STATE_PATH = ROUTES.deploymentKeyState.path;
+
+/** Waits, when the clock is within two seconds of a 30-second step's end, until the next step begins. */
+export async function awayFromStepEnd(): Promise<void> {
+  const into = Date.now() % (TOTP_STEP_SECONDS * 1000);
+  const left = TOTP_STEP_SECONDS * 1000 - into;
+  if (left < 2000) await new Promise((resolve) => setTimeout(resolve, left + 50));
+}
+
+/**
+ * Codes for one account, each of a step later than the last one used (D-6) and inside the window:
+ * the later of the next unused step and the current one. Throws when the next unused step is
+ * already ahead of the window, so a test that uses too many codes says so instead of failing oddly.
+ */
+export function codeSource(secret: Uint8Array, lastStep: number) {
+  let last = lastStep;
+  return {
+    async next(): Promise<string> {
+      const now = stepAt(Date.now());
+      const step = Math.max(last + 1, now);
+      if (step > now + TOTP_WINDOW) throw new Error("No unused step is inside the window: the test used too many codes.");
+      last = step;
+      return totpAt(secret, step);
+    },
+  };
+}
+
+export interface StartedByRoutes {
+  setupId: string;
+  /** The start reply's secret as text (base32), as the page shows it. */
+  secretText: string;
+  secret: Uint8Array;
+  reply: Record<string, unknown>;
+}
+
+/** Starts a set-up through the start route with the password, failing the test unless it answers 200. */
+export async function startedByRoutes(target: Env, cookies: Record<string, string>, password: string): Promise<StartedByRoutes> {
+  const response = await post(target, TWO_STEP_START_PATH, { password }, { cookies });
+  expect(response.status, await response.clone().text()).toBe(200);
+  const reply = (await response.json()) as { setupId: string; secret: string };
+  return { setupId: reply.setupId, secretText: reply.secret, secret: base32Decode(reply.secret)!, reply };
+}
+
+export interface TurnedOnByRoutes extends StartedByRoutes {
+  /** The ten recovery codes the confirm reply answered, formatted. */
+  recoveryCodes: string[];
+  /** The code the confirm sent. */
+  confirmCode: string;
+  /** Codes for the account from the step after the one the confirm used. */
+  codes: ReturnType<typeof codeSource>;
+}
+
+/**
+ * Turns two-step verification on through the start and confirm routes. The confirm uses the code of
+ * the step before the current one (inside the window), so two more codes are usable at once.
+ */
+export async function turnedOnByRoutes(target: Env, cookies: Record<string, string>, password: string): Promise<TurnedOnByRoutes> {
+  const started = await startedByRoutes(target, cookies, password);
+  await awayFromStepEnd();
+  const step = stepAt(Date.now()) - TOTP_WINDOW;
+  const confirmCode = await totpAt(started.secret, step);
+  const response = await post(target, TWO_STEP_CONFIRM_PATH, { setupId: started.setupId, code: confirmCode }, { cookies });
+  expect(response.status, await response.clone().text()).toBe(200);
+  const { recoveryCodes } = (await response.json()) as { recoveryCodes: string[] };
+  return { ...started, recoveryCodes, confirmCode, codes: codeSource(started.secret, step) };
+}
+
+/** Holds the isolate's hash queue's running slot (nothing waiting) until released. */
+export function holdHashSlot() {
+  let release!: () => void;
+  const running = hashQueue.run(() => new Promise<void>((resolve) => (release = resolve)));
+  expect(hashQueue.stats().active).toBe(1);
+  return async () => {
+    release();
+    await running;
+  };
+}
+
+export async function until(condition: () => boolean, what: string) {
+  const deadline = Date.now() + 10_000;
+  while (!condition()) {
+    if (Date.now() > deadline) throw new Error(`Timed out waiting for ${what}.`);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+}
+
+/**
+ * A POST from the app, with the browser's cookies, that is aborted while it waits in the hash
+ * queue, as a client disconnecting does; answers its reply.
+ */
+export async function abortedWhileQueued(target: Env, path: string, body: unknown, cookies: Record<string, string> = {}): Promise<Response> {
+  const release = holdHashSlot();
+  const controller = new AbortController();
+  try {
+    const waitingBefore = hashQueue.stats().waiting;
+    const headers: Record<string, string> = { "content-type": "application/json", origin: ORIGIN, [APP_HEADER]: APP_HEADER_VALUE };
+    const cookie = Object.entries(cookies)
+      .map(([name, value]) => `${name}=${value}`)
+      .join("; ");
+    if (cookie) headers.cookie = cookie;
+    const pending = handleRequest(new Request(ORIGIN + path, { method: "POST", headers, body: JSON.stringify(body), signal: controller.signal }), target);
+    await until(() => hashQueue.stats().waiting === waitingBefore + 1, "the request to wait in the hash queue");
+    controller.abort();
+    expect(hashQueue.stats().waiting).toBe(waitingBefore);
+    return await pending;
+  } finally {
+    await release();
+  }
 }
