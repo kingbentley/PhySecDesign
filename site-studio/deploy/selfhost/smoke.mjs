@@ -16,8 +16,19 @@
 // then finds the wait (V-17: these requests carry no address, so this is the email's count, D-11);
 // it signs out and finds the old cookie no longer signed in; and it runs the password probe in
 // deploy/probe/ under workerd against the committed fixture (D-6).
+//
+// Story 1.5 (D-16): workerd gets the deployment key from the DEPLOYMENT_KEY environment variable
+// (config.capnp's fromEnvironment binding). A key is generated for this run and given only in the
+// child's environment, never in a file or the output. Before the restart it turns two-step
+// verification on through the API, signs in with the password and a code, and finds a recovery
+// code accepted once and refused the second time; after the restart a code of a later step signs
+// in. A start without the variable, on separate empty storage, finds two-step verification
+// unavailable (`no_key`) and turning on refused `deployment_key_missing`. A restart on the first
+// storage with a different key finds the key mismatched: a code refused `deployment_key_mismatch`,
+// a recovery code still signing in, and workerd's output holding the mismatch log line once. Codes
+// are computed by this file's own RFC 6238 helper, written independently of server/auth/totp.ts.
 import { spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -47,20 +58,45 @@ const UNKNOWN_EMAIL = "smoke-nobody@example.test";
 const WRONG_PASSWORD = randomBytes(12).toString("hex");
 /** The browser marker's cookie names start with this; the session cookie's do not (story 1.3, D-3). */
 const MARKER_PREFIX = "__Host-ssd-m-";
+/** The pending sign-in cookie's names start with this (story 1.5, D-2). */
+const PENDING_PREFIX = "__Host-ssd-p-";
+// The deployment keys for this run (story 1.5, D-14, D-16): 32 random bytes, base64url without
+// padding. Given only in workerd's environment; never written to a file or printed.
+const KEY_A = newDeploymentKey();
+let KEY_B = newDeploymentKey();
+while (KEY_B === KEY_A) KEY_B = newDeploymentKey();
+/** The runtime log line of a mismatched key (story 1.5, wording.md "Runtime log"). */
+const MISMATCH_LINE = JSON.stringify({ event: "deployment_key_mismatch", object: "installation" });
+// TOTP as the installation uses it (CA-12): 6 digits, a 30-second step, one step either side.
+const TOTP_STEP_MS = 30_000;
+const TOTP_WINDOW = 1;
 
 class SmokeFailure extends Error {}
 
+/** The last time step accepted for the administrator's account: a code must be of a later one (D-6). */
+let lastStep = null;
 let storage = null;
+let bareStorage = null;
 try {
   for (const file of [bundle, path.join(client, "index.html")]) {
     if (!existsSync(file)) fail(`Missing ${path.relative(root, file)}. Run npm run build first.`);
+  }
+  // RFC 6238's SHA-1 test vectors, to six digits: T = 59 s (step 1), from the raw secret and from its
+  // base32 form, and T = 20000000000 s (step 666666666): the helpers below are correct.
+  const rfcSecret = Buffer.from("12345678901234567890", "ascii");
+  if (
+    totpCode(rfcSecret, 1) !== "287082" ||
+    totpCode(base32Bytes("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"), 1) !== "287082" ||
+    totpCode(rfcSecret, 666666666) !== "353130"
+  ) {
+    fail("The smoke suite's RFC 6238 helper fails its test vectors.");
   }
   storage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
   writeSmokeConfig();
   const port = await freePort();
   const base = `http://127.0.0.1:${port}`;
 
-  const first = await withServer(base, port, async () => {
+  const first = await withServer({ base, port, storage, key: KEY_A }, async () => {
     const status = await readStatus(base);
     if (status.release !== version) fail(`The release is ${status.release}, not package.json's ${version}.`);
     await checkPage(base);
@@ -70,42 +106,307 @@ try {
     const cookies = await signIn(base);
     await expectSession(base, cookies, true);
     await failSignIn(base, 1);
-    return { status, cookies };
+    // Two-step verification (story 1.5, CAP-1, CAP-3, CAP-5, CAP-10).
+    await expectKeyState(base, { fingerprint: "none", key: "present" });
+    const twoStep = await turnOnTwoStep(base, cookies);
+    await expectKeyState(base, { fingerprint: "stored", key: "matches" });
+    const withCode = await completeSecondStep(base, await pendingSignIn(base), "code", await nextCode(twoStep.secret, true));
+    await expectSession(base, withCode, true);
+    const withRecovery = await completeSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0]);
+    await expectSession(base, withRecovery, true);
+    await refusedSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0], 401, "second_step_recovery_code_wrong");
+    await expectTwoStepState(base, cookies, { enabled: true, availability: "available", recoveryCodesRemaining: 9 });
+    return { status, cookies, twoStep };
   });
-  console.log(`first start: release ${first.status.release}, createdAt ${first.status.installation.createdAt}, set-up completed, signed in`);
+  expectNoKeyEvents(first.output, "the first start");
+  console.log(`first start: release ${first.value.status.release}, createdAt ${first.value.status.installation.createdAt}, set-up completed, signed in`);
+  console.log("first start: two-step verification turned on, signed in with a code, a recovery code accepted once and refused the second time");
 
-  const second = await withServer(base, port, async () => {
+  const second = await withServer({ base, port, storage, key: KEY_A }, async () => {
     const status = await readStatus(base);
     const state = await readSetupState(base);
     if (state !== "closed") fail(`After the restart set-up is ${state}, not closed: the administrator did not persist.`);
     // The same cookie is still signed in: the identifier and the session survived (V-11).
-    await expectSession(base, first.cookies, true);
+    await expectSession(base, first.value.cookies, true);
+    // Two-step verification survived the restart: a code of a later step signs in (CAP-3, CAP-5).
+    await expectKeyState(base, { fingerprint: "stored", key: "matches" });
+    const laterCode = await nextCode(first.value.twoStep.secret, true);
+    const withCode = await completeSecondStep(base, await pendingSignIn(base), "code", laterCode);
+    await expectSession(base, withCode, true);
+    // A code works once (CAP-5): the same code on a new pending sign-in is refused.
+    await refusedSecondStep(base, await pendingSignIn(base), "code", laterCode, 401, "second_step_code_wrong");
     // One failure before the restart and four after reach the wait (V-17).
     await failSignIn(base, 4);
     await expectWait(base);
-    await signOut(base, first.cookies);
-    await expectSession(base, first.cookies, false);
+    await signOut(base, first.value.cookies);
+    await expectSession(base, first.value.cookies, false);
     return status;
   });
-  console.log(`after restart: createdAt ${second.installation.createdAt}, set-up closed, still signed in, counts kept, signed out`);
+  expectNoKeyEvents(second.output, "the restart");
+  console.log(`after restart: createdAt ${second.value.installation.createdAt}, set-up closed, still signed in, counts kept, signed out`);
+  console.log("after restart: signed in with the password and a code of a later step, the same code refused the second time");
 
   const probe = await verifyFixtureUnderWorkerd();
   console.log(`password probe under workerd: fixture ${probe.fixture ? "verified" : "refused"}, wrong password ${probe.wrongPassword ? "verified" : "refused"}`);
 
-  const createdAt = first.status.installation.createdAt;
-  const dataFormat = first.status.installation.dataFormat;
+  // No variable, on separate empty storage (finding 6, finding 31): the unset binding is null.
+  bareStorage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
+  const third = await withServer({ base, port, storage: bareStorage, key: null }, async () => {
+    await expectKeyState(base, { fingerprint: "none", key: "none" }, "Without a deployment key on empty storage");
+    await completeSetup(base);
+    const cookies = await signIn(base);
+    await expectTwoStepState(base, cookies, { enabled: false, availability: "no_key" });
+    await refusedStart(base, cookies, 503, "deployment_key_missing");
+  });
+  expectNoKeyEvents(third.output, "the start without a key");
+  console.log("start without a key: two-step verification not available (no_key), turning on refused deployment_key_missing");
 
-  if (second.installation.createdAt !== createdAt) {
+  // The first storage with a different key (criterion 23, finding 31).
+  const fourth = await withServer({ base, port, storage, key: KEY_B }, async () => {
+    const status = await readStatus(base);
+    await expectKeyState(base, { fingerprint: "stored", key: "mismatch" }, "With a changed deployment key");
+    const pending = await pendingSignIn(base);
+    const refused = await refusedSecondStep(base, pending, "code", await nextCode(first.value.twoStep.secret, false), 503, "deployment_key_mismatch");
+    if (refused.headers.getSetCookie().length !== 0) fail("A code refused deployment_key_mismatch changed the pending sign-in cookie; it must be kept.");
+    const withRecovery = await completeSecondStep(base, pending, "recovery", first.value.twoStep.recoveryCodes[1]);
+    await expectSession(base, withRecovery, true);
+    await expectTwoStepState(base, withRecovery, { enabled: true, availability: "key_mismatch", recoveryCodesRemaining: 8 });
+    return status;
+  });
+  const mismatchLines = countLines(fourth.output, MISMATCH_LINE);
+  if (mismatchLines !== 1) fail(`With a changed key workerd's output held the deployment_key_mismatch log line ${mismatchLines} times, not once.`);
+  const keyEvents = eventNames(fourth.output).filter((name) => name.startsWith("deployment_key_"));
+  if (keyEvents.join() !== "deployment_key_mismatch") fail(`With a changed key workerd logged ${keyEvents.join(", ") || "no deployment-key event"}, not deployment_key_mismatch alone.`);
+  console.log("restart with a changed key: key mismatch reported, a code refused deployment_key_mismatch, a recovery code signed in, the log line written once");
+
+  const createdAt = first.value.status.installation.createdAt;
+  const dataFormat = first.value.status.installation.dataFormat;
+
+  if (second.value.installation.createdAt !== createdAt || fourth.value.installation.createdAt !== createdAt) {
     fail("The installation's createdAt changed across the restart: storage did not persist.");
   }
-  if (second.installation.dataFormat !== dataFormat) fail("The data format changed across the restart.");
+  if (second.value.installation.dataFormat !== dataFormat || fourth.value.installation.dataFormat !== dataFormat) fail("The data format changed across the restart.");
   console.log("Self-hosted smoke test passed: the value saved on first start was read back after a restart.");
 } catch (error) {
   console.error(`Self-hosted smoke test failed: ${error instanceof SmokeFailure ? error.message : error?.stack ?? error}`);
   process.exitCode = 1;
 } finally {
   if (storage) rmSync(storage, { recursive: true, force: true });
+  if (bareStorage) rmSync(bareStorage, { recursive: true, force: true });
   rmSync(config, { force: true });
+}
+
+function newDeploymentKey() {
+  return randomBytes(32).toString("base64url");
+}
+
+/** RFC 4648 base32 (upper or lower case, no padding) to bytes. */
+function base32Bytes(text) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bytes = [];
+  let buffer = 0;
+  let bits = 0;
+  for (const character of text.toUpperCase()) {
+    const value = alphabet.indexOf(character);
+    if (value < 0) fail("The authenticator secret in the start reply is not base32.");
+    buffer = ((buffer << 5) | value) & 0xffff;
+    bits += 5;
+    if (bits >= 8) {
+      bits -= 8;
+      bytes.push((buffer >>> bits) & 0xff);
+    }
+  }
+  return Buffer.from(bytes);
+}
+
+/** RFC 6238 TOTP with HMAC-SHA-1 and six digits, for a time step (RFC 4226's dynamic truncation). */
+function totpCode(secret, step) {
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(step));
+  const mac = createHmac("sha1", secret).update(counter).digest();
+  const offset = mac[mac.length - 1] & 0x0f;
+  return String((mac.readUInt32BE(offset) & 0x7fffffff) % 1_000_000).padStart(6, "0");
+}
+
+function stepAt(ms) {
+  return Math.floor(ms / TOTP_STEP_MS);
+}
+
+/**
+ * A code of the earliest step the installation accepts now that is later than the last accepted
+ * one (D-6). A code of the step before the current one is taken only with two seconds to spare
+ * before the step changes; when the next allowed step is beyond the window, it waits for the next
+ * step to begin and says how long it waited. `accept` records the step as used (a code expected to
+ * sign in). A code expected to be refused is of the current step, without waiting and leaving the
+ * last step unchanged: a wait of up to 30 s can let workerd evict the idle installation object,
+ * whose restart would log the key-mismatch line a second time.
+ */
+async function nextCode(secretText, accept) {
+  const secret = base32Bytes(secretText);
+  if (!accept) return totpCode(secret, stepAt(Date.now()));
+  for (;;) {
+    const now = Date.now();
+    const current = stepAt(now);
+    const lowest = stepAt(now + 2000) - TOTP_WINDOW;
+    const step = lastStep === null ? lowest : Math.max(lastStep + 1, lowest);
+    if (step <= current + TOTP_WINDOW) {
+      lastStep = step;
+      return totpCode(secret, step);
+    }
+    const wait = (current + 1) * TOTP_STEP_MS - now + 50;
+    await delay(wait);
+    console.log(`waited ${(wait / 1000).toFixed(1)} s for the next authenticator step`);
+  }
+}
+
+/** A refusal's status and code only: never a reply body that may hold a secret or a code. */
+async function refusalOf(response) {
+  const body = await response.json().catch(() => null);
+  return `${response.status} ${body?.error?.code ?? "(no refusal code)"}`;
+}
+
+/** Reads the public key state (D-18) and compares it with the expected one. */
+async function expectKeyState(base, expected, context = "The deployment-key state") {
+  const response = await get(base + "/api/v1/deployment-key/state");
+  const body = await response.json().catch(() => null);
+  const keys = Object.keys(body ?? {}).sort().join();
+  if (response.status !== 200 || keys !== "fingerprint,key" || body.fingerprint !== expected.fingerprint || body.key !== expected.key) {
+    fail(`${context}: GET /api/v1/deployment-key/state answered ${response.status} with fingerprint ${body?.fingerprint} and key ${body?.key}, not ${expected.fingerprint} and ${expected.key}.`);
+  }
+}
+
+/** Reads the signed-in account's two-step state and compares the fields given. */
+async function expectTwoStepState(base, cookies, expected) {
+  const response = await get(base + "/api/v1/account/two-step", { headers: { cookie: cookieHeader(cookies) } });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200) fail(`GET /api/v1/account/two-step answered ${response.status} ${body?.error?.code}.`);
+  for (const [field, value] of Object.entries(expected)) {
+    if (body?.[field] !== value) fail(`The two-step state's ${field} is ${body?.[field]}, not ${value}.`);
+  }
+}
+
+/**
+ * Turns two-step verification on for the signed-in administrator: the password starts a set-up,
+ * a code computed from its secret confirms it. Answers the secret and the recovery codes, which
+ * stay in memory and are never printed.
+ */
+async function turnOnTwoStep(base, cookies) {
+  await expectTwoStepState(base, cookies, { enabled: false, availability: "available" });
+  const start = await fetch(base + "/api/v1/account/two-step/start", {
+    method: "POST",
+    headers: fromApp(base, cookies),
+    body: JSON.stringify({ password: ADMIN_PASSWORD }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  if (start.status !== 200) fail(`POST /api/v1/account/two-step/start answered ${await refusalOf(start)}.`);
+  const started = await start.json().catch(() => null);
+  if (typeof started?.setupId !== "string" || typeof started?.secret !== "string") fail("The set-up start reply has no set-up identifier or secret.");
+
+  const confirm = await fetch(base + "/api/v1/account/two-step/confirm", {
+    method: "POST",
+    headers: fromApp(base, cookies),
+    body: JSON.stringify({ setupId: started.setupId, code: await nextCode(started.secret, true) }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (confirm.status !== 200) fail(`POST /api/v1/account/two-step/confirm answered ${await refusalOf(confirm)}.`);
+  const confirmed = await confirm.json().catch(() => null);
+  if (!Array.isArray(confirmed?.recoveryCodes) || confirmed.recoveryCodes.length !== 10) fail("The confirm reply did not hold 10 recovery codes.");
+  await expectTwoStepState(base, cookies, { enabled: true, availability: "available", recoveryCodesRemaining: 10 });
+  return { secret: started.secret, recoveryCodes: confirmed.recoveryCodes };
+}
+
+/** Turning on refused before anything is set up, with its status and code. */
+async function refusedStart(base, cookies, status, code) {
+  const response = await fetch(base + "/api/v1/account/two-step/start", {
+    method: "POST",
+    headers: fromApp(base, cookies),
+    body: JSON.stringify({ password: ADMIN_PASSWORD }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== status || body?.error?.code !== code) {
+    fail(`Turning on two-step verification answered ${response.status} ${body?.error?.code}, not ${status} ${code}.`);
+  }
+}
+
+/**
+ * Signs the administrator in with the password, for an account with two-step verification on: the
+ * reply is `{ secondStep: true }` and sets only the pending sign-in cookie (criterion 3). Answers
+ * that cookie as a jar.
+ */
+async function pendingSignIn(base) {
+  const response = await fetch(base + "/api/v1/session/sign-in", {
+    method: "POST",
+    headers: fromApp(base),
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+    signal: AbortSignal.timeout(SETUP_TIMEOUT_MS),
+  });
+  const body = await response.json().catch(() => null);
+  if (response.status !== 200 || Object.keys(body ?? {}).join() !== "secondStep" || body.secondStep !== true) {
+    fail(`A password sign-in for a two-step account answered ${response.status} ${body?.error?.code ?? "without { secondStep: true }"}.`);
+  }
+  const cookies = keptCookies(response);
+  const names = Object.keys(cookies);
+  if (names.length !== 1 || !names[0].startsWith(PENDING_PREFIX)) fail(`The password sign-in set ${names.length} cookies, not the pending sign-in cookie alone.`);
+  return cookies;
+}
+
+function postSecondStep(base, pending, method, code) {
+  return fetch(base + "/api/v1/session/second-step", {
+    method: "POST",
+    headers: fromApp(base, pending),
+    body: JSON.stringify({ method, code }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+}
+
+/** Completes the second step: a new session and the marker are set and the pending cookie cleared. */
+async function completeSecondStep(base, pending, method, code) {
+  const response = await postSecondStep(base, pending, method, code);
+  if (response.status !== 200) fail(`The second step with a ${method === "code" ? "code" : "recovery code"} answered ${await refusalOf(response)}.`);
+  const body = await response.json().catch(() => null);
+  if (body?.name !== "Smoke Test Administrator") fail("The second step's reply did not name the administrator.");
+  const cookies = keptCookies(response, pending);
+  const names = Object.keys(cookies);
+  if (names.length !== 2 || !names.some((name) => name.startsWith(MARKER_PREFIX)) || names.some((name) => name.startsWith(PENDING_PREFIX))) {
+    fail("The second step did not set a session and a marker and clear the pending sign-in cookie.");
+  }
+  return cookies;
+}
+
+/** The second step refused with the given status and code. Answers the response (its body read). */
+async function refusedSecondStep(base, pending, method, code, status, refusal) {
+  const response = await postSecondStep(base, pending, method, code);
+  const body = await response.json().catch(() => null);
+  if (response.status !== status || body?.error?.code !== refusal) {
+    fail(`The second step with a ${method === "code" ? "code" : "recovery code"} answered ${response.status} ${body?.error?.code}, not ${status} ${refusal}.`);
+  }
+  return response;
+}
+
+/** How many lines of workerd's output are exactly `line`. */
+function countLines(output, line) {
+  return output.split(/\r?\n/).filter((text) => text.trim() === line).length;
+}
+
+/** The `event` names of the lines of workerd's output that are JSON objects with one; nothing else. */
+function eventNames(output) {
+  const names = [];
+  for (const text of output.split(/\r?\n/)) {
+    try {
+      const value = JSON.parse(text.trim());
+      if (value && typeof value === "object" && typeof value.event === "string") names.push(value.event);
+    } catch {
+      // Not a JSON line: never printed.
+    }
+  }
+  return names;
+}
+
+/** With the right key or none and nothing stored, no deployment-key event is logged. */
+function expectNoKeyEvents(output, run) {
+  const events = eventNames(output).filter((name) => name.startsWith("deployment_key_"));
+  if (events.length !== 0) fail(`During ${run} workerd logged ${events.join(", ")}.`);
 }
 
 function writeSmokeConfig() {
@@ -312,46 +613,85 @@ async function checkNoListing(base) {
   if (/"type"\s*:\s*"(file|directory)"/.test(text)) fail("GET /assets returned a directory listing.");
 }
 
-async function withServer(base, port, work) {
+/**
+ * workerd's environment: the caller's, without any DEPLOYMENT_KEY it may hold, plus `key` when one
+ * is given. With `key` null the binding is unset, so it is `null` in the Worker (D-16, finding 6).
+ */
+function childEnvironment(key) {
+  const env = {};
+  for (const [name, value] of Object.entries(process.env)) {
+    if (name.toUpperCase() !== "DEPLOYMENT_KEY") env[name] = value;
+  }
+  return key === null ? env : { ...env, DEPLOYMENT_KEY: key };
+}
+
+/**
+ * Starts workerd on `storage` with `key` (or none) in its environment, runs `work`, and stops it.
+ * Answers `{ value, output }`: what `work` answered and workerd's stdout and stderr together, held
+ * in memory and never echoed. On a failure only the event names of its JSON log lines are printed.
+ */
+async function withServer({ base, port, storage: directory, key }, work) {
   const child = spawn(
     workerdBinary,
     [
       "serve",
       config,
       "--directory-path",
-      `do-storage=${storage}`,
+      `do-storage=${directory}`,
       "--directory-path",
       `assets=${client}`,
       "--socket-addr",
       `http=127.0.0.1:${port}`,
     ],
-    { cwd: root, stdio: ["ignore", "inherit", "inherit"] },
+    { cwd: root, stdio: ["ignore", "pipe", "pipe"], env: childEnvironment(key) },
   );
+  // Each stream kept apart, so a chunk of one never lands inside a line of the other.
+  let stdout = "";
+  let stderr = "";
+  const output = () => `${stdout}\n${stderr}`;
+  child.stdout.setEncoding("utf8").on("data", (chunk) => (stdout += chunk));
+  child.stderr.setEncoding("utf8").on("data", (chunk) => (stderr += chunk));
   let exited = false;
+  /** How workerd ended (its exit code or signal), for a failure message; never its output. */
+  let ending = "";
   const exit = new Promise((resolve) => {
-    child.once("exit", (code) => {
+    // `close` comes after the output streams have ended, so the output is complete.
+    child.once("close", (code, signal) => {
       exited = true;
+      ending = signal ? `signal ${signal}` : `exit code ${code}`;
       resolve(code);
     });
-    child.once("error", () => {
+    child.once("error", (error) => {
       exited = true;
+      ending = `start error ${error?.code ?? "unknown"}`;
       resolve(null);
     });
   });
+  let failed = false;
   try {
-    await waitUntilAnswering(base, () => exited);
-    return await work();
+    await waitUntilAnswering(base, () => (exited ? ending : null));
+    const value = await work();
+    return { value, get output() { return output(); } };
+  } catch (error) {
+    failed = true;
+    throw error;
   } finally {
     if (!exited) child.kill("SIGTERM");
     await Promise.race([exit, delay(5000).then(() => { if (!exited) child.kill("SIGKILL"); })]);
     await exit;
+    if (failed) {
+      const events = eventNames(output());
+      console.error(`workerd's log events: ${events.length > 0 ? events.join(", ") : "none"}`);
+    }
   }
 }
 
-async function waitUntilAnswering(base, hasExited) {
+/** `exitedHow` answers null while workerd runs, then how it ended. */
+async function waitUntilAnswering(base, exitedHow) {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
-    if (hasExited()) fail("workerd exited before it answered.");
+    const ended = exitedHow();
+    if (ended !== null) fail(`workerd exited before it answered (${ended}).`);
     try {
       const response = await get(base + "/api/v1/status");
       await response.arrayBuffer();
