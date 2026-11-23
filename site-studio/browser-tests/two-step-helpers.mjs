@@ -108,6 +108,136 @@ export async function signInWithRecoveryCode(playwright, origin, { email, passwo
   }
 }
 
+// The helpers below were added for the second-step page's tests (story 1.5, spec 8). They repeat
+// what two-step.spec.mjs keeps for itself (finding 15: a spec file never imports another), so that
+// file is left as it is.
+
+/** signin.spec.mjs's administrator, so whichever file runs first sets the server up the same way. */
+export const SIGN_IN_ADMIN = {
+  installationName: "Harbourside Facilities",
+  name: "Robin Example",
+  email: "robin.admin@harbourside.example",
+  password: "a long and correct sign-in passphrase",
+};
+
+/**
+ * An email no other spec uses: `label`, the project and, under `--repeat-each`, the repeat, so each
+ * test's account is its own. `suffix` names the spec, for example "secondstep".
+ */
+export function emailFor(label, testInfo, suffix) {
+  const repeat = testInfo.repeatEachIndex ? `.r${testInfo.repeatEachIndex}` : "";
+  return `${label}.${testInfo.project.name}${repeat}.${suffix}@harbourside.example`;
+}
+
+/** Completes set-up through the API with SIGN_IN_ADMIN, unless it is already complete. */
+export async function completeSetupThroughApi(request, server) {
+  const state = await request.get(`${server.origin}/api/v1/setup/state`);
+  if ((await state.json()).state === "closed") return;
+  const reply = await request.post(`${server.origin}/api/v1/setup`, {
+    headers: { origin: server.origin, ...APP },
+    data: {
+      code: server.code,
+      installationName: SIGN_IN_ADMIN.installationName,
+      name: SIGN_IN_ADMIN.name,
+      email: SIGN_IN_ADMIN.email,
+      password: SIGN_IN_ADMIN.password,
+    },
+  });
+  if (reply.status() !== 200) throw new Error(`Set-up through the API answered ${reply.status()}.`);
+}
+
+/**
+ * Makes a standard account through an invitation, from separate request contexts (the administrator's
+ * and the new person's), so the test's browser holds no session or marker for it. With `twoStep`,
+ * also turns two-step verification on through the API. Answers `{ email, name, password }` and, with
+ * `twoStep`, `secret`, `recoveryCodes` and `step` (the time step of the code that confirmed it).
+ */
+export async function accountThroughApi(playwright, origin, { email, name, password, twoStep = true }) {
+  const admin = await playwright.request.newContext({ ignoreHTTPSErrors: true });
+  let link;
+  try {
+    const signIn = await admin.post(`${origin}/api/v1/session/sign-in`, {
+      headers: { origin, ...APP },
+      data: { email: SIGN_IN_ADMIN.email, password: SIGN_IN_ADMIN.password },
+    });
+    if (signIn.status() !== 200) throw new Error(`The administrator's sign-in through the API answered ${signIn.status()}.`);
+    const invite = await admin.post(`${origin}/api/v1/invitations`, { headers: { origin, ...APP }, data: { email, name, role: "standard" } });
+    if (invite.status() !== 200) throw new Error(`Inviting through the API answered ${invite.status()}.`);
+    ({ link } = await invite.json());
+  } finally {
+    await admin.dispose();
+  }
+  const person = await playwright.request.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const accept = await person.post(`${origin}/api/v1/invitations/accept`, {
+      headers: { origin, ...APP },
+      data: { secret: new URL(link).hash.slice(1), name, password },
+    });
+    if (accept.status() !== 200) throw new Error(`Accepting through the API answered ${accept.status()}.`);
+    if (!twoStep) return { email, name, password };
+    const on = await turnOnThroughApi(person, origin, password);
+    return { email, name, password, secret: on.secret, recoveryCodes: on.recoveryCodes, step: on.step };
+  } finally {
+    await person.dispose();
+  }
+}
+
+/** Fails on any serious or critical axe violation (standing rule 15). */
+export async function expectAccessible(page, include) {
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  let builder = new AxeBuilder({ page });
+  if (include) builder = builder.include(include);
+  const results = await builder.analyze();
+  const serious = results.violations
+    .filter((violation) => violation.impact === "serious" || violation.impact === "critical")
+    .map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.target.join(" ")).join(", ")}`);
+  if (serious.length > 0) throw new Error(`Serious or critical axe violations: ${serious.join("; ")}`);
+}
+
+/**
+ * Starts watching for an element to appear, as two-step.spec.mjs's watch does: a heading (h1 to h4)
+ * with exactly `text`, the role "alert" region once it holds exactly `text`, or (kind "field") an
+ * input whose label reads exactly `text`. When it first appears, records whether it already has
+ * focus. A MutationObserver callback runs right after the task that changed the page, so focus moved
+ * in the same task (a layout effect) is seen, and focus moved later (a passive effect) is not; this
+ * tells the two apart for an element shown after an `await` (a reply). An element already shown
+ * when the watch begins records a failing value.
+ */
+export async function watchFocusOnAppear(page, kind, text) {
+  await page.evaluate(({ kind: watched, text: wanted }) => {
+    const seen = (window.__focusOnAppear ??= {});
+    const observers = (window.__focusObservers ??= {});
+    observers[wanted]?.disconnect();
+    delete seen[wanted];
+    const find = () => {
+      if (watched === "heading") return [...document.querySelectorAll("h1, h2, h3, h4")].find((element) => element.textContent === wanted);
+      if (watched === "field") {
+        return [...document.querySelectorAll("input, textarea")].find((element) =>
+          [...(element.labels ?? [])].some((label) => label.textContent === wanted));
+      }
+      return [...document.querySelectorAll('[role="alert"]')].find((element) => element.textContent === wanted);
+    };
+    if (find()) {
+      seen[wanted] = "already shown when the watch began";
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      const element = find();
+      if (!element) return;
+      seen[wanted] = document.activeElement === element;
+      observer.disconnect();
+      delete observers[wanted];
+    });
+    observers[wanted] = observer;
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }, { kind, text });
+}
+
+/** What `watchFocusOnAppear` recorded for `text`: true, false, a reason it could not pass, or undefined if it never appeared. */
+export async function focusedOnAppear(page, text) {
+  return page.evaluate((wanted) => window.__focusOnAppear?.[wanted], text);
+}
+
 /** Signs in with the password alone from a new request context; answers the status and parsed body. */
 export async function signInWithPassword(playwright, origin, { email, password }) {
   const api = await playwright.request.newContext({ ignoreHTTPSErrors: true });

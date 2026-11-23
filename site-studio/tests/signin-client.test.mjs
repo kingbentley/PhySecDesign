@@ -4,7 +4,16 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { REFUSALS } from "../shared/refusal.ts";
-import { SIGN_IN_MESSAGES, requestSignOut, signInOutcome, signOutConfirmed, submitSignIn, waitMessage } from "../src/admin/signInClient.js";
+import {
+  SIGN_IN_MESSAGES,
+  requestSignOut,
+  secondStepOutcome,
+  signInOutcome,
+  signOutConfirmed,
+  submitSecondStep,
+  submitSignIn,
+  waitMessage,
+} from "../src/admin/signInClient.js";
 import { waitWording } from "../src/admin/waitWording.js";
 import { isSessionReply, readSession, readSetupState } from "../src/admin/setupState.js";
 
@@ -52,6 +61,84 @@ describe("sign-in refusals", () => {
     assert.equal(signOutConfirmed(500, null), false);
     assert.equal(signOutConfirmed(200, null), false);
     assert.equal(signOutConfirmed(403, refusal("origin_refused")), false);
+  });
+});
+
+describe("the second step (story 1.5, spec 8, D-12, D-13)", () => {
+  test("a sign-in reply of exactly { secondStep: true } asks for the second step; nothing else does", () => {
+    assert.deepEqual(signInOutcome(200, { secondStep: true }), { kind: "secondStep" });
+    assert.equal(signInOutcome(200, { secondStep: false }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: "true" }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: true, name: "Robin" }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: true, token: "x" }).kind, "refused");
+    assert.equal(signInOutcome(401, { secondStep: true }).kind, "refused");
+  });
+
+  test("a correct code signs in with the name, as a sign-in does", () => {
+    assert.deepEqual(secondStepOutcome(200, { name: "Robin Example" }), { kind: "signedIn", name: "Robin Example" });
+    assert.deepEqual(secondStepOutcome(200, { name: "Robin", token: "x" }), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(200, { secondStep: true }), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(200, null), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+  });
+
+  test("a wrong code and a wrong recovery code stay on the second step with the server's message", () => {
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_code_wrong")),
+      { kind: "refused", message: "That code does not match or was already used. Wait for the next code in your authenticator app and try again." });
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_recovery_code_wrong")),
+      { kind: "refused", message: "That recovery code does not match, or it has already been used." });
+    // Without a message in the reply, shared/refusal.ts's.
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_code_wrong" } }).message, REFUSALS.second_step_code_wrong.message);
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_recovery_code_wrong" } }).message, REFUSALS.second_step_recovery_code_wrong.message);
+  });
+
+  test("an expired pending sign-in and a wait return to the password form, the wait composed as story 1.3 does", () => {
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_expired")),
+      { kind: "restart", message: "This sign-in has expired. Sign in again with your email and password." });
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_expired" } }).message, REFUSALS.second_step_expired.message);
+    assert.deepEqual(secondStepOutcome(429, refusal("signin_wait", { retryAfterSeconds: 60 })),
+      { kind: "restart", message: "Too many attempts. Wait 1 minute before trying again." });
+    assert.equal(secondStepOutcome(429, refusal("signin_wait"), "150").message, "Too many attempts. Wait 2 minutes 30 seconds before trying again.");
+    assert.equal(secondStepOutcome(429, refusal("signin_wait")).message, "Too many attempts. Wait a few minutes before trying again.");
+  });
+
+  test("a deployment key mismatch is its own kind with its message (finding 26)", () => {
+    assert.deepEqual(secondStepOutcome(503, refusal("deployment_key_mismatch")),
+      { kind: "keyMismatch", message: REFUSALS.deployment_key_mismatch.message });
+    assert.equal(secondStepOutcome(503, { error: { code: "deployment_key_mismatch" } }).message, REFUSALS.deployment_key_mismatch.message);
+  });
+
+  test("an invalid code is named for the page to word; other codes are worded as the first step words them", () => {
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "code" })), { kind: "field", field: "code" });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "method" })), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "email" })), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input")), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(503, refusal("signin_busy")), { kind: "refused", message: SIGN_IN_MESSAGES.busy });
+    assert.deepEqual(secondStepOutcome(403, refusal("origin_refused")), { kind: "refused", message: SIGN_IN_MESSAGES.origin_refused });
+    assert.deepEqual(secondStepOutcome(503, refusal("updating")), { kind: "refused", message: SIGN_IN_MESSAGES.updating });
+    assert.deepEqual(secondStepOutcome(403, refusal("https_required")), { kind: "refused", message: SIGN_IN_MESSAGES.https_required });
+    assert.deepEqual(secondStepOutcome(404, refusal("not_found")), { kind: "refused", message: SIGN_IN_MESSAGES.not_found });
+    assert.deepEqual(secondStepOutcome(405, refusal("method_not_allowed")), { kind: "refused", message: SIGN_IN_MESSAGES.not_found });
+    assert.deepEqual(secondStepOutcome(500, refusal("internal_error")), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(502, null), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+  });
+
+  test("the request posts only the method and the code to the second-step route, with the app's headers and a deadline", async () => {
+    const headers = { "content-type": "application/json", accept: "application/json", "x-site-survey-design": "1" };
+    const sent = [];
+    const fetcher = async (url, init) => {
+      sent.push({ url, init });
+      return new Response(JSON.stringify({ name: "Robin Example" }), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const loaded = { loadHeaders: async () => headers };
+    assert.deepEqual(await submitSecondStep({ method: "code", code: "123456", extra: "x" }, fetcher, loaded), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(sent[0].url, "/api/v1/session/second-step");
+    assert.equal(sent[0].init.method, "POST");
+    assert.deepEqual(sent[0].init.headers, headers);
+    assert.deepEqual(JSON.parse(sent[0].init.body), { method: "code", code: "123456" });
+    const wait = async () => new Response(JSON.stringify({ error: { code: "signin_wait", message: "x" } }), { status: 429, headers: { "retry-after": "60" } });
+    assert.deepEqual(await submitSecondStep({ method: "recovery", code: "x" }, wait, loaded), { kind: "restart", message: "Too many attempts. Wait 1 minute before trying again." });
+    const never = (_url, init) => new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted"))));
+    assert.deepEqual(await submitSecondStep({ method: "code", code: "123456" }, never, { timeoutMs: 20, ...loaded }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
   });
 });
 

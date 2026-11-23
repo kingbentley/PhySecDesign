@@ -17,6 +17,11 @@ body.signin-open{min-width:0;background:#fff}
 .signin-field input{height:46px;width:100%;padding:0 14px;border:1px solid #6f7c77;border-radius:8px;background:#fff;color:#17231f;font-size:16px}
 .signin-field input[aria-invalid="true"]{border:2px solid #b42318}
 .signin-field-error{color:#b42318;font-weight:600;font-size:14px}
+.signin-field-hint{color:#4f5b57;font-size:14px}
+/* The second step's link-style buttons (story 1.5): teal underlined text, 44 px tall targets. */
+.signin-second-actions{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.signin-link-button{min-height:44px;padding:0 2px;border:0;background:none;color:#007e73;font-size:16px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
+.signin-link-button:hover{color:#006c63}
 .signin-page input:focus-visible,.signin-page button:focus-visible,.signin-page a:focus-visible,.signin-alert:focus-visible{outline:2px solid #007e73;outline-offset:2px}
 .signin-alert{padding:12px 14px;border:2px solid #b42318;border-radius:8px;background:#fff5f4;color:#8a1c12;font-weight:600}
 .signin-alert-empty{display:none}
