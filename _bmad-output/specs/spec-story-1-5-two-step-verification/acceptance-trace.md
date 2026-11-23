@@ -36,6 +36,7 @@ Specs, in build order: 1 rules, cryptography and the key guard; 2 two-step stora
 | 28 | Access and restore | A revision restore leaves two-step set-up and recovery codes unchanged | CAP-12 | S (operation sweep over the two-step tables) | 2 | 3 |
 | — | Standing rule 15 | Browser tests and axe for My account, the offer and the second step | CAP-14 | B | 7 and 8 (each for its screens) | — |
 | — | Standing rule 7 | The self-hosted smoke suite covers the new area | CAP-10, CAP-3 | H | 5 | — |
+| — | Spec 6's rulings (2026-11-22) | The pinned Wrangler's secret list output, failed and non-interactive secret commands, how long key-state replies differ after a put, and the deploy command's restore paths, shown for real (checks 9 to 14, added 2026-11-23) | CAP-11 | C | 9 | 6 (U, fakes) |
 | — | Deferred work | Marker count and clearing for second-step failures; hash queue for account actions | CAP-6 | S | 3 (sign-in), 2 (account actions) | 4 (busy refusal) |
 
 Notes on two criteria:

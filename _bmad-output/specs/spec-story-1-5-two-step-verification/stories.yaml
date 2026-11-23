@@ -91,11 +91,13 @@
   title: Acceptance on Cloudflare
   description: >-
     A scripted run on the PhySec Site Studio test account: first deploy prints the key, redeploy
-    keeps it and an earlier two-step set-up still signs in, a supplied key is used, and Cloudflare's
-    behaviour with the key is recorded. Owns criterion 21.
+    keeps it and an earlier two-step set-up still signs in, a supplied key is used, and the deploy
+    command's Wrangler assumptions, reply timing after a secret put and restore paths are shown for
+    real (checks 9 to 14, added 2026-11-23 from spec 6). Owns criterion 21.
   spec_checkpoint: true
   done_checkpoint: true
   invoke_dev_with: >-
-    Build to D-19 and D-20. Ask Kevin before using the test account; check the account and the
-    Worker names first; delete every Worker made. Never print, log or store the key, codes or
-    passwords beyond the deploy command's own one-time line.
+    Build to D-19, D-20 and D-17 as spec 6 built it. Ask Kevin before using the test account; check
+    the account and the three Worker names (15a, 15b, 15c) first; delete all three at the end. If
+    check 13 finds replies differing for 60 seconds or more, stop for the orchestrator. Never print,
+    log or store the key, codes or passwords beyond the deploy command's own one-time line.
