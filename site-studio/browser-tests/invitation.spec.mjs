@@ -163,6 +163,15 @@ async function ruleStates(page) {
     items.map((item) => [item.querySelector(".invitation-rule-state").textContent, item.dataset.met === "true"]));
 }
 
+/**
+ * After accepting, every test server has a deployment key, so two-step verification is available
+ * and the page offers it first (story 1.5, spec 7, D-11): choose "Skip for now", which loads the app.
+ */
+async function skipTwoStepOffer(page) {
+  await expect(page.getByRole("heading", { name: "Protect your account" })).toBeVisible();
+  await page.getByRole("button", { name: "Skip for now" }).click();
+}
+
 async function setVisibility(page, state) {
   await page.evaluate((value) => {
     Object.defineProperty(document, "visibilityState", { configurable: true, get: () => value });
@@ -424,6 +433,7 @@ test("accepting with an edited name opens the app as that standard user, with no
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByLabel("Password again").fill(PASSWORD);
   await page.getByRole("button", { name: "Set password and sign in" }).click();
+  await skipTwoStepOffer(page);
   await expect(page.getByTestId("account-name")).toHaveText("Avery Edited");
   await expect(page).toHaveURL(`${server.origin}/`);
   await openAccountMenu(page);
@@ -449,6 +459,7 @@ test("accepting an administrator invitation gives the new account Invite a perso
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByLabel("Password again").fill(PASSWORD);
   await page.getByRole("button", { name: "Set password and sign in" }).click();
+  await skipTwoStepOffer(page);
   await expect(page.getByTestId("account-name")).toHaveText("Ada Admin");
   await openAccountMenu(page);
   await expect(inviteItem(page)).toBeVisible();
@@ -533,6 +544,7 @@ test("when accepting fails the page says the password may not have been set, and
   await expect(alert).toBeFocused();
   await page.unroute("**/api/v1/invitations/accept");
   await alert.getByRole("button", { name: "Try again" }).click();
+  await skipTwoStepOffer(page);
   await expect(page.getByTestId("account-name")).toHaveText("Ari Fail");
 });
 

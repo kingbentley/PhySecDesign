@@ -1,11 +1,16 @@
-import { randomInt } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
+import { rmSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 
 // Browser tests (story 1.2, K24, standing rule 15): the built app served locally by Cloudflare's
 // runtime, in desktop Chromium and in WebKit with an iPhone profile. Each server has its own empty
-// state folder and set-up code, generated here for each run and kept in this process's environment
-// so that Playwright's worker processes, which load this file again and inherit the environment,
-// see the same code. Nothing is written outside browser-tests/.local/.
+// state folder, set-up code and deployment key (story 1.5, finding 17: 32 random bytes in
+// base64url, a test key for this run only, never a real one), generated here for each run and kept
+// in this process's environment so that Playwright's worker processes, which load this file again
+// and inherit the environment, see the same values. serve.mjs writes both only into the server's
+// gitignored .dev.vars in browser-tests/.local/<server>/ and removes that file when the run ends.
+// Nothing is written outside browser-tests/.local/.
 //
 // Each project has three servers (story 1.3, A-20, V-14): its own for setup.spec.mjs, and a pair
 // for signin.spec.mjs, which uses the first for the sign-in tests and both for the test of two
@@ -33,13 +38,34 @@ const SERVERS = PROJECTS.flatMap((project) => [
 const origin = (port) => `https://127.0.0.1:${port}`;
 
 for (const server of SERVERS) {
-  const key = setupCodeVariable(server.id);
-  process.env[key] ??= generatedCode();
+  process.env[setupCodeVariable(server.id)] ??= generatedCode();
+  // Every server gets a key, so two-step verification is available on each (story 1.5).
+  process.env[deploymentKeyVariable(server.id)] ??= randomBytes(32).toString("base64url");
 }
 
 /** The environment variable holding a server's set-up code for this run (a project's own server has the project's name). */
 export function setupCodeVariable(serverId) {
   return `SETUP_CODE_FOR_TESTS_${serverId.replace(/-/g, "_").toUpperCase()}`;
+}
+
+// The runner's own process (not a worker) removes every server's .dev.vars as the run ends: on
+// Windows Playwright force-kills the web servers, so serve.mjs cannot remove its own (finding 17).
+if (process.env.TEST_WORKER_INDEX === undefined) {
+  process.on("exit", () => {
+    for (const server of SERVERS) {
+      // Best effort: a file still held open (EPERM or EBUSY on Windows) must not throw at exit.
+      try {
+        rmSync(fileURLToPath(new URL(`./.local/${server.id}/.dev.vars`, import.meta.url)), { force: true });
+      } catch {
+        // The next run's serve.mjs removes the folder before it starts.
+      }
+    }
+  });
+}
+
+/** The environment variable holding a server's test deployment key for this run (story 1.5, finding 17). */
+export function deploymentKeyVariable(serverId) {
+  return `DEPLOYMENT_KEY_FOR_TESTS_${serverId.replace(/-/g, "_").toUpperCase()}`;
 }
 
 /** The two sign-in servers of a project: `{ origin, code }` each, the first used for most tests. */
@@ -79,7 +105,10 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { SETUP_CODE_FOR_TESTS: process.env[setupCodeVariable(server.id)] },
+    env: {
+      SETUP_CODE_FOR_TESTS: process.env[setupCodeVariable(server.id)],
+      DEPLOYMENT_KEY_FOR_TESTS: process.env[deploymentKeyVariable(server.id)],
+    },
     stdout: "ignore",
     stderr: "pipe",
   })),

@@ -276,3 +276,11 @@ Story 1.5's leftover build notes, recorded 2026-11-23 at Kevin's request that ev
 - source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/5-self-hosted-deployment-key.md` (final verification)
   summary: One self-hosted smoke run (`npm run smoke:selfhost`) took 82 seconds during spec 5's build, with no authenticator wait.
   evidence: Recorded in spec 5's final verification: the cause was not found, and the next two runs passed in 16 and 25 seconds. It has not recurred since. Status: closed; reopen only if it recurs.
+
+- source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/7-my-account-set-up-and-offer.md` (Review Triage Log row 5)
+  summary: Empty `role="status"` and `role="alert"` regions are hidden with `display:none` on the My account, invitation and sign-in pages, which some screen readers may not announce when text first appears.
+  evidence: Unverified, medium if true. The pattern predates story 1.5 (`invitation.css`, `signin.css`). Settle it with a screen-reader check (VoiceOver on iOS, NVDA on Windows) of Copy and a refusal, for example in story 10.6.
+
+- source_spec: `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/7-my-account-set-up-and-offer.md` (Review Triage Log row 30)
+  summary: Focus moves made in passive `useEffect`s on the sign-in, set-up and invitation pages and in the invite panel (for example a refusal's alert taking focus after an `await`) can run after the person, or a test, has started typing elsewhere, as story 1.5's set-up steps did before spec 7's follow-up.
+  evidence: Unverified, medium if true; no failure has been seen on those pages. Spec 7 found this race in My account's set-up (an intermittent webkit-iphone failure, explained from its trace) and fixed it there with layout effects and a MutationObserver check of focus at the moment an element appears. Settle it by applying that check to each page's focus moves that follow an `await`.

@@ -1,16 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrandMark } from '../BrandMark.jsx';
 import { isWellFormedInvitationSecret } from '../../shared/invitation.ts';
 import { ACCEPT_FIELDS, INVITATION_MESSAGES, readInvitation, submitAccept } from './invitationClient.js';
 import { ACCEPT_FIELD_MESSAGES, checkAcceptFields, invitedAsLine, ruleItems, signedInNotice } from './invitationRules.js';
+import { readTwoStepState } from '../account/twoStepClient.js';
 import './invitation.css';
+import '../account/account.css';
 
 // The invitation page (S-27, story 1.4, CAP-3, CAP-4, CAP-5, D-2, D-3, D-4, D-7, D-8, D-11). Shown
 // at /invite after set-up whatever the session. The secret was taken from the address before the
 // app started (`invitationAddress.js`) and is kept in memory only; with none, the page asks to open
 // the link again. A secret not shaped as the server issues them gets the "no longer works" message
-// without a request (review finding 11). After a successful accept the app loads in a fresh
-// document (D-2), signed in as the new account.
+// without a request (review finding 11). After a successful accept the page reads the two-step
+// state and, when two-step verification is available, offers to set it up in place (story 1.5,
+// CAP-8, D-11); skipping, finishing, or no offer loads the app in a fresh document (D-2), signed in
+// as the new account.
 
 const [UNUSABLE_TITLE, ...UNUSABLE_REST] = INVITATION_MESSAGES.unusable.split('. ');
 const UNUSABLE_DETAIL = UNUSABLE_REST.join('. ');
@@ -101,7 +105,55 @@ function Field({ id, label, error, inputRef, describedBy, ...rest }) {
   );
 }
 
-function AcceptForm({ secret, invitation, session, onUnusable }) {
+/**
+ * The offer after a successful accept (S-27, story 1.5, CAP-8, D-11): set up two-step verification
+ * here, asking for the password again (CA-13), or skip. Skipping or finishing loads the app in a
+ * fresh document (story 1.4's D-2). `state` is the two-step state read just after accepting.
+ */
+function Offer({ state }) {
+  const heading = useRef(null);
+  const [settingUp, setSettingUp] = useState(false);
+  const [TwoStepSetup, setTwoStepSetup] = useState(null);
+  const openApp = () => location.replace('/');
+  // In a layout effect, so focus has moved by the time the offer can be seen or used.
+  useLayoutEffect(() => { if (!settingUp) heading.current?.focus(); }, [settingUp]);
+
+  async function setUp() {
+    try {
+      const module = await import('../account/TwoStepSetup.jsx');
+      setTwoStepSetup(() => module.default);
+      setSettingUp(true);
+    } catch {
+      // The set-up's code could not be loaded: the app opens, where My account offers it again.
+      openApp();
+    }
+  }
+
+  if (settingUp && TwoStepSetup) {
+    return (
+      <Frame>
+        <TwoStepSetup
+          email={state.email} headingLevel={1} doneLabel="Continue to Site Survey Design"
+          onDone={openApp} onCancel={() => setSettingUp(false)} onSignedOut={openApp}
+        />
+      </Frame>
+    );
+  }
+  return (
+    <Frame>
+      <h1 ref={heading} tabIndex={-1}>Protect your account</h1>
+      <p className="invitation-lead">
+        Turn on two-step verification now? After your password, signing in will also ask for a code from an authenticator app on your phone. You can turn it on later from My account.
+      </p>
+      <div className="two-step-row">
+        <button type="button" className="two-step-button" onClick={setUp}>Set up two-step verification</button>
+        <button type="button" className="two-step-secondary" onClick={openApp}>Skip for now</button>
+      </div>
+    </Frame>
+  );
+}
+
+function AcceptForm({ secret, invitation, session, onUnusable, onAccepted }) {
   const [values, setValues] = useState({ name: invitation.name, password: '', passwordAgain: '' });
   const [errors, setErrors] = useState({});
   // A failure that belongs to no field; `retry` adds Try again (review finding 7).
@@ -143,8 +195,11 @@ function AcceptForm({ secret, invitation, session, onUnusable }) {
       setSending(false);
     }
     if (result.kind === 'accepted') {
-      // A fresh document, so the app's page has the default referrer policy (D-2).
-      location.replace('/');
+      // The offer, when two-step verification is available; otherwise the app (story 1.5, D-11).
+      // The button stays busy while the state is read: the link is used now.
+      inFlight.current = true;
+      setSending(true);
+      await onAccepted();
       return;
     }
     if (result.kind === 'unusable') return onUnusable();
@@ -251,6 +306,19 @@ export default function InvitationPage({ secret, session }) {
     // Read once when the page opens; Try again reads again.
   }, []);
 
+  // After a successful accept (story 1.5, D-11, finding 14): the offer only when two-step
+  // verification is available; otherwise, or when the read fails, the app in a fresh document, so
+  // its page has the default referrer policy (story 1.4's D-2).
+  async function accepted() {
+    const result = await readTwoStepState();
+    if (!live.current) return;
+    if (result.kind === 'state' && result.state.availability === 'available' && !result.state.enabled) {
+      setView({ kind: 'offer', state: result.state });
+      return;
+    }
+    location.replace('/');
+  }
+
   if (view.kind === 'reopen') return <Reopen/>;
   if (view.kind === 'unusable') return <Unusable/>;
   if (view.kind === 'unknown') return <CannotCheck key={view.attempt} onRetry={read}/>;
@@ -264,5 +332,11 @@ export default function InvitationPage({ secret, session }) {
       </Frame>
     );
   }
-  return <AcceptForm secret={secret} invitation={view.invitation} session={session} onUnusable={() => setView({ kind: 'unusable' })}/>;
+  if (view.kind === 'offer') return <Offer state={view.state}/>;
+  return (
+    <AcceptForm
+      secret={secret} invitation={view.invitation} session={session}
+      onUnusable={() => setView({ kind: 'unusable' })} onAccepted={accepted}
+    />
+  );
 }
