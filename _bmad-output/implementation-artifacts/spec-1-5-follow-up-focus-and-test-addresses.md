@@ -65,6 +65,7 @@ Third commit (2026-11-24, after rulings 1 to 4), run one at a time in `site-stud
 - `npm run typecheck` clean; `npm test` 231 pass, 0 fail; `npm run test:server` 509 pass in 36 files; `npm run build` passes.
 - `setup.spec.mjs` with the 120 s file timeout, ten whole-file runs in a row, both projects, `--trace on`: 34 of 34 in every run, no failure, skip or flaky result (3.4 to 5.0 minutes a run). The first test (now line 66) took, in webkit-iphone, 3.6, 4.6, 2.1, 4.2, 2.4, 7.4, 11.7, 11.7, 7.6 and 2.2 s (runs 1 to 10), and in chromium 8.7 to 11.1 s. The slowest WebKit first tests (runs 7 and 8) spent their time starting the browser: in run 7's trace, 13.6 s of fixtures (launch 4.5 s, page 9.0 s) against about 1.3 s for the test's own steps (navigate 0.4 s, first visible check 0.9 s); in run 8's, 7.8 s of fixtures (launch 2.0 s, context 1.2 s, page 4.6 s) against the same 1.3 s. None came near the old 30 s on these runs, so they show the time goes on the browser's start, not the app; the 30 s cases were the cold starts above.
 - `npm run test:browser` (build, then the whole suite, with Playwright's output in the scratch folder): 172 of 172 passed in 19.6 minutes.
+- The orchestrator's check of `afd196b` (2026-11-24) accepted it as built. Its back-to-back browser runs slowed under load and failed once in set-up and three times in the full suite, none at a changed assertion; a rerun passed 172 of 172 and set-up 34 of 34. Recorded as an update to the story 10.1 machine-limit entry in `deferred-work.md`.
 
 
 ## Review Triage Log
