@@ -1550,7 +1550,8 @@ export function createTailStarter({
         // cleared as soon as the race ends.
         let timer;
         const limit = new Promise((resolve) => {
-          timer = setTimeout(resolve, stopLimitMs);        });
+          timer = setTimeout(resolve, stopLimitMs);
+        });
         await Promise.race([closed, limit]);
         clearTimeout(timer);
       },

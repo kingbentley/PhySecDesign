@@ -354,3 +354,5 @@ A Docker `node:24.20.0-bookworm` container with the same steps also passed 290/2
   - ECH 3: a tail child that closes after the limit is missing from check 7's exit record.
 
   All three predate this fix and matter only when the script is run off Windows. They are listed here for the orchestrator to enter in `deferred-work.md`, which is outside this fix's files.
+
+Update (2026-11-24, orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction): the three deferred findings above are now one entry in `deferred-work.md`, status open, deferred, owned by whoever first runs the script off Windows, and in any case story 1.6's spec writer checks. The cause of the CI failure was the Node version (CI's Node 22 against this workstation's Node 24), not Linux.
