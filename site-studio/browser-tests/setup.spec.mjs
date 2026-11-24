@@ -6,8 +6,11 @@ import { focusedOnAppear, watchFocusOnAppear, watchFocusOnAppearFromLoad } from 
 
 // The set-up page (S-25, story 1.2) against the real built Worker. Each project has one fresh
 // installation, so these tests run in order: refusals first, then the set-up that closes it.
-
-test.describe.configure({ mode: "serial" });
+//
+// The first WebKit test of a run pays the browser's cold launch inside its own timeout: one trace
+// (2026-11-23) showed 26.8 s to launch WebKit, 6.6 s to create the context and 23.4 s to create
+// the page, past the default 30 s before the test's first step. 120 s, as in second-step.spec.mjs.
+test.describe.configure({ mode: "serial", timeout: 120_000 });
 
 const ADMIN = {
   installationName: "Westbrook Security",

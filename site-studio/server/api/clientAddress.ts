@@ -3,8 +3,10 @@
 // On Cloudflare the client's address is the `CF-Connecting-IP` header, which Cloudflare sets on
 // every request and a client cannot override. Self-hosted, the same header is read if present:
 // the bundled web server must set it or strip it (stories 2.21 and 2.22, which also add the
-// configured-proxy rule for `X-Forwarded-For`). Without the header, as on the local runtime,
-// every request shares one bucket, which only makes the count stricter.
+// configured-proxy rule for `X-Forwarded-For`). Under Wrangler's local runtime (Miniflare), a
+// request that arrives without the header is given the client's address, 127.0.0.1, so it is
+// counted under that known address. Only where nothing sets the header does every request share
+// the one unknown bucket, which only makes the count stricter.
 //
 // An IPv6 client usually controls a whole /64, so IPv6 addresses are counted by their /64 prefix;
 // IPv4 addresses (including IPv4-mapped IPv6) are counted whole.
