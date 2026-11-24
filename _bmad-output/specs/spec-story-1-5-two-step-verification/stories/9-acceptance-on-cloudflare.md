@@ -222,7 +222,7 @@ The only made-up email is `admin-15a@example.test` ("Acceptance Administrator", 
 | 14 | 17:42:04–17:48:06 | **pass** | (a) Wrong key supplied: the Checking line, then the "not the original … removed from the Worker again" line on standard error; exit 1; no `DEPLOYMENT_KEY` in the next list. (b) Original supplied: the Checking line, the "supplied" line, exit 0; the key listed; a code of a later step for the administrator signed in (200, 200). (c) Wrong key put by hand (exit 0), original supplied: the Checking line, the "Worker already has a deployment key, and it is not the one …" line naming `site-studio-test-15a`, no "supplied" line, exit 1; the key still listed; the key-state route still settled on `mismatch`. The key appeared in no captured line in (a), (b) or (c). |
 | 14 (d) | | **pass** | Checking line to exit: (a) **66.1 s**, (b) **64.6 s**, (c) **62.1 s**, each within 60–180 s. |
 | 12 | 17:48:06 | **pass** | `DEPLOYMENT_KEY` was in the next list after check 1's generated key (yes), check 6's supplied key (yes) and check 14 (b)'s restored key (yes). |
-| 10 | 17:48:14 | **recorded: put not shown, delete pass** | Put: `secret put "ACCEPTANCE INVALID NAME"` on 15a **exited 0**. The fallback put to the absent 15c also **exited 0**, and 15c then existed (Wrangler created it). With no safe way left, the put is "not shown". Delete: `secret delete ACCEPTANCE_ABSENT_SECRET` on 15a exited **1**. See `deferred-work.md`. |
+| 10 | 17:48:14 | **recorded: put not shown, delete pass** | Put: `secret put "ACCEPTANCE INVALID NAME"` on 15a **exited 0**. The fallback put to the absent 15c also **exited 0**, and 15c then existed (Wrangler created it). With no safe way left, the put is "not shown". Only exit codes were recorded: the run does not tell whether Cloudflare accepted the spaced name or the put failed with exit 0 (`deferred-work.md`). Delete: `secret delete ACCEPTANCE_ABSENT_SECRET` on 15a exited **1**. See `deferred-work.md`. |
 
 **Cleanup (17:48:14–17:48:25).** `wrangler delete --name <w> --force` exited 0 for `site-studio-test-15a`, `-15b` and `-15c`. `secret list` then answered not found for each.
 
@@ -247,6 +247,14 @@ The only made-up email is `admin-15a@example.test` ("Acceptance Administrator", 
 - Check 7 keeps polling 15b for up to 180 s after its deploy command ends.
 - Check 5 also records the two password-step statuses.
 - Check 14 (b) signs in only when its deploy exited 0.
+
+**Checks by the build session after the run.**
+- The frozen block equals its text at `6393b51`.
+- Every I/O matrix row has a dry-run test named after it, and each ran in `npm test`.
+- Deliberate breakage 2 was repeated against the patched code (cleanup's call removed, only `tests/acceptance-two-step.test.mjs` run). Twelve tests failed, the named "Cleanup: … (deliberate breakage 2)" among them. The change was then reverted.
+- Breakages 1 and 3 are permanent tests and passed in the final `npm test`.
+- No second review was run after round 1's patches.
+- The 21 tail events were not matched to the requests sent.
 
 **Workflow note for Kevin.** Step 3 of `bmad-build` was followed: the build notes were written into this file, then an implementation subagent built the script from the spec alone. The build session itself made only the deployed run, whose account rules are in this file's frozen block and Build notes.
 
