@@ -3,6 +3,7 @@
 // API and a fake tail, on a virtual clock. Nothing here starts Wrangler or reaches Cloudflare.
 // Every key, password and code is generated at run time; none is written in this file.
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { describe, it } from "node:test";
@@ -1289,6 +1290,33 @@ describe("real effects with a fake spawn", () => {
     const tail = await start(WORKERS.a, { onText: () => {} });
     await tail.stop();
     assert.equal(calls[0].child.killed, true);
+  });
+
+  it("stopping the tail keeps Node running until the run goes on, even when nothing else is pending", () => {
+    // Node's test runner keeps the event loop alive itself on some versions, so this runs `stop()`
+    // in a plain Node process where nothing else is pending: a stop timer that did not hold the
+    // process open would let it exit inside `stop()`, before the cleanup that follows in a real run.
+    const scriptUrl = new URL("../deploy/acceptance/two-step.mjs", import.meta.url).href;
+    const program = `
+      import { EventEmitter } from "node:events";
+      import { createTailStarter } from ${JSON.stringify(scriptUrl)};
+      const spawnImpl = () => {
+        const child = new EventEmitter();
+        child.stdout = new EventEmitter();
+        child.stderr = new EventEmitter();
+        child.exitCode = null;
+        child.killed = false;
+        child.kill = () => { child.killed = true; return true; };
+        return child;
+      };
+      const start = createTailStarter({ root: "/repo", env: {}, spawnImpl, platform: "linux", sleep: async () => {}, stopLimitMs: 50 });
+      const tail = await start("site-studio-test-15a", { onText: () => {} });
+      await tail.stop();
+      console.log("went on after stop");
+    `;
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", program], { encoding: "utf8", timeout: 30_000, windowsHide: true });
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /went on after stop/);
   });
 
   it("the hidden question echoes nothing, handles backspace, restores raw mode, and Ctrl-C signals the interrupt", async () => {

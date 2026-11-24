@@ -1544,12 +1544,13 @@ export function createTailStarter({
       async stop() {
         stopped = true;
         killTree(child, { spawnImpl, platform });
-        // A child that never reports `close` must not hold up the cleanup after it.
+        // A child that never reports `close` must not hold up the cleanup after it. The timer is
+        // not unref'd: it may be the only thing keeping Node running while this waits, and an
+        // unref'd one would let the process exit here, before the cleanup that follows. It is
+        // cleared as soon as the race ends.
         let timer;
         const limit = new Promise((resolve) => {
-          timer = setTimeout(resolve, stopLimitMs);
-          timer.unref?.();
-        });
+          timer = setTimeout(resolve, stopLimitMs);        });
         await Promise.race([closed, limit]);
         clearTimeout(timer);
       },

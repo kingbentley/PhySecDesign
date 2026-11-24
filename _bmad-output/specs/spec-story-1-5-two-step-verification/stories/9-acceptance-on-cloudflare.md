@@ -309,3 +309,48 @@ The orchestrator checked commits `7b33ca5` and `9acb5fd`. All rulings below are 
    - the browser suite not run by the build session (the orchestrator runs it on the tip);
    - check 13 saw no stale reply, so the 60-second margin was not stressed;
    - the 21 tail events not matched to requests.
+
+## Fix after pull request 13's CI (2026-11-24)
+
+Kevin approved sending this back to the build session, which fixed it through the small-fix route.
+
+**Failure.** On CI (`site-studio` job, ubuntu, Node 22, `npm test`), the group "real effects with a fake spawn" failed. Tests 8 to 12 were cancelled with "Promise resolution is still pending but the event loop has already resolved". All 290 tests passed on this Windows workstation (Node 24.18).
+
+**Cause.** The trigger was the Node version, not Linux:
+- the same failure came back under Linux with Node 22;
+- under Linux with Node 24, all 290 tests passed.
+
+The fault was in the script. The tail's `stop()` waited on a race between the child's `close` and a time-limit timer, and that timer was unref'd. When nothing else keeps Node running, an unref'd timer lets the event loop empty while `stop()` still waits. Test 8's fake child never closes, so the loop emptied under Node 22's test runner. Tests 9 to 12 were then cancelled because test 8 had ended the loop; each of them passes when run alone. In a real run the same thing could end the process inside `stop()`, with no error, before the cleanup that deletes the test Workers.
+
+**Fix.**
+- `two-step.mjs`: the stop timer is no longer unref'd. It is still cleared as soon as the race ends.
+- New test: "stopping the tail keeps Node running until the run goes on, even when nothing else is pending". It runs `stop()` in a plain child Node process with a fake child that never closes, and asserts the line after `stop()` is reached. With `unref` put back on purpose, it failed on Windows with Node 24, where the old test did not catch it. The change was then reverted.
+
+**Linux runs.** WSL on this workstation, Ubuntu, Node 22.23.2 through nvm. Each run used a copy of `site-studio/` without `node_modules`, `npm ci --ignore-scripts`, and only the unit tests: no Wrangler or Cloudflare call, and no credentials in that environment.
+
+| Run | Result |
+|---|---|
+| Before the fix: `tests/acceptance-two-step.test.mjs` | 59 tests: 54 passed, 5 cancelled (tests 8 to 12, as on CI) |
+| Before the fix: tests 9 to 12 alone | 4 passed |
+| Before the fix: test 8 alone | 1 cancelled |
+| `unref` removed, same file | 59 passed |
+| After the fix: `npm test` | 291 passed, 0 failed, 0 cancelled |
+
+A Docker `node:24.20.0-bookworm` container with the same steps also passed 290/290 before the fix, which is how the Node version was singled out.
+
+**Windows, after the fix.** `npm run typecheck` is clean, and `npm test` passed 291/291.
+
+**The deployed run of 2026-11-24 was made with the earlier script.** The only difference is this timer. In that run the tail child closed when it was stopped (check 7 records its exit), so the timer never decided anything, and the run's checks, cleanup and record are unaffected.
+
+**Review.** The three layers ran on the diff, each on model `opus` at effort `high` (Kevin's explicit instruction): Blind Hunter (5 findings), Edge Case Hunter (4) and Verification Gap (1).
+- **Patched:** no test would catch the `unref` coming back. Raised by BH 1, ECH 4 and VG; the child-process test above fixes it.
+- **Rejected:** BH 3, the comment should name the platform and say the exit is silent. Low: the comment already says the process would exit before the cleanup.
+- **Rejected:** BH 4, a `beforeExit` guard in `main`. Low: it adds code for a failure this fix removes.
+- **Rejected:** BH 5, record the change in the spec. This note does it.
+- **False:** BH 2's claim that the fix treats a Linux symptom. The trigger was the Node version, as shown above.
+- **Deferred:**
+  - BH 2 and ECH 1 (the real point in BH 2): on Linux, `killTree` sends SIGKILL to `bin/wrangler.js` only. Its `wrangler-dist/cli.js` child keeps the pipes open, so a real tail stop off Windows would wait the full 15 seconds and leave `wrangler tail` running.
+  - ECH 2: after a stop that hit the limit, events can still reach `onText`, and the open pipes can keep Node running.
+  - ECH 3: a tail child that closes after the limit is missing from check 7's exit record.
+
+  All three predate this fix and matter only when the script is run off Windows. They are listed here for the orchestrator to enter in `deferred-work.md`, which is outside this fix's files.
