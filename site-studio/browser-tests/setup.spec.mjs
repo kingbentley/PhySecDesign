@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { setupCodeVariable } from "./playwright.config.mjs";
+import { useOwnAddress } from "./test-addresses.mjs";
+import { focusedOnAppear, watchFocusOnAppear, watchFocusOnAppearFromLoad } from "./two-step-helpers.mjs";
 
 // The set-up page (S-25, story 1.2) against the real built Worker. Each project has one fresh
 // installation, so these tests run in order: refusals first, then the set-up that closes it.
@@ -160,7 +162,9 @@ test("a second press while the first set-up request is on its way sends nothing 
   expect(sent).toBe(1);
 });
 
-test("a wrong code is refused with its message and the code field is focused", async ({ page }) => {
+test("a wrong code is refused with its message and the code field is focused", async ({ page }, testInfo) => {
+  // Its own network address, so its failure is not counted with any other test's.
+  await useOwnAddress(page, testInfo);
   await openSetup(page);
   await fill(page, { code: WRONG_CODE });
   const reply = page.waitForResponse("**/api/v1/setup");
@@ -214,10 +218,16 @@ test("other refusals each show their own message", async ({ page }) => {
   await openSetup(page);
   await fill(page, {});
   for (const [, message] of replies) {
+    // Each refusal appears after its reply: the alert must have focus as the message appears. Focus
+    // is first moved off the alert (the last refusal left it there, and a click on the button does
+    // not move it in WebKit), so the check cannot pass on focus already held.
+    await page.getByLabel("Set-up code").focus();
+    await watchFocusOnAppear(page, "alert", message, { match: "contains" });
     await send(page);
     const alert = page.getByRole("alert");
     await expect(alert).toContainText(message);
     await expect(alert).toBeFocused();
+    expect(await focusedOnAppear(page, message), `${message}: the alert has focus as it appears`).toBe(true);
     if (next === 0) await expectAccessible(page);
     next += 1;
   }
@@ -275,11 +285,15 @@ test("when the state cannot be checked, every address says so and offers to try 
     ["a failed request", (route) => route.abort("connectionrefused")],
     ["no answer within 5 seconds", () => new Promise(() => {})],
   ];
+  // Shown after the read fails or times out: the heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", "Set-up cannot be checked");
   for (const [name, handler] of failures) {
     await page.route("**/api/v1/setup/state", handler);
     for (const address of ["/", "/setup"]) {
       await page.goto(address);
       await expect(page.getByRole("heading", { name: "Set-up cannot be checked" }), `${name} at ${address}`).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Set-up cannot be checked" }), `${name} at ${address}`).toBeFocused();
+      expect(await focusedOnAppear(page, "Set-up cannot be checked"), `${name} at ${address}: the heading has focus as it appears`).toBe(true);
       await expect(page.locator(".studio-label")).toHaveCount(0);
     }
     await page.unroute("**/api/v1/setup/state");
@@ -298,8 +312,10 @@ test("completes set-up and confirms the installation's name and the administrato
   await openSetup(page);
   // Typed in lower case with surrounding spaces: the code still matches.
   await fill(page, { code: `  ${setupCode(testInfo).toLowerCase()}  ` });
+  await watchFocusOnAppear(page, "heading", "Set-up is complete");
   await send(page);
   await expect(page.getByRole("heading", { name: "Set-up is complete" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Set-up is complete"), "the heading has focus as it appears").toBe(true);
   await expect(page.getByTestId("setup-done-installation")).toHaveText(ADMIN.installationName);
   await expect(page.getByTestId("setup-done-email")).toHaveText(ADMIN.email.toLowerCase());
   await expect(page.getByTestId("setup-done-next")).toHaveText("Sign in with the email and password you just chose.");
@@ -308,8 +324,11 @@ test("completes set-up and confirms the installation's name and the administrato
 });
 
 test("after set-up the set-up address says set-up is already complete, and the app shows the sign-in page", async ({ page }) => {
+  // Shown after the app's set-up state read: the heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", "Set-up is already complete");
   await page.goto("/setup");
-  await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Set-up is already complete"), "the heading has focus as it appears").toBe(true);
   await expect(page.getByRole("textbox")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open Site Survey Design" })).toHaveAttribute("href", "/");
   await expectAccessible(page);
@@ -327,8 +346,10 @@ test("a set-up sent after another has finished is refused and the page says set-
   await openSetup(page);
   await fill(page, { code: setupCode(testInfo), email: "second@westbrook.example" });
   const reply = page.waitForResponse("**/api/v1/setup");
+  await watchFocusOnAppear(page, "heading", "Set-up is already complete");
   await send(page);
   expect((await reply).status()).toBe(409);
   await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Set-up is already complete"), "the heading has focus as it appears").toBe(true);
   await expectAccessible(page);
 });

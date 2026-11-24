@@ -3,6 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import jsQR from "jsqr";
 import { signInServers } from "./playwright.config.mjs";
+import { addressFor, useOwnAddress } from "./test-addresses.mjs";
 import {
   codeForStep,
   currentCode,
@@ -332,6 +333,8 @@ test("Turn on, Wrong password, Wrong code, Copy, Download, Codes once, Visibilit
   const [server] = servers(testInfo);
   const chromium = testInfo.project.name === "chromium";
   if (chromium) await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: server.origin });
+  // Its own network address: the wrong password below is a counted failure (test-addresses.mjs).
+  await useOwnAddress(page, testInfo);
   const account = await newAccount(playwright, context, server.origin, emailFor("turnon", testInfo), "Tara Turnon");
   await openApp(page, server.origin, account.name);
   await openMyAccount(page);
@@ -629,6 +632,10 @@ test("Count after use: a recovery code used at sign-in leaves 9 of 10", async ({
 
 test("Fresh codes and Leak: set-up and a fresh set with a code of a later step send only same-origin requests, keep nothing in storage, the address or the console, and the old codes are then refused at sign-in", async ({ page, context, playwright }, testInfo) => {
   const [server] = servers(testInfo);
+  // Its own network address, for the page and the sign-ins below: the old recovery code's refusal
+  // is a counted failure (test-addresses.mjs).
+  await useOwnAddress(page, testInfo);
+  const address = addressFor(testInfo);
   const account = await newAccount(playwright, context, server.origin, emailFor("fresh", testInfo), "Fern Fresh");
   const lines = [];
   page.on("console", (message) => lines.push(message.text()));
@@ -734,14 +741,18 @@ test("Fresh codes and Leak: set-up and a fresh set with a code of a later step s
   await expectNoLeak([key, grouped, ...variants(oldCodes), ...variants(freshCodes)]);
 
   // An old code is refused at sign-in; a fresh one signs in.
-  const old = await signInWithRecoveryCode(playwright, server.origin, account, oldCodes[0]);
+  const old = await signInWithRecoveryCode(playwright, server.origin, account, oldCodes[0], { address });
   expect(old.status).toBe(401);
   expect(old.body?.error?.code).toBe("second_step_recovery_code_wrong");
-  expect((await signInWithRecoveryCode(playwright, server.origin, account, freshCodes[0])).status).toBe(200);
+  expect((await signInWithRecoveryCode(playwright, server.origin, account, freshCodes[0], { address })).status).toBe(200);
 });
 
 test("Turn off: a wrong password is refused and leaves it on; the password turns it off, the chip shows Off, and sign-in needs only the password", async ({ page, context, playwright }, testInfo) => {
   const [server] = servers(testInfo);
+  // Its own network address, for the page and the sign-ins below: the wrong password is a counted
+  // failure, and so is a sign-in left at its second step (test-addresses.mjs).
+  await useOwnAddress(page, testInfo);
+  const address = addressFor(testInfo);
   const account = await newAccount(playwright, context, server.origin, emailFor("turnoff", testInfo), "Toby Turnoff");
   await turnOnThroughApi(context.request, server.origin, PASSWORD);
   await openApp(page, server.origin, account.name);
@@ -758,7 +769,7 @@ test("Turn off: a wrong password is refused and leaves it on; the password turns
   await panel.getByRole("button", { name: "Turn off", exact: true }).click();
   await expect(panel.getByRole("alert")).toHaveText("That password is not correct.");
   await expect(panel.getByRole("alert")).toBeFocused();
-  const stillOn = await signInWithPassword(playwright, server.origin, account);
+  const stillOn = await signInWithPassword(playwright, server.origin, account, { address });
   expect(stillOn.body).toEqual({ secondStep: true });
   await password.fill(PASSWORD);
   await panel.getByRole("button", { name: "Turn off", exact: true }).click();
@@ -766,7 +777,7 @@ test("Turn off: a wrong password is refused and leaves it on; the password turns
   await expect(panel.getByTestId("two-step-chip")).toHaveText("Off");
   await expect(panel.getByRole("heading", { name: "Two-step verification" })).toBeFocused();
   await expect(panel.getByRole("button", { name: "Turn on two-step verification" })).toBeVisible();
-  const passwordOnly = await signInWithPassword(playwright, server.origin, account);
+  const passwordOnly = await signInWithPassword(playwright, server.origin, account, { address });
   expect(passwordOnly.status).toBe(200);
   expect(passwordOnly.body).toEqual({ name: account.name });
 });

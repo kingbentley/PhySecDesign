@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { signInServers } from "./playwright.config.mjs";
+import { focusedOnAppear, watchFocusOnAppear, watchFocusOnAppearFromLoad } from "./two-step-helpers.mjs";
 
 // The invite panel (S-30), the invitation page (S-27) and the account's identity in the page
 // (story 1.4, CAP-1, CAP-3, CAP-4, CAP-5, CAP-9, CAP-10) against the real built Worker. The tests
@@ -39,7 +40,10 @@ const ACCEPT_FAILED =
   "Your password may not have been set. Try again; if the link then no longer works, try signing in with your email and this password.";
 
 const servers = (testInfo) => signInServers(testInfo.project.name);
-const emailFor = (label) => `${label}.invitee@harbourside.example`;
+// With `testInfo`, also distinct per repeat under `--repeat-each`: every test whose invitation is
+// accepted passes it, as an email with an account cannot be invited again.
+const emailFor = (label, testInfo) =>
+  `${label}${testInfo?.repeatEachIndex ? `.r${testInfo.repeatEachIndex}` : ""}.invitee@harbourside.example`;
 
 /** Fails on any serious or critical axe violation (standing rule 15). */
 async function expectAccessible(page, include) {
@@ -189,12 +193,17 @@ test("an administrator's account menu holds Invite a person, which opens a label
   await signInOnPage(page, server.origin);
   await openAccountMenu(page);
   await expectTarget(inviteItem(page), testInfo);
+  // The panel appears once its code has loaded, after the click: focus must be on its first field
+  // as it appears. Only WebKit tells the two kinds of effect apart here: with the field's focus made
+  // a passive effect on purpose, this check failed in webkit-iphone and passed in chromium.
+  await watchFocusOnAppear(page, "field", "Email");
   await inviteItem(page).click();
   const dialog = panel(page);
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute("aria-modal", "true");
   // Focus moved into the panel, on its first field.
   await expect(dialog.getByLabel("Email")).toBeFocused();
+  expect(await focusedOnAppear(page, "Email"), "the Email field has focus as it appears").toBe(true);
   await expect(dialog.getByRole("radio", { name: "Standard user" })).toBeChecked();
   await expect(dialog.getByRole("radio", { name: "Administrator" })).not.toBeChecked();
   await expect(dialog.getByLabel("Email")).toHaveCSS("font-size", "16px");
@@ -215,11 +224,15 @@ test("inviting shows the link once with Copy and the expiry as local date and ti
   await signInOnPage(page, server.origin);
   await openInvitePanel(page);
   const reply = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/invitations");
+  // The link appears after the reply: its heading must have focus as it appears.
+  await watchFocusOnAppear(page, "heading", "Invitation link for Casey Copy");
   await fillInvite(page, { email: emailFor("copy"), name: "Casey Copy" });
   const { expiresAt } = await (await reply).json();
   const dialog = panel(page);
   const link = dialog.getByLabel("Invitation link for Casey Copy");
   await expect(link).toHaveValue(LINK_PATTERN);
+  await expect(dialog.getByRole("heading", { name: "Invitation link for Casey Copy" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Invitation link for Casey Copy"), "the heading has focus as it appears").toBe(true);
   await expect(link).toHaveJSProperty("readOnly", true);
   const value = await link.inputValue();
   expect(new URL(value).host).toBe(new URL(server.origin).host);
@@ -244,6 +257,9 @@ test("inviting shows the link once with Copy and the expiry as local date and ti
     await expect(dialog.getByRole("status")).toHaveText("Copied");
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(value);
   }
+  // The empty form is shown by this click alone, with no reply between, so React runs either kind of
+  // focus effect before the click ends: no focus-on-appear check could tell them apart here. The
+  // same field's focus on opening the panel is checked in the first test.
   await dialog.getByRole("button", { name: "Invite another person" }).click();
   await expect(dialog.getByLabel("Email")).toHaveValue("");
   await expect(dialog.getByLabel("Name")).toHaveValue("");
@@ -292,10 +308,14 @@ test("when the invite request gets no answer the panel says so above its button"
   await signInOnPage(page, server.origin);
   await page.route("**/api/v1/invitations", (route) => route.abort("connectionrefused"));
   await openInvitePanel(page);
+  const message = "The server could not be reached. Check the connection and try again.";
+  // The alert's message appears after the failed request: the alert must have focus as it appears.
+  await watchFocusOnAppear(page, "alert", message);
   await fillInvite(page, { email: emailFor("noanswer"), name: "Nora Answer" });
   const alert = panel(page).getByRole("alert");
-  await expect(alert).toHaveText("The server could not be reached. Check the connection and try again.");
+  await expect(alert).toHaveText(message);
   await expect(alert).toBeFocused();
+  expect(await focusedOnAppear(page, message), "the alert has focus as its message appears").toBe(true);
   // Above the button.
   const alertBox = await alert.boundingBox();
   const buttonBox = await panel(page).getByRole("button", { name: "Create invitation" }).boundingBox();
@@ -375,8 +395,11 @@ test("a malformed fragment says the link no longer works without asking the serv
   const [server] = servers(testInfo);
   let reads = 0;
   page.on("request", (request) => { if (request.url().endsWith("/api/v1/invitations/read")) reads += 1; });
+  // Shown after the app's first reads: the heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", UNUSABLE_TITLE);
   await page.goto(`${server.origin}/invite#abc`);
-  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeVisible();
+  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeFocused();
+  expect(await focusedOnAppear(page, UNUSABLE_TITLE), "the heading has focus as it appears").toBe(true);
   await expect(page.getByTestId("invitation-unusable-detail")).toHaveText(UNUSABLE_DETAIL);
   expect(reads).toBe(0);
   await expect(page).toHaveURL(`${server.origin}/invite`);
@@ -423,7 +446,7 @@ test("typing a password turns each rule met only once it is met, and a password 
 
 test("accepting with an edited name opens the app as that standard user, with no Invite a person; the used link then no longer works", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const link = await createInvitation(playwright, server.origin, { email: emailFor("accept"), name: "Avery Accept" });
+  const link = await createInvitation(playwright, server.origin, { email: emailFor("accept", testInfo), name: "Avery Accept" });
   const secret = link.split("#")[1];
   const lines = [];
   page.on("console", (message) => lines.push(message.text()));
@@ -453,7 +476,7 @@ test("accepting with an edited name opens the app as that standard user, with no
 
 test("accepting an administrator invitation gives the new account Invite a person", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const link = await createInvitation(playwright, server.origin, { email: emailFor("admin"), name: "Ada Admin", role: "administrator" });
+  const link = await createInvitation(playwright, server.origin, { email: emailFor("admin", testInfo), name: "Ada Admin", role: "administrator" });
   await page.goto(link);
   await expect(page.getByTestId("invitation-invited-as")).toHaveText(`${ADMIN.name} invited you as an administrator.`);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
@@ -472,8 +495,11 @@ test("an expired link (the read answering 410) says the link no longer works", a
     contentType: "application/json",
     body: JSON.stringify({ error: { code: "invitation_unusable", message: `${UNUSABLE_TITLE} ${UNUSABLE_DETAIL}` } }),
   }));
+  // Shown after the read's reply: the heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", UNUSABLE_TITLE);
   await page.goto(`${server.origin}/invite#${"C".repeat(43)}`);
-  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeVisible();
+  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeFocused();
+  expect(await focusedOnAppear(page, UNUSABLE_TITLE), "the heading has focus as it appears").toBe(true);
   await expect(page.getByTestId("invitation-unusable-detail")).toHaveText(UNUSABLE_DETAIL);
 });
 
@@ -482,8 +508,11 @@ test("a reload after opening asks to open the link again", async ({ page, playwr
   const link = await createInvitation(playwright, server.origin, { email: emailFor("reload"), name: "Remy Reload" });
   await page.goto(link);
   await expect(joinHeading(page)).toBeVisible();
+  // Shown after the reloaded app's first reads: the heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", "Open the invitation link again to continue.");
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Open the invitation link again to continue." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Open the invitation link again to continue." })).toBeFocused();
+  expect(await focusedOnAppear(page, "Open the invitation link again to continue."), "the heading has focus as it appears").toBe(true);
   // The link itself still works, opened afresh (from /invite, going to the link would only change
   // the fragment, without loading the page).
   await page.goto("about:blank");
@@ -495,6 +524,8 @@ test("when the invitation read fails the page says it cannot be checked, and Try
   const [server] = servers(testInfo);
   const link = await createInvitation(playwright, server.origin, { email: emailFor("readfail"), name: "Reid Fail" });
   const heading = page.getByRole("heading", { name: "The invitation cannot be checked" });
+  // Shown after the read fails: the heading must have focus as it appears, in each pass.
+  await watchFocusOnAppearFromLoad(page, "heading", "The invitation cannot be checked");
   for (const [name, handler] of [
     ["a failed request", (route) => route.abort("connectionrefused")],
     ["a 500", (route) => route.fulfill({ status: 500, body: "" })],
@@ -505,7 +536,8 @@ test("when the invitation read fails the page says it cannot be checked, and Try
     // unroute below (pull request 12, round 1).
     await page.goto("about:blank");
     await page.goto(link);
-    await expect(heading, name).toBeVisible();
+    await expect(heading, name).toBeFocused();
+    expect(await focusedOnAppear(page, "The invitation cannot be checked"), `${name}: the heading has focus as it appears`).toBe(true);
     await expect(page.getByText("The server did not say whether this invitation works. Check the connection and try again.")).toBeVisible();
     await page.unroute("**/api/v1/invitations/read");
   }
@@ -517,13 +549,25 @@ test("when the invitation read fails the page says it cannot be checked, and Try
 test("when the invitation read answers updating the page says so, and Try again reads it again", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const link = await createInvitation(playwright, server.origin, { email: emailFor("readupdating"), name: "Uma Updating" });
-  await page.route("**/api/v1/invitations/read", (route) => route.fulfill({
-    status: 503,
-    headers: { "content-type": "application/json", "retry-after": "5" },
-    body: JSON.stringify({ error: { code: "updating", message: "Site Survey Design is updating. Try again in a moment." } }),
-  }));
+  // The reply is held until the checking view is shown, whose heading also reads "Invitation"; the
+  // watch then ignores that heading and waits for the updating view's own (a new element).
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  await page.route("**/api/v1/invitations/read", async (route) => {
+    await held;
+    await route.fulfill({
+      status: 503,
+      headers: { "content-type": "application/json", "retry-after": "5" },
+      body: JSON.stringify({ error: { code: "updating", message: "Site Survey Design is updating. Try again in a moment." } }),
+    });
+  });
   await page.goto(link);
+  await expect(page.getByText("Checking the invitation…")).toBeVisible();
+  await watchFocusOnAppear(page, "heading", "Invitation", { fresh: true });
+  release();
   await expect(page.getByText("Site Survey Design is updating. Try again in a moment.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Invitation", exact: true })).toBeFocused();
+  expect(await focusedOnAppear(page, "Invitation"), "the heading has focus as it appears").toBe(true);
   await expect(page.getByRole("heading", { name: "The invitation cannot be checked" })).toHaveCount(0);
   await page.unroute("**/api/v1/invitations/read");
   await page.getByRole("button", { name: "Try again" }).click();
@@ -532,16 +576,21 @@ test("when the invitation read answers updating the page says so, and Try again 
 
 test("when accepting fails the page says the password may not have been set, and Try again completes it", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const link = await createInvitation(playwright, server.origin, { email: emailFor("acceptfail"), name: "Ari Fail" });
+  // An email of its own per repeat: the accept below makes the account.
+  const link = await createInvitation(playwright, server.origin, { email: emailFor("acceptfail", testInfo), name: "Ari Fail" });
   await page.goto(link);
   await expect(joinHeading(page)).toBeVisible();
   await page.route("**/api/v1/invitations/accept", (route) => route.fulfill({ status: 500, body: "" }));
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByLabel("Password again").fill(PASSWORD);
+  // The alert's message appears after the reply: the alert must have focus as it appears. Its text
+  // also holds the Try again button's, so the watch matches the message as a part.
+  await watchFocusOnAppear(page, "alert", ACCEPT_FAILED, { match: "contains" });
   await page.getByRole("button", { name: "Set password and sign in" }).click();
   const alert = page.getByRole("alert");
   await expect(alert).toContainText(ACCEPT_FAILED);
   await expect(alert).toBeFocused();
+  expect(await focusedOnAppear(page, ACCEPT_FAILED), "the alert has focus as its message appears").toBe(true);
   await page.unroute("**/api/v1/invitations/accept");
   await alert.getByRole("button", { name: "Try again" }).click();
   await skipTwoStepOffer(page);
@@ -561,8 +610,13 @@ test("when the hash queue is full the page asks to try again in a moment", async
   }));
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByLabel("Password again").fill(PASSWORD);
+  const busy = "Site Survey Design is busy. Try again in a moment.";
+  // The alert's message appears after the reply: the alert must have focus as it appears.
+  await watchFocusOnAppear(page, "alert", busy);
   await page.getByRole("button", { name: "Set password and sign in" }).click();
-  await expect(page.getByRole("alert")).toHaveText("Site Survey Design is busy. Try again in a moment.");
+  await expect(page.getByRole("alert")).toHaveText(busy);
+  await expect(page.getByRole("alert")).toBeFocused();
+  expect(await focusedOnAppear(page, busy), "the alert has focus as its message appears").toBe(true);
 });
 
 test("after a sign-in, a session read answering signed out shows the sign-in page, and one that cannot be checked says so", async ({ page }, testInfo) => {
@@ -596,7 +650,7 @@ test("after a sign-in, a session read answering signed out shows the sign-in pag
 
 test("a tab signed in as one account reloads as another account of the same name signed in from another tab (story 1.3's D-16)", async ({ page, context, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const twin = { email: emailFor("twin"), name: ADMIN.name, password: PASSWORD };
+  const twin = { email: emailFor("twin", testInfo), name: ADMIN.name, password: PASSWORD };
   const link = await createInvitation(playwright, server.origin, { email: twin.email, name: twin.name });
   await acceptThroughApi(playwright, server.origin, link, twin.name);
   await signInOnPage(page, server.origin);
@@ -618,7 +672,7 @@ test("a tab signed in as one account reloads as another account of the same name
 
 test("at /invite, another account signed in from another tab updates the notice without a reload, keeping the form and what was typed (pull request 12)", async ({ page, context, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const other = { email: emailFor("othertab"), name: "Olive Othertab", password: PASSWORD };
+  const other = { email: emailFor("othertab", testInfo), name: "Olive Othertab", password: PASSWORD };
   await acceptThroughApi(playwright, server.origin, await createInvitation(playwright, server.origin, { email: other.email, name: other.name }), other.name);
   const link = await createInvitation(playwright, server.origin, { email: emailFor("keepform"), name: "Kit Keepform" });
   await signInThroughApi(context.request, server.origin);
@@ -679,8 +733,11 @@ test("an accept refused as unusable replaces the form with the no-longer-works m
     route.fulfill(refusalReply(410, { code: "invitation_unusable", message: `${UNUSABLE_TITLE} ${UNUSABLE_DETAIL}` })));
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByLabel("Password again").fill(PASSWORD);
+  // Shown after the reply: the heading must have focus as it appears.
+  await watchFocusOnAppear(page, "heading", UNUSABLE_TITLE);
   await page.getByRole("button", { name: "Set password and sign in" }).click();
-  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeVisible();
+  await expect(page.getByRole("heading", { name: UNUSABLE_TITLE })).toBeFocused();
+  expect(await focusedOnAppear(page, UNUSABLE_TITLE), "the heading has focus as it appears").toBe(true);
   await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
 });
 

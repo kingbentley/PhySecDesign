@@ -1,13 +1,18 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { signInServers } from "./playwright.config.mjs";
+import { accountThroughApi, emailFor, focusedOnAppear, watchFocusOnAppear, watchFocusOnAppearFromLoad } from "./two-step-helpers.mjs";
+import { useOwnAddress } from "./test-addresses.mjs";
 
 // The sign-in page (S-26), the account menu and sign-out (story 1.3, CAP-1, CAP-4, CAP-5, CAP-14)
 // against the real built Worker. Each project has its own pair of servers: the first holds the
 // installation most tests use, completed through the API; the second is set up by the test of two
 // installations on one host and holds the administrator with an 80-character name (A-20, V-14).
-// Requests with no `CF-Connecting-IP` come from the unknown address, which has no address limit
-// (D-11); tests that produce failures from a known address stay under 20 (V-15).
+// Requests with no `CF-Connecting-IP` do not come from the unknown address: the local runtime sets
+// the header to 127.0.0.1 on a request that has none, so they all share one known address, with
+// the limit of 20 failures over 15 minutes (V-15), across every spec file on the server. A test
+// that produces failures therefore sends its own address (test-addresses.mjs), and the tests that
+// exercise a limit on purpose keep their own fixed ones (192.0.2.61 and 192.0.2.62).
 
 // Serial, as each server holds one installation. Each sign-in runs a deliberately slow scrypt hash,
 // and the first test also meets six freshly started servers, so a test may take longer than 30 s.
@@ -127,8 +132,12 @@ test("the set-up done page says to sign in, with a plain Sign in link (D-9)", as
   await page.getByLabel("Email").fill("mocked@example.test");
   await page.getByLabel("Password", { exact: true }).fill("a mocked long password");
   await page.getByLabel("Password again").fill("a mocked long password");
+  // The done page appears after the reply: its heading must have focus as it appears.
+  await watchFocusOnAppear(page, "heading", "Set-up is complete");
   await page.getByRole("button", { name: "Create administrator and finish" }).click();
   await expect(page.getByTestId("setup-done-next")).toHaveText("Sign in with the email and password you just chose.");
+  await expect(page.getByRole("heading", { name: "Set-up is complete" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Set-up is complete"), "the heading has focus as it appears").toBe(true);
   const link = page.getByRole("link", { name: "Sign in" });
   await expect(link).toHaveAttribute("href", "/");
   expect(await link.evaluate((element) => element.outerHTML)).toBe('<a href="/">Sign in</a>');
@@ -159,22 +168,39 @@ test("signed out, the sign-in page names the installation and asks only for emai
 
 test("at /setup after set-up a signed-out visitor sees set-up is complete, and its link shows the sign-in page", async ({ page }, testInfo) => {
   const [server] = servers(testInfo);
+  // Shown after the app's set-up state read: its heading must have focus as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", "Set-up is already complete");
   await page.goto(`${server.origin}/setup`);
-  await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeFocused();
+  expect(await focusedOnAppear(page, "Set-up is already complete"), "the heading has focus as it appears").toBe(true);
   await page.getByRole("link", { name: "Open Site Survey Design" }).click();
   await expect(signInHeading(page)).toBeVisible();
 });
 
-test("a wrong password and an unknown email get the same one message, which repeats nothing typed", async ({ page }, testInfo) => {
+test("a wrong password and an unknown email get the same one message, which repeats nothing typed", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
+  // Its own address, and an account and an unknown email of its own for each project and repeat,
+  // so its two failures meet no other test's counts and `--repeat-each` never reaches a wait.
+  await useOwnAddress(page, testInfo);
+  const account = await accountThroughApi(playwright, server.origin, {
+    email: emailFor("wrongpassword", testInfo, "signin"),
+    name: "Wren Wrongpassword",
+    password: "a wrong-password tester's long passphrase",
+    twoStep: false,
+  });
   await page.goto(`${server.origin}/`);
   const alert = page.getByRole("alert");
-  for (const [email, password] of [[ADMIN.email, "not the right password"], ["nobody.here@harbourside.example", ADMIN.password]]) {
+  const cases = [[account.email, "not the right password"], [emailFor("nobody.here", testInfo, "signin"), ADMIN.password]];
+  for (const [index, [email, password]] of cases.entries()) {
     const reply = page.waitForResponse("**/api/v1/session/sign-in");
+    // The first refusal appears after the reply: the alert must have focus as its message appears.
+    // (The second shows the same message again, so only its focus is checked.)
+    if (index === 0) await watchFocusOnAppear(page, "alert", ONE_MESSAGE);
     await fillSignIn(page, email, password);
     expect((await reply).status()).toBe(401);
     await expect(alert).toHaveText(ONE_MESSAGE);
     await expect(alert).toBeFocused();
+    if (index === 0) expect(await focusedOnAppear(page, ONE_MESSAGE), "the alert has focus as its message appears").toBe(true);
     await expect(page.locator("main")).not.toContainText(email);
     await expect(page.getByLabel("Password")).toHaveValue("");
   }
@@ -372,6 +398,8 @@ test("where there is no server the prototype opens: the set-up state answering 4
 test("when the session read cannot be checked the page says so, offers Try again, and opens no prototype", async ({ page }, testInfo) => {
   const [server] = servers(testInfo);
   const heading = page.getByRole("heading", { name: "Sign-in cannot be checked" });
+  // Shown after the session read fails: the heading must have focus as it appears, in each case.
+  await watchFocusOnAppearFromLoad(page, "heading", "Sign-in cannot be checked");
   const failures = [
     ["a 500", (route) => route.fulfill({ status: 500, body: "" })],
     ["a 503 updating", (route) => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { code: "updating", message: "x" } }) })],
@@ -387,6 +415,8 @@ test("when the session read cannot be checked the page says so, offers Try again
     await page.route("**/api/v1/session", handler);
     await page.goto(`${server.origin}/`);
     await expect(heading, name).toBeVisible();
+    await expect(heading, name).toBeFocused();
+    expect(await focusedOnAppear(page, "Sign-in cannot be checked"), `${name}: the heading has focus as it appears`).toBe(true);
     await expect(page.locator(".studio-label")).toHaveCount(0);
     await page.unroute("**/api/v1/session");
   }
@@ -441,14 +471,22 @@ test("empty fields are explained on the page, the email field is focused, and no
 
 test("Try again on 'Set-up cannot be checked' after set-up shows the sign-in page, or at /setup that set-up is complete", async ({ page }, testInfo) => {
   const [server] = servers(testInfo);
+  // Both headings appear after a reply (the failed read, then Try again's): each must have focus
+  // as it appears.
+  await watchFocusOnAppearFromLoad(page, "heading", "Set-up cannot be checked");
   for (const address of ["/", "/setup"]) {
     await page.route("**/api/v1/setup/state", (route) => route.fulfill({ status: 500, body: "" }));
     await page.goto(`${server.origin}${address}`);
-    await expect(page.getByRole("heading", { name: "Set-up cannot be checked" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Set-up cannot be checked" })).toBeFocused();
+    expect(await focusedOnAppear(page, "Set-up cannot be checked"), `${address}: the heading has focus as it appears`).toBe(true);
     await page.unroute("**/api/v1/setup/state");
+    if (address === "/setup") await watchFocusOnAppear(page, "heading", "Set-up is already complete");
     await page.getByRole("button", { name: "Try again" }).click();
     if (address === "/") await expect(signInHeading(page)).toBeVisible();
-    else await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeVisible();
+    else {
+      await expect(page.getByRole("heading", { name: "Set-up is already complete" })).toBeFocused();
+      expect(await focusedOnAppear(page, "Set-up is already complete"), "the heading has focus as it appears").toBe(true);
+    }
     await expect(page.locator(".studio-label")).toHaveCount(0);
   }
 });

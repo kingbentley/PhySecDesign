@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from '@phosphor-icons/react';
 import { INVITE_FIELDS, submitInvite } from './invitationClient.js';
@@ -23,8 +23,10 @@ function InviteForm({ onInvited, onSignedOut }) {
   const inFlight = useRef(false);
   const refs = useRef({});
   const generalRef = useRef(null);
-  useEffect(() => { refs.current.email?.focus(); }, []);
-  useEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
+  // Layout effects, so focus has moved before the person can start typing (story 1.5 spec 7): the
+  // panel appears once its code has loaded, and the alert once a reply has come.
+  useLayoutEffect(() => { refs.current.email?.focus(); }, []);
+  useLayoutEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
 
   const change = (field) => (event) => {
     const value = event.target.value;
@@ -118,7 +120,8 @@ function InviteResult({ result, onAnother }) {
   const headingRef = useRef(null);
   // 'idle', 'copied' or 'failed': the status line says "Copied" or how to copy by hand.
   const [copy, setCopy] = useState('idle');
-  useEffect(() => { headingRef.current?.focus(); }, []);
+  // A layout effect: the result appears after the invite's reply (story 1.5 spec 7).
+  useLayoutEffect(() => { headingRef.current?.focus(); }, []);
 
   async function copyLink() {
     // Cleared first, so each attempt's outcome is announced afresh.
@@ -163,7 +166,9 @@ export default function InvitePanel({ onClose, onSignedOut }) {
   const [result, setResult] = useState(null);
   const [form, setForm] = useState(0);
 
-  useEffect(() => {
+  // A layout effect, so Escape and the Tab trap work from the moment the panel can be seen (it
+  // appears once its code has loaded; a passive effect could run after a first key press).
+  useLayoutEffect(() => {
     function keydown(event) {
       if (event.key === 'Escape') {
         event.preventDefault();

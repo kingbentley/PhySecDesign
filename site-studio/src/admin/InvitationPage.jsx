@@ -31,9 +31,12 @@ function useDocumentTitle() {
   }, []);
 }
 
+// Focus moves that follow a reply or a newly shown view are layout effects, so focus has moved
+// before the person can start typing (story 1.5 spec 7: a passive effect can run after typing has
+// begun and lose keystrokes). Focus calls made straight in a handler stay as they are.
 function useFocusOnMount() {
   const ref = useRef(null);
-  useEffect(() => { ref.current?.focus(); }, []);
+  useLayoutEffect(() => { ref.current?.focus(); }, []);
   return ref;
 }
 
@@ -162,7 +165,7 @@ function AcceptForm({ secret, invitation, session, onUnusable, onAccepted }) {
   const inFlight = useRef(false);
   const refs = useRef({});
   const generalRef = useRef(null);
-  useEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
+  useLayoutEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
 
   const rules = ruleItems(values.password, invitation.email);
 

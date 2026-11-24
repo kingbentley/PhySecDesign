@@ -87,14 +87,20 @@ export async function turnOnThroughApi(request, origin, password) {
   return { secret, otpauthUri, recoveryCodes, step };
 }
 
+/** The request headers of a helper's own context: `CF-Connecting-IP` when an `address` is given. */
+function addressHeaders(address) {
+  return address ? { "CF-Connecting-IP": address } : {};
+}
+
 /**
  * Signs in with the password and then a recovery code, from a new request context with no cookies
  * (another browser). Answers the second step's status and parsed body; the context is disposed.
+ * `address`, when given, is the network address the requests are counted under (test-addresses.mjs).
  */
-export async function signInWithRecoveryCode(playwright, origin, { email, password }, recoveryCode) {
+export async function signInWithRecoveryCode(playwright, origin, { email, password }, recoveryCode, { address } = {}) {
   const api = await playwright.request.newContext({ ignoreHTTPSErrors: true });
   try {
-    const headers = { origin, ...APP };
+    const headers = { origin, ...APP, ...addressHeaders(address) };
     const first = await api.post(`${origin}/api/v1/session/sign-in`, { headers, data: { email, password } });
     if (first.status() !== 200) throw new Error(`Signing in through the API answered ${first.status()}.`);
     const reply = await first.json();
@@ -195,54 +201,89 @@ export async function expectAccessible(page, include) {
 }
 
 /**
- * Starts watching for an element to appear, as two-step.spec.mjs's watch does: a heading (h1 to h4)
- * with exactly `text`, the role "alert" region once it holds exactly `text`, or (kind "field") an
- * input whose label reads exactly `text`. When it first appears, records whether it already has
- * focus. A MutationObserver callback runs right after the task that changed the page, so focus moved
- * in the same task (a layout effect) is seen, and focus moved later (a passive effect) is not; this
- * tells the two apart for an element shown after an `await` (a reply). An element already shown
- * when the watch begins records a failing value.
+ * Runs in the page: watches for one element to appear and records, under `text`, whether it already
+ * has focus at that moment. Shared by `watchFocusOnAppear` (installed in the current document) and
+ * `watchFocusOnAppearFromLoad` (installed in each new document before the page's own scripts run).
  */
-export async function watchFocusOnAppear(page, kind, text) {
-  await page.evaluate(({ kind: watched, text: wanted }) => {
-    const seen = (window.__focusOnAppear ??= {});
-    const observers = (window.__focusObservers ??= {});
-    observers[wanted]?.disconnect();
-    delete seen[wanted];
-    const find = () => {
-      if (watched === "heading") return [...document.querySelectorAll("h1, h2, h3, h4")].find((element) => element.textContent === wanted);
-      if (watched === "field") {
-        return [...document.querySelectorAll("input, textarea")].find((element) =>
-          [...(element.labels ?? [])].some((label) => label.textContent === wanted));
-      }
-      return [...document.querySelectorAll('[role="alert"]')].find((element) => element.textContent === wanted);
-    };
-    if (find()) {
-      seen[wanted] = "already shown when the watch began";
-      return;
+function installFocusWatch({ kind: watched, text: wanted, match, fresh }) {
+  const seen = (window.__focusOnAppear ??= {});
+  const observers = (window.__focusObservers ??= {});
+  observers[wanted]?.disconnect();
+  delete seen[wanted];
+  const matches = (value) => (match === "contains" ? (value ?? "").includes(wanted) : value === wanted);
+  const all = () => {
+    if (watched === "heading") return [...document.querySelectorAll("h1, h2, h3, h4")].filter((element) => matches(element.textContent));
+    if (watched === "field") {
+      return [...document.querySelectorAll("input, textarea")].filter((element) =>
+        [...(element.labels ?? [])].some((label) => matches(label.textContent)));
     }
-    const observer = new MutationObserver(() => {
-      const element = find();
-      if (!element) return;
-      seen[wanted] = document.activeElement === element;
-      observer.disconnect();
-      delete observers[wanted];
-    });
-    observers[wanted] = observer;
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-  }, { kind, text });
+    return [...document.querySelectorAll('[role="alert"]')].filter((element) => matches(element.textContent));
+  };
+  // With `fresh`, elements already shown are left out, and only a new one is watched for.
+  const before = fresh ? new Set(all()) : new Set();
+  const find = () => all().find((element) => !before.has(element));
+  if (!fresh && find()) {
+    seen[wanted] = "already shown when the watch began";
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    const element = find();
+    if (!element) return;
+    seen[wanted] = document.activeElement === element;
+    observer.disconnect();
+    delete observers[wanted];
+  });
+  observers[wanted] = observer;
+  // The document itself, so a watch installed before <body> exists (from load) sees it too.
+  observer.observe(document, { childList: true, subtree: true, characterData: true });
 }
 
-/** What `watchFocusOnAppear` recorded for `text`: true, false, a reason it could not pass, or undefined if it never appeared. */
+/**
+ * Starts watching for an element to appear (two-step.spec.mjs keeps its own copy of the original):
+ * a heading (h1 to h4) with exactly `text`, the role "alert" region once it holds exactly `text`, or
+ * (kind "field") an input whose label reads exactly `text`. With `{ match: "contains" }` the text
+ * need only contain `text` (for an alert whose message the test knows only in part). When it first
+ * appears, records whether it already has focus. A MutationObserver callback runs right after the
+ * task that changed the page, so focus moved in the same task (a layout effect) is seen, and focus
+ * moved later (a passive effect) is not; this tells the two apart for an element shown after an
+ * `await` (a reply). An element already shown when the watch begins records a failing value, unless
+ * `{ fresh: true }`: then elements already shown are ignored and only a new matching one counts (for
+ * a view that replaces another with the same heading text). Results are kept by `text`: a later
+ * watch with the same text replaces an earlier one.
+ */
+export async function watchFocusOnAppear(page, kind, text, { match = "exact", fresh = false } = {}) {
+  await page.evaluate(installFocusWatch, { kind, text, match, fresh });
+}
+
+/**
+ * The same watch, installed at the start of every document the page loads from now on (before the
+ * app's scripts), for an element shown as a page opens: after the app's first replies, so a passive
+ * effect still runs too late to be seen. Call it before `page.goto` or `page.reload`. The script
+ * stays for the rest of the page's life and cannot be removed: each later document in the test
+ * (about:blank included) starts the watch afresh, and `focusedOnAppear` reads the current
+ * document's result.
+ */
+export async function watchFocusOnAppearFromLoad(page, kind, text, { match = "exact" } = {}) {
+  await page.addInitScript(installFocusWatch, { kind, text, match, fresh: false });
+}
+
+/**
+ * What `watchFocusOnAppear` or `watchFocusOnAppearFromLoad` recorded for `text` in the current
+ * document: true, false, a reason it could not pass, or undefined if it never appeared.
+ */
 export async function focusedOnAppear(page, text) {
   return page.evaluate((wanted) => window.__focusOnAppear?.[wanted], text);
 }
 
-/** Signs in with the password alone from a new request context; answers the status and parsed body. */
-export async function signInWithPassword(playwright, origin, { email, password }) {
+/**
+ * Signs in with the password alone from a new request context; answers the status and parsed body.
+ * `address`, when given, is the network address the request is counted under (test-addresses.mjs).
+ */
+export async function signInWithPassword(playwright, origin, { email, password }, { address } = {}) {
   const api = await playwright.request.newContext({ ignoreHTTPSErrors: true });
   try {
-    const reply = await api.post(`${origin}/api/v1/session/sign-in`, { headers: { origin, ...APP }, data: { email, password } });
+    const headers = { origin, ...APP, ...addressHeaders(address) };
+    const reply = await api.post(`${origin}/api/v1/session/sign-in`, { headers, data: { email, password } });
     let body = null;
     try { body = await reply.json(); } catch { body = null; }
     return { status: reply.status(), body };
