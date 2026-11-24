@@ -287,3 +287,25 @@ Round 1, before the deployed run (orchestrator ruling of 2026-11-24). Three cont
 | 21 | VG 5 | Check 14 (d)'s start point (the "Checking" line) is not pinned | low (pre-verified gap) | Measuring from the command's start also falls in 60–180 s with the fake's 40 s build | patch: a 130 s fake build; settle times asserted equal to exit minus the Checking line |
 | 22 | BH 8 | Several builder decisions are not listed as choices (12-character phone password, exactly one account, tail restarts, time limits, check 14 (b) signs in only on exit 0) | low | Real | reject: the fix edits this build's spec; the choices are listed in the build session's report to the orchestrator |
 | 23 | BH 12 | The Build notes still describe `tail --name` and piped standard input for the tail; the header names `npm run build &&` though the deploy command builds | low | The builder's choices record the tail change; `npm run build &&` is the frozen Verification command | reject: the fix edits this build's spec |
+
+## Orchestrator rulings after the run (2026-11-24)
+
+The orchestrator checked commits `7b33ca5` and `9acb5fd`. All rulings below are Claude's, accepted on Kevin's instruction, 2026-11-24, and Kevin may overrule any.
+
+1. **Check 10's put, "not shown": deferred.** No second deployed run will be made for it now. The two cases where a put that stored nothing would matter:
+   - On the restore path, the deploy command settles the key state after its put. A put that stored nothing therefore ends "not confirmed", with exit 1.
+   - On a first deploy, a key that was not stored means no fingerprint is ever written. Two-step start answers `deployment_key_missing`, nothing is encrypted, and the next deploy generates a key again. The cost is a printed key that is not the stored one; no data is lost.
+
+   Owner: story 1.6's spec writer adds "list the Worker's secrets after the invalid-name put" to that story's deployed acceptance run, if it has one. Otherwise the first later story with a deployed run on the test account takes it. Any such run needs Kevin's go-ahead. Recorded in `deferred-work.md` (status: open, deferred).
+2. **Check 8 declined.** The real-phone part of criterion 27 stays with story 10.6, unless Kevin runs the script from his own terminal in a later run he approves. Recorded as an update to that entry in `deferred-work.md`.
+3. **The first `npm run test:server` failure.** The build session's first run had 2 failed and 34 skipped tests, in 3 files, and was not identified. It is recorded as an update to the story 10.1 machine-limit entry in `deferred-work.md`.
+4. **README.** `site-studio/README.md`'s deployment-key passage now says what this run showed on Cloudflare and what it did not. Scope was lifted for that passage only.
+5. **Spec 2's criterion 28 arrow.** The recorded test title is corrected, with a dated note.
+6. **`acceptance-trace.md`.** This run's checks are added as supporting evidence: check 1 for criteria 11 and 12, check 6 for criterion 13, and check 3 for criterion 22. A note under criterion 27 says its real-phone part stays with story 10.6.
+7. **Accepted, no action:**
+   - two commits where the brief asked for one;
+   - no second review after round 1's patches (a test-harness script whose tests pass; the pull request's review will read it);
+   - rejected triage rows 6, 22 and 23;
+   - the browser suite not run by the build session (the orchestrator runs it on the tip);
+   - check 13 saw no stale reply, so the 60-second margin was not stressed;
+   - the 21 tail events not matched to requests.

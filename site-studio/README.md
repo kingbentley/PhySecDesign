@@ -73,7 +73,13 @@ Both host configurations declare only the two SQLite Durable Object classes, `Pr
 
 ## The deployment key on Cloudflare
 
-Two-step verification (story 1.5) encrypts each person's authenticator secret with the installation's deployment key. On Cloudflare the key is the Worker secret `DEPLOYMENT_KEY`, and `npm run deploy:cloudflare` looks after it. This behaviour has so far been tested only with stand-ins for Wrangler; spec 9 of story 1.5 confirms it on a real Cloudflare account.
+Two-step verification (story 1.5) encrypts each person's authenticator secret with the installation's deployment key. On Cloudflare the key is the Worker secret `DEPLOYMENT_KEY`, and `npm run deploy:cloudflare` looks after it. Its unit tests use stand-ins for Wrangler. Spec 9 of story 1.5 then ran it on a real Cloudflare test account on 2026-11-24. That run showed:
+- a first deploy prints the key once and stores it;
+- a redeploy keeps the key, and a two-step set-up made before the redeploy still signs in;
+- a key supplied for a new Worker is used and not printed;
+- the restore paths below end as described, each check taking about a minute.
+
+It did not show that a failed `wrangler secret put` exits with an error, and it did not check the code field on a real phone (story 10.6).
 
 - **One deploy at a time.** Every run first says to run one deploy at a time for a Worker: two at once can each generate a key, and the one printed may not be the one kept.
 - **First deploy.** When the Worker has no key and the installation has saved nothing with one, the command generates a key, prints it once as `Deployment key: …`, and then supplies it to the Worker. Keep a copy outside the Cloudflare account, for example in your organisation's password manager. It is not shown again. If supplying it fails, the command says the key may or may not have been stored: keep it and run the command again with it in `SITE_SURVEY_DEPLOYMENT_KEY`.
