@@ -2,8 +2,9 @@
 title: 'Story 1.5, spec 9: Acceptance on Cloudflare'
 type: 'acceptance'
 created: '2026-11-22'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
+baseline_commit: '6393b515deb3e45fb7bac386a9552bb26cb21fcd'
 review_loop_iteration: 0
 story_key: '1-5-two-step-verification'
 context:
@@ -93,23 +94,85 @@ context:
 - `site-studio/scripts/deploy-cloudflare.mjs` -- the command under test (spec 6: `runDeploy`, `waitForSettledKeyState`, `KEY_SETTLE_MS`, `KEY_SETTLE_TIMEOUT_MS`, `createWranglerActions`).
 - `_bmad-output/specs/spec-story-1-5-two-step-verification/stories/6-deploy-command-deployment-key.md` -- its frozen block, Build notes and Review Triage Log (rows 8, 16, 21, 30, 41, 44, 46 name what this run must show or leaves deferred).
 - `_bmad-output/specs/spec-story-1-3-sign-in-and-sign-out/stories/4-acceptance-on-cloudflare.md` -- the earlier run's pattern and record.
+- `site-studio/shared/routes.ts`, `shared/refusal.ts`, `shared/twoStep.ts` -- the routes, refusal codes and inputs the run drives; `browser-tests/two-step-helpers.mjs` -- how the browser tests drive set-up, invitation, two-step start and confirm, and the second step through the API.
+
+## Build notes (build session, 2026-11-24)
+
+**Orchestrator rulings for this run (Claude, accepted on Kevin's instruction, 2026-11-24):**
+- Check 8: the deployed run is started from a shell with no terminal for Kevin to type into, so when standard input is not a terminal (`process.stdin.isTTY` falsy, tested before any prompt code runs) the script records check 8 as "declined for this run" and never waits for input. The hidden-input prompt is still built as check 8 says, so Kevin can take the step in a later run from his own terminal: when standard input is a terminal, ask whether to take the phone check (default no); if yes, read the throwaway password with echo off (raw mode, nothing echoed, kept only in memory), invite `phone-check@example.test` as a standard user from the administrator's session, accept the invitation from a separate cookie jar with that password, turn two-step verification on for it through the API (start and confirm, the code computed by the script), print 15a's address (not secret), and ask Kevin yes/no for "numeric keypad shown" and "code autofill suggestion shown". Record only those answers, or "declined".
+- The BMAD review step runs before the deployed run, since a rerun needs a new go-ahead.
+
+**Files in scope:** `site-studio/deploy/acceptance/two-step.mjs` (new) and one unit test file `site-studio/tests/acceptance-two-step.test.mjs` (new; `npm test` runs every `tests/*.test.mjs`). Nothing else: not `scripts/deploy-cloudflare.mjs` (the command under test; import its exported helpers, change nothing), `server/`, `src/`, `shared/`, `browser-tests/`, `sprint-status.yaml`, the untracked `.claude/` and `Site Studio UX screens.pdf`. Add no dependency and no lint script. Edit by hand, no bulk search-and-replace. Do not commit.
+
+**No real Wrangler or Cloudflare call of any kind while building, testing or reviewing** (not `wrangler whoami`, not `--help`, not the script's `main`, not `npm run deploy:cloudflare`). Reading `node_modules/wrangler/wrangler-dist/cli.js` is allowed. Every outside effect is a fake in the tests. The build session makes the one deployed run afterwards.
+
+**Shape of the script.**
+- Exported pure pieces and one `runAcceptance(effects, options)` that takes every outside effect injected (spawning the deploy command, spawning Wrangler, `fetch`, `now`, `sleep`, starting the tail, `isTTY`, the prompts, `print`), and resolves to the record. `main` (guarded by `if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))`, as the deploy command does) builds the real effects, runs it, prints each check's record line as the check completes, and sets the exit code (0 only when every check meets its pass column, check 10 allowed "not shown", checks 7 and 8 recorded).
+- Each check has an exported pure pass test that takes what was observed and answers `{ pass, record }` (the record fields only). The run's order is the frozen block's: 1, 9, 2, 3, 4, 5, 6, 7, 8, 13, 14 (with 11 and 12), 10, then cleanup in a `finally`. Encode the matrix's error column per row: wrong account or a leftover Worker → nothing deployed, stop; check 1 or 3 failing → stop (cleanup still runs); check 4 failing → record and stop; check 13 failing → record, skip 14 and 10, clean up, stop; the others → record and go on. Check 12 has no step of its own: its three yes/no values come from the lists taken in checks 1, 6 and 14 (b).
+- Install `SIGINT` and `SIGTERM` handlers in `main` so an interrupted run still runs the cleanup before exiting. Top-level and unhandled-rejection handlers print fixed text only.
+
+**Secrets.** No thrown message, record field or printed line may hold a response body, captured child output, a key, a set-up code, a password, an authenticator secret, a TOTP code, a recovery code, a setup identifier, a cookie value or an invitation link (`JSON.parse` errors quote their input: catch them and throw fixed text). The administrator's password, the phone-check password and every key are generated or read into memory only. A key reaches a child only on standard input (`wrangler secret put`) or in `SITE_SURVEY_DEPLOYMENT_KEY` in the deploy command's environment; when no key is to be supplied, remove that variable from the child environment (the deploy command's exported `childEnvironment`). Record emails only for the made-up `@example.test` accounts.
+
+**Running the deploy command.** `npm run deploy:cloudflare -- --name <worker>` in `site-studio/`, with the Worker name checked against `/^site-studio-test-15[abc]$/`. npm on Windows needs a shell: spawn one command string with `shell: true` and no separate arguments (Node 24 warns, DEP0190, when arguments are passed with a shell). Its environment holds `CLOUDFLARE_ACCOUNT_ID` (so its own Wrangler children inherit it). Standard input `"ignore"`; standard output **and** standard error both piped and kept in memory as lines with the time each arrived (the "Checking the deployment key …" line is on standard output; the "not the original …" and "Worker already has a deployment key, and it is not the one …" lines are on standard error, through the command's `printError`). Read the key and set-up code lines (`  Deployment key: <key>`, `  Set-up code: <code>`) only to take the values into memory and count them. Compare other lines with the deploy command's exported `KEY_LINES` rather than retyping them. Give the command a time limit (about 10 minutes) and, on Windows, end the whole tree with `taskkill /pid <pid> /T /F` when it is exceeded.
+
+**Running Wrangler.** Through the deploy command's exported `wranglerSpawn(root, args)` (this Node running Wrangler's entry script, no shell, so check 10's secret name with a space stays one argument), not its `runWrangler`: the script needs the exit code, standard output and standard error kept separately, a time limit, and standard input always piped and ended (empty when there is no input), so Wrangler is never interactive. Environment: the parent's, without `SITE_SURVEY_DEPLOYMENT_KEY`, with `CLOUDFLARE_ACCOUNT_ID` once known.
+
+**What the pinned Wrangler (4.164.0, `node_modules/wrangler/wrangler-dist/cli.js`) does:**
+- `wrangler whoami --json` (about line 354363) prints `{ loggedIn, authType, email, accounts: [{ name, id }], tokenPermissions }` on standard output. The account check takes `accounts` only: exactly the account named "PhySec Site Studio" must be there (record its name and id; never the email).
+- `wrangler secret list --name <w> --format json` for a Worker that does not exist exits non-zero with `Worker "<w>" not found.` (about line 308085). "Not found" means both: a non-zero exit **and** that text in its output. Any other failure is not "not found": in the safety check it stops the run before anything is deployed; at cleanup it counts as "not confirmed gone".
+- `wrangler secret put <name> --name <w>` reads the value from standard input when it is not a terminal. For a Worker that does not exist it offers to create one (`createDraftWorker`, about line 307775) with a fallback of yes when there is no terminal, so check 10's fallback put to 15c will most likely create 15c (the frozen block plans for this).
+- `wrangler secret delete <name> --name <w>` has no `--force`; it asks only when standard input and output are terminals and otherwise takes yes.
+- `wrangler delete --name <w> --force` exists (about line 242700). It may fail for a Worker that is not there; tolerate that and rely on the not-found list afterwards.
+- `wrangler tail --name <w> --format json` prints each event as `JSON.stringify(event, null, 4)` (several lines per event, `logger.json`, about line 71068) and prints no "connected" line in JSON mode. Parse the stream with a small brace-depth parser that knows JSON strings and escapes; keep each event's `outcome` and its `exceptions[].name` only; drop everything else at once. Because no line says it is connected, confirm the tail with a probe: after starting it, send `GET /api/v1/status` every 2 seconds until an event arrives (at most about 60 seconds) and record "tail connected: yes/no" (story 1.3's first tail connected too late). The tail may reconnect across check 3's redeploy; record events from check 2 to the end of check 5, then stop the child.
+
+**Driving the API** (each "browser" is its own small cookie jar: store `name=value` from each `Set-Cookie` via `headers.getSetCookie()`, drop it on `Max-Age=0`, send it back on later requests; every POST carries `Origin: <worker address>`, `x-site-survey-design: 1` and a JSON body; each request has a time limit):
+- Set-up: `POST /api/v1/setup` `{ code, installationName, name, email, password }`. After a first deploy some copies of the Worker still run without the new code for a minute or so: retry, every few seconds and for at most about 3 minutes, only on `setup_code_not_configured` and `setup_code_replaced` (`error.code` in the refusal body). Never retry `setup_code_wrong` (it counts toward a wait) or anything else.
+- Sign-in: `POST /api/v1/session/sign-in` `{ email, password }` answers `{ name }` or `{ secondStep: true }` (with the pending cookie). Second step: `POST /api/v1/session/second-step` `{ method: "code" | "recovery", code }` answers `{ name }`; refusals `second_step_code_wrong`, `second_step_recovery_code_wrong`, `second_step_expired`.
+- Two-step: `POST /api/v1/account/two-step/start` `{ password }` answers `{ setupId, secret, otpauthUri }`; `POST /api/v1/account/two-step/confirm` `{ setupId, code }` answers `{ recoveryCodes }` (10). Retry the start, bounded, only on `deployment_key_missing` (stale copies right after the key was put); never on a wrong password or code.
+- Invitations (check 8): `POST /api/v1/invitations` `{ email, name, role: "standard" }` answers `{ link, expiresAt }`; the secret is the link's fragment; `POST /api/v1/invitations/accept` `{ secret, name, password }`.
+- Key state: `GET /api/v1/deployment-key/state`, public, exactly `{ fingerprint, key }` (the deploy command's exported `parseKeyState`).
+- TOTP: the script's own RFC 6238 helper (HMAC-SHA-1, base32 secret, 6 digits, 30-second steps, T0 = 0) on `node:crypto`, written for this script, tested against RFC 6238's SHA-1 test vectors (the 20-byte ASCII secret "12345678901234567890", times 59, 1111111109, 1111111111, 1234567890, 2000000000, 20000000000, last 6 digits). A code is accepted only for a step later than the last one accepted for that account (D-6): keep the last accepted step per account across checks 2, 4 and 14 (b), and wait for a later step before each code sign-in.
+
+**Check details the frozen block leaves to the builder** (record each as a choice):
+- Check 7: 15b's address is needed before its deploy output names it, so derive it from 15a's reported address (same `workers.dev` subdomain, the Worker name replaced), poll the public key-state route every 3 seconds from the moment the deploy command is started, and afterwards record whether the address the command reported equals the derived one. The time therefore includes the command's own `npm run build`; record that.
+- Check 13: a reply's time is the moment its request was sent, measured from the moment the put's `wrangler secret put` returned; each poll uses a new connection (no keep-alive) so that copies are not hidden behind one connection; an unreadable, failed or non-200 reply counts as differing from the final value, and the final value needs every reply in the last 60 seconds readable and equal (else "not settled").
+- Check 14 (c): "the key-state route still settles on `mismatch`" is checked with the deploy command's exported `waitForSettledKeyState`.
+- Check 10 does not run after a failed check 13 (the run stops there).
+
+**Tests** (`site-studio/tests/acceptance-two-step.test.mjs`, Node's test runner, no real waiting: a fake clock and a `sleep` that advances it):
+- The RFC 6238 vectors; the tail stream parser (events split across chunks, braces inside strings, non-JSON text between events); the cookie jar; each check's pass test, pass and fail.
+- A dry run of `runAcceptance` against fakes: a fake Wrangler world (Workers, their secrets, the account), a fake deploy command that follows the real one's printed lines for each case the run reaches, a fake API, and a fake tail. One test per I/O matrix row, the row's name in the test title; the dry run also asserts that nothing secret appears in the record or in any printed line.
+- The three deliberate breakages, as permanent tests where the frozen block's wording allows: (1) check 3's pass test fed a deploy output with a "Deployment key" line → check 3 fails; (2) cleanup skipped → the final not-found check fails (make it once as a temporary code change in the script, record the failing test, revert; keep a permanent test with a fake `wrangler delete` that removes nothing); (3) check 13's pass test fed a put whose last differing reply comes at 61 seconds → the run stops before check 14 (and before check 10) and cleanup still runs.
+- Commands, in `site-studio/`, one at a time: `npm test`, `npm run typecheck`. Record the breakages after their arrows below (leave the Run record and the acceptance-criteria arrows to the build session).
 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `site-studio/deploy/acceptance/two-step.mjs` -- the run, with its own RFC 6238 helper and the hidden-input prompt of check 8.
-- [ ] This file's Run record -- checks 1 to 14 with times (UTC) and outcomes.
+- [x] `site-studio/deploy/acceptance/two-step.mjs` -- the run, with its own RFC 6238 helper and the hidden-input prompt of check 8.
+- [x] This file's Run record -- checks 1 to 14 with times (UTC) and outcomes.
 
 **Acceptance Criteria** (the builder records each proving check after the arrow; finding 34):
-- Given a two-step set-up made before a redeploy, after the redeploy no new key was printed, the secret list is unchanged, and the person signs in with the password and a current code (criterion 21). → Check: …
-- Given the pinned Wrangler on the test account, checks 9, 11 and 12 meet their pass column, and check 10 meets it or records "not shown" for a command with no safe way (spec 6's assumptions). → Check: …
-- Given four secret puts, differing key-state replies last under 60 seconds after each (check 13); otherwise the run has stopped for the orchestrator. → Check: …
-- Given a stored fingerprint, the deploy command's restore paths (check 14 (a) to (c)) end as spec 6's frozen block says, each settling in 60 to 180 seconds (check 14 (d)). → Check: …
+- Given a two-step set-up made before a redeploy, after the redeploy no new key was printed, the secret list is unchanged, and the person signs in with the password and a current code (criterion 21). → Check: 2, 3 and 4 (run of 2026-11-24: passed; check 3's list unchanged, no key printed, the kept line; check 4 asked for the second step and a code of a later step signed in)
+- Given the pinned Wrangler on the test account, checks 9, 11 and 12 meet their pass column, and check 10 meets it or records "not shown" for a command with no safe way (spec 6's assumptions). → Check: 9, 11 and 12 passed; 10 met for the delete (exit 1) and recorded "not shown" for the put (both ways exited 0; `deferred-work.md`)
+- Given four secret puts, differing key-state replies last under 60 seconds after each (check 13); otherwise the run has stopped for the orchestrator. → Check: 13 passed (the last differing reply came at 0 s after each of the four puts)
+- Given a stored fingerprint, the deploy command's restore paths (check 14 (a) to (c)) end as spec 6's frozen block says, each settling in 60 to 180 seconds (check 14 (d)). → Check: 14 (a), (b), (c) and (d) passed (66.1 s, 64.6 s, 62.1 s)
 
 **Deliberate breakages** (shown in a dry run against fakes before the deployed run; record which check fails):
-- The script's own pass test for check 3 fed a deploy output with a "Deployment key" line → …
-- Cleanup skipped → the final not-found check fails → …
-- Check 13's pass test fed a put whose last differing reply comes at 61 seconds → the run stops before check 14 → …
+- The script's own pass test for check 3 fed a deploy output with a "Deployment key" line → Test: "check 3 fails when the redeploy's output holds a Deployment key line (deliberate breakage 1)" (permanent: `readDeployLines` counts the line and `check3Pass` fails)
+- Cleanup skipped → the final not-found check fails → Test: "Cleanup: any outcome, all three names deleted and confirmed not found; a delete that removes nothing fails the final check (deliberate breakage 2)" (made once by commenting out the `cleanup()` call in `runAcceptance`'s `finally`; also failed: "Redeploy: …", "Sign-in after redeploy: …", "Failed put / delete: …", "Replies after a put: …", "Phone check: …"; reverted. Kept as a permanent test with a fake `wrangler delete` that removes nothing: cleanup "not confirmed", exit code 1)
+- Check 13's pass test fed a put whose last differing reply comes at 61 seconds → the run stops before check 14 → Test: "Replies after a put: four puts polled 180 s each, last differing reply under 60 s; at 61 s the run skips 14 and 10, cleans up and stops (deliberate breakage 3)" (fake copies answer the earlier key for 61 s after each hand put: no record for 14, 11, 12 or 10, no check-10 Wrangler call, cleanup confirmed; the pure test "check 13: last differing reply under 60 s passes; at 61 s it fails; …" also shows it)
+
+**Builder's choices (build session's subagent, 2026-11-24), beyond the Build notes:**
+- Cleanup's `finally` begins only after the safety checks pass. On a wrong account or a leftover Worker (or a safety listing that fails) nothing is deployed and nothing is deleted; the record names which name was in use, for Kevin to clear by hand.
+- Check 13 also fails a put whose settled final value is not the one the put should give (`mismatch` after a wrong key, `matches` after the original): otherwise a put that never took effect would read as "0 seconds". It stops the run as any check-13 failure does.
+- When check 2 fails, checks 4, 5, 13, 14 and 11 are recorded "not run: needs check 2" (check 12 is recorded from what was listed), and check 10 still runs; a failed check 2 is not one of the matrix's stop rows.
+- Check 2 waits up to 60 seconds for the key-state route to answer `stored`, `matches` (stale copies), and records the number of replies.
+- Check 8's phone account needs the administrator's session from check 2; if the invitation answers 401, the administrator signs in again with a later code.
+- The tail parser re-reads a failed object from its next character, so a stray `{` in non-JSON text cannot swallow the events after it.
+- Every HTTP request of the run (API, key-state polls, check 14 (c)'s settle) goes over `node:https` with `agent: false`, so each uses a new connection, not only check 13's.
+- Cleanup retries each not-found listing up to 3 times, 10 seconds apart, before recording "not confirmed".
+- The tail is started as `wrangler tail <worker> --format json`, not `--name <worker>` as the Build notes wrote: the pinned Wrangler declares the Worker as the positional `worker` (`cli.js` about line 352766) and reads `--name` only through a fallback. Its standard input is `"ignore"` (not piped and ended), since the tail reads none. Check 7 records each tail child's exit code and standard-error length (not its content), and a tail with no events is recorded "not observed (no events)", never as "no platform error".
+- An interrupt, or an effect that throws outside a check, ends the run with fixed text and the cleanup still runs (tests "Cleanup after a throw: …" and "Cleanup after an interrupt: …").
 
 ## Verification
 
@@ -120,4 +183,99 @@ context:
 
 ## Run record
 
-Not run.
+### Run of 2026-11-24, 17:26:46–17:48:25 UTC (11:26–11:48 local, UTC−6), Kevin's workstation
+
+**Outcome:** every check met its pass column, with one exception. Check 10's failed `secret put` is recorded "not shown", which the pass column allows. Checks 7 and 8 are recorded. The script exited 0. All three Worker names were deleted and confirmed gone.
+
+**Who and how.**
+- The run was made by the story 1.5 spec 9 build session, a Claude Code session started by the story's orchestrator, on Kevin's go-ahead of 2026-11-24 for one deployed run. It was that one run: no rerun, no second deploy pass.
+- Command, in `site-studio/`: `npm run build && node deploy/acceptance/two-step.mjs`, started from the session's shell with standard input from the null device. So there was no terminal, and check 8 was declined (orchestrator ruling of 2026-11-24).
+- Code: branch `story/1.5` on top of `6393b51`, with this spec's script as committed together with this record, after review round 1's patches.
+- Tools: Node 24.18.0, and the project's own Wrangler 4.164.0, through `wranglerSpawn` and the deploy command.
+- Output: the script's standard output (one line per check, the cleanup line and the whole record as one JSON line) went to a log in the session's scratch folder. The deploy command's and Wrangler's output, and the tail, were kept in the script's memory only.
+
+**Nothing secret was shown or written anywhere:**
+- the deployment key and the set-up code (read from the deploy output into memory);
+- the administrator's password and the wrong keys (generated in memory);
+- the authenticator secret, codes, recovery codes and cookies.
+
+The only made-up email is `admin-15a@example.test` ("Acceptance Administrator", installation "Acceptance 15a").
+
+**Safety (17:26:46–17:26:56).**
+- `wrangler whoami --json` showed exactly one account, "PhySec Site Studio" (`318ca49fe7ac20168231459fc13d47f0`), whose id was passed as `CLOUDFLARE_ACCOUNT_ID` to every later Wrangler call.
+- `secret list` answered not found (exit 1 with the not-found text) for `site-studio-test-15a`, `-15b` and `-15c`.
+- No other Worker or account resource was touched.
+
+| # | Time (UTC) | Result | Evidence (the script's record fields) |
+|---|---|---|---|
+| 1 | 17:27:53 | **pass** | First deploy of 15a exited 0. Exactly one "Deployment key" line, the key well formed (printed once: yes), one set-up code line, an address reported. The next `secret list` holds `DEPLOYMENT_KEY`. |
+| 9 | 17:27:55 | **pass** | `secret list --name site-studio-test-15a --format json` exited 0. Standard output, trimmed, is exactly one JSON array: yes, with 0 other bytes. Standard error written: no (length 0). |
+| 2 | 17:28:06 | **pass** | Set-up answered 200 on the first try (no retries). Sign-in 200. Two-step start 200 and confirm 200 with a code computed from the start reply's secret. 10 recovery codes. The key-state route answered `stored`/`matches` on its first reply. |
+| 3 | 17:28:49 | **pass** | Redeploy of 15a exited 0. No "Deployment key" line, and neither check 1's key nor its set-up code appears in any captured line. The "kept" line on standard output. `DEPLOYMENT_KEY` still listed, and the secret names equal check 1's (criteria 21, 22). |
+| 4 | 17:28:50 | **pass** | After the redeploy, sign-in with the password answered 200 `{ secondStep: true }`. A code of a later step than the confirming one answered 200 and signed in (criterion 21). |
+| 5 | 17:28:52 | **pass** | Recovery code, first use: 200, signed in. Same code from a new sign-in: 401 `second_step_recovery_code_wrong`. Both password steps 200. |
+| 6 | 17:29:50 | **pass** | Deploy of 15b with 15a's key in `SITE_SURVEY_DEPLOYMENT_KEY` exited 0. No "Deployment key" line and the key in no captured line. The "supplied" line on standard output. The next list holds `DEPLOYMENT_KEY` (criterion 13). |
+| 7 | 17:29:50 | **recorded** | 15b's public key-state route first answered 200 **40.7 s** after its deploy command started. That time includes the command's own `npm run build`. 15b's address was derived from 15a's and equalled the one the command reported. The tail on 15a connected (3 probes, last 200) and held **21 events from checks 2 to 5, all outcome `ok`, no exception names**, so no platform error for HKDF or AES-GCM appeared. The tail child did not restart; it exited 1 when the script stopped it. |
+| 8 | 17:29:50 | **declined for this run** | No terminal (orchestrator ruling of 2026-11-24). The hidden-input prompt is built for a later run from Kevin's own terminal. |
+| 13 | 17:29:50–17:42:00 | **pass** | Four `secret put`s of `DEPLOYMENT_KEY` on 15a (wrong, original, wrong, original), each exit 0. Each was followed by 60 polls over 180 s, 20 of them in the final 60 s. The final values were `mismatch`, `matches`, `mismatch`, `matches`, as expected. **The last differing reply came at 0 s after every put**: no reply differed from the final value. |
+| 11 | 17:42:03 | **pass** | `secret delete DEPLOYMENT_KEY --name site-studio-test-15a` with empty piped standard input exited 0 within the 60 s limit. `DEPLOYMENT_KEY` was absent from the next list. |
+| 14 | 17:42:04–17:48:06 | **pass** | (a) Wrong key supplied: the Checking line, then the "not the original … removed from the Worker again" line on standard error; exit 1; no `DEPLOYMENT_KEY` in the next list. (b) Original supplied: the Checking line, the "supplied" line, exit 0; the key listed; a code of a later step for the administrator signed in (200, 200). (c) Wrong key put by hand (exit 0), original supplied: the Checking line, the "Worker already has a deployment key, and it is not the one …" line naming `site-studio-test-15a`, no "supplied" line, exit 1; the key still listed; the key-state route still settled on `mismatch`. The key appeared in no captured line in (a), (b) or (c). |
+| 14 (d) | | **pass** | Checking line to exit: (a) **66.1 s**, (b) **64.6 s**, (c) **62.1 s**, each within 60–180 s. |
+| 12 | 17:48:06 | **pass** | `DEPLOYMENT_KEY` was in the next list after check 1's generated key (yes), check 6's supplied key (yes) and check 14 (b)'s restored key (yes). |
+| 10 | 17:48:14 | **recorded: put not shown, delete pass** | Put: `secret put "ACCEPTANCE INVALID NAME"` on 15a **exited 0**. The fallback put to the absent 15c also **exited 0**, and 15c then existed (Wrangler created it). With no safe way left, the put is "not shown". Delete: `secret delete ACCEPTANCE_ABSENT_SECRET` on 15a exited **1**. See `deferred-work.md`. |
+
+**Cleanup (17:48:14–17:48:25).** `wrangler delete --name <w> --force` exited 0 for `site-studio-test-15a`, `-15b` and `-15c`. `secret list` then answered not found for each.
+
+**What this run shows and does not show.**
+- Shown on Cloudflare:
+  - a redeploy keeps the key, and a two-step set-up made before it still signs in (criterion 21, D-19);
+  - HKDF and AES-GCM run with no platform error;
+  - spec 6's restore paths end as its frozen block says;
+  - the 60-second settle window is not exceeded by stale replies after a secret put; none were seen at a 3-second poll with a new connection per request.
+- Not shown:
+  - that a failed `secret put` exits non-zero (check 10, above);
+  - the real-phone part of D-20 (check 8 declined; story 10.6);
+  - stale replies themselves: with none seen, check 13 bounds them at under 3 s for this run only, and does not show how the settle window behaves when copies do lag;
+  - the browser screens on Cloudflare: this run drives the API only, as the frozen block says.
+
+**Build session's choices not settled by the spec** (beyond the builder's choices above and the Review Triage Log):
+- The account check requires exactly one account visible to the login, named "PhySec Site Studio".
+- Check 8's throwaway password needs at least 12 characters (the server's minimum), with 3 tries.
+- The tail is restarted at most 3 times, 2 s apart.
+- Time limits: 10 min for the deploy command, 3 min for a Wrangler call (60 s for check 11's delete), and 15 s for a request.
+- The tail is given 10 s after check 5 before it is stopped.
+- Check 7 keeps polling 15b for up to 180 s after its deploy command ends.
+- Check 5 also records the two password-step statuses.
+- Check 14 (b) signs in only when its deploy exited 0.
+
+**Workflow note for Kevin.** Step 3 of `bmad-build` was followed: the build notes were written into this file, then an implementation subagent built the script from the spec alone. The build session itself made only the deployed run, whose account rules are in this file's frozen block and Build notes.
+
+## Review Triage Log
+
+Round 1, before the deployed run (orchestrator ruling of 2026-11-24). Three context-free reviewer subagents, each started on model `opus` at effort `high` (Kevin's explicit instruction): Blind Hunter (BH, 12 findings), Edge Case Hunter (ECH, 13), Verification Gap (VG, 5). They read the diff since `6393b51` (the script, its tests and this file); the edge-case layer also read this file afterwards. Patches were made by the step-3 implementation subagent, re-engaged with every patch row in one message.
+
+| # | Layer | Finding | Verdict | Evidence | Route |
+|---|---|---|---|---|---|
+| 1 | ECH 11, BH 1 | The tail parser loses every later event after a stray unclosed `{` in non-JSON text | medium | Depth stays at 1 or more, so no later event reaches depth 0; the tests always closed the stray brace | patch: a `{` right after a newline outside a string starts a new candidate (Wrangler prints each event's top-level `{` at column 0) |
+| 2 | ECH 4, BH 2 | A deploy or Wrangler call started after an interrupt runs in full | medium | `addEventListener` on an already-aborted signal never fires; check 14 calls effects back to back with no `checkAbort()` | patch: no spawn when the signal is aborted; `checkAbort()` before each effect in checks 6 and 14 |
+| 3 | ECH 5 | An interrupt that kills check 1's deploy is recorded "check 1 failed" | low | `attempt` notes the check before looking at the signal | patch: `attempt` throws `Interrupted` when the signal is aborted after `run()` |
+| 4 | ECH 1, ECH 13, BH 3 | Ctrl-C at a check-8 prompt hangs the run, so cleanup never runs | medium | readline in terminal mode with no `SIGINT` listener only pauses; the promise never settles | patch: the prompt's `SIGINT` raises the run's interrupt and resolves "" |
+| 5 | ECH 2, BH 3 | Ctrl-C in the hidden prompt is swallowed and the prompt asks again | low | `\u0003` resolves "" and `phoneCheck` loops 3 times | patch: it raises the interrupt; `phoneCheck` stops asking when aborted |
+| 6 | ECH 3 | Arrow keys add escape characters to the hidden password | low | Real, but only when Kevin presses an arrow key; the fix would add an escape-sequence parser | reject: unlikely in use, fix adds complexity |
+| 7 | ECH 6, ECH 13 | A tail child that never closes blocks the `finally` before cleanup | low | `await closed` has no limit; `taskkill` failing is unlikely, but the cost is Workers left running | patch: race against a 15-second timer |
+| 8 | ECH 7, BH 10 | `killTree` ends only the direct child off Windows, though its comment says the tree | low | The run is made on Windows; the comment is wrong | patch: comment corrected |
+| 9 | ECH 8 | A timed-out check-10 call counts as "non-zero exit" | low | `taskkill` gives a non-zero code; `check10Pass` reads only the code | patch: a timed-out part is not "shown" |
+| 10 | ECH 9 | One or two replies in check 13's final 60 s can count as settled | medium | `evaluatePutPolls` accepts any non-empty final window | patch: at least 10 replies in the final window, else "not settled" (a builder's choice, stricter than the frozen text) |
+| 11 | ECH 10 | A check 7 or 8 that threw still counts as recorded, so the run can exit 0 | low | `exitCodeFor` checks only presence | patch: an `error` in either gives exit 1 |
+| 12 | ECH 12 | Check 3 tests only that `DEPLOYMENT_KEY` is still listed, not that the list is unchanged (criterion 21) | medium | `check3Pass` takes `listed` only | patch: check 3 also compares the names with check 1's list (`listUnchanged`) and requires equality |
+| 13 | BH 4 | On a run that does not stop, the account check, the safety listing and `startedAt` are never printed, so the Run record would lose them | medium | Printed only on the stop paths; `record` is discarded | patch: account and safety lines printed on every path; the whole record printed as one JSON line at the end (holds nothing secret) |
+| 14 | BH 5 | A key printed in any form other than the exact `Deployment key:` line passes checks 3, 6 and 14 | medium | Only `KEY_LINE` is counted | patch: every deploy after the first also checks that the key and check 1's set-up code appear in no captured line (`keyValueInOutput`, yes/no) |
+| 15 | BH 9 | Line lookups apply the output stream inconsistently | low | `kept` and `supplied` looked for on either stream in checks 3 and 6 | patch: "out" only there; 14 (c)'s "supplied absent on either stream" kept (stricter) |
+| 16 | BH 11 | The tail probe ignores its replies' statuses, so an unreachable address looks like an unconnected tail | low | Probe status not recorded | patch: probe count and last status in check 7's record |
+| 17 | BH 6, VG 1 | The set-up and two-step-start retries are never exercised, nor is "never retry `setup_code_wrong`" | medium (pre-verified gap) | The fakes' quirks are defined but unused | patch: dry-run tests with retries and with a single `setup_code_wrong` |
+| 18 | BH 6, VG 2 | The "check 2 fails" and "check 1 fails" branches are untested | medium (pre-verified gap) | No dry run fails check 1 or 2 | patch: dry-run tests for both |
+| 19 | BH 7, VG 3 | The hidden prompt, the visible prompt and the phone-check branches are untested | medium (pre-verified gap) | Neither prompt is imported by the tests; the deployed run declines check 8 | patch: prompt unit tests with a fake terminal; a phone-check dry run including the 401 re-sign-in |
+| 20 | VG 4 | `createFreshConnectionFetch`'s POST path is not observed | medium (pre-verified gap) | The one test sends a GET and ignores the body | patch: a POST test (method, headers, byte `content-length`, body) and an abort test |
+| 21 | VG 5 | Check 14 (d)'s start point (the "Checking" line) is not pinned | low (pre-verified gap) | Measuring from the command's start also falls in 60–180 s with the fake's 40 s build | patch: a 130 s fake build; settle times asserted equal to exit minus the Checking line |
+| 22 | BH 8 | Several builder decisions are not listed as choices (12-character phone password, exactly one account, tail restarts, time limits, check 14 (b) signs in only on exit 0) | low | Real | reject: the fix edits this build's spec; the choices are listed in the build session's report to the orchestrator |
+| 23 | BH 12 | The Build notes still describe `tail --name` and piped standard input for the tail; the header names `npm run build &&` though the deploy command builds | low | The builder's choices record the tail change; `npm run build &&` is the frozen Verification command | reject: the fix edits this build's spec |
