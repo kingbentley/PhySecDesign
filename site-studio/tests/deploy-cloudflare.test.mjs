@@ -394,6 +394,37 @@ describe("pull request 13, review round 2", () => {
   });
 });
 
+describe("pull request 13, review round 3", () => {
+
+  it("starts no key-state request after the limit when a sleep ends late", async () => {
+    let clock = 0;
+    const started = [];
+    const fetchImpl = async () => {
+      started.push(clock);
+      return new Response("", { status: 500 });
+    };
+    // Every sleep ends 20 s late: the last one that may start before the limit ends after it.
+    const settled = await waitForSettledKeyState("https://a.example.net", { fetchImpl, now: () => clock, sleep: async (ms) => { clock += ms + 20_000; } });
+    assert.equal(settled, null);
+    assert.ok(started.length > 1);
+    assert.ok(started.every((at) => at <= KEY_SETTLE_TIMEOUT_MS), `a request started after the limit: ${started.at(-1)}`);
+  });
+
+  it("still settles on a reply that arrives exactly at the limit", async () => {
+    let clock = 0;
+    const fetchImpl = async () => Response.json({ fingerprint: "stored", key: "matches" });
+    const settled = await waitForSettledKeyState("https://a.example.net", {
+      fetchImpl,
+      now: () => clock,
+      sleep: async (ms) => { clock = Math.min(clock + ms, KEY_SETTLE_TIMEOUT_MS); },
+      retryMs: KEY_SETTLE_TIMEOUT_MS / 4,
+      minReplies: 5,
+      settleMs: KEY_SETTLE_TIMEOUT_MS,
+    });
+    assert.deepEqual(settled, { fingerprint: "stored", key: "matches" });
+  });
+});
+
 describe("the deploy command when Wrangler reports little", () => {
   it("issues no code when the deployment reports nothing, even with --url", async () => {
     const { calls, options } = harness({ state: "open" });

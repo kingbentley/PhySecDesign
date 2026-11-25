@@ -8,6 +8,7 @@
 // (`postJson.js`, whose one deadline covers that load and the request).
 import { REFUSALS } from '../../shared/refusal.ts';
 import { NO_ANSWER, appHeaders, postJson } from './postJson.js';
+import { readSession } from './setupState.js';
 import { waitWording } from './waitWording.js';
 
 const SIGN_IN_URL = '/api/v1/session/sign-in';
@@ -164,22 +165,46 @@ export async function submitSignIn(input, fetcher = fetch, { timeoutMs = SIGN_IN
 
 /**
  * One second-step request that the page can abandon (pull request 13, review round 2; orchestrator
- * ruling of 2026-11-24): `send(input)` resolves as `submitSecondStep`; `abandon()` aborts it, so a
- * reply whose headers have not arrived is dropped by the browser with its cookies, and answers true
- * only when a success's headers had already arrived (the browser then holds the session the server
- * set, which the page must end). A request that has already settled is not abandoned (false).
+ * ruling of 2026-11-24): `send(input)` resolves to the outcomes `secondStepOutcome` gives, except
+ * that a 200 whose body did not arrive is settled by a session read (see below); `abandon()` aborts
+ * it, so a reply whose headers have not arrived is dropped by the browser with its cookies, and
+ * answers true only when a success's headers had already arrived (the browser then holds the
+ * session the server set, which the page must end). A request that has already settled is not
+ * abandoned (false).
  */
-export function createSecondStepRun(fetcher = fetch, options = {}) {
+export function createSecondStepRun(fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders, sessionReader = readSession } = {}) {
   const controller = new AbortController();
   let status = null;
   let settled = false;
+  async function send(input) {
+    const reply = await postJson(fetcher, SECOND_STEP_URL, JSON.stringify({ method: input.method, code: input.code }), {
+      timeoutMs,
+      loadHeaders,
+      signal: controller.signal,
+      onResponse: (response) => { status = response.status; },
+    });
+    const bodyMissing = reply === NO_ANSWER ? status === 200 && !controller.signal.aborted : reply.status === 200 && reply.bodyUnreadable;
+    if (reply !== NO_ANSWER && !bodyMissing) return secondStepOutcome(reply.status, reply.body, reply.retryAfter);
+    if (!bodyMissing) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+    // A 200 whose body did not arrive (the time limit passed, or it was cut off): its headers may
+    // have set the session, or may be an intermediary's. The session read tells: signed in is a
+    // sign-in (the name from the session); signed out, or a read that fails, is the existing
+    // refusal. A complete body of the wrong shape stays a refusal (pull request 13, review round 3;
+    // orchestrator ruling of 2026-11-25). The read runs inside this run but takes no signal (it has
+    // its own deadline): leaving the second step meanwhile discards its result, and the page signs
+    // out as on any abandon.
+    let session;
+    try {
+      session = await sessionReader(fetcher);
+    } catch {
+      session = { kind: 'unknown' };
+    }
+    if (controller.signal.aborted) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+    if (session.kind === 'signedIn') return { kind: 'signedIn', name: session.name };
+    return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
+  }
   return {
-    // A success whose body did not arrive in time (its headers did, with the session cookie): the
-    // server has signed the person in, so it is a sign-in, with no name; the page then reads the
-    // session as after any sign-in (review round 2).
-    send: (input) => submitSecondStep(input, fetcher, { ...options, signal: controller.signal, onResponse: (response) => { status = response.status; } })
-      .then((result) => (result.kind === 'refused' && status === 200 && !controller.signal.aborted ? { kind: 'signedIn', name: null } : result))
-      .finally(() => { settled = true; }),
+    send: (input) => send(input).finally(() => { settled = true; }),
     abandon() {
       if (settled) return false;
       controller.abort();

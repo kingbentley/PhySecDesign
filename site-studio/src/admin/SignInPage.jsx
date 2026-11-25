@@ -256,6 +256,9 @@ export default function SignInPage({ installationName, onSignedIn }) {
         confirmed = false;
       }
       if (!confirmed) leftSessionUnended.current = true;
+      // The app may have opened meanwhile (the visibility check found the session): it is reloaded
+      // so it shows the truth, as `endLeftSession` does (pull request 13, review round 3).
+      else if (!mounted.current) window.location.reload();
     })();
     leftSessionEnding.current = ending;
     ending.finally(() => { if (leftSessionEnding.current === ending) leftSessionEnding.current = null; });

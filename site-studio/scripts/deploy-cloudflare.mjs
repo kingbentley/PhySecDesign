@@ -421,6 +421,9 @@ export async function waitForSettledKeyState(address, {
     // review round 2).
     if (at + retryMs > deadline) return null;
     await sleep(retryMs);
+    // A sleep can end late; the clock is read again so that no request starts after the limit
+    // (pull request 13, review round 3).
+    if (now() > deadline) return null;
   }
 }
 

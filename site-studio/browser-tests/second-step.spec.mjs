@@ -485,11 +485,14 @@ test("In flight, Back while a correct code is being checked: the request is aban
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
   // Held, then passed to the real server if the browser still wants it (Playwright's continue of a
-  // request the page has aborted does nothing, without an error).
+  // request the page has aborted does nothing, without an error). `continued` settles once that has
+  // been tried, so the checks below come after anything the release could cause (review layer).
+  let continueTried;
+  const continued = new Promise((resolve) => { continueTried = resolve; });
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
     arrived();
     await held;
-    try { await route.continue(); } catch { /* aborted by the page */ }
+    try { await route.continue(); } catch { /* aborted by the page */ } finally { continueTried(); }
   });
   await openSecondStep(page, server.origin, account);
   const signOuts = countRequests(page, "/api/v1/session/sign-out");
@@ -499,10 +502,16 @@ test("In flight, Back while a correct code is being checked: the request is aban
   await codeField(page).fill(code);
   await page.getByRole("button", { name: "Verify and sign in" }).click();
   await routed;
+  // Waited for, not slept on (review round 3): the abort and the sign-out's reply.
+  const failed = page.waitForEvent("requestfailed", (request) => new URL(request.url()).pathname === SECOND_STEP_PATH);
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out");
   await page.getByRole("button", { name: "Back to sign in" }).click();
   await expect(signInHeading(page)).toBeVisible();
+  await failed;
+  expect((await signedOut).status(), "the sign-out was answered").toBe(200);
   release();
-  await page.waitForTimeout(1_000);
+  await continued;
+  await afterFrames(page);
   expect(abandoned, "the page abandoned (aborted) the second-step request").toHaveLength(1);
   // Signed out on every abandon of a second step in flight (orchestrator ruling of 2026-11-24, (a)).
   expect(signOuts, "the page signed out once").toHaveLength(1);
@@ -523,7 +532,9 @@ test("In flight, finding 2's sequence: A's second step held, Back, then B (two-s
   const held = new Promise((resolve) => { release = resolve; });
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
+  const context = page.context();
   let firstHeld = true;
+  let firstStatus = null;
   let answered;
   const answerTried = new Promise((resolve) => { answered = resolve; });
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
@@ -532,16 +543,36 @@ test("In flight, finding 2's sequence: A's second step held, Back, then B (two-s
     firstHeld = false;
     // A's second step reaches the server at once, with A's pending cookie, as a request already on
     // the wire does (a continued request would be sent with the cookies of the moment it is
-    // continued, B's); only its reply's delivery to the page is held.
-    const response = await route.fetch();
+    // continued, B's); only its reply's delivery to the page is held. It is sent from a separate
+    // request context holding the browser's cookies of this moment, because `route.fetch()` stores
+    // the reply's cookies in the browser at once (review round 3): A's cookies may reach the browser
+    // only with the held reply.
+    const isolated = await playwright.request.newContext({ storageState: { cookies: (await context.storageState()).cookies, origins: [] } });
+    let response = null;
+    try {
+      response = await isolated.fetch(route.request());
+      firstStatus = response.status();
+    } catch (error) {
+      // Fails the test at once below (A's status) rather than at its timeout.
+      firstStatus = `fetch failed: ${error.message}`;
+    }
     arrived();
-    await held;
-    try { await route.fulfill({ response }); } catch { /* aborted by the page */ } finally { answered(); }
+    try {
+      await held;
+      if (response) {
+        try { await route.fulfill({ response }); } catch { /* aborted by the page */ }
+      }
+    } finally {
+      answered();
+      await isolated.dispose();
+    }
   });
   await openSecondStep(page, server.origin, first);
   await codeField(page).fill((await nextCode(first.secret, first.step)).code);
   await page.getByRole("button", { name: "Verify and sign in" }).click();
   await routed;
+  expect(firstStatus, "A's code signed in on the server").toBe(200);
+  expect(await cookiesNamed(context, SESSION_COOKIE), "A's session cookie has not reached the browser").toEqual([]);
   await page.getByRole("button", { name: "Back to sign in" }).click();
   await expect(signInHeading(page)).toBeVisible();
   // B's password step: the page shows B's second step, with B's pending cookie set.
@@ -622,6 +653,51 @@ test("In flight, the gap: a success's cookies are stored but the page has not ye
   expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
   await expect(signInHeading(page)).toBeVisible();
   await expect(page.locator('[role="alert"]')).toHaveText("");
+});
+
+test("In flight, Back's sign-out confirmed after the app has opened (the visibility check found the stored session): the page reloads and shows the sign-in page", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("reopened", testInfo), name: "Rhys Reopened", password: PASSWORD });
+  // As in "the gap": the browser stores the success's cookies, the page is never given the reply.
+  await page.addInitScript((path) => {
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, init = {}) => {
+      const url = new URL(typeof input === "string" ? input : input.url, location.href);
+      if (url.pathname !== path) return realFetch(input, init);
+      const { signal, ...rest } = init;
+      const real = await realFetch(input, rest);
+      window.__replyStored = true;
+      return new Promise((resolve, reject) => {
+        window.__releaseReply = () => resolve(real);
+        signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+      });
+    };
+  }, SECOND_STEP_PATH);
+  // Back's sign-out is held until the app has opened.
+  let releaseSignOut;
+  const signOutHeld = new Promise((resolve) => { releaseSignOut = resolve; });
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    await signOutHeld;
+    await route.continue();
+  });
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill((await nextCode(account.secret, account.step)).code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await page.waitForFunction(() => window.__replyStored === true);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toHaveLength(1);
+  const signOutSent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out");
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await signOutSent;
+  // The tab's visibility check (D-16) reads the session, which the browser still holds: the app opens.
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await expect(page.getByTestId("account-name")).toHaveText(account.name);
+  const reloaded = page.waitForEvent("load");
+  releaseSignOut();
+  await reloaded;
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
 });
 
 test("In flight, a success's headers already arrived when the person goes back: that session is ended at once, and the session read answers signed out", async ({ page, playwright }, testInfo) => {

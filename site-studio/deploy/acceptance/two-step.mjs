@@ -1428,24 +1428,27 @@ export function createLineCollector(stream, lines, now) {
 
 /**
  * Ends a child. On Windows (where the run is made) `taskkill /T /F` ends the whole tree. Elsewhere
- * the child's process group gets SIGKILL, which ends the whole tree when the child leads its own
- * group (the deploy is started so: `detached`); when that fails (a child that is not a group leader,
- * such as the tail), the direct child gets SIGKILL and its own children may live on (pull request
- * 13, review round 2).
+ * a child started as its own process group (`group`, the deploy: `detached`) has the group signalled
+ * with SIGKILL, which ends the whole tree, also after the shell leading it has exited (npm and
+ * Wrangler can still hold its pipes); when that fails, the direct child gets SIGKILL. Any other
+ * child (the tail, Wrangler calls) gets SIGKILL itself, its own children may live on, and once it
+ * has exited nothing is signalled: its former process id may belong to another process by then
+ * (pull request 13, review rounds 2 and 3).
  */
-export function killTree(child, { spawnImpl = spawn, platform = process.platform, killImpl = process.kill } = {}) {
+export function killTree(child, { spawnImpl = spawn, platform = process.platform, killImpl = process.kill, group = false } = {}) {
   if (!child) return;
-  const exited = child.exitCode !== null && child.exitCode !== undefined;
-  // Off Windows a group whose leader (the shell) has exited can still hold npm and Wrangler: it is
-  // signalled anyway; ESRCH when it is gone (review round 2).
-  if (exited && (platform === "win32" || !child.pid)) return;
+  // A child ended by a signal has `signalCode` set and `exitCode` null: it has exited too.
+  const exited = (child.exitCode !== null && child.exitCode !== undefined) || (child.signalCode !== null && child.signalCode !== undefined);
+  const ownGroup = group && platform !== "win32" && Boolean(child.pid);
   if (exited) {
-    try { killImpl(-child.pid, "SIGKILL"); } catch { /* gone */ }
+    if (ownGroup) {
+      try { killImpl(-child.pid, "SIGKILL"); } catch { /* gone */ }
+    }
     return;
   }
   try {
     if (platform === "win32" && child.pid) spawnImpl("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
-    else if (child.pid) {
+    else if (ownGroup) {
       try {
         killImpl(-child.pid, "SIGKILL");
       } catch {
@@ -1476,7 +1479,8 @@ export function createDeployCommand({ root, env = process.env, spawnImpl = spawn
       const startedAt = now();
       // Off Windows the deploy leads its own process group, so `killTree` can end npm and Wrangler
       // under the shell too (review round 2); on Windows `taskkill /T` ends the tree.
-      const child = spawnImpl(`npm run deploy:cloudflare -- --name ${worker}`, { cwd: root, shell: true, detached: platform !== "win32", env: childEnv, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+      const ownGroup = platform !== "win32";
+      const child = spawnImpl(`npm run deploy:cloudflare -- --name ${worker}`, { cwd: root, shell: true, detached: ownGroup, env: childEnv, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
       const out = createLineCollector("out", lines, now);
       const err = createLineCollector("err", lines, now);
       child.stdout.on("data", (chunk) => out.push(chunk));
@@ -1485,10 +1489,10 @@ export function createDeployCommand({ root, env = process.env, spawnImpl = spawn
       let settled = false;
       const stop = () => {
         timedOut = true;
-        killTree(child, { spawnImpl, platform });
+        killTree(child, { spawnImpl, platform, group: ownGroup });
       };
       const timer = setTimeout(stop, timeoutMs);
-      const onAbort = () => killTree(child, { spawnImpl, platform });
+      const onAbort = () => killTree(child, { spawnImpl, platform, group: ownGroup });
       signal?.addEventListener("abort", onAbort, { once: true });
       const done = (code) => {
         if (settled) return;

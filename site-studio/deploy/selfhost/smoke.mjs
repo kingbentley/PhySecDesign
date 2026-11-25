@@ -293,9 +293,13 @@ function stepAt(ms) {
  * Whether a code of `step` is still inside the accepted window at `now`, with two seconds to spare
  * for the request to arrive (as `nextCode` allows): a replay of an expired code would be refused
  * whether or not the server prevents replay, so it proves nothing (pull request 13, review round 2).
+ * The bound holds above too: a code ahead of the window (the host clock moved back) is refused as
+ * out of window with the same refusal as a replay (review round 3). The upper side has no margin:
+ * the smoke test and the installation read one host clock, and `nextCode` takes a code one step
+ * ahead right after a step begins, which a margin would refuse on every retry (review layer).
  */
 export function codeStillAccepted(step, now) {
-  return step !== null && step >= stepAt(now + 2000) - TOTP_WINDOW;
+  return step !== null && step >= stepAt(now + 2000) - TOTP_WINDOW && step <= stepAt(now) + TOTP_WINDOW;
 }
 
 /**

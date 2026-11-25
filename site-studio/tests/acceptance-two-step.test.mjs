@@ -1693,19 +1693,35 @@ describe("real effects with a fake spawn", () => {
 
     const signalled = [];
     const child = { pid: 4321, exitCode: null, kill: (signal) => signalled.push(["child", signal]) };
-    killTree(child, { platform: "linux", killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
+    killTree(child, { platform: "linux", group: true, killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
     assert.deepEqual(signalled, [["group", -4321, "SIGKILL"]]);
     signalled.length = 0;
-    killTree(child, { platform: "linux", killImpl: () => { throw Object.assign(new Error("no such process group"), { code: "ESRCH" }); } });
+    killTree(child, { platform: "linux", group: true, killImpl: () => { throw Object.assign(new Error("no such process group"), { code: "ESRCH" }); } });
     assert.deepEqual(signalled, [["child", "SIGKILL"]]);
     // The shell has exited but its group can still hold npm and Wrangler: the group is signalled.
     signalled.length = 0;
     const exitedShell = { pid: 4321, exitCode: 0, kill: (signal) => signalled.push(["child", signal]) };
-    killTree(exitedShell, { platform: "linux", killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
+    killTree(exitedShell, { platform: "linux", group: true, killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
     assert.deepEqual(signalled, [["group", -4321, "SIGKILL"]]);
     signalled.length = 0;
-    killTree(exitedShell, { platform: "win32", spawnImpl: () => signalled.push(["taskkill"]) });
+    killTree(exitedShell, { platform: "win32", group: true, spawnImpl: () => signalled.push(["taskkill"]) });
     assert.deepEqual(signalled, [], "on Windows an exited child is left alone, as before");
+  });
+
+  it("killTree signals a process group only for a child that owns one (review round 3)", () => {
+    const signalled = [];
+    const killImpl = (pid, signal) => signalled.push(["group", pid, signal]);
+    // The tail is not its own group: once it has exited its former id is not signalled at all.
+    const exitedTail = { pid: 4321, exitCode: 1, kill: (signal) => signalled.push(["child", signal]) };
+    killTree(exitedTail, { platform: "linux", killImpl });
+    assert.deepEqual(signalled, [], "an exited child that owns no group is left alone");
+    const signalledTail = { pid: 4321, exitCode: null, signalCode: "SIGTERM", kill: (signal) => signalled.push(["child", signal]) };
+    killTree(signalledTail, { platform: "linux", killImpl });
+    assert.deepEqual(signalled, [], "a child ended by a signal has exited too");
+    // A live child that owns no group gets SIGKILL itself, never a signal to a group of its id.
+    const liveTail = { pid: 4321, exitCode: null, kill: (signal) => signalled.push(["child", signal]) };
+    killTree(liveTail, { platform: "linux", killImpl });
+    assert.deepEqual(signalled, [["child", "SIGKILL"]]);
   });
 
   it("main's real effects give both questions the run's signal (C5)", async () => {

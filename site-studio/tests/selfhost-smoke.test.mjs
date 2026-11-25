@@ -19,6 +19,18 @@ describe("the replay check's code window (pull request 13, review round 2)", () 
   });
 });
 
+describe("the replay check's code window, above (pull request 13, review round 3)", () => {
+  it("does not count a code ahead of the window, where the server refuses it as out of window", () => {
+    const step = 1_000_000;
+    const start = step * 30_000;
+    assert.equal(codeStillAccepted(step + 1, start + 10_000), true, "one step ahead, well inside the step");
+    // `nextCode` takes such a code about 50 ms into a step after a wait: it must count (review layer).
+    assert.equal(codeStillAccepted(step + 1, start + 50), true, "one step ahead, just after the step began");
+    assert.equal(codeStillAccepted(step + 2, start + 10_000), false, "two steps ahead: out of window");
+    assert.equal(codeStillAccepted(step + 2, start + 29_999), false, "two steps ahead, at the end of the step");
+  });
+});
+
 describe("deploy/selfhost/smoke.mjs key-state failure text", () => {
   it("shows a reply's values only when they are values D-18 allows; otherwise its status and invalid (C6)", () => {
     assert.equal(keyStateReply(200, { fingerprint: "stored", key: "mismatch" }), "200 with fingerprint stored and key mismatch");
