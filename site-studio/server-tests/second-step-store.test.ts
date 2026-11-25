@@ -27,6 +27,7 @@ import {
 import { callObject } from "../server/objects/call";
 import { emailWaitMs, markerWaitMs, secondsLeft, SESSION_MAX_AGE_MS } from "../shared/signin";
 import { base32Decode, normaliseRecoveryCode, PENDING_SIGNIN_TTL_MS } from "../shared/twoStep";
+import { wrongCodeAt } from "./totp-codes";
 import { newDeploymentKey } from "./two-step-fixtures";
 
 // The second sign-in step in the installation object (story 1.5, spec 3): the pending row written
@@ -176,8 +177,6 @@ const pendingCount = (name: string) => runInDurableObject(stubFor(name), (instan
 const sessionHashes = async (name: string) => (await rowsOf(name, SESSIONS_TABLE)).map((row) => String(row.token_hash));
 const lastStep = async (name: string, userId: string) => (await rowsOf(name, TWO_STEP_TABLE)).find((row) => row.account_id === userId)!.last_step;
 
-/** A code of the six digits that is not `code`. */
-const otherThan = (code: string) => String((Number(code) + 1) % 1_000_000).padStart(6, "0");
 
 async function sessionLive(name: string, cookies: Record<string, string>, now: number): Promise<boolean> {
   return runInDurableObject(stubFor(name), async (instance: Installation) => (await instance.signIn.sessionInfo(cookies, now)).signedIn);
@@ -475,7 +474,7 @@ describe("secrets in logs (standing rule 14)", () => {
     const otherKey = newDeploymentKey();
     const now = T0 + STEP;
     const right = await totpAt(secret, stepAt(now));
-    const wrong = otherThan(right);
+    const wrong = await wrongCodeAt(secret, now);
     const tokens: string[] = [];
     const pending = async (at: number) => {
       const made = await pendingAt(name, EMAIL, at, { address: "unknown" });
@@ -510,7 +509,7 @@ describe("wrong codes and the shared limit (criterion 15, CA-15, D-4)", () => {
     const { key, secret } = await twoStepAccount(name);
     const now = T0 + STEP;
     const { cookies } = await pendingAt(name, EMAIL, now);
-    const wrong = otherThan(await totpAt(secret, stepAt(now)));
+    const wrong = await wrongCodeAt(secret, now);
     for (let index = 0; index < 3; index += 1) {
       expect(await secondStep(name, { cookies, method: "code", code: wrong, key }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
       expect(await pendingCount(name)).toBe(1);
@@ -531,7 +530,7 @@ describe("wrong codes and the shared limit (criterion 15, CA-15, D-4)", () => {
     const now = T0 + STEP;
     const { cookies } = await pendingAt(name, EMAIL, now);
     const right = await totpAt(secret, stepAt(now));
-    expect(await secondStep(name, { cookies, method: "code", code: otherThan(right), key }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
+    expect(await secondStep(name, { cookies, method: "code", code: await wrongCodeAt(secret, now), key }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
     expect(await secondStep(name, { cookies, method: "recovery", code: "0000-0000-0000-0000" }, now)).toEqual({ ok: false, code: "second_step_recovery_code_wrong" });
     expect(await emailFailures(name)).toBe(3);
     valueOf(await secondStep(name, { cookies, method: "code", code: right, key }, now));
@@ -577,7 +576,7 @@ describe("wrong codes and the shared limit (criterion 15, CA-15, D-4)", () => {
     const { cookies } = await pendingAt(name, EMAIL, now, { address: "unknown" });
     for (let index = 0; index < 25; index += 1) await failPasswords(name, `person${index}@acme.test`, 1, now, "unknown");
     const right = await totpAt(secret, stepAt(now));
-    expect(await secondStep(name, { cookies, method: "code", code: otherThan(right), key, address: "unknown" }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
+    expect(await secondStep(name, { cookies, method: "code", code: await wrongCodeAt(secret, now), key, address: "unknown" }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
     expect((await countsOf(name)).byAddress).toEqual([]);
     expect((await secondStep(name, { cookies, method: "code", code: right, key, address: "unknown" }, now)).ok).toBe(true);
   });
@@ -593,7 +592,7 @@ describe("the marker (D-4, finding 36)", () => {
     await failPasswords(name, EMAIL, 5, now, "203.0.113.66");
     const { cookies } = await pendingAt(name, EMAIL, now, { address: "unknown", cookies: marker });
     expect((await countsOf(name)).byMarker.map((row) => row.failures)).toEqual([1]);
-    const wrong = otherThan(await totpAt(secret, stepAt(now)));
+    const wrong = await wrongCodeAt(secret, now);
     for (let index = 0; index < 3; index += 1) {
       expect(await secondStep(name, { cookies, method: "code", code: wrong, key, address: "unknown" }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
     }
@@ -621,7 +620,7 @@ describe("the marker (D-4, finding 36)", () => {
     const now = T0 + STEP;
     const { cookies } = await pendingAt(name, EMAIL, now, { address: "unknown", cookies: marker });
     const right = await totpAt(secret, stepAt(now));
-    expect(await secondStep(name, { cookies, method: "code", code: otherThan(right), key, address: "unknown" }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
+    expect(await secondStep(name, { cookies, method: "code", code: await wrongCodeAt(secret, now), key, address: "unknown" }, now)).toEqual({ ok: false, code: "second_step_code_wrong" });
     expect((await countsOf(name)).byMarker.map((row) => row.failures)).toEqual([2]);
     const done = valueOf(await secondStep(name, { cookies, method: "code", code: right, key, address: "unknown" }, now));
     expect(await countsOf(name)).toEqual({ byEmail: [], byMarker: [], byAddress: [], tickets: 0 });

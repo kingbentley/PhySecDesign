@@ -184,18 +184,25 @@ describe("the client's requests", () => {
     expect((await readTwoStepState(read.fetcher)).kind).toBe("state");
     expect(read.sent[0]!.url).toBe("/api/v1/account/two-step");
     expect(read.sent[0]!.init.method ?? "GET").toBe("GET");
-    const calls: [string, (fetcher: typeof fetch) => Promise<unknown>, unknown][] = [
-      ["/api/v1/account/two-step/start", (fetcher) => startTwoStep({ password: "a password" }, fetcher), SETUP],
-      ["/api/v1/account/two-step/confirm", (fetcher) => confirmTwoStep({ setupId: SETUP.setupId, code: "123456" }, fetcher), { recoveryCodes: CODES }],
-      ["/api/v1/account/two-step/turn-off", (fetcher) => turnOffTwoStep({ password: "a password" }, fetcher), { enabled: false }],
-      ["/api/v1/account/two-step/recovery-codes", (fetcher) => freshRecoveryCodes({ password: "a password", code: "123456" }, fetcher), { recoveryCodes: CODES }],
+    // Each action's route, the call, the reply it gets, and the JSON body it must send (pull request
+    // 13, review round 1: the body and its media type are checked, not only the method and header).
+    const calls: [string, (fetcher: typeof fetch) => Promise<unknown>, unknown, unknown][] = [
+      ["/api/v1/account/two-step/start", (fetcher) => startTwoStep({ password: "a password" }, fetcher), SETUP, { password: "a password" }],
+      ["/api/v1/account/two-step/confirm", (fetcher) => confirmTwoStep({ setupId: SETUP.setupId, code: "123456" }, fetcher), { recoveryCodes: CODES }, { setupId: SETUP.setupId, code: "123456" }],
+      ["/api/v1/account/two-step/turn-off", (fetcher) => turnOffTwoStep({ password: "a password" }, fetcher), { enabled: false }, { password: "a password" }],
+      ["/api/v1/account/two-step/recovery-codes", (fetcher) => freshRecoveryCodes({ password: "a password", code: "123456" }, fetcher), { recoveryCodes: CODES }, { password: "a password", code: "123456" }],
     ];
-    for (const [url, call, body] of calls) {
+    for (const [url, call, body, payload] of calls) {
       const { fetcher, sent } = stub(200, body);
       await call(fetcher);
+      expect(sent).toHaveLength(1);
       expect(sent[0]!.url).toBe(url);
       expect(sent[0]!.init.method).toBe("POST");
-      expect((sent[0]!.init.headers as Record<string, string>)["x-site-survey-design"]).toBe("1");
+      const headers = sent[0]!.init.headers as Record<string, string>;
+      expect(headers["x-site-survey-design"]).toBe("1");
+      expect(headers["content-type"]).toBe("application/json");
+      expect(typeof sent[0]!.init.body).toBe("string");
+      expect(JSON.parse(sent[0]!.init.body as string)).toEqual(payload);
     }
   });
 

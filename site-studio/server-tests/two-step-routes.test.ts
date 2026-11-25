@@ -49,6 +49,7 @@ import {
   type Installed,
   type Wrap,
 } from "./signin-helpers";
+import { distinctCodes, wrongCodeLive } from "./totp-codes";
 import { newDeploymentKey } from "./two-step-fixtures";
 
 // The account two-step routes and the deployment-key state route (story 1.5, spec 4): turning on
@@ -114,13 +115,15 @@ async function signInWithRecoveryCode(target: Env, code: string) {
   return post(target, SECOND_STEP_PATH, { method: "recovery", code }, { cookies: jarFrom(pending) });
 }
 
-/** Holds the isolate's hash queue full (one running, 20 waiting) until released. */
+/**
+ * Holds the isolate's hash queue full (one running, 20 waiting) until released. The caller checks
+ * that it is full inside its `try`, so the queue is released even when that check fails.
+ */
 function fillHashQueue() {
   let release!: () => void;
   const running = new Promise<void>((resolve) => (release = resolve));
   const tasks = [hashQueue.run(() => running)];
   for (let index = 0; index < HASH_QUEUE_MAX_WAITING; index += 1) tasks.push(hashQueue.run(async () => undefined));
-  expect(hashQueue.hasRoom()).toBe(false);
   return async () => {
     release();
     await Promise.all(tasks);
@@ -311,6 +314,7 @@ describe("POST /api/v1/account/two-step/start and confirm", { timeout: 120_000 }
     const release = fillHashQueue();
     const replies: Response[] = [];
     try {
+      expect(hashQueue.hasRoom()).toBe(false);
       replies.push(await post(installed.env, TWO_STEP_START_PATH, { password: PASSWORD }, { cookies }));
       replies.push(await post(installed.env, TWO_STEP_TURN_OFF_PATH, { password: PASSWORD }, { cookies }));
       replies.push(await post(installed.env, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code: "123456" }, { cookies }));
@@ -437,14 +441,16 @@ describe("POST /api/v1/account/two-step/recovery-codes", { timeout: 120_000 }, (
   it("with the right password and a wrong code is refused 403 two_step_code_wrong and the old set is kept (Fresh codes, wrong code)", async () => {
     const { installed, cookies } = await signedInAccount("fresh-wrong-code");
     const on = await turnedOnByRoutes(installed.env, cookies, PASSWORD);
-    const right = await on.codes.next();
-    const wrongCode = right === "000000" ? "111111" : "000000";
+    // None of the codes of any step the window can hold while this request is checked.
+    const wrongCode = await wrongCodeLive(on.secret);
     const before = await rows(installed, RECOVERY_CODES_TABLE);
     const response = await post(installed.env, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code: wrongCode }, { cookies });
     expect(response.status).toBe(403);
     expect(await refusalOf(response, [wrongCode, PASSWORD])).toEqual({ code: "two_step_code_wrong", message: REFUSALS.two_step_code_wrong.message });
     expect(await rows(installed, RECOVERY_CODES_TABLE)).toEqual(before);
     expect((await signInWithRecoveryCode(installed.env, on.recoveryCodes[0]!)).status).toBe(200);
+    // A valid code is then accepted, so the refusal was for the code alone.
+    expect((await post(installed.env, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code: await on.codes.next() }, { cookies })).status).toBe(200);
   });
 
   it("with a wrong password is refused 403 two_step_password_wrong and the old set is kept (criterion 8)", async () => {
@@ -547,11 +553,13 @@ describe("the deployment key (D-18, D-22)", { timeout: 120_000 }, () => {
     expect(await keyStateOf(other)).toEqual({ fingerprint: "stored", key: "mismatch" });
     expect((await stateOf(other, cookies)).availability).toBe("key_mismatch");
     expect((await stateOf(installed.env, cookies)).availability).toBe("available");
-    // The fresh-codes action under each key, one after the other, on the same object.
-    const refused = await post(other, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code: await on.codes.next() }, { cookies });
+    // The fresh-codes action under each key, one after the other, on the same object, with the same
+    // code: the mismatched key is refused before the code is used.
+    const code = await on.codes.next();
+    const refused = await post(other, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code }, { cookies });
     expect(refused.status).toBe(503);
     expect((await refusalOf(refused, [PASSWORD, other.DEPLOYMENT_KEY!])).code).toBe("deployment_key_mismatch");
-    const accepted = await post(installed.env, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code: await on.codes.next() }, { cookies });
+    const accepted = await post(installed.env, TWO_STEP_RECOVERY_CODES_PATH, { password: PASSWORD, code }, { cookies });
     expect(accepted.status, await accepted.clone().text()).toBe(200);
   });
 
@@ -586,13 +594,21 @@ describe("the reply sweep (criterion 20)", { timeout: 300_000 }, () => {
       return { status, body };
     };
 
-    // Set-up and confirm, kept as replies of their routes.
-    const startReply = await keep("twoStepStart", await post(installed.env, TWO_STEP_START_PATH, { password: PASSWORD }, { cookies }));
-    expect(startReply.status).toBe(200);
-    const started = JSON.parse(startReply.body) as { setupId: string; secret: string };
-    const secret = base32Decode(started.secret)!;
-    await awayFromStepEnd();
-    const confirmStep = stepAt(Date.now()) - 1;
+    // Set-up and confirm, kept as replies of their routes. The confirm sends the current step's code,
+    // which the window still holds if the request crosses a step boundary; the set-up is started
+    // again in the rare case that code is also one of the next two steps' (the server would take the
+    // later step and refuse the fresh-codes request's code).
+    const startOnce = async () => {
+      const reply = await keep("twoStepStart", await post(installed.env, TWO_STEP_START_PATH, { password: PASSWORD }, { cookies }));
+      expect(reply.status).toBe(200);
+      const value = JSON.parse(reply.body) as { setupId: string; secret: string };
+      return { started: value, secret: base32Decode(value.secret)!, confirmStep: stepAt(Date.now()) };
+    };
+    let { started, secret, confirmStep } = await startOnce();
+    for (let attempt = 0; !(await distinctCodes(secret, [confirmStep, confirmStep + 1, confirmStep + 2])); attempt += 1) {
+      if (attempt >= 5) throw new Error("No secret with distinct codes after six set-ups.");
+      ({ started, secret, confirmStep } = await startOnce());
+    }
     const confirmReply = await keep(
       "twoStepConfirm",
       await post(installed.env, TWO_STEP_CONFIRM_PATH, { setupId: started.setupId, code: await totpAt(secret, confirmStep) }, { cookies }),
@@ -612,9 +628,13 @@ describe("the reply sweep (criterion 20)", { timeout: 300_000 }, () => {
       invite: () => post(installed.env, ROUTES.invite.path, { email: "robin@acme.test", name: "Robin", role: "standard" }, { cookies }),
       invitationRead: () => post(installed.env, ROUTES.invitationRead.path, { secret: "a".repeat(43) }),
       acceptInvite: () => post(installed.env, ROUTES.acceptInvite.path, { secret: "a".repeat(43), name: "Robin", password: "a brand new long password" }),
+      // Completed with a recovery code, so only the fresh-codes request below needs a later code; the
+      // success is required, so the sweep scans a signed-in reply rather than a refusal.
       secondStep: async () => {
         const pending = await signIn(installed.env, EMAIL, PASSWORD);
-        return post(installed.env, SECOND_STEP_PATH, { method: "code", code: await codes.next() }, { cookies: jarFrom(pending) });
+        const done = await post(installed.env, SECOND_STEP_PATH, { method: "recovery", code: firstCodes[0]! }, { cookies: jarFrom(pending) });
+        expect(done.status, await done.clone().text()).toBe(200);
+        return done;
       },
       twoStepState: () => state(installed.env, cookies),
       // While it is on: refused two_step_already_on, holding no secret.
@@ -671,8 +691,9 @@ describe("the logs (criterion 20)", { timeout: 300_000 }, () => {
       forbidden.push(...Object.values(jar));
       const code = await on.codes.next();
       forbidden.push(code);
-      // A wrong code first, refused and kept out of the logs too.
-      const wrongCode = code === "000000" ? "111111" : "000000";
+      // A wrong code first, refused and kept out of the logs too: none of the codes of any step the
+      // window can hold while it is checked.
+      const wrongCode = await wrongCodeLive(on.secret);
       forbidden.push(wrongCode);
       expect((await post(installed.env, SECOND_STEP_PATH, { method: "code", code: wrongCode }, { cookies: jar })).status).toBe(401);
       const withCode = await post(installed.env, SECOND_STEP_PATH, { method: "code", code }, { cookies: jar });

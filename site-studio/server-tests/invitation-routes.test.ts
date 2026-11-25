@@ -124,13 +124,15 @@ async function isLive(target: Env, secret: string): Promise<boolean> {
   return response.status === 200;
 }
 
-/** Holds the isolate's hash queue full (one running, 20 waiting) until released. */
+/**
+ * Holds the isolate's hash queue full (one running, 20 waiting) until released. The caller checks
+ * that it is full inside its `try`, so the queue is released even when that check fails.
+ */
 function fillHashQueue() {
   let release!: () => void;
   const running = new Promise<void>((resolve) => (release = resolve));
   const tasks = [hashQueue.run(() => running)];
   for (let index = 0; index < HASH_QUEUE_MAX_WAITING; index += 1) tasks.push(hashQueue.run(async () => undefined));
-  expect(hashQueue.hasRoom()).toBe(false);
   return async () => {
     release();
     await Promise.all(tasks);
@@ -449,6 +451,7 @@ describe("POST /api/v1/invitations/accept", { timeout: 120_000 }, () => {
     const release = fillHashQueue();
     let response: Response;
     try {
+      expect(hashQueue.hasRoom()).toBe(false);
       response = await accept(admin.installed.env, { secret });
     } finally {
       await release();

@@ -153,7 +153,8 @@ describe("the deploy command", () => {
   });
 
   it("asks the --url address instead of Wrangler's, and refuses one that is not https", async () => {
-    const custom = harness({ state: "closed" });
+    // Wrangler reports the custom domain, so --url may name it (pull request 13, review round 1).
+    const custom = harness({ state: "closed", targets: ["https://site-studio.example.workers.dev", "survey.example.com (custom domain)"] });
     await runDeploy({ ...custom.options, url: "https://survey.example.com/some/path" });
     assert.deepEqual(custom.calls.asked, ["https://survey.example.com"]);
 
@@ -161,6 +162,121 @@ describe("the deploy command", () => {
     assert.equal(await runDeploy(plain.options), 1);
     assert.deepEqual(plain.calls.asked, []);
     assert.deepEqual(plain.calls.secrets, []);
+  });
+});
+
+/**
+ * Two installations behind two addresses (pull request 13, review round 1): the Worker Wrangler
+ * deployed ("worker-a", whose secret list is `listA`) and another one at `https://b.example.net`
+ * whose key state is `stateB`. Key-state reads answer by address: `a.example.net` (the deployed
+ * Worker's own) answers `stateA`. Every effect is recorded in one event log.
+ */
+function twoInstallations({ targets, listA = [], stateA = { fingerprint: "stored", key: "none" }, stateB, supplied = null }) {
+  const events = [];
+  const stateFor = (address) => (address === "https://b.example.net" ? stateB : stateA);
+  const options = {
+    env: supplied === null ? {} : { [DEPLOYMENT_KEY_ENV]: supplied },
+    deploy: async () => ({ workerName: "worker-a", targets }),
+    listSecrets: async (worker) => { events.push(["list", worker]); return listA; },
+    askKeyState: async (address) => { events.push(["ask", address]); return stateFor(address); },
+    settleKeyState: async (address) => { events.push(["settle", address]); return stateFor(address); },
+    askState: async (address) => { events.push(["setup-state", address]); return "closed"; },
+    putSecret: async (worker, name) => { events.push(["put", worker, name]); },
+    deleteSecret: async (worker, name) => { events.push(["delete", worker, name]); },
+    generateKey: () => { events.push(["generate"]); return generateDeploymentKey(); },
+    print: (line) => events.push(["out", line]),
+    printError: (line) => events.push(["err", line]),
+  };
+  return { events, options };
+}
+
+const effects = (events) => events.filter(([kind]) => ["list", "ask", "settle", "put", "delete", "generate", "setup-state"].includes(kind));
+
+describe("--url is tied to the Worker Wrangler deployed (pull request 13, review round 1)", () => {
+  const A_TARGET = "https://a.example.net";
+
+  it("refuses an address of another installation that would have the original key put and then deleted on its mismatch", async () => {
+    const { events, options } = twoInstallations({
+      targets: [A_TARGET],
+      stateB: { fingerprint: "stored", key: "mismatch" },
+      supplied: generateDeploymentKey(),
+    });
+    const exit = await runDeploy({ ...options, url: "https://b.example.net" });
+    assert.equal(exit, 1);
+    assert.deepEqual(effects(events), [], "nothing listed, asked, put or deleted, and no set-up step");
+    assert.deepEqual(events.filter(([kind]) => kind === "err").map(([, line]) => line), [KEY_LINES.urlNotReported("https://b.example.net", "worker-a")]);
+  });
+
+  it("refuses an address of another installation that holds nothing, so no fresh key is generated over this Worker's stored secrets", async () => {
+    const { events, options } = twoInstallations({ targets: [A_TARGET], stateB: { fingerprint: "none", key: "none" } });
+    const exit = await runDeploy({ ...options, url: "https://b.example.net" });
+    assert.equal(exit, 1);
+    assert.deepEqual(effects(events), []);
+  });
+
+  const accepted = [
+    ["the workers.dev address Wrangler reported", ["https://a.example.net"], "https://a.example.net"],
+    ["a custom domain Wrangler reported", ["https://a.workers.dev", "a.example.net (custom domain)"], "https://a.example.net/path"],
+    ["a route without a wildcard", ["https://a.workers.dev", "a.example.net/* (zone name: example.net)"], "https://a.example.net"],
+    ["a reported host given in capitals", ["a.example.net (custom domain - zone name: example.net)"], "https://A.Example.NET"],
+  ];
+  for (const [name, targets, url] of accepted) {
+    it(`accepts ${name} and reads the key state there`, async () => {
+      const { events, options } = twoInstallations({ targets, listA: [DEPLOYMENT_KEY_SECRET] });
+      const exit = await runDeploy({ ...options, url });
+      assert.equal(exit, 0);
+      assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", "https://a.example.net"]]);
+    });
+  }
+
+  const refused = [
+    ["a wildcard route", ["https://a.workers.dev", "*.example.net/* (zone name: example.net)"], "https://a.example.net"],
+    ["a different host", ["https://a.workers.dev", "a.example.net (custom domain)"], "https://c.example.net"],
+    ["a look-alike host that ends with a reported one", ["a.example.net (custom domain)"], "https://xa.example.net"],
+    ["a look-alike host that starts with a reported one", ["a.example.net (custom domain)"], "https://a.example.net.attacker.test"],
+    ["a reported parent domain", ["example.net/* (zone name: example.net)"], "https://a.example.net"],
+    // Review layer of round 1: a route limited to a path leaves the origin's root to something else.
+    ["a route limited to a path", ["https://a.workers.dev", "a.example.net/survey/* (zone name: example.net)"], "https://a.example.net"],
+    ["a reported host with an explicit port", ["a.example.net (custom domain)"], "https://a.example.net:8443"],
+  ];
+  for (const [name, targets, url] of refused) {
+    it(`refuses ${name}, before any key step`, async () => {
+      const { events, options } = twoInstallations({ targets, listA: [], stateB: { fingerprint: "none", key: "none" } });
+      const exit = await runDeploy({ ...options, url });
+      assert.equal(exit, 1);
+      assert.deepEqual(effects(events), []);
+      assert.equal(events.filter(([kind]) => kind === "err").length, 1);
+    });
+  }
+
+  it("leaves the run without --url as it was: the first https address Wrangler reported", async () => {
+    const { events, options } = twoInstallations({ targets: ["schedule: */5 * * * *", A_TARGET], listA: [DEPLOYMENT_KEY_SECRET] });
+    assert.equal(await runDeploy(options), 0);
+    assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", A_TARGET]]);
+  });
+});
+
+describe("a settled answer must complete within the limit (pull request 13, review round 1)", () => {
+  // Replies are `mismatch` from `from` on (500 before), one every 3 s of a fake clock; the first
+  // request takes `firstLatency` ms. A run that starts at 120 s has its 21st reply at 180 s.
+  async function settleWith({ firstLatency }) {
+    let clock = 0;
+    let requests = 0;
+    const fetchImpl = async () => {
+      requests += 1;
+      if (requests === 1) clock += firstLatency;
+      const at = clock;
+      return at >= 120_000 ? new Response(JSON.stringify({ fingerprint: "stored", key: "mismatch" }), { status: 200 }) : new Response("", { status: 500 });
+    };
+    return waitForSettledKeyState("https://a.example.net", { fetchImpl, now: () => clock, sleep: async (ms) => { clock += ms; } });
+  }
+
+  it("settles when the settling reply completes exactly at the limit", async () => {
+    assert.deepEqual(await settleWith({ firstLatency: 0 }), { fingerprint: "stored", key: "mismatch" });
+  });
+
+  it("answers null, so nothing is deleted, when the settling reply completes 1 ms after the limit", async () => {
+    assert.equal(await settleWith({ firstLatency: 1 }), null);
   });
 });
 
@@ -606,10 +722,15 @@ describe("the deploy command's deployment key (story 1.5, CAP-11)", () => {
     const run = keyHarness({ supplied, setup: "open", keyStates: [{ fingerprint: "stored", key: "none" }, { fingerprint: "stored", key: "matches" }] });
     assert.equal(await runDeploy(run.options), 0);
     assertNoLeak(run);
+    // The key write must have happened, once, with the supplied key, before its place is compared:
+    // a missing write would index at -1 and pass the order check.
+    const keyPuts = run.puts(DEPLOYMENT_KEY_SECRET);
+    assert.equal(keyPuts.length, 1, "exactly one deployment-key write");
+    assert.ok(keyPuts[0].value === supplied, "the deployment-key write carries the supplied key");
     const confirm = index(run, (event) => event.type === "settle");
     const keyPut = index(run, (event) => event.type === "put" && event.name === DEPLOYMENT_KEY_SECRET);
     const codePut = index(run, (event) => event.type === "put" && event.name === SETUP_CODE_SECRET);
-    assert.ok(keyPut < confirm && confirm < codePut, "the key is put, confirmed, then the set-up code is put");
+    assert.ok(keyPut >= 0 && keyPut < confirm && confirm < codePut, "the key is put, confirmed, then the set-up code is put");
     assert.equal(run.puts(SETUP_CODE_SECRET).length, 1);
   });
 

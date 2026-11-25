@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
@@ -642,6 +643,16 @@ test("Fresh codes and Leak: set-up and a fresh set with a code of a later step s
   // The prototype's map asks for tiles from another host when it opens; they are refused here, and
   // the requests are recorded only from the moment My account opens.
   await page.route((url) => new URL(url).origin !== server.origin, (route) => route.abort());
+  // Every storage write from the page's first script on, so a value written and removed again
+  // before a check is still seen (pull request 13, review round 1).
+  await page.addInitScript(() => {
+    const writes = (window.__storageWrites = []);
+    const setItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function recordedSetItem(name, value) {
+      writes.push(String(name), String(value));
+      return setItem.call(this, name, value);
+    };
+  });
   await openApp(page, server.origin, account.name);
   await page.waitForLoadState("networkidle");
   const requests = [];
@@ -660,11 +671,13 @@ test("Fresh codes and Leak: set-up and a fresh set with a code of a later step s
           values.push(name, store.getItem(name));
         }
       }
-      return { values, href: location.href };
+      return { values, writes: window.__storageWrites ?? null, href: location.href };
     });
     expect(seen.href).toBe(href);
+    expect(Array.isArray(seen.writes), "storage writes are recorded").toBe(true);
     for (const secret of secrets) {
       for (const value of seen.values) expect(value.includes(secret), "a stored value holds a secret").toBe(false);
+      for (const value of seen.writes) expect(value.includes(secret), "a storage write held a secret").toBe(false);
       for (const line of lines) expect(line.includes(secret), "a console message holds a secret").toBe(false);
       for (const url of requests) expect(url.includes(secret), "a request address holds a secret").toBe(false);
     }
@@ -884,7 +897,7 @@ test("Set up from the offer, Visibility (offer): the password and a code turn it
   const codes = await shownCodes(page);
   expect(codes).toHaveLength(10);
   await expectAccessible(page);
-  // The offer's file names the installation from the start reply and the account from the state read.
+  // The offer's file names the installation and the account from the start reply.
   await expectDownloadedCodes(page, page, email, codes);
   await setVisibility(page, "hidden");
   await setVisibility(page, "visible");
@@ -896,4 +909,305 @@ test("Set up from the offer, Visibility (offer): the password and a code turn it
   await openMyAccount(page);
   await expect(dialog(page).getByTestId("two-step-chip")).toHaveText("On");
   await expect(dialog(page).getByTestId("two-step-count")).toHaveText("Recovery codes left: 10 of 10");
+});
+
+// Pull request 13, CodeRabbit review round 1 (2026-11-24).
+
+/** A JSON reply for `route.fulfill`. */
+const jsonReply = (body, status = 200) => ({ status, contentType: "application/json", body: JSON.stringify(body) });
+
+/** A made-up start reply for `key`, so no real set-up is changed. */
+function madeUpStart(key, email) {
+  return {
+    setupId: "0123456789abcdef0123456789abcdef",
+    secret: key,
+    otpauthUri: `otpauth://totp/Mocked:${encodeURIComponent(email)}?secret=${key}&issuer=Mocked&algorithm=SHA1&digits=6&period=30`,
+    installationName: ADMIN.installationName,
+    email,
+  };
+}
+
+/** A base32 key (RFC 4648's alphabet) and 10 recovery codes (Crockford's base32, as D-9), made up at run time. */
+function madeUpKey() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  return Array.from({ length: 32 }, () => alphabet[randomInt(32)]).join("");
+}
+function madeUpCodes() {
+  const alphabet = "0123456789abcdefghjkmnpqrstvwxyz";
+  return Array.from({ length: 10 }, () => Array.from({ length: 16 }, () => alphabet[randomInt(32)]).join(""));
+}
+
+/** Holds every request `matches` until the returned `release()`; `arrived` settles at the first. */
+function holdRoute(page, matches, reply) {
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let arrive;
+  const arrived = new Promise((resolve) => { arrive = resolve; });
+  const urls = [];
+  const ready = page.route(matches, async (route) => {
+    urls.push(route.request().url());
+    arrive();
+    await held;
+    await (reply ? route.fulfill(reply) : route.continue());
+  });
+  return { ready, arrived, release: () => release(), urls };
+}
+
+/** Lets the page finish what it was doing: two animation frames and a task. */
+async function settlePage(page) {
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)))));
+}
+
+/** A new account with the app open, for the round-1 tests. */
+async function round1Account(page, context, playwright, testInfo, label, name) {
+  const [server] = servers(testInfo);
+  const account = await newAccount(playwright, context, server.origin, emailFor(label, testInfo), name);
+  await openApp(page, server.origin, account.name);
+  return account;
+}
+const isStatePath = (url) => new URL(url).pathname === STATE_PATH;
+
+test("Round 1, mocked replies: a mismatch with no codes left has no recovery-code line, and one with a code left has it", async ({ page, context, playwright }, testInfo) => {
+  const account = await round1Account(page, context, playwright, testInfo, "round1line", "Rhea Round");
+  const isState = isStatePath;
+  const panel = dialog(page);
+
+  // A mismatch while on with no recovery codes left: the recovery-code line is not shown, as no
+  // code is left to sign in with (MyAccount.jsx:168).
+  await page.route(isState, (route) => route.fulfill(jsonReply({ enabled: true, recoveryCodesRemaining: 0, availability: "key_mismatch", email: account.email })));
+  await openMyAccount(page);
+  await expect(panel.getByTestId("two-step-availability")).toHaveText(MISMATCH);
+  await expect(panel.getByText("You can still sign in with a recovery code.")).toHaveCount(0);
+  await panel.getByRole("button", { name: "Close" }).click();
+  await page.unroute(isState);
+  // With one code left, the line shows.
+  await page.route(isState, (route) => route.fulfill(jsonReply({ enabled: true, recoveryCodesRemaining: 1, availability: "key_mismatch", email: account.email })));
+  await openMyAccount(page);
+  await expect(panel.getByText("You can still sign in with a recovery code.")).toBeVisible();
+  await panel.getByRole("button", { name: "Close" }).click();
+  await page.unroute(isState);
+});
+
+test("Round 1, mocked replies: Cancel waits for a held turn-off", async ({ page, context, playwright }, testInfo) => {
+  const account = await round1Account(page, context, playwright, testInfo, "round1cancel", "Cal Cancel");
+  const isState = isStatePath;
+  const panel = dialog(page);
+
+  // Turning off with its reply held: Cancel does nothing until the reply comes (MyAccount.jsx:150).
+  await page.route(isState, (route) => route.fulfill(jsonReply({ enabled: true, recoveryCodesRemaining: 3, availability: "available", email: account.email })));
+  const turnOff = holdRoute(page, `**${STATE_PATH}/turn-off`, jsonReply({ enabled: false }));
+  await turnOff.ready;
+  await openMyAccount(page);
+  await panel.getByRole("button", { name: "Turn off two-step verification" }).click();
+  await panel.getByLabel("Password").fill(PASSWORD);
+  await panel.getByRole("button", { name: "Turn off", exact: true }).click();
+  await turnOff.arrived;
+  const cancel = panel.getByRole("button", { name: "Cancel" });
+  await expect(cancel).toHaveAttribute("aria-disabled", "true");
+  // Forced: Playwright waits for an aria-disabled button to become usable before clicking.
+  await cancel.click({ force: true });
+  // Escape and Close do nothing while the turn-off is in flight either (finding 2's ruling).
+  await page.keyboard.press("Escape");
+  await panel.getByRole("button", { name: "Close" }).click({ force: true });
+  await settlePage(page);
+  await expect(panel.getByRole("heading", { name: "Turn off two-step verification" })).toBeVisible();
+  turnOff.release();
+  await expect(panel.getByText("Two-step verification is off.")).toBeVisible();
+  await panel.getByRole("button", { name: "Close" }).click();
+  await page.unroute(isState);
+  await page.unroute(`**${STATE_PATH}/turn-off`);
+});
+
+/** Mocks the state read (naming `stateEmail`), and start replies for `keys` in turn, for `account`. */
+async function mockSetUpReplies(page, account, keys, stateEmail) {
+  await page.route(isStatePath, (route) => route.fulfill(jsonReply({ enabled: false, recoveryCodesRemaining: 0, availability: "available", email: stateEmail })));
+  let starts = 0;
+  await page.route(`**${STATE_PATH}/start`, (route) => route.fulfill(jsonReply(madeUpStart(keys[Math.min(starts++, keys.length - 1)], account.email))));
+}
+
+/** Turns on in My account up to step 2 (the key shown). */
+async function toScanStep(page) {
+  const panel = dialog(page);
+  await panel.getByLabel("Password").fill(PASSWORD);
+  await panel.getByRole("button", { name: "Continue" }).click();
+  await expect(panel.getByRole("heading", { name: "Scan this code with your authenticator app" })).toBeFocused();
+}
+
+test("Round 1, mocked replies: a copy of an earlier key that settles after the set-up was started again says nothing about the new key", async ({ page, context, playwright }, testInfo) => {
+  const account = await round1Account(page, context, playwright, testInfo, "round1copy", "Cora Copy");
+  const panel = dialog(page);
+  const keys = [madeUpKey(), madeUpKey()];
+  await mockSetUpReplies(page, account, keys, account.email);
+  await page.route(`**${STATE_PATH}/confirm`, (route) => route.fulfill(jsonReply({ error: { code: "two_step_setup_expired", message: "This set-up has expired or was replaced. Start again." } }, 409)));
+  // A clipboard whose write stays pending until the test releases it (TwoStepSetup.jsx:131-134).
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: () => new Promise((resolve) => { window.__releaseCopy = resolve; }) },
+    });
+  });
+  await openMyAccount(page);
+  await panel.getByRole("button", { name: "Turn on two-step verification" }).click();
+  await toScanStep(page);
+  await panel.getByRole("button", { name: "Copy key" }).click();
+  await panel.getByLabel("Code from the app").fill(codeForStep(keys[0], stepAt()));
+  await panel.getByRole("button", { name: "Turn on" }).click();
+  await expect(panel.getByRole("alert")).toHaveText("This set-up has expired or was replaced. Start again.");
+  await toScanStep(page);
+  expectSecretEqual(await shownKey(panel), keys[1], "the second start's key is shown");
+  await page.evaluate(() => window.__releaseCopy());
+  await settlePage(page);
+  await expect(panel.getByTestId("two-step-key-copy-status")).toHaveText("");
+  await restoreClipboard(page);
+  await page.unroute(isStatePath);
+  await page.unroute(`**${STATE_PATH}/start`);
+  await page.unroute(`**${STATE_PATH}/confirm`);
+});
+
+test("Round 1, mocked replies: the set-up's codes file names the start reply's account, not the state read's", async ({ page, context, playwright }, testInfo) => {
+  const account = await round1Account(page, context, playwright, testInfo, "round1file", "Fay File");
+  const panel = dialog(page);
+  const keys = [madeUpKey()];
+  // The state read names another account (MyAccount.jsx:316-318).
+  await mockSetUpReplies(page, account, keys, "someone.else@harbourside.example");
+  await page.route(`**${STATE_PATH}/confirm`, (route) => route.fulfill(jsonReply({ recoveryCodes: madeUpCodes() })));
+  await openMyAccount(page);
+  await panel.getByRole("button", { name: "Turn on two-step verification" }).click();
+  await toScanStep(page);
+  await panel.getByLabel("Code from the app").fill(codeForStep(keys[0], stepAt()));
+  await panel.getByRole("button", { name: "Turn on" }).click();
+  await expect(panel.getByRole("heading", { name: "Save your recovery codes" })).toBeVisible();
+  await expectDownloadedCodes(page, panel, account.email, await shownCodes(panel));
+  await page.unroute(isStatePath);
+  await page.unroute(`**${STATE_PATH}/start`);
+  await page.unroute(`**${STATE_PATH}/confirm`);
+});
+
+test("Round 1, dialog held open: while fresh codes or a set-up start is in flight, Escape and Close do nothing and focus stays in the dialog; the codes show on release, and after a failed request Escape closes it", async ({ page, context, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const account = await newAccount(playwright, context, server.origin, emailFor("heldopen", testInfo), "Hal Held");
+  const isState = (url) => new URL(url).pathname === STATE_PATH;
+  await openApp(page, server.origin, account.name);
+  const panel = dialog(page);
+  const close = panel.getByRole("button", { name: "Close" });
+
+  // Fresh codes held: Escape and Close leave the dialog open; on release the codes show.
+  await page.route(isState, (route) => route.fulfill(jsonReply({ enabled: true, recoveryCodesRemaining: 3, availability: "available", email: account.email })));
+  const fresh = holdRoute(page, `**${STATE_PATH}/recovery-codes`, jsonReply({ recoveryCodes: madeUpCodes() }));
+  await fresh.ready;
+  await openMyAccount(page);
+  await panel.getByRole("button", { name: "Make fresh recovery codes" }).click();
+  await panel.getByLabel("Password").fill(PASSWORD);
+  await panel.getByLabel("Code from the app").fill(codeForStep(madeUpKey(), stepAt()));
+  await panel.getByRole("button", { name: "Make fresh codes" }).click();
+  await fresh.arrived;
+  await expect(close).toHaveAttribute("aria-disabled", "true");
+  await page.keyboard.press("Escape");
+  // Forced: Playwright waits for an aria-disabled button to become usable before clicking.
+  await close.click({ force: true });
+  await settlePage(page);
+  await expect(panel).toBeVisible();
+  // Focus stays trapped in the dialog while it is held open.
+  for (let index = 0; index < 4; index += 1) await page.keyboard.press("Tab");
+  expect(await panel.evaluate((element) => element.contains(document.activeElement)), "focus stays in the dialog").toBe(true);
+  fresh.release();
+  await expect(panel.getByRole("heading", { name: "Save your recovery codes" })).toBeVisible();
+  await expect(close).not.toHaveAttribute("aria-disabled", "true");
+  await panel.getByRole("button", { name: "I have saved my codes" }).click();
+  await page.unroute(`**${STATE_PATH}/recovery-codes`);
+  await page.unroute(isState);
+  await close.click();
+  await expect(panel).toHaveCount(0);
+
+  // A set-up start held, then failing on the network: held open while in flight, and once the
+  // refusal shows, Escape closes the dialog (the guard cleared on failure too).
+  let releaseStart;
+  const startHeld = new Promise((resolve) => { releaseStart = resolve; });
+  let startArrived;
+  const startRouted = new Promise((resolve) => { startArrived = resolve; });
+  await page.route(`**${STATE_PATH}/start`, async (route) => {
+    startArrived();
+    await startHeld;
+    await route.abort("connectionrefused");
+  });
+  await page.route(isState, (route) => route.fulfill(jsonReply({ enabled: false, recoveryCodesRemaining: 0, availability: "available", email: account.email })));
+  await openMyAccount(page);
+  await panel.getByRole("button", { name: "Turn on two-step verification" }).click();
+  await panel.getByLabel("Password").fill(PASSWORD);
+  await panel.getByRole("button", { name: "Continue" }).click();
+  await startRouted;
+  await page.keyboard.press("Escape");
+  await settlePage(page);
+  await expect(panel).toBeVisible();
+  releaseStart();
+  await expect(panel.getByRole("alert")).not.toHaveText("");
+  await expect(close).not.toHaveAttribute("aria-disabled", "true");
+  await page.keyboard.press("Escape");
+  await expect(panel).toHaveCount(0);
+  await page.unroute(`**${STATE_PATH}/start`);
+  await page.unroute(isState);
+});
+
+test("Round 1, account menu: Escape while My account is loading cancels it", async ({ page, context }, testInfo) => {
+  const [server] = servers(testInfo);
+  // The administrator, who has both My account and Invite a person.
+  const signIn = await context.request.post(`${server.origin}/api/v1/session/sign-in`, {
+    headers: { origin: server.origin, ...APP },
+    data: { email: ADMIN.email, password: ADMIN.password },
+  });
+  expect(signIn.status(), "sign-in through the API").toBe(200);
+  await openApp(page, server.origin, ADMIN.name);
+  const trigger = page.locator(".account-trigger");
+  const invite = page.getByRole("dialog", { name: "Invite a person" });
+  /** Imports a held chunk from the page too, so the app's own wait for it has been answered. */
+  const importedInPage = (url) => page.evaluate((src) => import(src).then(() => undefined), url);
+
+  // Escape while My account's code is loading: the menu closes, and the dialog never opens
+  // (AccountMenu.jsx:53-55).
+  const myAccountChunk = holdRoute(page, /\/assets\/MyAccount-[^/]*\.js$/);
+  await myAccountChunk.ready;
+  await trigger.click();
+  await page.getByRole("button", { name: "My account" }).click();
+  await myAccountChunk.arrived;
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "My account" })).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  myAccountChunk.release();
+  await importedInPage(myAccountChunk.urls[0]);
+  await settlePage(page);
+  await expect(dialog(page)).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await page.unroute(/\/assets\/MyAccount-[^/]*\.js$/);
+});
+
+test("Round 1, account menu: of two dialogs chosen while the first is loading, only the last opens", async ({ page, context }, testInfo) => {
+  const [server] = servers(testInfo);
+  const signIn = await context.request.post(`${server.origin}/api/v1/session/sign-in`, {
+    headers: { origin: server.origin, ...APP },
+    data: { email: ADMIN.email, password: ADMIN.password },
+  });
+  expect(signIn.status(), "sign-in through the API").toBe(200);
+  const trigger = page.locator(".account-trigger");
+  const invite = page.getByRole("dialog", { name: "Invite a person" });
+  const importedInPage = (url) => page.evaluate((src) => import(src).then(() => undefined), url);
+
+  // Invite a person still loading, then My account: only the last chosen opens, and the invite
+  // panel, released afterwards, never mounts beside it (AccountMenu.jsx:55). My account's code is
+  // not held: WebKit may serve it from its memory cache after the first half (no request), so the
+  // test does not depend on whether it is fetched again.
+  await page.goto(`${server.origin}/`);
+  await expect(page.getByTestId("account-name")).toHaveText(ADMIN.name);
+  const inviteChunk = holdRoute(page, /\/assets\/InvitePanel-[^/]*\.js$/);
+  await inviteChunk.ready;
+  await trigger.click();
+  await page.getByRole("button", { name: "Invite a person" }).click();
+  await inviteChunk.arrived;
+  await page.getByRole("button", { name: "My account" }).click();
+  await expect(dialog(page)).toBeVisible();
+  inviteChunk.release();
+  await importedInPage(inviteChunk.urls[0]);
+  await settlePage(page);
+  await expect(dialog(page)).toBeVisible();
+  await expect(invite).toHaveCount(0);
+  await page.unroute(/\/assets\/InvitePanel-[^/]*\.js$/);
 });

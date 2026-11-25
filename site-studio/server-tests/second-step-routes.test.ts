@@ -36,6 +36,7 @@ import {
   type RequestOptions,
   type Wrap,
 } from "./signin-helpers";
+import { wrongCodeLive } from "./totp-codes";
 import { newDeploymentKey } from "./two-step-fixtures";
 
 // The second sign-in step through the routes (story 1.5, spec 4): the sign-in reply for an account
@@ -111,13 +112,15 @@ function pendingClears(response: Response): string[] {
     });
 }
 
-/** Holds the isolate's hash queue full (one running, 20 waiting) until released. */
+/**
+ * Holds the isolate's hash queue full (one running, 20 waiting) until released. The caller checks
+ * that it is full inside its `try`, so the queue is released even when that check fails.
+ */
 function fillHashQueue() {
   let release!: () => void;
   const running = new Promise<void>((resolve) => (release = resolve));
   const tasks = [hashQueue.run(() => running)];
   for (let index = 0; index < HASH_QUEUE_MAX_WAITING; index += 1) tasks.push(hashQueue.run(async () => undefined));
-  expect(hashQueue.hasRoom()).toBe(false);
   return async () => {
     release();
     await Promise.all(tasks);
@@ -215,6 +218,7 @@ describe("POST /api/v1/session/sign-in with two-step verification (story 1.5)", 
     const release = fillHashQueue();
     let busy: Response;
     try {
+      expect(hashQueue.hasRoom()).toBe(false);
       busy = await signIn(installed.env, EMAIL, PASSWORD, { cookies: { ...jar, [pendingCookieName(identifier)]: newSessionToken() } });
     } finally {
       await release();
@@ -335,7 +339,8 @@ describe("POST /api/v1/session/second-step", { timeout: 120_000 }, () => {
     const { installed, on } = await twoStepAccount("wrong-code");
     const jar = await pendingSignIn(installed.env, {}, { address: KNOWN_ADDRESS });
     const right = await on.codes.next();
-    const wrongCode = right === "000000" ? "111111" : "000000";
+    // None of the codes of any step the window can hold while this request is checked.
+    const wrongCode = await wrongCodeLive(on.secret);
     const before = await countsOf(installed);
     const response = await secondStep(installed.env, { method: "code", code: wrongCode }, { cookies: jar, address: KNOWN_ADDRESS });
     expect(response.status).toBe(401);

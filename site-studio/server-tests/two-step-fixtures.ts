@@ -11,7 +11,8 @@ import { base32Decode } from "../shared/twoStep";
 // renewRecoveryCodes, secondStep, turnOffTwoStep), after the operations that make the session and before
 // endSession, because each fixture builds on the state the earlier ones left. A fixture whose
 // preparation is refused still answers a well-formed input, which its operation then refuses, so
-// a sweep must check each operation's result, or a refused operation passes unseen. Codes are
+// a sweep must check each operation's result, or a refused operation passes unseen; the secondStep
+// fixture's reset (off, start, confirm) instead throws when any of it is refused. Codes are
 // computed at run time from the secret the start answered; nothing is written to a file.
 
 export const TWO_STEP_OPERATIONS = [
@@ -62,17 +63,25 @@ export function twoStepFixtures(call: Call, cookies: () => Record<string, string
     secondStep: async () => {
       // A code later than the last accepted step must be in the window, and renewRecoveryCodes has
       // just taken the next step's: turn two-step verification off and on again so the last
-      // accepted step is the current one.
-      const state = await call("twoStepState", { cookies: cookies(), deploymentKey });
-      await call("turnOffTwoStep", { cookies: cookies(), ticket: await ticketFor("turn_off"), outcome: "success" });
-      const started = await call("startTwoStep", { cookies: cookies(), ticket: await ticketFor("turn_on"), outcome: "success", deploymentKey });
-      if (started.ok) {
-        const value = started.value as { setupId: string; secret: string };
-        secret = base32Decode(value.secret);
-        await call("confirmTwoStep", { cookies: cookies(), setupId: value.setupId, code: await totpAt(secret!, stepAt(Date.now())), deploymentKey });
-      }
+      // accepted step is the current one. Each reset operation must succeed, and the new secret is
+      // used only once its confirm has, so a failed reset fails the sweep here instead of leaving
+      // the old secret to make a measured second step pass.
+      const required = async (operation: string, input: unknown) => {
+        const result = await call(operation, input);
+        if (!result.ok) throw new Error(`secondStep fixture: ${operation} refused ${result.body.error.code}`);
+        return result.value;
+      };
+      const state = (await required("twoStepState", { cookies: cookies(), deploymentKey })) as { email: string };
+      await required("turnOffTwoStep", { cookies: cookies(), ticket: await ticketFor("turn_off"), outcome: "success" });
+      const started = (await required("startTwoStep", { cookies: cookies(), ticket: await ticketFor("turn_on"), outcome: "success", deploymentKey })) as {
+        setupId: string;
+        secret: string;
+      };
+      const fresh = base32Decode(started.secret)!;
+      await required("confirmTwoStep", { cookies: cookies(), setupId: started.setupId, code: await totpAt(fresh, stepAt(Date.now())), deploymentKey });
+      secret = fresh;
       // The password step with no session cookie, so the sweep's own session is not ended by the second step.
-      const email = (state.ok ? (state.value as { email: string }).email : "") || "nobody@acme.test";
+      const email = state.email;
       const attempt = await call("signInAttempt", { email, address: "unknown", cookies: {} });
       const completed = attempt.ok ? await call("completeSignIn", { ticket: (attempt.value as { ticket: string }).ticket, outcome: "success" }) : null;
       const pending = completed?.ok ? (completed.value as { kind?: string; identifier: string; pendingToken?: string }) : null;

@@ -26,18 +26,24 @@ export function AccountMenu({ name, role, onSignedOut }) {
   const [MyAccount, setMyAccount] = useState(null);
   const root = useRef(null);
   const trigger = useRef(null);
+  // The latest dialog request: each choice of My account or Invite a person takes the next number,
+  // and closing the menu takes one too, so only the latest choice still loading may open its
+  // dialog, and none once the menu was dismissed (pull request 13, review round 1).
+  const request = useRef(0);
   const panelId = useId();
   const isAdministrator = role === 'administrator';
 
   async function openInvite() {
     setError('');
+    const mine = ++request.current;
     try {
       // Loaded only when chosen, as the sign-in page is (review finding 27).
       const module = await import('./admin/InvitePanel.jsx');
+      if (mine !== request.current) return;
       setOpen(false);
       setInvitePanel(() => module.default);
     } catch {
-      setError(INVITE_NOT_LOADED);
+      if (mine === request.current) setError(INVITE_NOT_LOADED);
     }
   }
 
@@ -48,13 +54,15 @@ export function AccountMenu({ name, role, onSignedOut }) {
 
   async function openMyAccount() {
     setError('');
+    const mine = ++request.current;
     try {
       // Loaded only when chosen, as the invite panel is.
       const module = await import('./account/MyAccount.jsx');
+      if (mine !== request.current) return;
       setOpen(false);
       setMyAccount(() => module.default);
     } catch {
-      setError(MY_ACCOUNT_NOT_LOADED);
+      if (mine === request.current) setError(MY_ACCOUNT_NOT_LOADED);
     }
   }
 
@@ -66,6 +74,8 @@ export function AccountMenu({ name, role, onSignedOut }) {
   // Opening or closing the menu clears a failed sign-out's message: it described that attempt only.
   function setMenu(next) {
     setError('');
+    // Closing the menu (Escape, a press outside, the trigger) cancels a dialog still loading.
+    if (!next) request.current += 1;
     setOpen(next);
   }
 

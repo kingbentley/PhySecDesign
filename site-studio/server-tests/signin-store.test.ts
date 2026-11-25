@@ -818,6 +818,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       "createFirstAdministrator",
       "createInvitation",
       "deploymentKeyState",
+      "discardPending",
       "endSession",
       "invitationInfo",
       "renewRecoveryCodes",
@@ -850,6 +851,8 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       createInvitation: async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: live.cookies }),
       invitationInfo: async () => ({ secretHash: "c".repeat(64) }),
       deploymentKeyState: async () => ({}),
+      // Discards only a presented pending sign-in (D-3; pull request 13, review round 1).
+      discardPending: async () => ({ cookies: live.cookies }),
       acceptInvitation: async () => {
         const created = await call("createInvitation", { email: "accepting@acme.test", name: "Accepting Person", role: "standard", cookies: live.cookies });
         if (!created.ok) throw new Error(created.body.error.code);

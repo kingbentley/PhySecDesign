@@ -6,7 +6,7 @@ import { makeMarker, markerCookieName, newMarkerId } from "../server/auth/marker
 import { toBase64 } from "../server/auth/password";
 import { fromBase64Url, newSessionToken, sessionCookieName, sessionTokenHash, sha256Hex, toHex } from "../server/auth/session";
 import { setupCodeFingerprint } from "../server/auth/setupCode";
-import { matchingStep, stepAt, totpAt } from "../server/auth/totp";
+import { candidateSteps, matchingStep, stepAt, totpAt } from "../server/auth/totp";
 import type { Installation } from "../server/installation/Installation";
 import { SETTINGS_TABLE, USERS_TABLE } from "../server/installation/setupStore";
 import { SESSIONS_TABLE, type SignInAttemptCounted, type SignInCompleted } from "../server/installation/signInStore";
@@ -35,6 +35,7 @@ import { callObject } from "../server/objects/call";
 import { SESSION_MAX_AGE_MS } from "../shared/signin";
 import { base32Decode, base32Encode, normaliseRecoveryCode, otpauthUri, TWO_STEP_SETUP_TTL_MS } from "../shared/twoStep";
 import { tableExists } from "./helpers";
+import { codesFor, distinctCodes, firstMomentWhere, wrongCodeAt } from "./totp-codes";
 import { newDeploymentKey, TWO_STEP_OPERATIONS, twoStepFixtures } from "./two-step-fixtures";
 
 // The installation object's two-step storage and account actions (story 1.5, spec 2): the I/O
@@ -459,10 +460,15 @@ describe("starting and confirming a set-up (D-10)", () => {
     const second = await startedAt(name, cookies, key, T0 + SECOND);
     expect(second.setupId).not.toBe(first.setupId);
     expect((await rowsOf(name, TWO_STEP_SETUPS_TABLE)).map((row) => row.setup_id)).toEqual([second.setupId]);
-    const earlierCode = await totpAt(first.secretBytes, stepAt(T0 + 2 * SECOND));
-    expect(await confirm(name, cookies, first.setupId, earlierCode, key, T0 + 2 * SECOND)).toEqual({ ok: false, code: "two_step_setup_expired" });
+    // A moment at which the earlier secret's current code is none of the current set-up's accepted codes.
+    const at = await firstMomentWhere(
+      T0 + 2 * SECOND,
+      async (moment) => !(await codesFor(second.secretBytes, candidateSteps(moment))).includes(await totpAt(first.secretBytes, stepAt(moment))),
+    );
+    const earlierCode = await totpAt(first.secretBytes, stepAt(at));
+    expect(await confirm(name, cookies, first.setupId, earlierCode, key, at)).toEqual({ ok: false, code: "two_step_setup_expired" });
     // The earlier secret's code with the current identifier is a wrong code; nothing is turned on.
-    expect(await confirm(name, cookies, second.setupId, earlierCode, key, T0 + 2 * SECOND)).toEqual({ ok: false, code: "two_step_code_wrong" });
+    expect(await confirm(name, cookies, second.setupId, earlierCode, key, at)).toEqual({ ok: false, code: "two_step_code_wrong" });
     expect(await rowsOf(name, TWO_STEP_TABLE)).toEqual([]);
   });
 
@@ -490,14 +496,20 @@ describe("starting and confirming a set-up (D-10)", () => {
     const key = newDeploymentKey();
     const started = await startedAt(name, cookies, key, T0);
     const setups = await rowsOf(name, TWO_STEP_SETUPS_TABLE);
-    const right = await totpAt(started.secretBytes, stepAt(T0));
-    const wrong = String((Number(right) + 1) % 1_000_000).padStart(6, "0");
-    expect(await confirm(name, cookies, started.setupId, wrong, key, T0)).toEqual({ ok: false, code: "two_step_code_wrong" });
+    // A moment at which the code two steps ahead is none of the accepted codes, so it is refused only for being outside the window.
+    const at = await firstMomentWhere(
+      T0,
+      async (moment) => !(await codesFor(started.secretBytes, candidateSteps(moment))).includes(await totpAt(started.secretBytes, stepAt(moment) + 2)),
+    );
+    const right = await totpAt(started.secretBytes, stepAt(at));
+    // None of the three accepted codes at that moment.
+    const wrong = await wrongCodeAt(started.secretBytes, at);
+    expect(await confirm(name, cookies, started.setupId, wrong, key, at)).toEqual({ ok: false, code: "two_step_code_wrong" });
     // A code two steps away is outside the window.
-    expect(await confirm(name, cookies, started.setupId, await totpAt(started.secretBytes, stepAt(T0) + 2), key, T0)).toEqual({ ok: false, code: "two_step_code_wrong" });
+    expect(await confirm(name, cookies, started.setupId, await totpAt(started.secretBytes, stepAt(at) + 2), key, at)).toEqual({ ok: false, code: "two_step_code_wrong" });
     expect(await rowsOf(name, TWO_STEP_SETUPS_TABLE)).toEqual(setups);
     expect(await countsOf(name)).toEqual({ byEmail: [], byMarker: [], byAddress: [], tickets: 0 });
-    expect((await confirm(name, cookies, started.setupId, right, key, T0)).ok).toBe(true);
+    expect((await confirm(name, cookies, started.setupId, right, key, at)).ok).toBe(true);
   });
 
   it("refuses a set-up at 10 minutes two_step_setup_expired, writing nothing", async () => {
@@ -640,30 +652,41 @@ describe("fresh recovery codes (D-5, D-6)", () => {
     const before = await twoStepRows(name);
     const now = T0 + STEP;
     const ticket = await ticketFor(name, cookies, "fresh_codes", key, now);
-    const right = await totpAt(secret, stepAt(now));
-    const wrong = String((Number(right) + 1) % 1_000_000).padStart(6, "0");
+    // None of the three accepted codes at `now`, so no later step can match it.
+    const wrong = await wrongCodeAt(secret, now);
     expect(await renew(name, cookies, ticket, "success", wrong, key, now)).toEqual({ ok: false, code: "two_step_code_wrong" });
     expect(await twoStepRows(name)).toBe(before);
     expect(await emailFailures(name)).toBe(1);
     expect((await countsOf(name)).byAddress).toHaveLength(1);
   });
 
-  it("refuses the code of the step already accepted two_step_code_wrong, keeping the old set and the counts", async () => {
+  it("refuses the code of the step already accepted, and of the step before it, two_step_code_wrong, keeping the old set and the counts", async () => {
     const name = "fresh-reused-code";
     const { cookies } = await withAccount(name);
     const key = newDeploymentKey();
-    const { secret } = await turnedOnAt(name, cookies, key, T0);
+    const started = await startedAt(name, cookies, key, T0);
+    const secret = started.secretBytes;
+    // A confirm moment at which the codes of the step before it, its own step and the two after it all
+    // differ, so each code below matches only its own step and each refusal is for the step alone.
+    const on = await firstMomentWhere(T0, (moment) => distinctCodes(secret, [stepAt(moment) - 1, stepAt(moment), stepAt(moment) + 1, stepAt(moment) + 2]));
+    const accepted = stepAt(on);
+    valueOf(await confirm(name, cookies, started.setupId, await totpAt(secret, accepted), key, on));
+    expect((await rowsOf(name, TWO_STEP_TABLE))[0]!.last_step).toBe(accepted);
     const before = await twoStepRows(name);
-    // Still within the window of the accepted step, which is the last accepted one.
-    const now = T0 + 10 * SECOND;
-    const ticket = await ticketFor(name, cookies, "fresh_codes", key, now);
-    expect(await renew(name, cookies, ticket, "success", await totpAt(secret, stepAt(T0)), key, now)).toEqual({ ok: false, code: "two_step_code_wrong" });
-    // And the step before it, still in the window one step later.
-    const later = T0 + STEP;
-    const second = await ticketFor(name, cookies, "fresh_codes", key, later);
-    expect(await renew(name, cookies, second, "success", await totpAt(secret, stepAt(T0)), key, later)).toEqual({ ok: false, code: "two_step_code_wrong" });
+
+    // In the accepted step: its own code (equal to the last step) and the code of the step before it
+    // (below the last step), both inside the window.
+    const now = on + 10 * SECOND;
+    for (const step of [accepted, accepted - 1]) {
+      const ticket = await ticketFor(name, cookies, "fresh_codes", key, now);
+      expect(await renew(name, cookies, ticket, "success", await totpAt(secret, step), key, now), `step ${step - accepted}`).toEqual({ ok: false, code: "two_step_code_wrong" });
+    }
+    // One step later, the accepted step's code is the previous step's, still inside the window.
+    const later = on + STEP;
+    const laterTicket = await ticketFor(name, cookies, "fresh_codes", key, later);
+    expect(await renew(name, cookies, laterTicket, "success", await totpAt(secret, accepted), key, later)).toEqual({ ok: false, code: "two_step_code_wrong" });
     expect(await twoStepRows(name)).toBe(before);
-    expect(await emailFailures(name)).toBe(2);
+    expect(await emailFailures(name)).toBe(3);
   });
 
   it("refuses two_step_code_wrong, writing nothing, when two-step was turned off and on again between decrypting and the deciding step (finding 18)", async () => {
@@ -945,6 +968,8 @@ describe("the installation object's operations (criterion 28, standing rule 9)",
       ["deploymentKeyState", async () => ({})],
       ["acceptInvitation", async () => ({ secretHash: await liveHash("accept@acme.test"), name: "Accepting Person", passwordHash: passwordHash(), cookies: {} })],
       ...TWO_STEP_OPERATIONS.map((operation) => [operation, twoStep[operation]] as [string, () => Promise<unknown>]),
+      // Discards only a presented pending sign-in (D-3; pull request 13, review round 1).
+      ["discardPending", async () => ({ cookies: sessionCookies() })],
       ["endSession", async () => ({ cookies: sessionCookies() })],
     ];
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());

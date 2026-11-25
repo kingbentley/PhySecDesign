@@ -144,3 +144,7 @@ Review of 2026-11-22: three layers (blind hunter B, edge-case hunter E, verifica
 | 15 | B12 | Nothing says a malformed key counts as absent | false | D-14 and `server/env.ts` say a value that does not parse counts as no key (finding 30) | rejected |
 | 16 | B13 | The sign-in operations' key-free inputs are pinned by a test but not stated in the spec | false | D-22 passes the key only to operations that encrypt, decrypt or report the key's state; the test pins that rule | rejected |
 | 17 | B14 | The report items (router refusals without the line, changed tests) have no place in the spec | low | Recorded in this log's preamble and the build report | rejected (recorded here) |
+
+## Pull request 13, CodeRabbit review round 1 (2026-11-24)
+
+Dated note; the frozen block is unchanged. Record: `../review-round-1.md` (finding 11). A `signin_busy` refusal before counting that presents a pending cookie now discards that pending sign-in (`discardPending`, a write, D-3) instead of only clearing the cookie; triage row 7's "one read-only call" is therefore one write now. If the discard is refused or fails, the reply still clears the cookie through the session read, as before, and stays `signin_busy`. Nothing is counted.

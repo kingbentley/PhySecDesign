@@ -328,6 +328,146 @@ test("Invalid code from the server, Key mismatch (replies mocked): invalid_input
   await expect(codeField(page)).toHaveValue("");
 });
 
+/**
+ * Counts, per path, the reply bodies the page has finished reading (the clients read each with
+ * `response.json()`), so a test can tell when a held reply has reached the page's code. Call before
+ * the page loads (pull request 13, review round 1).
+ */
+async function countBodiesRead(page) {
+  await page.addInitScript(() => {
+    const read = Response.prototype.json;
+    Response.prototype.json = async function json() {
+      try {
+        return await read.call(this);
+      } finally {
+        const path = new URL(this.url, location.href).pathname;
+        window.__bodiesRead = window.__bodiesRead ?? {};
+        window.__bodiesRead[path] = (window.__bodiesRead[path] ?? 0) + 1;
+      }
+    };
+  });
+}
+
+/**
+ * Waits until the page has read a reply body from `path`, then for two frames and a task, so checks
+ * after it see the page once it has acted on that reply, not before.
+ */
+async function afterBodyRead(page, path) {
+  await page.waitForFunction((wanted) => (window.__bodiesRead?.[wanted] ?? 0) >= 1, path);
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)))));
+}
+
+test("In flight, a late success after Back to sign in: a second step that succeeds after the person went back does not open the app; the password form stays usable", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("latesuccess", testInfo), name: "Lena Late", password: PASSWORD });
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let arrived;
+  const routed = new Promise((resolve) => { arrived = resolve; });
+  await countBodiesRead(page);
+  // Mocked: the success body only, with no session cookie, so nothing on the server changes.
+  await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
+    arrived();
+    await held;
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ name: account.name }) });
+  });
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill(wrongCode(account.secret));
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await routed;
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await expect(signInHeading(page)).toBeVisible();
+  // Opening the app starts with a session read (`onSignedIn` in main.jsx); with no session cookie
+  // that read would answer signed out and leave this page showing, so the read itself is what is
+  // checked: none may follow the late reply.
+  const sessionReads = [];
+  page.on("request", (request) => { if (new URL(request.url()).pathname === "/api/v1/session") sessionReads.push(request.url()); });
+  release();
+  await afterBodyRead(page, SECOND_STEP_PATH);
+  expect(sessionReads, "no session read after the late reply").toHaveLength(0);
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  await expect(passwordField(page)).toBeFocused();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).not.toHaveAttribute("aria-disabled", "true");
+});
+
+test("In flight, a real late success after Back to sign in: the session the server made is ended, the session read answers signed out, and the password form stays", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("latereal", testInfo), name: "Rory Real", password: PASSWORD });
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let arrived;
+  const routed = new Promise((resolve) => { arrived = resolve; });
+  await countBodiesRead(page);
+  // Held, then passed to the real server, which signs the account in and sets its session cookie.
+  await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
+    arrived();
+    await held;
+    await route.continue();
+  });
+  await openSecondStep(page, server.origin, account);
+  // The set-up confirmed a code at `account.step`; a code is accepted only for a later step (D-6).
+  const { code } = await nextCode(account.secret, account.step);
+  await codeField(page).fill(code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await routed;
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await expect(signInHeading(page)).toBeVisible();
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
+  const reply = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
+  release();
+  expect((await reply).status(), "the server signed the account in").toBe(200);
+  await afterBodyRead(page, SECOND_STEP_PATH);
+  expect((await signedOut)?.status(), "the page ended the session it does not show").toBe(200);
+  const session = await context.request.get(`${server.origin}/api/v1/session`);
+  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  await expect(passwordField(page)).toBeFocused();
+});
+
+test("In flight, a late success after another person signed in: the page ends that session and reloads, showing the sign-in form, and the session read answers signed out", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("racefirst", testInfo), name: "Ada Race", password: PASSWORD });
+  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("racesecond", testInfo), name: "Ben Race", password: PASSWORD, twoStep: false });
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let arrived;
+  const routed = new Promise((resolve) => { arrived = resolve; });
+  await countBodiesRead(page);
+  // The first account's second step goes to the real server at once (`route.fetch`), so it signs
+  // that account in before the second account's password step could discard its pending sign-in;
+  // only the reply's delivery to the page is held until the second account's app has opened.
+  await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
+    const response = await route.fetch();
+    arrived();
+    await held;
+    await route.fulfill({ response });
+  });
+  await openSecondStep(page, server.origin, first);
+  const { code } = await nextCode(first.secret, first.step);
+  await codeField(page).fill(code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await routed;
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await expect(signInHeading(page)).toBeVisible();
+  // The second person signs in on the same page (no two-step verification): the app opens.
+  await passwordStep(page, second);
+  await expect(page.getByTestId("account-name")).toHaveText(second.name);
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
+  const reloaded = page.waitForEvent("load", { timeout: 30_000 }).catch(() => null);
+  release();
+  expect((await signedOut)?.status(), "the page ended the session it does not show").toBe(200);
+  expect(await reloaded, "the page reloaded after the sign-out").not.toBeNull();
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  const session = await context.request.get(`${server.origin}/api/v1/session`);
+  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+});
+
 test("In flight, Back to sign in while sending: the button reads Checking…, a second click and a mode switch do nothing, and Back to sign in leaves a usable password form when the held reply arrives", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const account = await accountThroughApi(playwright, server.origin, { email: emailFor("inflight", testInfo), name: "Ivan Inflight", password: PASSWORD });
@@ -335,6 +475,7 @@ test("In flight, Back to sign in while sending: the button reads Checking…, a 
   const held = new Promise((resolve) => { release = resolve; });
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
+  await countBodiesRead(page);
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
     arrived();
     await held;
@@ -364,9 +505,7 @@ test("In flight, Back to sign in while sending: the button reads Checking…, a 
   const reply = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
   release();
   expect((await reply).status()).toBe(401);
-  // The page reads the held reply's body after the response event; give it a moment to act on it,
-  // so the checks below see the page after the late reply, not before.
-  await page.waitForTimeout(500);
+  await afterBodyRead(page, SECOND_STEP_PATH);
   await expect(signInHeading(page)).toBeVisible();
   await expect(page.locator('[role="alert"]')).toHaveText("");
   await expect(recoveryField(page)).toHaveCount(0);

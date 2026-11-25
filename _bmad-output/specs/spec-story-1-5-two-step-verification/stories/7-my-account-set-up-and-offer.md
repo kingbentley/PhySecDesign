@@ -196,3 +196,11 @@ Review round 2 (2026-11-23), on the follow-up after the orchestrator's check (th
 | 32 | BH 6 | No evidence the intermittent failure is fixed | n/a | The new checks were seen failing in both projects with the old effects, and the repeat runs are recorded under Results | reject |
 | 33 | BH 7 | `margin:0` on `.two-step-heading` also reaches the invitation page's `h1` set-up headings | false | `styles.css` already sets `h1` to margin 0, so nothing changes there; the CSS comment now says so | reject |
 | 34 | BH 8 | The older `browser-tests/.local/cookiecheck/.dev.vars` has no owner | n/a | Ruled by the orchestrator (left alone); the folder is gitignored | reject |
+
+## Pull request 13, CodeRabbit review round 1 (2026-11-24)
+
+Dated notes; the frozen block above is unchanged. Record: `../review-round-1.md`.
+- **Escape and Close while a request is in flight** (orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction; overrules triage row 4's rejection of the behaviour). While a set-up start or confirm, fresh-codes or turn-off request is in flight, Escape and Close do nothing, as Cancel already does, and Close is `aria-disabled`; the guard clears when the request settles (success, refusal or network failure). The frozen block's "Escape closes" is read as "when no such request is in flight". Why: row 4's "recoverable" assumed the person knows the codes changed; after fresh codes they would not, and would keep a dead set.
+- Turn-off's Cancel gets the same in-flight guard as fresh codes' and the set-up's (CodeRabbit, `MyAccount.jsx:150`).
+- "You can still sign in with a recovery code." under `key_mismatch` shows only when at least one code remains (orchestrator ruling of 2026-11-24, option (a)); the zero-codes count line under a mismatch and pending button labels go to story 1.6 (`deferred-work.md`).
+- The set-up's recovery-codes file names the start reply's email (D-12), not the state read's; a Copy that settles after the key changed says nothing; the account menu opens only the latest dialog chosen while loading, and none after the menu is dismissed.

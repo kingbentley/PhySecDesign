@@ -140,3 +140,10 @@ Review of 2026-11-22: three layers (blind hunter B, edge-case hunter E, verifica
 | 13 | B9 | The second step's address is not tied to the password step's | false | The frozen block says `address` is the request's, counted as `attempt` does, and a success removes the password attempt's own row (story 1.3's rule); the code does exactly that | rejected |
 | 14 | B11 | Cryptography runs on paths certain to be refused (no pending cookie), and `complete` always makes a pending token | low | Cheap (random bytes and one SHA-256); the frozen block orders crypto first | rejected (low, adds a branch) |
 | 15 | B12 | The diff leaves out the spec file | false | By design: the blind layer reviews the code alone, and the spec goes to the edge-case layer as its claims file | rejected |
+
+## Pull request 13, CodeRabbit review round 1 (2026-11-24)
+
+Dated note; the frozen block is unchanged. Record: `../review-round-1.md` (findings 11 to 13).
+- `secondStep(input, now, decidingClock)`: the deciding transaction reads the clock once (`max(now, decidingClock())`) and uses it for the prune, the pending row's re-read and expiry, the counts it reads, raises and rechecks, and the session it writes; the entry time is kept for matching the code. The installation object passes `() => Date.now()`. Before, the entry time was used throughout, so a token could expire during the cryptography and still sign in, and a failure decided late could move `last_failure_at` backward.
+- New `discardPending(cookies)`: deletes only this installation's presented pending row, counting nothing; used by the busy sign-in refusal (D-3).
+- The same entry-time pattern remains in `attempt()` and in `twoStepStore`'s account checks (`deferred-work.md`).

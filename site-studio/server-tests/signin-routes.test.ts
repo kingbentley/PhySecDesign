@@ -87,13 +87,15 @@ function expectClearsSession(response: Response, identifier: string) {
   expect(cookies[0]!.attributes).toEqual({ "max-age": "0", path: "/", secure: true, httponly: true, samesite: "Lax" });
 }
 
-/** Holds the isolate's hash queue full (one running, 20 waiting) until released. */
+/**
+ * Holds the isolate's hash queue full (one running, 20 waiting) until released. The caller checks
+ * that it is full inside its `try`, so the queue is released even when that check fails.
+ */
 function fillHashQueue() {
   let release!: () => void;
   const running = new Promise<void>((resolve) => (release = resolve));
   const tasks = [hashQueue.run(() => running)];
   for (let index = 0; index < HASH_QUEUE_MAX_WAITING; index += 1) tasks.push(hashQueue.run(async () => undefined));
-  expect(hashQueue.hasRoom()).toBe(false);
   return async () => {
     release();
     await Promise.all(tasks);
@@ -332,6 +334,7 @@ describe("POST /api/v1/session/sign-in", { timeout: 120_000 }, () => {
     const release = fillHashQueue();
     let replies;
     try {
+      expect(hashQueue.hasRoom()).toBe(false);
       replies = [];
       for (const email of [EMAIL, "nobody@acme.test"]) {
         const response = await signIn(installed.env, email, PASSWORD);
@@ -354,7 +357,10 @@ describe("POST /api/v1/session/sign-in", { timeout: 120_000 }, () => {
     let release: (() => Promise<void>) | null = null;
     const installed = await seeded("signin-busy-race", async (operation, _init, send) => {
       const response = await send();
-      if (operation === "signInAttempt" && release === null) release = fillHashQueue();
+      if (operation === "signInAttempt" && release === null) {
+        release = fillHashQueue();
+        expect(hashQueue.hasRoom()).toBe(false);
+      }
       return response;
     });
     let response: Response;
@@ -496,6 +502,7 @@ describe("POST /api/v1/setup with a full hash queue", { timeout: 60_000 }, () =>
     const release = fillHashQueue();
     let response: Response;
     try {
+      expect(hashQueue.hasRoom()).toBe(false);
       response = await post(installed.env, SETUP_PATH, {
         code: installed.setupCode,
         installationName: "Acme Security",
@@ -519,7 +526,10 @@ describe("POST /api/v1/setup with a full hash queue", { timeout: 60_000 }, () =>
     let release: (() => Promise<void>) | null = null;
     const installed = installationFor("setup-busy-race", async (operation, _init, send) => {
       const response = await send();
-      if (operation === "setupAttempt" && release === null) release = fillHashQueue();
+      if (operation === "setupAttempt" && release === null) {
+        release = fillHashQueue();
+        expect(hashQueue.hasRoom()).toBe(false);
+      }
       return response;
     });
     let response: Response;

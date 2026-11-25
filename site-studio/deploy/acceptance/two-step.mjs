@@ -565,6 +565,29 @@ export function check8Pass(answer) {
 }
 
 /**
+ * Check 13's polls after one put returned: one request every KEY_POLL_MS from the put, sent while
+ * at most KEY_POLL_WINDOW_MS have passed. Each reply is timed by when it completed, `atMs` from
+ * the put (orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction: the frozen
+ * block's "arrives" means completion; it replaces the builder's choice of the send time, which is
+ * kept as `sentMs` for scheduling only). A request that fails or times out counts at the time it
+ * ended. `read()` resolves to the reply's `key`, or null for an unreadable, failed or non-200 one.
+ */
+export async function pollAfterPut({ now, sleep, checkAbort = () => {}, read }) {
+  const putReturned = now();
+  const replies = [];
+  for (let index = 0; index * KEY_POLL_MS <= KEY_POLL_WINDOW_MS; index += 1) {
+    const due = putReturned + index * KEY_POLL_MS;
+    if (now() < due) await sleep(due - now());
+    checkAbort();
+    const sentAt = now();
+    if (sentAt - putReturned > KEY_POLL_WINDOW_MS) break;
+    const key = await read();
+    replies.push({ atMs: now() - putReturned, sentMs: sentAt - putReturned, key });
+  }
+  return replies;
+}
+
+/**
  * Check 13 for one put: the final value is the `key` of the replies in the last 60 seconds of the
  * 180-second poll (all readable and equal, else "not settled"); the time of the last reply that
  * differs from it (an unreadable, failed or non-200 reply differs), 0 when none; the count.
@@ -779,8 +802,15 @@ export async function runAcceptance(effects, { signal } = {}) {
   };
 
   const browser = () => createBrowser({ fetchImpl: fx.fetch, origin: state.addressA });
-  // Whether a deploy after the first printed check 1's key or set-up code, in any form (yes/no only).
-  const leaked = (deployed) => valueInOutput(deployed.lines, [state.key, state.setupCode]);
+  // Whether a deploy after the first printed check 1's key or set-up code, or a key it was given
+  // (`extra`, such as check 14 (a)'s wrong key), in any form (yes/no only).
+  const leaked = (deployed, ...extra) => valueInOutput(deployed.lines, [state.key, state.setupCode, ...extra]);
+  // Whether the cookie jar `page` holds is signed in: the session read answers `signedIn: true`. A
+  // 200 that names the person is not enough; the reply must also have set a working session.
+  const sessionHolds = async (page) => {
+    const read = await page.get("/api/v1/session");
+    return read.status === 200 && read.body?.signedIn === true;
+  };
   const waitForLaterStep = async (account) => {
     const last = state.lastStep.get(account) ?? -1;
     while (stepAt(now()) <= last) {
@@ -797,8 +827,9 @@ export async function runAcceptance(effects, { signal } = {}) {
     if (!secondStep) return { page, signInStatus: first.status, secondStep, secondStepStatus: null, signedIn: false, refusal: first.refusal };
     const step = await waitForLaterStep(account);
     const second = await page.post("/api/v1/session/second-step", { method: "code", code: totpCode(secret, step) });
-    const signedIn = second.status === 200 && typeof second.body?.name === "string";
-    if (signedIn) state.lastStep.set(account, step);
+    // A 200 means the installation took the code's step, whatever the session read says (D-6).
+    if (second.status === 200) state.lastStep.set(account, step);
+    const signedIn = second.status === 200 && typeof second.body?.name === "string" && (await sessionHolds(page));
     return { page, signInStatus: first.status, secondStep, secondStepStatus: second.status, signedIn, refusal: second.refusal };
   };
   // Turns two-step verification on for the session `page` holds; answers the secret and codes.
@@ -1036,12 +1067,14 @@ export async function runAcceptance(effects, { signal } = {}) {
         const firstPage = browser();
         const firstPassword = await firstPage.post("/api/v1/session/sign-in", { email: ADMIN.email, password: state.password });
         const first = firstPassword.body?.secondStep === true ? await firstPage.post("/api/v1/session/second-step", { method: "recovery", code }) : { status: null, body: null, refusal: firstPassword.refusal };
+        const firstSignedIn = first.status === 200 && typeof first.body?.name === "string" && (await sessionHolds(firstPage));
+        // The replay starts from its own cookie jar.
         const secondPage = browser();
         const secondPassword = await secondPage.post("/api/v1/session/sign-in", { email: ADMIN.email, password: state.password });
         const second = secondPassword.body?.secondStep === true ? await secondPage.post("/api/v1/session/second-step", { method: "recovery", code }) : { status: null, body: null, refusal: secondPassword.refusal };
         return check5Pass({
           firstStatus: first.status,
-          firstSignedIn: first.status === 200 && typeof first.body?.name === "string",
+          firstSignedIn,
           secondStatus: second.status,
           secondRefusal: second.refusal,
           signInStatuses: [firstPassword.status, secondPassword.status],
@@ -1074,10 +1107,10 @@ export async function runAcceptance(effects, { signal } = {}) {
         if (!state.addressB) return;
         for (;;) {
           if (signal?.aborted) return;
-          const sentAt = now();
           const read = await readKeyState(fx.fetch, state.addressB);
           if (read.status === 200) {
-            firstAnswerMs = sentAt - started;
+            // When the 200 reply arrived, not when its request was sent.
+            firstAnswerMs = now() - started;
             return;
           }
           if (deployEnded !== null && now() - deployEnded >= FIRST_ANSWER_AFTER_DEPLOY_MS) return;
@@ -1152,17 +1185,15 @@ export async function runAcceptance(effects, { signal } = {}) {
           puts.push({ pass: false, record: { expected: put.expected, putExit: result.code, timedOut: yesNo(result.timedOut) } });
           continue;
         }
-        const putReturned = now();
-        const replies = [];
-        for (let index = 0; index * KEY_POLL_MS <= KEY_POLL_WINDOW_MS; index += 1) {
-          const due = putReturned + index * KEY_POLL_MS;
-          if (now() < due) await sleep(due - now());
-          checkAbort();
-          const sentAt = now();
-          if (sentAt - putReturned > KEY_POLL_WINDOW_MS) break;
-          const read = await readKeyState(fx.fetch, state.addressA);
-          replies.push({ atMs: sentAt - putReturned, key: read.state ? read.state.key : null });
-        }
+        const replies = await pollAfterPut({
+          now,
+          sleep,
+          checkAbort,
+          read: async () => {
+            const read = await readKeyState(fx.fetch, state.addressA);
+            return read.state ? read.state.key : null;
+          },
+        });
         const evaluated = evaluatePutPolls(replies, put.expected);
         puts.push({ pass: evaluated.pass, record: { ...evaluated.record, putExit: 0 } });
       }
@@ -1188,7 +1219,8 @@ export async function runAcceptance(effects, { signal } = {}) {
       const afterDelete = await listWorker(WORKERS.a);
       note(11, check11Pass({ exitCode: deletion.code, timedOut: deletion.timedOut, absent: Array.isArray(afterDelete.names) && !afterDelete.names.includes(DEPLOYMENT_KEY_SECRET) }));
       checkAbort();
-      const deployedA = await fx.deployCommand(WORKERS.a, { key: wrongKey(), accountId });
+      const suppliedWrongKey = wrongKey();
+      const deployedA = await fx.deployCommand(WORKERS.a, { key: suppliedWrongKey, accountId });
       const outA = readDeployLines(deployedA.lines);
       checkAbort();
       const listA = await listWorker(WORKERS.a);
@@ -1196,7 +1228,7 @@ export async function runAcceptance(effects, { signal } = {}) {
       parts.a = check14aPass({
         exitCode: deployedA.code,
         timedOut: deployedA.timedOut,
-        keyValueInOutput: leaked(deployedA),
+        keyValueInOutput: leaked(deployedA, suppliedWrongKey),
         checkingLine: Boolean(outA.find(KEY_LINES.checking, "out")),
         notOriginalLine: Boolean(outA.find(KEY_LINES.notOriginal, "err")),
         absent: Array.isArray(listA.names) && !listA.names.includes(DEPLOYMENT_KEY_SECRET),
@@ -1614,48 +1646,71 @@ export function createFreshConnectionFetch({ httpsModule = https, httpModule = h
     });
 }
 
-/** A visible question on the terminal. */
-export function createAsk({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT") } = {}) {
+/**
+ * A visible question on the terminal. It answers "" when the run's `signal` aborts (an interrupt
+ * `main` received, which it does not raise again) or the input ends, settling once either way.
+ */
+export function createAsk({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT"), signal } = {}) {
   return (question) =>
     new Promise((resolve) => {
+      if (signal?.aborted) {
+        resolve("");
+        return;
+      }
       const reader = createInterface({ input, output, terminal: true });
       let answered = false;
-      // In terminal mode Ctrl-C reaches readline, not the process: pass it on, answer "".
-      reader.on("SIGINT", () => {
-        if (answered) return;
+      const settle = (answer) => {
+        if (answered) return false;
         answered = true;
-        reader.close();
-        onInterrupt();
-        resolve("");
-      });
-      reader.question(question, (answer) => {
-        if (answered) return;
-        answered = true;
+        signal?.removeEventListener("abort", onAbort);
         reader.close();
         resolve(answer);
+        return true;
+      };
+      const onAbort = () => settle("");
+      signal?.addEventListener("abort", onAbort, { once: true });
+      // In terminal mode Ctrl-C reaches readline, not the process: pass it on, answer "".
+      reader.on("SIGINT", () => {
+        if (settle("")) onInterrupt();
       });
+      // The input ended (end of file): nothing more can be typed.
+      reader.on("close", () => settle(""));
+      reader.question(question, (answer) => settle(answer));
     });
 }
 
 /**
  * A hidden question: raw mode, nothing echoed, the answer kept only in memory. Enter ends it,
- * backspace removes a character, Ctrl-C signals the interrupt and gives an empty answer.
+ * backspace removes a character, Ctrl-C signals the interrupt and gives an empty answer. The run's
+ * `signal` aborting, or the input ending, also gives an empty answer; it settles once, releases its
+ * listeners and restores raw mode whichever way it ends.
  */
-export function createAskHidden({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT") } = {}) {
+export function createAskHidden({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT"), signal } = {}) {
   return (question) =>
     new Promise((resolve) => {
+      if (signal?.aborted) {
+        resolve("");
+        return;
+      }
       output.write(question);
       let answer = "";
+      let done = false;
       const wasRaw = Boolean(input.isRaw);
       input.setRawMode?.(true);
       input.resume();
       const finish = (value) => {
+        if (done) return;
+        done = true;
         input.off("data", onData);
+        input.off("end", onEnd);
+        input.off("close", onEnd);
+        signal?.removeEventListener("abort", onEnd);
         input.setRawMode?.(wasRaw);
         input.pause();
         output.write("\n");
         resolve(value);
       };
+      const onEnd = () => finish("");
       const onData = (chunk) => {
         for (const character of Buffer.from(chunk).toString("utf8")) {
           if (character === "\r" || character === "\n") return finish(answer);
@@ -1669,6 +1724,9 @@ export function createAskHidden({ input = process.stdin, output = process.stdout
         }
       };
       input.on("data", onData);
+      input.on("end", onEnd);
+      input.on("close", onEnd);
+      signal?.addEventListener("abort", onEnd, { once: true });
     });
 }
 
@@ -1701,8 +1759,9 @@ export function createRealEffects({ root, signal, env = process.env, spawnImpl =
     sleep,
     cleanupSleep: plainSleep,
     isTTY: Boolean(stdin.isTTY),
-    ask: createAsk({ input: stdin, output: stdout }),
-    askHidden: createAskHidden({ input: stdin, output: stdout }),
+    // A first interrupt ends an open question too, so the run reaches the cleanup.
+    ask: createAsk({ input: stdin, output: stdout, signal }),
+    askHidden: createAskHidden({ input: stdin, output: stdout, signal }),
     print,
   };
 }

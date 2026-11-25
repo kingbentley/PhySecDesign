@@ -65,11 +65,25 @@ import {
   totpCode,
   WORKERS,
 } from "../deploy/acceptance/two-step.mjs";
+import { pollAfterPut } from "../deploy/acceptance/two-step.mjs";
 
 const ACCOUNT_ID = "0123456789abcdef0123456789abcdef";
 const SUB = "acceptance-sub";
 const addressOf = (name) => `https://${name}.${SUB}.workers.dev`;
 const randomHex = (bytes) => randomBytes(bytes).toString("hex");
+
+/** What `promise` settles to within `ms` (real time), or "still pending": a hung prompt fails an assertion, not the run. */
+async function settledWithin(promise, ms = 500) {
+  let timer;
+  const pending = new Promise((resolve) => {
+    timer = setTimeout(() => resolve("still pending"), ms);
+  });
+  try {
+    return await Promise.race([promise, pending]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 // A virtual clock: `sleep` registers a timer; when every task is waiting, the earliest one fires.
@@ -132,6 +146,9 @@ function makeWorld({ accounts = [{ name: ACCOUNT_NAME, id: ACCOUNT_ID }], existi
     deploys: [],
     tails: new Set(),
     secrets: new Set(),
+    // The authenticator codes the API was sent (6 digits, too short for `secrets`), for assertNoLeak.
+    codes: new Set(),
+    codeSignIns: 0,
     tailEventsSent: 0,
   };
   const track = (value) => {
@@ -263,6 +280,11 @@ function makeWorld({ accounts = [{ name: ACCOUNT_NAME, id: ACCOUNT_ID }], existi
       if (route === "/api/v1/status") return fakeReply(200, { release: "test" });
       if (route === "/api/v1/setup/state") return fakeReply(200, { state: inst.accounts.size > 0 ? "closed" : "open" });
       if (route === "/api/v1/deployment-key/state") return fakeReply(200, keyState(worker));
+      if (route === "/api/v1/session") {
+        const email = sessionFor(inst, headers);
+        const account = email ? inst.accounts.get(email) : null;
+        return fakeReply(200, account ? { signedIn: true, name: account.name, role: account.role } : { signedIn: false, installationName: "Acceptance 15a" });
+      }
       return fakeReply(404, undefined);
     }
     if (headers.origin !== target.origin || headers["x-site-survey-design"] !== "1") return refusal(403, "origin_refused");
@@ -300,18 +322,25 @@ function makeWorld({ accounts = [{ name: ACCOUNT_NAME, id: ACCOUNT_ID }], existi
       const email = token ? inst.pendings.get(token) : null;
       const account = email ? inst.accounts.get(email) : null;
       if (!account) return refusal(401, "second_step_expired");
+      // A handler that answers 200 and the name but sets no session cookie (finding C2's case).
+      let noSession = false;
       if (body.method === "code") {
+        world.codes.add(String(body.code));
         if (quirks.secondStepRefuses) return refusal(401, "second_step_code_wrong");
         if (keyFor(worker) !== inst.fingerprintKey) return refusal(503, "deployment_key_mismatch");
         const step = verifyCode(account, body.code);
         if (step === null) return refusal(401, "second_step_code_wrong");
         account.lastStep = step;
+        world.codeSignIns += 1;
+        noSession = Boolean(quirks.noSessionOnCodeSignIn?.includes(world.codeSignIns));
       } else {
         if (!account.recovery.has(body.code)) return refusal(401, "second_step_recovery_code_wrong");
         account.recovery.delete(body.code);
+        noSession = Boolean(quirks.noSessionOnRecovery);
       }
       inst.pendings.delete(token);
-      return fakeReply(200, { name: account.name }, [newSession(inst, account.email), "__Host-ssd-p-a1=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict"]);
+      const clearPending = "__Host-ssd-p-a1=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict";
+      return fakeReply(200, { name: account.name }, noSession ? [clearPending] : [newSession(inst, account.email), clearPending]);
     }
     if (route === "/api/v1/account/two-step/start") {
       const email = sessionFor(inst, headers);
@@ -332,6 +361,7 @@ function makeWorld({ accounts = [{ name: ACCOUNT_NAME, id: ACCOUNT_ID }], existi
       const account = email ? inst.accounts.get(email) : null;
       if (!account) return refusal(401, "not_signed_in");
       if (!account.setup || account.setup.setupId !== body.setupId) return refusal(409, "two_step_setup_expired");
+      world.codes.add(String(body.code));
       const step = verifyCode({ secret: account.setup.secret, lastStep: account.lastStep }, body.code);
       if (step === null) return refusal(403, "two_step_code_wrong");
       account.secret = account.setup.secret;
@@ -409,6 +439,8 @@ function makeWorld({ accounts = [{ name: ACCOUNT_NAME, id: ACCOUNT_ID }], existi
     });
     // A deploy after the first that shows the key in another form than the "Deployment key" line.
     if (quirks.keyInOtherForm && world.deploys.length > 1) lines.push({ stream: "err", text: `debug: DEPLOYMENT_KEY="${world.generatedKey}"`, at: clock.now() });
+    // A deploy that echoes whatever key it was supplied, the wrong key of check 14 (a) included.
+    if (quirks.echoSuppliedKey && key !== null) lines.push({ stream: "out", text: `debug: supplied ${key}`, at: clock.now() });
     return { code, timedOut: false, lines, startedAt, endedAt: clock.now() };
   };
 
@@ -460,14 +492,46 @@ async function dryRun({ quirks, accounts, existing, isTTY = false, answers = [],
   return { record, prints, world, asked };
 }
 
+/** Every string in a parsed value (keys and string values); numbers, booleans and null are left out. */
+function stringsIn(value, out = []) {
+  if (typeof value === "string") out.push(value);
+  else if (Array.isArray(value)) for (const item of value) stringsIn(item, out);
+  else if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) out.push(key), stringsIn(item, out);
+  return out;
+}
+
+/**
+ * Whether a six-digit authenticator code shows as a whole digit run in a string of the record or of
+ * a printed line. JSON numbers (times, counts, statuses) are left out, so a count or a time that
+ * happens to equal a code is not a false hit; a printed line's JSON part is read as JSON.
+ */
+function codeShown(record, prints, codes) {
+  const texts = stringsIn(JSON.parse(JSON.stringify(record)));
+  for (const line of prints) {
+    const start = line.search(/[[{]/);
+    let parsed;
+    try {
+      parsed = start === -1 ? undefined : JSON.parse(line.slice(start));
+    } catch {
+      parsed = undefined;
+    }
+    if (parsed === undefined) texts.push(line);
+    else texts.push(line.slice(0, start), ...stringsIn(parsed));
+  }
+  return [...codes].filter((code) => /^\d{6}$/.test(code)).some((code) => texts.some((text) => new RegExp(`(^|\\D)${code}(\\D|$)`).test(text)));
+}
+
 /** Nothing secret in the record or any printed line (keys, codes, passwords, secrets, tokens, links). */
 function assertNoLeak({ record, prints, world }) {
   const blob = `${JSON.stringify(record)}\n${prints.join("\n")}`;
   assert.ok(world.secrets.size > 0);
   for (const secret of world.secrets) assert.ok(!blob.includes(secret), "a secret value reached the record or the printed output");
+  assert.ok(!codeShown(record, prints, world.codes), "an authenticator code reached the record or the printed output");
   assert.ok(!blob.includes("private.person@example.test"), "the signed-in email reached the record");
   assert.ok(!blob.includes("value-not-kept") && !blob.includes("quotes"), "raw tail content reached the record");
-  for (const call of world.wranglerCalls) for (const secret of world.secrets) assert.ok(!call.args.includes(secret), "a secret value was on a command line");
+  for (const call of world.wranglerCalls) {
+    for (const arg of call.args) for (const secret of world.secrets) assert.ok(!String(arg).includes(secret), "a secret value was in a command-line argument");
+  }
   // The whole record is printed as the last line, and it is the record (checked above for secrets).
   const last = prints.at(-1);
   assert.ok(last.startsWith("Record: "));
@@ -1080,6 +1144,137 @@ describe("dry run against fakes: one test per I/O matrix row", () => {
   });
 });
 
+describe("check 13 times each reply by when it arrived (pull request 13, review round 1; orchestrator ruling of 2026-11-24)", () => {
+  // A fake clock: `sleep` advances it, and a request takes `latency(sentMs)` ms. Every reply is
+  // `expected` except the one sent at `differSentMs`, which answers the other value.
+  async function polls({ differSentMs, latency = () => 0, expected = "mismatch" }) {
+    let clock = 1_000_000;
+    const start = clock;
+    const other = expected === "mismatch" ? "matches" : "mismatch";
+    const replies = await pollAfterPut({
+      now: () => clock,
+      sleep: async (ms) => { clock += ms; },
+      read: async () => {
+        const sentMs = clock - start;
+        clock += latency(sentMs);
+        return sentMs === differSentMs ? other : expected;
+      },
+    });
+    return evaluatePutPolls(replies, expected);
+  }
+
+  it("fails the put when a reply sent at 57 s differs and arrives at 65 s", async () => {
+    const evaluated = await polls({ differSentMs: 57_000, latency: (sentMs) => (sentMs === 57_000 ? 8_000 : 0) });
+    assert.equal(evaluated.record.lastDifferingReplyMs, 65_000);
+    assert.equal(evaluated.pass, false);
+  });
+
+  it("passes the put when that differing reply arrives within 60 s", async () => {
+    const evaluated = await polls({ differSentMs: 57_000, latency: (sentMs) => (sentMs === 57_000 ? 2_000 : 0) });
+    assert.equal(evaluated.record.lastDifferingReplyMs, 59_000);
+    assert.equal(evaluated.pass, true);
+  });
+
+  it("counts replies in the final window by arrival: at a 3-second poll 21 or more arrive there; at a 15-second request time too few, so the put is not settled (fails safe)", async () => {
+    const fast = await polls({ differSentMs: -1 });
+    assert.ok(fast.record.repliesInFinalWindow >= 21);
+    assert.equal(fast.pass, true);
+    const slow = await polls({ differSentMs: -1, latency: () => 15_000 });
+    assert.ok(slow.record.repliesInFinalWindow < 10);
+    assert.equal(slow.record.final, "not settled");
+    assert.equal(slow.pass, false);
+  });
+});
+
+describe("dry run against fakes: pull request 13's review", () => {
+  it("check 14 (a) scans its output for the wrong key it supplied, and records only yes/no (C1)", async () => {
+    const run = await dryRun({ quirks: { echoSuppliedKey: true } });
+    const a = run.record.checks[14].record.a;
+    assert.equal(a.keyValueInOutput, "yes");
+    assert.equal(a.pass, false);
+    assert.equal(run.record.checks[6].record.keyValueInOutput, "yes");
+    assert.equal(run.record.cleanup.pass, true);
+    assertNoLeak(run);
+  });
+
+  it("a second step that answers 200 and the name but sets no session does not count as signed in (C2)", async () => {
+    const four = await dryRun({ quirks: { noSessionOnCodeSignIn: [1] } });
+    assert.equal(four.record.checks[4].pass, false);
+    assert.equal(four.record.checks[4].record.signedIn, "no");
+    assert.equal(four.record.checks[4].record.secondStepStatus, 200);
+    assert.equal(four.record.stopped, "check 4 failed");
+    assert.equal(four.record.cleanup.pass, true);
+    assertNoLeak(four);
+
+    const five = await dryRun({ quirks: { noSessionOnRecovery: true } });
+    assert.equal(five.record.checks[4].pass, true);
+    assert.equal(five.record.checks[5].pass, false);
+    assert.equal(five.record.checks[5].record.firstUseStatus, 200);
+    assert.equal(five.record.checks[5].record.firstUseSignedIn, "no");
+    // The replay is still made from its own cookie jar, and still refused.
+    assert.equal(five.record.checks[5].record.secondUseRefusal, "second_step_recovery_code_wrong");
+    assertNoLeak(five);
+
+    const fourteen = await dryRun({ quirks: { noSessionOnCodeSignIn: [2] } });
+    assert.equal(fourteen.record.checks[4].pass, true);
+    assert.equal(fourteen.record.checks[14].record.b.signedInWithLaterCode, "no");
+    assert.equal(fourteen.record.checks[14].record.b.pass, false);
+    assert.equal(fourteen.record.checks[14].pass, false);
+    assertNoLeak(fourteen);
+  });
+
+  it("check 7 records when 15b's first 200 reply arrives, not when its request was sent (C4)", async () => {
+    let deployStartedAt = null;
+    let firstArrival = null;
+    const run = await dryRun({
+      wrap: (effects, world) => ({
+        ...effects,
+        deployCommand: async (worker, options) => {
+          if (worker === WORKERS.b) deployStartedAt = world.clock.now();
+          return effects.deployCommand(worker, options);
+        },
+        fetch: async (url, init) => {
+          const slow = url === `${addressOf(WORKERS.b)}/api/v1/deployment-key/state`;
+          // Each of these replies takes 5 s more to come back.
+          if (slow) await world.clock.sleep(5_000);
+          const response = await effects.fetch(url, init);
+          if (slow && response.status === 200 && firstArrival === null) firstArrival = world.clock.now();
+          return response;
+        },
+      }),
+    });
+    assert.equal(typeof firstArrival, "number");
+    assert.equal(run.record.checks[7].record.firstKeyState200AfterStartMs, firstArrival - deployStartedAt);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// The confidentiality check itself (C12, C13).
+
+describe("assertNoLeak", () => {
+  it("finds a secret inside a longer Wrangler argument, not only an equal one (C12)", async () => {
+    const run = await happyRun();
+    const secret = [...run.world.secrets][0];
+    const call = { args: ["secret", "put", `NAME=${secret}`], input: "", accountId: ACCOUNT_ID };
+    const doctored = { ...run, world: { ...run.world, wranglerCalls: [...run.world.wranglerCalls, call] } };
+    assert.throws(() => assertNoLeak(doctored), assert.AssertionError);
+  });
+
+  it("finds an authenticator code the API was sent in a record string or a printed line, but not a number that equals one (C13)", async () => {
+    const run = await happyRun();
+    const codes = run.world.codes;
+    assert.ok(codes.size >= 3, "the confirm and the code sign-ins of checks 2, 4 and 14 (b) were captured");
+    const code = [...codes].find((value) => !value.startsWith("0")) ?? [...codes][0];
+    assert.equal(codeShown(run.record, run.prints, codes), false);
+    assert.equal(codeShown({ ...run.record, note: `code ${code}` }, [], codes), true);
+    assert.equal(codeShown({}, [`Check 4 at x: pass {"refusal":"${code}"}`], codes), true);
+    assert.equal(codeShown({}, [`A line with ${code} in it`], codes), true);
+    assert.equal(codeShown({ ms: Number(code) }, [`Check 7 at x: recorded {"ms":${Number(code)}}`], codes), false);
+    assert.equal(codeShown({ id: `${code}9` }, [], codes), false);
+    assert.throws(() => assertNoLeak({ ...run, prints: [`A line with ${code} in it`, ...run.prints] }), assert.AssertionError);
+  });
+});
+
 // ---------------------------------------------------------------------------------------------
 // The real effects, with a fake spawn: what would be started, never started.
 
@@ -1364,6 +1559,89 @@ describe("real effects with a fake spawn", () => {
     input.write("\u0003");
     assert.equal(await cancelled, "");
     assert.equal(interrupts, 1);
+  });
+
+  it("the hidden question settles once on the run's interrupt or the end of input, and gives the terminal back (C5)", async () => {
+    const makeInput = () => {
+      const input = new EventEmitter();
+      input.isRaw = false;
+      input.rawModes = [];
+      input.setRawMode = (value) => input.rawModes.push(value);
+      input.resume = () => {};
+      input.pause = () => {};
+      return input;
+    };
+    const listeners = (input) => ["data", "end", "close"].map((name) => input.listenerCount(name));
+    let interrupts = 0;
+    const onInterrupt = () => (interrupts += 1);
+
+    const written = [];
+    const output = { write: (text) => written.push(text) };
+    const controller = new AbortController();
+    const input = makeInput();
+    const answer = createAskHidden({ input, output, onInterrupt, signal: controller.signal })("Password: ");
+    input.emit("data", Buffer.from("ab"));
+    controller.abort();
+    assert.equal(await settledWithin(answer), "");
+    assert.deepEqual(input.rawModes, [true, false]);
+    assert.deepEqual(listeners(input), [0, 0, 0]);
+    assert.deepEqual(written, ["Password: ", "\n"]);
+    assert.equal(interrupts, 0, "the run's own interrupt is not raised again");
+
+    const ended = makeInput();
+    const atEnd = createAskHidden({ input: ended, output, onInterrupt })("Password: ");
+    ended.emit("end");
+    assert.equal(await settledWithin(atEnd), "");
+    assert.deepEqual(ended.rawModes, [true, false]);
+    assert.deepEqual(listeners(ended), [0, 0, 0]);
+
+    const early = makeInput();
+    const before = written.length;
+    assert.equal(await settledWithin(createAskHidden({ input: early, output, onInterrupt, signal: AbortSignal.abort() })("Password: ")), "");
+    assert.deepEqual([early.rawModes, written.length], [[], before]);
+
+    // Ctrl-C whose interrupt aborts the run's signal at once settles one time only.
+    const ctrlC = new AbortController();
+    const typed = makeInput();
+    const once = createAskHidden({ input: typed, output, onInterrupt: () => ((interrupts += 1), ctrlC.abort()), signal: ctrlC.signal })("Password: ");
+    const start = written.length;
+    typed.emit("data", Buffer.from("x\u0003"));
+    assert.equal(await settledWithin(once), "");
+    assert.deepEqual(written.slice(start), ["\n"]);
+    assert.deepEqual(typed.rawModes, [true, false]);
+    assert.equal(interrupts, 1);
+  });
+
+  it("the visible question settles on the run's interrupt or the end of input (C5)", async () => {
+    const { PassThrough } = await import("node:stream");
+    let interrupts = 0;
+    const output = new PassThrough();
+    output.resume();
+    const controller = new AbortController();
+    const input = new PassThrough();
+    const answer = createAsk({ input, output, onInterrupt: () => (interrupts += 1), signal: controller.signal })("Take it? ");
+    controller.abort();
+    assert.equal(await settledWithin(answer), "");
+    assert.equal(interrupts, 0, "the run's own interrupt is not raised again");
+
+    const ended = new PassThrough();
+    const atEnd = createAsk({ input: ended, output, onInterrupt: () => (interrupts += 1) })("Take it? ");
+    ended.end();
+    assert.equal(await settledWithin(atEnd), "");
+    assert.equal(await settledWithin(createAsk({ input: new PassThrough(), output, signal: AbortSignal.abort() })("Take it? ")), "");
+  });
+
+  it("main's real effects give both questions the run's signal (C5)", async () => {
+    const { PassThrough } = await import("node:stream");
+    const output = new PassThrough();
+    output.resume();
+    for (const which of ["ask", "askHidden"]) {
+      const controller = new AbortController();
+      const effects = createRealEffects({ root: "/repo", signal: controller.signal, spawnImpl: fakeSpawn().spawnImpl, platform: "linux", stdin: new PassThrough(), stdout: output, print: () => {} });
+      const answer = effects[which]("Question? ");
+      controller.abort();
+      assert.equal(await settledWithin(answer), "", `${which} settles when the run is interrupted`);
+    }
   });
 
   it("a POST carries its method, headers, byte length and body; a request that never answers rejects with fixed text on abort", async () => {

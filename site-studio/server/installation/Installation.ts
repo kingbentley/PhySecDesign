@@ -139,7 +139,19 @@ export class Installation extends ObjectBase<Env> {
     this.ops.set("secondStep", {
       run: (raw): Promise<SignInCompleted> => {
         const input = parseOperationInput(secondStepOperationInput, raw);
-        return this.signIn.secondStep(input, Date.now());
+        // The request's time for matching the code; a fresh reading for the deciding step, so a
+        // token that expires while the cryptography runs is expired there, and counts are raised at
+        // the time they are decided (CodeRabbit review of pull request 13).
+        return this.signIn.secondStep(input, Date.now(), () => Date.now());
+      },
+    });
+
+    // Discards the pending sign-in the browser presents, for a sign-in refused as busy before it is
+    // counted (D-3). A write: never retried after a bare reset.
+    this.ops.set("discardPending", {
+      run: (raw): Promise<{ identifier: string }> => {
+        const input = parseOperationInput(cookiesInput, raw);
+        return this.signIn.discardPending(input.cookies);
       },
     });
 

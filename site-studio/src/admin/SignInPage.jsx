@@ -3,7 +3,7 @@ import { BrandMark } from '../BrandMark.jsx';
 import { EMAIL_MAX } from '../../shared/setup.ts';
 import { SIGNIN_PASSWORD_MAX_UNITS, signInEmailField, signInPasswordField } from '../../shared/signin.ts';
 import { CODE_FIELD_MAX_LENGTH } from '../../shared/twoStep.ts';
-import { SIGN_IN_FIELDS, submitSecondStep, submitSignIn } from './signInClient.js';
+import { SIGN_IN_FIELDS, requestSignOut, submitSecondStep, submitSignIn } from './signInClient.js';
 import { SECOND_STEP_FIELD_MESSAGES, checkSecondStepCode } from './secondStepRules.js';
 import './signin.css';
 
@@ -111,9 +111,17 @@ export default function SignInPage({ installationName, onSignedIn }) {
   const [focusTo, setFocusTo] = useState(null);
   const [sending, setSending] = useState(false);
   const inFlight = useRef(false);
-  // Raised by "Back to sign in", so a second-step reply that arrives afterwards changes nothing
-  // (unless it signed the person in, which the server has then done).
+  // Raised by "Back to sign in", so a second-step reply that arrives afterwards changes nothing on
+  // screen, a late success included: the person has left that sign-in and may be signing in as
+  // someone else; a late success's session is ended (`endLeftSession`; pull request 13, review
+  // round 1; orchestrator rulings of 2026-11-24).
   const secondStepRun = useRef(0);
+  // False once the page has gone (the app opened, for example because someone signed in meanwhile).
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const refs = useRef({});
   const generalRef = useRef(null);
   const secondHeading = useRef(null);
@@ -194,6 +202,24 @@ export default function SignInPage({ installationName, onSignedIn }) {
     showPasswordForm(null);
   }
 
+  /**
+   * A second step that succeeded after the person went back: the server has signed that account in
+   * and the browser holds its session, which no page shows. It is ended with the sign-out route and
+   * nothing changes on screen; if this page has already handed over to the app (someone signed in
+   * meanwhile), the page reloads after the sign-out so it shows the truth. A sign-out that is not
+   * confirmed leaves things as they are (pull request 13, review round 1; orchestrator ruling of
+   * 2026-11-24).
+   */
+  async function endLeftSession() {
+    let confirmed = false;
+    try {
+      confirmed = await requestSignOut();
+    } catch {
+      confirmed = false;
+    }
+    if (confirmed && !mounted.current) window.location.reload();
+  }
+
   /** "Use a recovery code" and "Use a code from your authenticator app"; not while a code is being checked. */
   function switchMode(next) {
     if (inFlight.current) return;
@@ -229,8 +255,11 @@ export default function SignInPage({ installationName, onSignedIn }) {
         setSending(false);
       }
     }
+    if (run !== secondStepRun.current) {
+      if (result.kind === 'signedIn') endLeftSession();
+      return;
+    }
     if (result.kind === 'signedIn') return onSignedIn({ name: result.name });
-    if (run !== secondStepRun.current) return;
     switch (result.kind) {
       case 'restart':
         showPasswordForm(result.message);

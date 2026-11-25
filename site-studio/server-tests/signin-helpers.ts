@@ -10,6 +10,7 @@ import { handleRequest } from "../server/index";
 import type { Installation } from "../server/installation/Installation";
 import { SETTINGS_TABLE, USERS_TABLE } from "../server/installation/setupStore";
 import type { PasswordHash } from "../server/auth/password";
+import { distinctCodes } from "./totp-codes";
 
 // Shared by the story 1.3 route suites (spec 2): an installation object of the test's own, request
 // builders for the three sign-in routes, cookie parsing and the refusal check. No real code,
@@ -244,17 +245,21 @@ export async function awayFromStepEnd(): Promise<void> {
 }
 
 /**
- * Codes for one account, each of a step later than the last one used (D-6) and inside the window:
- * the later of the next unused step and the current one. Throws when the next unused step is
- * already ahead of the window, so a test that uses too many codes says so instead of failing oddly.
+ * Codes for one account, each of a step later than the last one used (D-6): the later of the next
+ * unused step and the current one. When the next unused step is still ahead of the window, waits
+ * (at most one step) until the window reaches it. Each code is therefore of the current step or the
+ * next one when made, so the server's window still holds it if the request crosses a step boundary
+ * before the code is checked.
  */
 export function codeSource(secret: Uint8Array, lastStep: number) {
   let last = lastStep;
   return {
     async next(): Promise<string> {
-      const now = stepAt(Date.now());
-      const step = Math.max(last + 1, now);
-      if (step > now + TOTP_WINDOW) throw new Error("No unused step is inside the window: the test used too many codes.");
+      const step = Math.max(last + 1, stepAt(Date.now()));
+      while (step > stepAt(Date.now()) + TOTP_WINDOW) {
+        const left = TOTP_STEP_SECONDS * 1000 - (Date.now() % (TOTP_STEP_SECONDS * 1000));
+        await new Promise((resolve) => setTimeout(resolve, left + 50));
+      }
       last = step;
       return totpAt(secret, step);
     },
@@ -288,12 +293,22 @@ export interface TurnedOnByRoutes extends StartedByRoutes {
 
 /**
  * Turns two-step verification on through the start and confirm routes. The confirm uses the code of
- * the step before the current one (inside the window), so two more codes are usable at once.
+ * the current step, which the window still holds if the request crosses one step boundary before
+ * the server checks it. The first later code (the next step's) is usable at once; each further one
+ * waits in `codes.next()` until the window reaches its step. The previous step's code is covered by
+ * the fixed-clock store tests.
  */
 export async function turnedOnByRoutes(target: Env, cookies: Record<string, string>, password: string): Promise<TurnedOnByRoutes> {
-  const started = await startedByRoutes(target, cookies, password);
-  await awayFromStepEnd();
-  const step = stepAt(Date.now()) - TOTP_WINDOW;
+  // The server takes the latest step whose code matches, so a secret whose current code is also a
+  // later step's would move the last accepted step past `step`; start again until the codes of this
+  // step and the three after it differ (a one-in-a-hundred-thousand case).
+  let started = await startedByRoutes(target, cookies, password);
+  let step = stepAt(Date.now());
+  for (let attempt = 0; !(await distinctCodes(started.secret, [step, step + 1, step + 2, step + 3])); attempt += 1) {
+    if (attempt >= 5) throw new Error("No secret with distinct codes after six set-ups.");
+    started = await startedByRoutes(target, cookies, password);
+    step = stepAt(Date.now());
+  }
   const confirmCode = await totpAt(started.secret, step);
   const response = await post(target, TWO_STEP_CONFIRM_PATH, { setupId: started.setupId, code: confirmCode }, { cookies });
   expect(response.status, await response.clone().text()).toBe(200);

@@ -41,7 +41,7 @@ import {
 } from "../installation/invitationStore";
 import type { FirstAdministratorCreated, SetupAttemptCounted } from "../installation/setupStore";
 import type { SessionEnded, SessionInfo, SignInAttemptCounted, SignInCompleted, SignInCompletion } from "../installation/signInStore";
-import { callObject } from "../objects/call";
+import { callObject, type ObjectCallResult } from "../objects/call";
 import { clientAddressKey } from "./clientAddress";
 
 // One handler per declared route. The mapped type makes a declared route without a handler, or a
@@ -125,6 +125,30 @@ async function pendingClearLines(env: Env, context: RequestContext, identifier?:
     own = info.value.identifier;
   }
   return context.cookies[pendingCookieName(own)] !== undefined ? [clearPendingCookieLine(own)] : [];
+}
+
+/**
+ * For a sign-in refused as busy before it is counted: discards the pending sign-in the request
+ * presents, as every new sign-in attempt does (D-3; CodeRabbit review of pull request 13), and
+ * answers the line clearing this installation's pending cookie. Only when the request presented some
+ * pending cookie; the discard's answer gives the identifier, so no session read is needed. A write,
+ * never retried after a bare reset. If it is refused or its call fails (a bare reset reaches the
+ * caller of a write), the busy reply stands and the cookie is still cleared through the read-only
+ * session read, as every sign-in refusal clears it (spec 4, finding 23); the row then expires.
+ */
+async function discardPendingLines(env: Env, context: RequestContext): Promise<string[]> {
+  if (!Object.keys(context.cookies).some((name) => name.startsWith(PENDING_COOKIE_PREFIX))) return [];
+  const { namespace, id } = installation(env);
+  let discarded: ObjectCallResult<{ identifier: string }>;
+  try {
+    discarded = await callObject<{ identifier: string }>(namespace, id, "discardPending", { cookies: context.cookies });
+  } catch (error) {
+    // Only the error's own text, which names the operation and never a cookie value.
+    console.error(`discardPending failed: ${error instanceof Error ? error.message : "unknown error"}`);
+    return pendingClearLines(env, context);
+  }
+  if (!discarded.ok) return pendingClearLines(env, context);
+  return pendingClearLines(env, context, discarded.value.identifier);
 }
 
 /**
@@ -269,9 +293,10 @@ export const HANDLERS: RouteHandlers = {
   //
   // Story 1.5 (D-3, D-12, finding 23): for an account with two-step verification on, a correct
   // password answers `{ secondStep: true }` and sets only the pending sign-in cookie. Every other
-  // reply, refusals included, clears this installation's pending cookie when the request presented it.
+  // reply, refusals included, clears this installation's pending cookie when the request presented it;
+  // a busy refusal before counting also discards that pending sign-in, as the attempt would (D-3).
   async signIn(input, env, context) {
-    if (!hashQueue.hasRoom()) return { ...refused("signin_busy"), cookies: await pendingClearLines(env, context) };
+    if (!hashQueue.hasRoom()) return { ...refused("signin_busy"), cookies: await discardPendingLines(env, context) };
     const { namespace, id } = installation(env);
     const attempt = await callObject<SignInAttemptCounted>(namespace, id, "signInAttempt", {
       email: input.email,

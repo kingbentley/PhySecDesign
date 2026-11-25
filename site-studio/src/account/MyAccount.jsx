@@ -34,7 +34,7 @@ function StateChip({ on }) {
 }
 
 /** "Make fresh recovery codes": the password and a current code (CA-13). */
-function FreshCodesForm({ email, onCodes, onCancel, onSignedOut }) {
+function FreshCodesForm({ email, onCodes, onCancel, onSignedOut, onBusy }) {
   const passwordRef = useRef(null);
   const codeRef = useRef(null);
   const [values, setValues] = useState({ password: '', code: '' });
@@ -61,6 +61,7 @@ function FreshCodesForm({ email, onCodes, onCancel, onSignedOut }) {
     if (found.code) { codeRef.current?.focus(); return; }
     inFlight.current = true;
     setSending(true);
+    onBusy(true);
     setAlert(QUIET);
     let result;
     try {
@@ -68,6 +69,7 @@ function FreshCodesForm({ email, onCodes, onCancel, onSignedOut }) {
     } finally {
       inFlight.current = false;
       setSending(false);
+      onBusy(false);
     }
     if (result.kind === 'codes') return onCodes(result.codes);
     if (result.kind === 'signedOut') return onSignedOut();
@@ -99,7 +101,7 @@ function FreshCodesForm({ email, onCodes, onCancel, onSignedOut }) {
 }
 
 /** "Turn off two-step verification": the password (CAP-7). */
-function TurnOffForm({ email, onOff, onCancel, onSignedOut }) {
+function TurnOffForm({ email, onOff, onCancel, onSignedOut, onBusy }) {
   const passwordRef = useRef(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -119,6 +121,7 @@ function TurnOffForm({ email, onOff, onCancel, onSignedOut }) {
     setError('');
     inFlight.current = true;
     setSending(true);
+    onBusy(true);
     setAlert(QUIET);
     let result;
     try {
@@ -126,6 +129,7 @@ function TurnOffForm({ email, onOff, onCancel, onSignedOut }) {
     } finally {
       inFlight.current = false;
       setSending(false);
+      onBusy(false);
     }
     if (result.kind === 'off') return onOff();
     if (result.kind === 'signedOut') return onSignedOut();
@@ -147,7 +151,9 @@ function TurnOffForm({ email, onOff, onCancel, onSignedOut }) {
         <PasswordField id="two-step-off-password" value={password} onChange={(value) => { setPassword(value); setError(''); }} error={error} inputRef={passwordRef}/>
         <div className="two-step-row">
           <button type="submit" className="two-step-button" aria-disabled={sending ? true : undefined}>Turn off</button>
-          <button type="button" className="two-step-secondary" onClick={onCancel}>Cancel</button>
+          {/* Nothing while the request is in flight: the overview would show On and then change
+              when the request turns it off (pull request 13, review round 1). */}
+          <button type="button" className="two-step-secondary" onClick={() => { if (!inFlight.current) onCancel(); }} aria-disabled={sending ? true : undefined}>Cancel</button>
         </div>
       </form>
     </div>
@@ -165,7 +171,8 @@ function Overview({ state, notice, onTurnOn, onFresh, onTurnOff }) {
       {availability === 'key_mismatch' && (
         <>
           <p className="two-step-text" data-testid="two-step-availability">{TWO_STEP_MESSAGES.mismatch}</p>
-          {enabled && <p className="two-step-text">{TWO_STEP_MESSAGES.recoveryStillWorks}</p>}
+          {/* Only while a recovery code is left to sign in with (pull request 13, review round 1). */}
+          {enabled && recoveryCodesRemaining > 0 && <p className="two-step-text">{TWO_STEP_MESSAGES.recoveryStillWorks}</p>}
         </>
       )}
       {!enabled && availability === 'available' && (
@@ -206,6 +213,18 @@ export default function MyAccount({ onClose, onSignedOut }) {
   // A fresh set, shown once; dropped when the view changes or the dialog closes.
   const [codes, setCodes] = useState(null);
   const [retrying, setRetrying] = useState(false);
+  // True while a set-up start or confirm, fresh-codes or turn-off request is in flight: Escape and
+  // Close then do nothing, as Cancel does, so codes the server makes are not lost unseen while their
+  // reply can still come (pull request 13, review round 1; orchestrator ruling of 2026-11-24).
+  // Cleared when the request settles, whatever its outcome, including the client's own time limit:
+  // a reply lost after that limit is the limit spec 7's triage row 2 accepted.
+  const [busy, setBusy] = useState(false);
+  const busyNow = useRef(false);
+  const onBusy = useCallback((next) => {
+    busyNow.current = next;
+    if (live.current) setBusy(next);
+  }, []);
+  const close = useCallback(() => { if (!busyNow.current) onClose(); }, [onClose]);
   const live = useRef(true);
   const generation = useRef(0);
   // The latest callback, so a parent's re-render never reads the state again.
@@ -240,7 +259,7 @@ export default function MyAccount({ onClose, onSignedOut }) {
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        close();
         return;
       }
       if (event.key !== 'Tab' || !dialog.current) return;
@@ -254,7 +273,7 @@ export default function MyAccount({ onClose, onSignedOut }) {
     }
     document.addEventListener('keydown', keydown, true);
     return () => document.removeEventListener('keydown', keydown, true);
-  }, [onClose]);
+  }, [close]);
 
   /** Back to the overview after a change or a cancel: the state is read again. */
   function backToOverview(nextNotice = '') {
@@ -306,11 +325,11 @@ export default function MyAccount({ onClose, onSignedOut }) {
     body = (
       <TwoStepSetup
         email={data.state.email} headingLevel={4} doneLabel="I have saved my codes"
-        onDone={() => backToOverview()} onCancel={() => backToOverview()} onSignedOut={onSignedOut}
+        onDone={() => backToOverview()} onCancel={() => backToOverview()} onSignedOut={onSignedOut} onBusy={onBusy}
       />
     );
   } else if (view === 'fresh' && data) {
-    body = <FreshCodesForm email={data.state.email} onCodes={(fresh) => { setCodes(fresh); setView('codes'); }} onCancel={() => backToOverview()} onSignedOut={onSignedOut}/>;
+    body = <FreshCodesForm email={data.state.email} onCodes={(fresh) => { setCodes(fresh); setView('codes'); }} onCancel={() => backToOverview()} onSignedOut={onSignedOut} onBusy={onBusy}/>;
   } else if (view === 'codes' && codes && data) {
     body = (
       <RecoveryCodes
@@ -319,17 +338,18 @@ export default function MyAccount({ onClose, onSignedOut }) {
       />
     );
   } else if (view === 'off' && data) {
-    body = <TurnOffForm email={data.state.email} onOff={() => backToOverview(TWO_STEP_MESSAGES.turnedOff)} onCancel={() => backToOverview()} onSignedOut={onSignedOut}/>;
+    body = <TurnOffForm email={data.state.email} onOff={() => backToOverview(TWO_STEP_MESSAGES.turnedOff)} onCancel={() => backToOverview()} onSignedOut={onSignedOut} onBusy={onBusy}/>;
   }
 
   // Drawn on the document's body, outside the app header, so no header style reaches it.
   return createPortal(
-    // A press on the backdrop does not close the dialog (Escape and Close do, as the spec rules).
+    // A press on the backdrop does not close the dialog (Escape and Close do, as the spec rules,
+    // except while a request is in flight).
     <div className="my-account-backdrop">
       <div ref={dialog} className="my-account-panel" role="dialog" aria-modal="true" aria-labelledby={headingId}>
         <div className="my-account-header">
           <h2 id={headingId} ref={dialogHeading} tabIndex={-1}>My account</h2>
-          <button type="button" className="my-account-close" onClick={onClose}><X size={18} aria-hidden="true"/>Close</button>
+          <button type="button" className="my-account-close" onClick={close} aria-disabled={busy ? true : undefined}><X size={18} aria-hidden="true"/>Close</button>
         </div>
         <section className="two-step-section" aria-labelledby={sectionId} aria-busy={view === 'loading' ? true : undefined}>
           <h3 id={sectionId} ref={sectionHeading} tabIndex={-1} className="two-step-section-heading">Two-step verification</h3>

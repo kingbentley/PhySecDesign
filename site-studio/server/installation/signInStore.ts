@@ -713,6 +713,20 @@ export class SignInStore {
     };
   }
 
+  /**
+   * Discards the pending sign-in of the pending cookie this browser presents, and nothing else: no
+   * pruning, no count, no ticket. For a sign-in refused as busy before it is counted, which must
+   * still discard the pending sign-in it presents (D-3; CodeRabbit review of pull request 13).
+   * Answers the identifier, for the line clearing the cookie.
+   */
+  async discardPending(cookies: Record<string, string>): Promise<{ identifier: string }> {
+    this.work = { rowsRead: 0, rowsWritten: 0 };
+    const keys = await this.loadKeys();
+    const pendingHash = await this.presentedPendingHash(keys.identifier, cookies);
+    if (pendingHash !== null) this.exec(`DELETE FROM ${PENDING_TABLE} WHERE token_hash = ?`, pendingHash);
+    return { identifier: keys.identifier };
+  }
+
   /** The hash of the pending cookie named with this identifier, or null when none or a malformed one was presented. */
   private async presentedPendingHash(identifier: string, cookies: Record<string, string>): Promise<string | null> {
     const value = cookies[pendingCookieName(identifier)];
@@ -742,8 +756,13 @@ export class SignInStore {
    * 5. right: the row deleted, the last step set, the counts cleared as a sign-in clears them, the
    *    sessions presented at the password step and now ended, the new session written (CA-47); the
    *    answer is a completed sign-in's.
+   *
+   * `now` is the request's time, used to match the code and for the first read of the pending row;
+   * `decidingClock` is read once at the start of the synchronous step, and every row decided on,
+   * count raised and session written there uses that reading (never earlier than `now`). It
+   * defaults to `now`; the installation object passes the real clock.
    */
-  async secondStep(input: SecondStepOperationInput, now: number): Promise<SignInCompleted> {
+  async secondStep(input: SecondStepOperationInput, now: number, decidingClock: () => number = () => now): Promise<SignInCompleted> {
     this.work = { rowsRead: 0, rowsWritten: 0 };
     const access = this.twoStep;
     if (!access) throw new Error("The two-step rows are not attached to the sign-in store.");
@@ -773,9 +792,15 @@ export class SignInStore {
     }
 
     // From here to the end of the write there is no await: every row decided on is read again.
+    // The deciding step reads the clock again (CodeRabbit review of pull request 13): a pending token
+    // that expired while the cryptography ran is expired here, and counts are read, raised and
+    // re-checked at the time they are decided, so requests deciding out of order never move a
+    // failure's time backward. `now`, the request's time, is kept for matching the code.
+    let decideAt = now;
     const decided = this.storage.transactionSync((): { refusal: SecondStepRefusal } | { userId: string; name: string; markerId: string } => {
-      this.prune(now);
-      const row = pendingHash !== null ? this.livePending(pendingHash, now) : null;
+      decideAt = Math.max(now, decidingClock());
+      this.prune(decideAt);
+      const row = pendingHash !== null ? this.livePending(pendingHash, decideAt) : null;
       const discard = () => {
         if (pendingHash !== null) this.exec(`DELETE FROM ${PENDING_TABLE} WHERE token_hash = ?`, pendingHash);
       };
@@ -801,7 +826,7 @@ export class SignInStore {
       }
 
       const counting = { emailKey: row.email_key, markerId: row.marker_id, address: input.address };
-      const state = this.countState(counting, now);
+      const state = this.countState(counting, decideAt);
       if (state.wait > 0) {
         discard();
         return { refusal: { code: "signin_wait", seconds: state.wait } };
@@ -812,8 +837,8 @@ export class SignInStore {
           ? matched !== null && matched > current.lastStep
           : recoveryHash !== null && access.useRecoveryCode(row.user_id, recoveryHash);
       if (!right) {
-        this.raiseCounts(counting, state, now);
-        const after = this.countState(counting, now);
+        this.raiseCounts(counting, state, decideAt);
+        const after = this.countState(counting, decideAt);
         if (after.wait > 0) {
           discard();
           return { refusal: { code: "signin_wait", seconds: after.wait } };
@@ -827,7 +852,7 @@ export class SignInStore {
       if (presentedNow !== null && presentedNow !== row.presented_session_hash) {
         this.exec(`DELETE FROM ${SESSIONS_TABLE} WHERE token_hash = ?`, presentedNow);
       }
-      this.writeSession(row.user_id, row.presented_session_hash, session.tokenHash, now);
+      this.writeSession(row.user_id, row.presented_session_hash, session.tokenHash, decideAt);
       return { userId: user.id, name: user.name, markerId: row.marker_id ?? freshMarkerId };
     });
 
@@ -839,9 +864,9 @@ export class SignInStore {
       kind: "signedIn",
       identifier: session.identifier,
       sessionToken: session.sessionToken,
-      marker: await this.sessionMarker(session, decided.userId, decided.markerId, now),
+      marker: await this.sessionMarker(session, decided.userId, decided.markerId, decideAt),
       account: { id: decided.userId, name: decided.name },
-      signedInAt: new Date(now).toISOString(),
+      signedInAt: new Date(decideAt).toISOString(),
     };
   }
 

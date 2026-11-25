@@ -89,127 +89,154 @@ class SmokeFailure extends Error {}
 /** workerd exited before it answered: its start-up output may say why. */
 class EarlyExit extends SmokeFailure {}
 
+/** The values the public key state may answer (D-18): only these are ever printed from it. */
+const KEY_STATE_FINGERPRINTS = ["none", "stored"];
+const KEY_STATE_KEYS = ["none", "present", "matches", "mismatch"];
+
 /** The last time step accepted for the administrator's account: a code must be of a later one (D-6). */
 let lastStep = null;
 let storage = null;
 let bareStorage = null;
-try {
-  for (const file of [bundle, path.join(client, "index.html")]) {
-    if (!existsSync(file)) fail(`Missing ${path.relative(root, file)}. Run npm run build first.`);
+
+// Run only as a script (Windows paths compared without case); importing it (the unit tests import
+// keyStateReply) starts nothing.
+const invoked = process.argv[1] ? path.resolve(process.argv[1]) : "";
+const self = fileURLToPath(import.meta.url);
+if (process.platform === "win32" ? invoked.toLowerCase() === self.toLowerCase() : invoked === self) await main();
+
+async function main() {
+  try {
+    for (const file of [bundle, path.join(client, "index.html")]) {
+      if (!existsSync(file)) fail(`Missing ${path.relative(root, file)}. Run npm run build first.`);
+    }
+    // RFC 6238's SHA-1 test vectors, to six digits: T = 59 s (step 1), from the raw secret and from its
+    // base32 form, and T = 20000000000 s (step 666666666): the helpers below are correct.
+    const rfcSecret = Buffer.from("12345678901234567890", "ascii");
+    if (
+      totpCode(rfcSecret, 1) !== "287082" ||
+      totpCode(base32Bytes("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"), 1) !== "287082" ||
+      totpCode(rfcSecret, 666666666) !== "353130"
+    ) {
+      fail("The smoke suite's RFC 6238 helper fails its test vectors.");
+    }
+    storage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
+    writeSmokeConfig();
+    const port = await freePort();
+    const base = `http://127.0.0.1:${port}`;
+
+    const first = await withServer({ base, port, storage, key: KEY_A }, async () => {
+      const status = await readStatus(base);
+      if (status.release !== version) fail(`The release is ${status.release}, not package.json's ${version}.`);
+      await checkPage(base);
+      await checkRefusal(base);
+      await checkNoListing(base);
+      await completeSetup(base);
+      const cookies = await signIn(base);
+      await expectSession(base, cookies, true);
+      await failSignIn(base, 1);
+      // Two-step verification (story 1.5, CAP-1, CAP-3, CAP-5, CAP-10).
+      await expectKeyState(base, { fingerprint: "none", key: "present" });
+      const twoStep = await turnOnTwoStep(base, cookies);
+      await expectKeyState(base, { fingerprint: "stored", key: "matches" });
+      const withCode = await completeSecondStep(base, await pendingSignIn(base), "code", await nextCode(twoStep.secret, true));
+      await expectSession(base, withCode, true);
+      const withRecovery = await completeSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0]);
+      await expectSession(base, withRecovery, true);
+      await refusedSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0], 401, "second_step_recovery_code_wrong");
+      await expectTwoStepState(base, cookies, { enabled: true, availability: "available", recoveryCodesRemaining: 9 });
+      return { status, cookies, twoStep };
+    });
+    expectNoKeyEvents(first.output, "the first start");
+    console.log(`first start: release ${first.value.status.release}, createdAt ${first.value.status.installation.createdAt}, set-up completed, signed in`);
+    console.log("first start: two-step verification turned on, signed in with a code, a recovery code accepted once and refused the second time");
+
+    const second = await withServer({ base, port, storage, key: KEY_A }, async () => {
+      const status = await readStatus(base);
+      const state = await readSetupState(base);
+      if (state !== "closed") fail(`After the restart set-up is ${state}, not closed: the administrator did not persist.`);
+      // The same cookie is still signed in: the identifier and the session survived (V-11).
+      await expectSession(base, first.value.cookies, true);
+      // Two-step verification survived the restart: a code of a later step signs in (CAP-3, CAP-5).
+      await expectKeyState(base, { fingerprint: "stored", key: "matches" });
+      // The code is taken after the password step, which can take seconds (scrypt): a code taken
+      // before it could be of a step the installation no longer accepts when it arrives.
+      const pending = await pendingSignIn(base);
+      const laterCode = await nextCode(first.value.twoStep.secret, true);
+      const withCode = await completeSecondStep(base, pending, "code", laterCode);
+      await expectSession(base, withCode, true);
+      // A code works once (CAP-5): the same code on a new pending sign-in is refused.
+      await refusedSecondStep(base, await pendingSignIn(base), "code", laterCode, 401, "second_step_code_wrong");
+      // One failure before the restart and four after reach the wait (V-17).
+      await failSignIn(base, 4);
+      await expectWait(base);
+      await signOut(base, first.value.cookies);
+      await expectSession(base, first.value.cookies, false);
+      return status;
+    });
+    expectNoKeyEvents(second.output, "the restart");
+    console.log(`after restart: createdAt ${second.value.installation.createdAt}, set-up closed, still signed in, counts kept, signed out`);
+    console.log("after restart: signed in with the password and a code of a later step, the same code refused the second time");
+
+    const probe = await verifyFixtureUnderWorkerd();
+    console.log(`password probe under workerd: fixture ${probe.fixture ? "verified" : "refused"}, wrong password ${probe.wrongPassword ? "verified" : "refused"}`);
+
+    // No variable, on separate empty storage (finding 6, finding 31): the unset binding is null.
+    bareStorage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
+    const third = await withServer({ base, port, storage: bareStorage, key: null }, async () => {
+      await expectKeyState(base, { fingerprint: "none", key: "none" }, "Without a deployment key on empty storage");
+      await completeSetup(base);
+      const cookies = await signIn(base);
+      await expectTwoStepState(base, cookies, { enabled: false, availability: "no_key" });
+      await refusedStart(base, cookies, 503, "deployment_key_missing");
+    });
+    expectNoKeyEvents(third.output, "the start without a key");
+    console.log("start without a key: two-step verification not available (no_key), turning on refused deployment_key_missing");
+
+    // The first storage with a different key (criterion 23, finding 31).
+    const fourth = await withServer({ base, port, storage, key: KEY_B }, async () => {
+      const status = await readStatus(base);
+      await expectKeyState(base, { fingerprint: "stored", key: "mismatch" }, "With a changed deployment key");
+      const pending = await pendingSignIn(base);
+      const refused = await refusedSecondStep(base, pending, "code", await nextCode(first.value.twoStep.secret, false), 503, "deployment_key_mismatch");
+      if (refused.headers.getSetCookie().length !== 0) fail("A code refused deployment_key_mismatch changed the pending sign-in cookie; it must be kept.");
+      const withRecovery = await completeSecondStep(base, pending, "recovery", first.value.twoStep.recoveryCodes[1]);
+      await expectSession(base, withRecovery, true);
+      await expectTwoStepState(base, withRecovery, { enabled: true, availability: "key_mismatch", recoveryCodesRemaining: 8 });
+      return status;
+    });
+    const mismatchLines = countLines(fourth.output, MISMATCH_LINE);
+    if (mismatchLines !== 1) fail(`With a changed key workerd's output held the deployment_key_mismatch log line ${mismatchLines} times, not once.`);
+    const keyEvents = eventNames(fourth.output).filter((name) => name.startsWith("deployment_key_"));
+    if (keyEvents.join() !== "deployment_key_mismatch") fail(`With a changed key workerd logged ${keyEvents.join(", ") || "no deployment-key event"}, not deployment_key_mismatch alone.`);
+    console.log("restart with a changed key: key mismatch reported, a code refused deployment_key_mismatch, a recovery code signed in, the log line written once");
+
+    const createdAt = first.value.status.installation.createdAt;
+    const dataFormat = first.value.status.installation.dataFormat;
+
+    if (second.value.installation.createdAt !== createdAt || fourth.value.installation.createdAt !== createdAt) {
+      fail("The installation's createdAt changed across the restart: storage did not persist.");
+    }
+    if (second.value.installation.dataFormat !== dataFormat || fourth.value.installation.dataFormat !== dataFormat) fail("The data format changed across the restart.");
+    console.log("Self-hosted smoke test passed: the value saved on first start was read back after a restart.");
+  } catch (error) {
+    console.error(`Self-hosted smoke test failed: ${error instanceof SmokeFailure ? error.message : error?.stack ?? error}`);
+    process.exitCode = 1;
+  } finally {
+    if (storage) rmSync(storage, { recursive: true, force: true });
+    if (bareStorage) rmSync(bareStorage, { recursive: true, force: true });
+    rmSync(config, { force: true });
   }
-  // RFC 6238's SHA-1 test vectors, to six digits: T = 59 s (step 1), from the raw secret and from its
-  // base32 form, and T = 20000000000 s (step 666666666): the helpers below are correct.
-  const rfcSecret = Buffer.from("12345678901234567890", "ascii");
-  if (
-    totpCode(rfcSecret, 1) !== "287082" ||
-    totpCode(base32Bytes("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"), 1) !== "287082" ||
-    totpCode(rfcSecret, 666666666) !== "353130"
-  ) {
-    fail("The smoke suite's RFC 6238 helper fails its test vectors.");
-  }
-  storage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
-  writeSmokeConfig();
-  const port = await freePort();
-  const base = `http://127.0.0.1:${port}`;
+}
 
-  const first = await withServer({ base, port, storage, key: KEY_A }, async () => {
-    const status = await readStatus(base);
-    if (status.release !== version) fail(`The release is ${status.release}, not package.json's ${version}.`);
-    await checkPage(base);
-    await checkRefusal(base);
-    await checkNoListing(base);
-    await completeSetup(base);
-    const cookies = await signIn(base);
-    await expectSession(base, cookies, true);
-    await failSignIn(base, 1);
-    // Two-step verification (story 1.5, CAP-1, CAP-3, CAP-5, CAP-10).
-    await expectKeyState(base, { fingerprint: "none", key: "present" });
-    const twoStep = await turnOnTwoStep(base, cookies);
-    await expectKeyState(base, { fingerprint: "stored", key: "matches" });
-    const withCode = await completeSecondStep(base, await pendingSignIn(base), "code", await nextCode(twoStep.secret, true));
-    await expectSession(base, withCode, true);
-    const withRecovery = await completeSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0]);
-    await expectSession(base, withRecovery, true);
-    await refusedSecondStep(base, await pendingSignIn(base), "recovery", twoStep.recoveryCodes[0], 401, "second_step_recovery_code_wrong");
-    await expectTwoStepState(base, cookies, { enabled: true, availability: "available", recoveryCodesRemaining: 9 });
-    return { status, cookies, twoStep };
-  });
-  expectNoKeyEvents(first.output, "the first start");
-  console.log(`first start: release ${first.value.status.release}, createdAt ${first.value.status.installation.createdAt}, set-up completed, signed in`);
-  console.log("first start: two-step verification turned on, signed in with a code, a recovery code accepted once and refused the second time");
-
-  const second = await withServer({ base, port, storage, key: KEY_A }, async () => {
-    const status = await readStatus(base);
-    const state = await readSetupState(base);
-    if (state !== "closed") fail(`After the restart set-up is ${state}, not closed: the administrator did not persist.`);
-    // The same cookie is still signed in: the identifier and the session survived (V-11).
-    await expectSession(base, first.value.cookies, true);
-    // Two-step verification survived the restart: a code of a later step signs in (CAP-3, CAP-5).
-    await expectKeyState(base, { fingerprint: "stored", key: "matches" });
-    const laterCode = await nextCode(first.value.twoStep.secret, true);
-    const withCode = await completeSecondStep(base, await pendingSignIn(base), "code", laterCode);
-    await expectSession(base, withCode, true);
-    // A code works once (CAP-5): the same code on a new pending sign-in is refused.
-    await refusedSecondStep(base, await pendingSignIn(base), "code", laterCode, 401, "second_step_code_wrong");
-    // One failure before the restart and four after reach the wait (V-17).
-    await failSignIn(base, 4);
-    await expectWait(base);
-    await signOut(base, first.value.cookies);
-    await expectSession(base, first.value.cookies, false);
-    return status;
-  });
-  expectNoKeyEvents(second.output, "the restart");
-  console.log(`after restart: createdAt ${second.value.installation.createdAt}, set-up closed, still signed in, counts kept, signed out`);
-  console.log("after restart: signed in with the password and a code of a later step, the same code refused the second time");
-
-  const probe = await verifyFixtureUnderWorkerd();
-  console.log(`password probe under workerd: fixture ${probe.fixture ? "verified" : "refused"}, wrong password ${probe.wrongPassword ? "verified" : "refused"}`);
-
-  // No variable, on separate empty storage (finding 6, finding 31): the unset binding is null.
-  bareStorage = mkdtempSync(path.join(tmpdir(), "site-studio-smoke-"));
-  const third = await withServer({ base, port, storage: bareStorage, key: null }, async () => {
-    await expectKeyState(base, { fingerprint: "none", key: "none" }, "Without a deployment key on empty storage");
-    await completeSetup(base);
-    const cookies = await signIn(base);
-    await expectTwoStepState(base, cookies, { enabled: false, availability: "no_key" });
-    await refusedStart(base, cookies, 503, "deployment_key_missing");
-  });
-  expectNoKeyEvents(third.output, "the start without a key");
-  console.log("start without a key: two-step verification not available (no_key), turning on refused deployment_key_missing");
-
-  // The first storage with a different key (criterion 23, finding 31).
-  const fourth = await withServer({ base, port, storage, key: KEY_B }, async () => {
-    const status = await readStatus(base);
-    await expectKeyState(base, { fingerprint: "stored", key: "mismatch" }, "With a changed deployment key");
-    const pending = await pendingSignIn(base);
-    const refused = await refusedSecondStep(base, pending, "code", await nextCode(first.value.twoStep.secret, false), 503, "deployment_key_mismatch");
-    if (refused.headers.getSetCookie().length !== 0) fail("A code refused deployment_key_mismatch changed the pending sign-in cookie; it must be kept.");
-    const withRecovery = await completeSecondStep(base, pending, "recovery", first.value.twoStep.recoveryCodes[1]);
-    await expectSession(base, withRecovery, true);
-    await expectTwoStepState(base, withRecovery, { enabled: true, availability: "key_mismatch", recoveryCodesRemaining: 8 });
-    return status;
-  });
-  const mismatchLines = countLines(fourth.output, MISMATCH_LINE);
-  if (mismatchLines !== 1) fail(`With a changed key workerd's output held the deployment_key_mismatch log line ${mismatchLines} times, not once.`);
-  const keyEvents = eventNames(fourth.output).filter((name) => name.startsWith("deployment_key_"));
-  if (keyEvents.join() !== "deployment_key_mismatch") fail(`With a changed key workerd logged ${keyEvents.join(", ") || "no deployment-key event"}, not deployment_key_mismatch alone.`);
-  console.log("restart with a changed key: key mismatch reported, a code refused deployment_key_mismatch, a recovery code signed in, the log line written once");
-
-  const createdAt = first.value.status.installation.createdAt;
-  const dataFormat = first.value.status.installation.dataFormat;
-
-  if (second.value.installation.createdAt !== createdAt || fourth.value.installation.createdAt !== createdAt) {
-    fail("The installation's createdAt changed across the restart: storage did not persist.");
-  }
-  if (second.value.installation.dataFormat !== dataFormat || fourth.value.installation.dataFormat !== dataFormat) fail("The data format changed across the restart.");
-  console.log("Self-hosted smoke test passed: the value saved on first start was read back after a restart.");
-} catch (error) {
-  console.error(`Self-hosted smoke test failed: ${error instanceof SmokeFailure ? error.message : error?.stack ?? error}`);
-  process.exitCode = 1;
-} finally {
-  if (storage) rmSync(storage, { recursive: true, force: true });
-  if (bareStorage) rmSync(bareStorage, { recursive: true, force: true });
-  rmSync(config, { force: true });
+/**
+ * How a key-state reply is described in a failure: its status, and its two values only when the
+ * body is exactly `{ fingerprint, key }` with values D-18 allows; otherwise "an invalid reply", so
+ * that nothing else a reply may hold (such as a key) is ever printed.
+ */
+export function keyStateReply(status, body) {
+  const fields = body && typeof body === "object" && !Array.isArray(body) ? Object.keys(body).sort().join() : "";
+  const valid = fields === "fingerprint,key" && KEY_STATE_FINGERPRINTS.includes(body.fingerprint) && KEY_STATE_KEYS.includes(body.key);
+  return valid ? `${status} with fingerprint ${body.fingerprint} and key ${body.key}` : `${status} with an invalid reply`;
 }
 
 function newDeploymentKey() {
@@ -288,7 +315,7 @@ async function expectKeyState(base, expected, context = "The deployment-key stat
   const body = await response.json().catch(() => null);
   const keys = Object.keys(body ?? {}).sort().join();
   if (response.status !== 200 || keys !== "fingerprint,key" || body.fingerprint !== expected.fingerprint || body.key !== expected.key) {
-    fail(`${context}: GET /api/v1/deployment-key/state answered ${response.status} with fingerprint ${body?.fingerprint} and key ${body?.key}, not ${expected.fingerprint} and ${expected.key}.`);
+    fail(`${context}: GET /api/v1/deployment-key/state answered ${keyStateReply(response.status, body)}, not ${expected.fingerprint} and ${expected.key}.`);
   }
 }
 

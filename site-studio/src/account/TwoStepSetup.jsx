@@ -122,20 +122,30 @@ function selectText(element) {
 /** Copy with "Copied" or the failure text, as the invite panel's Copy link does. */
 function useCopy(failure) {
   const [copy, setCopy] = useState('idle');
+  // Each attempt's number; `reset` (a new key) and a newer attempt make an earlier one's outcome
+  // stale, so a write that settles late says nothing about what is shown now (pull request 13,
+  // review round 1).
+  const attempt = useRef(0);
   async function run(text, target) {
+    const mine = ++attempt.current;
     // Cleared first, so each attempt's outcome is announced afresh.
     setCopy('idle');
     try {
       if (!navigator.clipboard?.writeText) throw new Error('No clipboard');
       await navigator.clipboard.writeText(text);
-      setCopy('copied');
+      if (mine === attempt.current) setCopy('copied');
     } catch {
+      if (mine !== attempt.current) return;
       setCopy('failed');
       selectText(target.current);
     }
   }
+  function reset() {
+    attempt.current += 1;
+    setCopy('idle');
+  }
   const status = copy === 'copied' ? 'Copied' : copy === 'failed' ? failure : '';
-  return { run, status, failed: copy === 'failed', reset: () => setCopy('idle') };
+  return { run, status, failed: copy === 'failed', reset };
 }
 
 /** Saves `text` as a file through a `Blob` link, revoked once the download has started. */
@@ -190,11 +200,13 @@ export function RecoveryCodes({ codes, installationName, email, headingLevel, do
 const QUIET = { message: '', at: 0 };
 
 /**
- * The set-up. `email` is the state read's (for the downloaded file); `headingLevel` the level of
+ * The set-up. `email` is the state read's (for the password form's hidden user name; the downloaded
+ * file names the start reply's email); `headingLevel` the level of
  * each step's heading; `doneLabel` step 3's closing button; `onDone` closes it after step 3;
- * `onCancel` leaves steps 1 and 2; `onSignedOut` when the server answers that the session ended.
+ * `onCancel` leaves steps 1 and 2; `onSignedOut` when the server answers that the session ended;
+ * `onBusy(true | false)`, if given, as a request starts and settles (My account's Escape and Close).
  */
-export default function TwoStepSetup({ email, headingLevel, doneLabel, onDone, onCancel, onSignedOut }) {
+export default function TwoStepSetup({ email, headingLevel, doneLabel, onDone, onCancel, onSignedOut, onBusy }) {
   // 'password', 'scan' or 'codes'.
   const [step, setStep] = useState('password');
   const [password, setPassword] = useState('');
@@ -231,12 +243,14 @@ export default function TwoStepSetup({ email, headingLevel, doneLabel, onDone, o
     if (inFlight.current) return null;
     inFlight.current = true;
     setSending(true);
+    onBusy?.(true);
     setAlert(QUIET);
     try {
       return await request();
     } finally {
       inFlight.current = false;
       setSending(false);
+      onBusy?.(false);
     }
   }
 
@@ -292,8 +306,9 @@ export default function TwoStepSetup({ email, headingLevel, doneLabel, onDone, o
     const result = await send(() => confirmTwoStep({ setupId: setup.setupId, code: normalised }));
     if (!result) return;
     if (result.kind === 'codes') {
-      // The secret is no longer needed: only the installation's name stays, for the file.
-      setSetup((current) => ({ installationName: current.installationName }));
+      // The secret is no longer needed: only the installation's name and the account's email stay,
+      // for the file.
+      setSetup((current) => ({ installationName: current.installationName, email: current.email }));
       setCode('');
       setCodes(result.codes);
       setStep('codes');
@@ -304,9 +319,12 @@ export default function TwoStepSetup({ email, headingLevel, doneLabel, onDone, o
   }
 
   if (step === 'codes') {
+    // The file names the account the start reply was for (a start reply without an email is refused
+    // by `startOutcome`), which is the account the codes were made for, not the email the host read
+    // earlier (pull request 13, review round 1).
     return (
       <RecoveryCodes
-        codes={codes} installationName={setup.installationName} email={email}
+        codes={codes} installationName={setup.installationName} email={setup.email}
         headingLevel={headingLevel} doneLabel={doneLabel} onDone={onDone}
       />
     );

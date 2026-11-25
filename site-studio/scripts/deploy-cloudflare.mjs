@@ -49,7 +49,10 @@
 // time line, Wrangler's deploy output, the key lines, then the set-up lines.
 //
 // Options: --url <https address> asks that address instead of the first one Wrangler reports
-// (for a custom domain). --name <worker> deploys under that Worker name instead of the one in the
+// (for a custom domain). Its host must be one Wrangler reported for this deploy (an https target,
+// a custom domain or a route pattern without a wildcard, compared exactly without regard to case);
+// otherwise the command stops after the deploy with nothing listed, put or deleted and no set-up
+// code (pull request 13, review round 1). --name <worker> deploys under that Worker name instead of the one in the
 // configuration (for a test installation); the secret goes to whatever name Wrangler reports.
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -104,7 +107,59 @@ export const KEY_LINES = Object.freeze({
   workerKeyNotConfirmed: "The Worker did not say whether its deployment key matches the secrets this installation holds. Nothing was changed. Run the command again.",
   suppliedPutFailed: "The key from SITE_SURVEY_DEPLOYMENT_KEY may or may not have been stored. Run the command again with the same key.",
   checking: "Checking the deployment key with this installation. This takes at least a minute.",
+  urlNotReported: (address, worker) => `${address} is not an address Wrangler reported for the Worker ${worker}, so no deployment key was checked, generated or supplied. Run again with one of the Worker's own addresses in --url.`,
 });
+
+/** A host name: dot-separated labels of letters, digits and hyphens, no wildcard. */
+const HOST_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
+
+/**
+ * The hosts Wrangler reported for this deploy, lower-cased (pull request 13, review round 1;
+ * orchestrator ruling of 2026-11-24): an `https://` target's host, a custom domain's host
+ * (`app.example.com (custom domain…)`) and a route pattern's host (`app.example.com/* (zone …)`).
+ * A pattern whose host holds a wildcard gives none, and so do the other targets (schedules,
+ * queues, "…and N more routes").
+ */
+export function reportedHosts(targets) {
+  const hosts = new Set();
+  for (const target of targets ?? []) {
+    if (typeof target !== "string") continue;
+    let host;
+    if (target.startsWith("https://")) {
+      try {
+        host = new URL(target).hostname;
+      } catch {
+        continue;
+      }
+    } else {
+      // A custom domain is a bare host; a route counts only when it covers the whole host
+      // (`host/*`), since the key-state route sits at the origin's root and a route limited to a
+      // path (`host/survey/*`) leaves the rest of the host to something else (review layer, round 1).
+      const pattern = target.trim().split(/\s/, 1)[0];
+      const slash = pattern.indexOf("/");
+      if (slash !== -1 && pattern.slice(slash) !== "/*") continue;
+      host = slash === -1 ? pattern : pattern.slice(0, slash);
+    }
+    host = host.toLowerCase();
+    // Refused, safely, as unreported: a wildcard, a trailing dot, a host written in Unicode (the
+    // `--url` side is punycode), and routes Wrangler elides after its first nine.
+    if (HOST_PATTERN.test(host)) hosts.add(host);
+  }
+  return hosts;
+}
+
+/** Whether `address` (an `https://` origin) has a host Wrangler reported, compared exactly. */
+export function isReportedAddress(address, targets) {
+  let url;
+  try {
+    url = new URL(address);
+  } catch {
+    return false;
+  }
+  // An explicit port is not one Wrangler reported (its targets carry none), so it is refused.
+  if (url.port !== "") return false;
+  return reportedHosts(targets).has(url.hostname.toLowerCase());
+}
 
 /** How long the same `matches` or `mismatch` must come on every readable reply to count. */
 export const KEY_SETTLE_MS = 60_000;
@@ -312,6 +367,9 @@ export async function waitForSettledKeyState(address, {
   for (;;) {
     const state = await fetchKeyState(address, fetchImpl);
     const at = now();
+    // A reply that completes after the limit decides nothing, even one that would settle the run:
+    // a settled answer must come within `timeoutMs` (pull request 13, review round 1).
+    if (at > deadline) return null;
     if (keyConfirmed(state)) {
       if (run && run.key === state.key) run.replies += 1;
       else run = { key: state.key, since: at, replies: 1 };
@@ -482,6 +540,15 @@ export async function runDeploy({
   const address = chooseAddress(deployed?.targets, url);
   if (!address) {
     printError("The deployment reported no https:// address. Run again with --url <https address>.");
+    return 1;
+  }
+  // The key state is read from the address while secrets go to the Worker Wrangler named, so an
+  // address given with --url must be one Wrangler reported for this Worker, or a key could be
+  // generated, put or deleted on the strength of another installation's state (pull request 13,
+  // review round 1; orchestrator ruling of 2026-11-24). Nothing after this runs: no key step and
+  // no set-up code.
+  if (url !== undefined && !isReportedAddress(address, deployed.targets)) {
+    printError(KEY_LINES.urlNotReported(address, deployed.workerName));
     return 1;
   }
   const keyExit = await supplyDeploymentKey({

@@ -613,6 +613,7 @@ describe("accounts and the installation's name are outside project revisions (CA
       "createFirstAdministrator",
       "createInvitation",
       "deploymentKeyState",
+      "discardPending",
       "endSession",
       "invitationInfo",
       "renewRecoveryCodes",

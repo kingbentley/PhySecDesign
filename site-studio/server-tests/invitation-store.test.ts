@@ -700,6 +700,8 @@ describe("the installation object's operations (criteria 8 and 16, standing rule
       ["acceptInvitation", async () => ({ secretHash: await liveHash("accept@acme.test"), name: "Accepting Person", passwordHash: madeUpHash(), cookies: {} })],
       // Two-step verification (story 1.5, spec 2), in the order its fixtures need.
       ...TWO_STEP_OPERATIONS.map((operation) => [operation, twoStep[operation]] as [string, () => Promise<unknown>]),
+      // Discards only a presented pending sign-in (D-3; pull request 13, review round 1).
+      ["discardPending", async () => ({ cookies: sessionCookies() })],
       ["endSession", async () => ({ cookies: sessionCookies() })],
     ];
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());

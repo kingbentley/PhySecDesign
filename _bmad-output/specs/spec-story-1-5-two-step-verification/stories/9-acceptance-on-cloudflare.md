@@ -231,11 +231,11 @@ The only made-up email is `admin-15a@example.test` ("Acceptance Administrator", 
   - a redeploy keeps the key, and a two-step set-up made before it still signs in (criterion 21, D-19);
   - HKDF and AES-GCM run with no platform error;
   - spec 6's restore paths end as its frozen block says;
-  - the 60-second settle window is not exceeded by stale replies after a secret put; none were seen at a 3-second poll with a new connection per request.
+  - no stale reply after a secret put was seen in check 13's samples (a 3-second poll with a new connection per request), so none of those samples exceeded the 60-second settle window. (Reworded 2026-11-24, pull request 13 review round 1: the samples show what they reached, not every copy of the Worker.)
 - Not shown:
   - that a failed `secret put` exits non-zero (check 10, above);
   - the real-phone part of D-20 (check 8 declined; story 10.6);
-  - stale replies themselves: with none seen, check 13 bounds them at under 3 s for this run only, and does not show how the settle window behaves when copies do lag;
+  - stale replies themselves: none was seen, but the polls need not have reached every copy of the Worker, so the run sets no bound on how long a copy can stay stale, and does not show how the settle window behaves when copies do lag (reworded 2026-11-24, pull request 13 review round 1; it said "bounds them at under 3 s");
   - the browser screens on Cloudflare: this run drives the API only, as the frozen block says.
 
 **Build session's choices not settled by the spec** (beyond the builder's choices above and the Review Triage Log):
@@ -356,3 +356,13 @@ A Docker `node:24.20.0-bookworm` container with the same steps also passed 290/2
   All three predate this fix and matter only when the script is run off Windows. They are listed here for the orchestrator to enter in `deferred-work.md`, which is outside this fix's files.
 
 Update (2026-11-24, orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction): the three deferred findings above are now one entry in `deferred-work.md`, status open, deferred, owned by whoever first runs the script off Windows, and in any case story 1.6's spec writer checks. The cause of the CI failure was the Node version (CI's Node 22 against this workstation's Node 24), not Linux.
+
+## Pull request 13, CodeRabbit review round 1 (2026-11-24)
+
+Dated note; the frozen block is unchanged. Record: `../review-round-1.md`. **The deployed run of 2026-11-24 recorded above was made with the earlier code** of `deploy/acceptance/two-step.mjs` and `scripts/deploy-cloudflare.mjs`; it is not repeated. What differs since:
+- Check 14 (a) also scans the deploy's output for the wrong key it supplies (the run scanned only for the original key and the set-up code).
+- Checks 4, 5 (first use) and 14 (b) count a sign-in only when `GET /api/v1/session` with the same cookies then answers `signedIn: true` (the run counted a 200 with a name).
+- Check 7 records when 15b's first 200 reply arrived, not when its request was sent (the run's 40.7 s is the send time of that probe, so the arrival was at most one request's time later).
+- The phone-check prompts settle on the run's interrupt or the end of input.
+- **Check 13 times each reply by when it arrived** (orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction; Kevin may overrule). The frozen block's "a differing reply that arrives at or after 60 s" means the reply's completion; this replaces the builder's choice in the Build notes that "a reply's time is the moment its request was sent". The send time now only schedules the polls; whether a reply falls in the final 60-second window, and the last differing reply's time, use the completion time, and a failed or timed-out request counts when it ended (`pollAfterPut`). The run of 2026-11-24 saw no differing reply after any put (0 s after each), so its result is the same under either reading. The final window's minimum of 10 replies: at the 3-second poll with quick replies 21 arrive in it; the polls are sequential, so a request taking longer than about 6 s on average leaves fewer than 10 and the put is "not settled" (fails safe), at the 15-second request limit about 5 — as under the send-time reading, which allowed at most one reply fewer.
+- The deploy command refuses a `--url` whose host Wrangler did not report, and a settled key-state answer must complete within 180 s (spec 6's round-1 note). The run never passed `--url`, and every settle ended in 62–67 s.

@@ -45,6 +45,7 @@ Reused: `signin_wait` (page wording "Too many attempts. Wait ‹1 minute› befo
 - On: "Recovery codes left: ‹n› of 10". At 0: "No recovery codes left. Make a fresh set so you can still sign in if you lose your phone." Buttons: "Make fresh recovery codes", "Turn off two-step verification"
 - `no_key`: the `deployment_key_missing` message, no buttons
 - `key_mismatch`: the `deployment_key_mismatch` message, then "You can still sign in with a recovery code." Button: "Turn off two-step verification" (when on)
+  - (2026-11-24, orchestrator ruling, Claude, accepted on Kevin's instruction; pull request 13 review round 1) the recovery-code line shows only while at least one recovery code remains; the text is unchanged.
 - Loading fails: "Two-step verification could not be loaded. Check the connection and try again." Button "Try again"
 
 ### Turning on
@@ -107,6 +108,7 @@ Each code works once.
 - Key in the list and a key supplied, no answer in time (error, after the "kept" line, rule 3): "The Worker did not say whether its deployment key matches the secrets this installation holds. Nothing was changed. Run the command again." (reworded after spec 6's review round 3: the supplied key is never compared on this path)
 - Before waiting for a settled answer about a supplied key (orchestrator ruling on stale replies, 2026-11-22): "Checking the deployment key with this installation. This takes at least a minute." (reworded after spec 6's review round 3: on rule 3's path it is the Worker's key that is checked)
 - Storing a supplied key failed (error, orchestrator ruling of 2026-11-22, rule 5): "The key from SITE_SURVEY_DEPLOYMENT_KEY may or may not have been stored. Run the command again with the same key."
+- `--url` names a host Wrangler did not report for this deploy (error, after the deploy and before any key step; orchestrator ruling of 2026-11-24, Claude, accepted on Kevin's instruction, pull request 13 review round 1): "‹address› is not an address Wrangler reported for the Worker ‹worker›, so no deployment key was checked, generated or supplied. Run again with one of the Worker's own addresses in --url." (‹address› is the `--url` origin.)
 
 ## Runtime log (no key material, no account data)
 
