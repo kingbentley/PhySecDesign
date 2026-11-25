@@ -595,7 +595,11 @@ export async function pollAfterPut({ now, sleep, checkAbort = () => {}, read }) 
  */
 export function evaluatePutPolls(replies, expected) {
   const finalFrom = KEY_POLL_WINDOW_MS - KEY_FINAL_WINDOW_MS;
-  const last = replies.filter((reply) => reply.atMs >= finalFrom);
+  // Only replies that arrived within the 180-second poll make up the final value: a reply arriving
+  // later cannot supply the tenth reply or the agreement. It still counts as a differing reply
+  // below, so a late arrival can only make the check stricter (orchestrator ruling of 2026-11-24 on
+  // pull request 13's review round 2, Claude, accepted on Kevin's instruction).
+  const last = replies.filter((reply) => reply.atMs >= finalFrom && reply.atMs <= KEY_POLL_WINDOW_MS);
   const values = new Set(last.map((reply) => reply.key ?? "unreadable"));
   const final = last.length >= KEY_FINAL_MIN_REPLIES && values.size === 1 && !values.has("unreadable") ? last[0].key : null;
   let lastDifferMs = 0;
@@ -1423,14 +1427,31 @@ export function createLineCollector(stream, lines, now) {
 }
 
 /**
- * Ends a child. On Windows (where the run is made) `taskkill /T /F` ends the whole tree; elsewhere
- * only the direct child gets SIGKILL, and its own children may live on.
+ * Ends a child. On Windows (where the run is made) `taskkill /T /F` ends the whole tree. Elsewhere
+ * the child's process group gets SIGKILL, which ends the whole tree when the child leads its own
+ * group (the deploy is started so: `detached`); when that fails (a child that is not a group leader,
+ * such as the tail), the direct child gets SIGKILL and its own children may live on (pull request
+ * 13, review round 2).
  */
-export function killTree(child, { spawnImpl = spawn, platform = process.platform } = {}) {
-  if (!child || child.exitCode !== null && child.exitCode !== undefined) return;
+export function killTree(child, { spawnImpl = spawn, platform = process.platform, killImpl = process.kill } = {}) {
+  if (!child) return;
+  const exited = child.exitCode !== null && child.exitCode !== undefined;
+  // Off Windows a group whose leader (the shell) has exited can still hold npm and Wrangler: it is
+  // signalled anyway; ESRCH when it is gone (review round 2).
+  if (exited && (platform === "win32" || !child.pid)) return;
+  if (exited) {
+    try { killImpl(-child.pid, "SIGKILL"); } catch { /* gone */ }
+    return;
+  }
   try {
     if (platform === "win32" && child.pid) spawnImpl("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
-    else child.kill("SIGKILL");
+    else if (child.pid) {
+      try {
+        killImpl(-child.pid, "SIGKILL");
+      } catch {
+        child.kill("SIGKILL");
+      }
+    } else child.kill("SIGKILL");
   } catch {
     // Already gone.
   }
@@ -1453,7 +1474,9 @@ export function createDeployCommand({ root, env = process.env, spawnImpl = spawn
     return new Promise((resolve) => {
       const lines = [];
       const startedAt = now();
-      const child = spawnImpl(`npm run deploy:cloudflare -- --name ${worker}`, { cwd: root, shell: true, env: childEnv, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+      // Off Windows the deploy leads its own process group, so `killTree` can end npm and Wrangler
+      // under the shell too (review round 2); on Windows `taskkill /T` ends the tree.
+      const child = spawnImpl(`npm run deploy:cloudflare -- --name ${worker}`, { cwd: root, shell: true, detached: platform !== "win32", env: childEnv, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
       const out = createLineCollector("out", lines, now);
       const err = createLineCollector("err", lines, now);
       child.stdout.on("data", (chunk) => out.push(chunk));
@@ -1653,7 +1676,9 @@ export function createFreshConnectionFetch({ httpsModule = https, httpModule = h
 export function createAsk({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT"), signal } = {}) {
   return (question) =>
     new Promise((resolve) => {
-      if (signal?.aborted) {
+      // An input that has already ended or been destroyed emits no further `end` or `close`: answer
+      // at once rather than wait for ever (pull request 13, review round 2).
+      if (signal?.aborted || input.readableEnded || input.destroyed) {
         resolve("");
         return;
       }
@@ -1688,7 +1713,8 @@ export function createAsk({ input = process.stdin, output = process.stdout, onIn
 export function createAskHidden({ input = process.stdin, output = process.stdout, onInterrupt = () => process.emit("SIGINT"), signal } = {}) {
   return (question) =>
     new Promise((resolve) => {
-      if (signal?.aborted) {
+      // As `createAsk`: an input that has already ended answers at once (review round 2).
+      if (signal?.aborted || input.readableEnded || input.destroyed) {
         resolve("");
         return;
       }

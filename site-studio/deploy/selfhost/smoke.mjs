@@ -161,11 +161,25 @@ async function main() {
       // The code is taken after the password step, which can take seconds (scrypt): a code taken
       // before it could be of a step the installation no longer accepts when it arrives.
       const pending = await pendingSignIn(base);
-      const laterCode = await nextCode(first.value.twoStep.secret, true);
+      let laterCode = await nextCode(first.value.twoStep.secret, true);
+      let laterStep = lastStep;
       const withCode = await completeSecondStep(base, pending, "code", laterCode);
       await expectSession(base, withCode, true);
-      // A code works once (CAP-5): the same code on a new pending sign-in is refused.
-      await refusedSecondStep(base, await pendingSignIn(base), "code", laterCode, 401, "second_step_code_wrong");
+      // A code works once (CAP-5): the same code on a new pending sign-in is refused. The refusal is
+      // evidence only while that code's step is still accepted when it is sent: if the password step
+      // took it past the window, a fresh code signs in on that pending sign-in instead and the replay
+      // is tried again with the fresh code (pull request 13, review round 2).
+      for (let attempt = 1; ; attempt += 1) {
+        const replayPending = await pendingSignIn(base);
+        if (codeStillAccepted(laterStep, Date.now())) {
+          await refusedSecondStep(base, replayPending, "code", laterCode, 401, "second_step_code_wrong");
+          break;
+        }
+        if (attempt === 3) fail("The replay check could not be made inside the code's window three times.");
+        laterCode = await nextCode(first.value.twoStep.secret, true);
+        laterStep = lastStep;
+        await expectSession(base, await completeSecondStep(base, replayPending, "code", laterCode), true);
+      }
       // One failure before the restart and four after reach the wait (V-17).
       await failSignIn(base, 4);
       await expectWait(base);
@@ -273,6 +287,15 @@ function totpCode(secret, step) {
 
 function stepAt(ms) {
   return Math.floor(ms / TOTP_STEP_MS);
+}
+
+/**
+ * Whether a code of `step` is still inside the accepted window at `now`, with two seconds to spare
+ * for the request to arrive (as `nextCode` allows): a replay of an expired code would be refused
+ * whether or not the server prevents replay, so it proves nothing (pull request 13, review round 2).
+ */
+export function codeStillAccepted(step, now) {
+  return step !== null && step >= stepAt(now + 2000) - TOTP_WINDOW;
 }
 
 /**

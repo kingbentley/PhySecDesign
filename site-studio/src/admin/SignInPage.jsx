@@ -3,7 +3,7 @@ import { BrandMark } from '../BrandMark.jsx';
 import { EMAIL_MAX } from '../../shared/setup.ts';
 import { SIGNIN_PASSWORD_MAX_UNITS, signInEmailField, signInPasswordField } from '../../shared/signin.ts';
 import { CODE_FIELD_MAX_LENGTH } from '../../shared/twoStep.ts';
-import { SIGN_IN_FIELDS, requestSignOut, submitSecondStep, submitSignIn } from './signInClient.js';
+import { SIGN_IN_FIELDS, createSecondStepRun, requestSignOut, submitSignIn } from './signInClient.js';
 import { SECOND_STEP_FIELD_MESSAGES, checkSecondStepCode } from './secondStepRules.js';
 import './signin.css';
 
@@ -116,11 +116,32 @@ export default function SignInPage({ installationName, onSignedIn }) {
   // someone else; a late success's session is ended (`endLeftSession`; pull request 13, review
   // round 1; orchestrator rulings of 2026-11-24).
   const secondStepRun = useRef(0);
+  // The second-step request in flight, which leaving the second step abandons (`createSecondStepRun`):
+  // aborted, so a reply whose headers have not arrived never sets a cookie (pull request 13, review
+  // round 2; orchestrator ruling of 2026-11-24).
+  const secondStepRequest = useRef(null);
+  // True when a success's session was being ended as the person went back and the sign-out was not
+  // confirmed: the next password submit first tries the sign-out once more.
+  const leftSessionUnended = useRef(false);
+  // That sign-out while it runs: the next password submit waits for it, so its reply (which clears
+  // the session cookie) can never land after, and clear, the newer sign-in's (review round 2).
+  const leftSessionEnding = useRef(null);
   // False once the page has gone (the app opened, for example because someone signed in meanwhile).
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; };
+    return () => {
+      mounted.current = false;
+      // The page going while a second step is in flight leaves it as "Back to sign in" does: abandoned
+      // and signed out (then reloaded, the page having gone).
+      const request = secondStepRequest.current;
+      secondStepRequest.current = null;
+      if (request && inFlight.current) {
+        request.abandon();
+        endLeftSession();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs and a function that reads refs only
   }, []);
   const refs = useRef({});
   const generalRef = useRef(null);
@@ -155,6 +176,14 @@ export default function SignInPage({ installationName, onSignedIn }) {
     setSending(true);
     let result;
     try {
+      // A sign-out still running from "Back to sign in" finishes first; then a session left by an
+      // abandoned second step whose sign-out was not confirmed gets one more try, and the sign-in is
+      // sent whatever the outcome (never blocked; review round 2).
+      if (leftSessionEnding.current) await leftSessionEnding.current;
+      if (leftSessionUnended.current) {
+        leftSessionUnended.current = false;
+        try { await requestSignOut(); } catch { /* sent anyway */ }
+      }
       // The values as typed: the server trims and lower-cases the email and normalises the password.
       result = await submitSignIn({ email: values.email, password: values.password });
     } finally {
@@ -193,17 +222,49 @@ export default function SignInPage({ installationName, onSignedIn }) {
     }
   }
 
-  /** "Back to sign in": no request; the pending cookie simply expires or is replaced (D-3). */
+  /**
+   * "Back to sign in": the pending cookie simply expires or is replaced (D-3). A second step in
+   * flight is abandoned: aborted, so a reply whose headers have not arrived cannot land a cookie
+   * later (findings 1 and 2 of review round 2), and the browser's session is ended with the sign-out
+   * route in case a success's cookies were already stored; the next password submit waits for that
+   * sign-out (each try is bounded by its own 15-second deadline). Nothing is shown about it. Cost,
+   * accepted: a sign-in made in another tab while this second step was in flight is signed out too.
+   */
   function backToSignIn() {
     secondStepRun.current += 1;
+    const request = secondStepRequest.current;
+    secondStepRequest.current = null;
+    // Signed out whether or not a success was seen: the browser can store a reply's cookies a task
+    // before the page sees the reply (orchestrator ruling of 2026-11-24, option (a)).
+    if (request && inFlight.current) {
+      request.abandon();
+      endAbandonedSession();
+    }
     // The abandoned request no longer holds the page: the password form can be sent at once.
     inFlight.current = false;
     setSending(false);
     showPasswordForm(null);
   }
 
+  /** Ends the browser's session as the person leaves a second step in flight; see `backToSignIn`. */
+  function endAbandonedSession() {
+    const ending = (async () => {
+      let confirmed = false;
+      try {
+        confirmed = await requestSignOut();
+      } catch {
+        confirmed = false;
+      }
+      if (!confirmed) leftSessionUnended.current = true;
+    })();
+    leftSessionEnding.current = ending;
+    ending.finally(() => { if (leftSessionEnding.current === ending) leftSessionEnding.current = null; });
+  }
+
   /**
-   * A second step that succeeded after the person went back: the server has signed that account in
+   * A fallback since review round 2 (the request is now aborted when the person goes back, so a
+   * success can reach here only if its body was already read when the abort came): a second step
+   * that succeeded after the person went back: the server has signed that account in
    * and the browser holds its session, which no page shows. It is ended with the sign-out route and
    * nothing changes on screen; if this page has already handed over to the app (someone signed in
    * meanwhile), the page reloads after the sign-out so it shows the truth. A sign-out that is not
@@ -243,12 +304,15 @@ export default function SignInPage({ installationName, onSignedIn }) {
     }
     setErrors({});
     const run = secondStepRun.current;
+    const request = createSecondStepRun();
+    secondStepRequest.current = request;
     inFlight.current = true;
     setSending(true);
     let result;
     try {
-      result = await submitSecondStep({ method, code: checked.code });
+      result = await request.send({ method, code: checked.code });
     } finally {
+      if (secondStepRequest.current === request) secondStepRequest.current = null;
       // After "Back to sign in" this request no longer owns the page's sending state.
       if (run === secondStepRun.current) {
         inFlight.current = false;

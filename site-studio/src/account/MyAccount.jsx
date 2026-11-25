@@ -267,9 +267,16 @@ export default function MyAccount({ onClose, onSignedOut }) {
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
-      const inside = dialog.current.contains(document.activeElement);
-      if (event.shiftKey && (document.activeElement === first || !inside)) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && (document.activeElement === last || !inside)) { event.preventDefault(); first.focus(); }
+      const active = document.activeElement;
+      const inside = dialog.current.contains(active);
+      // Focus on something that is not in the Tab order, such as the dialog's heading, which takes
+      // focus on opening and comes before every item: Shift+Tab from before the first item, or Tab
+      // from after the last, would leave the dialog (pull request 13, review round 2).
+      const outOfOrder = inside && !items.includes(active);
+      const beforeFirst = outOfOrder && Boolean(first.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_PRECEDING);
+      const afterLast = outOfOrder && Boolean(last.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING);
+      if (event.shiftKey && (active === first || !inside || beforeFirst)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (active === last || !inside || afterLast)) { event.preventDefault(); first.focus(); }
     }
     document.addEventListener('keydown', keydown, true);
     return () => document.removeEventListener('keydown', keydown, true);

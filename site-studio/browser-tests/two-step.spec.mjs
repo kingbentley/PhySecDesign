@@ -1211,3 +1211,18 @@ test("Round 1, account menu: of two dialogs chosen while the first is loading, o
   await expect(invite).toHaveCount(0);
   await page.unroute(/\/assets\/InvitePanel-[^/]*\.js$/);
 });
+
+// Pull request 13, CodeRabbit review round 2 (2026-11-24).
+
+test("Round 2, dialog: Shift+Tab from the heading that has focus on opening moves to the last item, inside the dialog", async ({ page, context, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const account = await newAccount(playwright, context, server.origin, emailFor("shifttab", testInfo), "Sid Shift");
+  await openApp(page, server.origin, account.name);
+  await openMyAccount(page);
+  const panel = dialog(page);
+  await expect(panel.getByRole("heading", { name: "My account" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  expect(await panel.evaluate((element) => element.contains(document.activeElement)), "focus stays in the dialog").toBe(true);
+  // The last item of the Off view is its Turn on button.
+  await expect(panel.getByRole("button", { name: "Turn on two-step verification" })).toBeFocused();
+});

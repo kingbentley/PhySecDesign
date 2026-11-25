@@ -11,7 +11,10 @@ import {
   DEPLOYMENT_KEY_SECRET,
   generateDeploymentKey,
   generateSetupCode,
+  hasExplicitPort,
   isDeploymentKey,
+  isWholeHostTarget,
+  STATE_RETRY_MS,
   KEY_LINES,
   KEY_SETTLE_MIN_REPLIES,
   KEY_SETTLE_MS,
@@ -280,6 +283,117 @@ describe("a settled answer must complete within the limit (pull request 13, revi
   });
 });
 
+describe("pull request 13, review round 2", () => {
+  const A_TARGET = "https://a.example.net";
+
+  for (const [name, targets, url] of [
+    ["a reported host written with the default port :443", ["a.example.net (custom domain)"], "https://a.example.net:443"],
+    ["a route written with its scheme and limited to a path", ["https://a.workers.dev", "https://a.example.net/survey/* (zone name: example.net)"], "https://a.example.net"],
+  ]) {
+    it(`refuses ${name}, before any key step`, async () => {
+      const { events, options } = twoInstallations({ targets, listA: [], stateB: { fingerprint: "none", key: "none" } });
+      assert.equal(await runDeploy({ ...options, url }), 1);
+      assert.deepEqual(effects(events), []);
+    });
+  }
+
+  it("reads a port written in any spelling the URL parser accepts, and only a written one", () => {
+    for (const raw of ["https://a.example.net:443", "https://a.example.net:8443/x", "https:a.example.net:443", "https:/a.example.net:443", "https:\\\\a.example.net:443", " \u0001https://a.example.net:443", "HTTPS://user:pw@a.example.net:443", "https://a.example.net:"]) {
+      assert.equal(hasExplicitPort(raw), true, raw);
+    }
+    for (const raw of ["https://a.example.net", "https://a.example.net/path:443", "https://user:pw@a.example.net", "https://a.example.net?port=:443", "https://[::1]"]) {
+      assert.equal(hasExplicitPort(raw), false, raw);
+    }
+  });
+
+  it("counts an https target as the whole host only for a bare address or /*", () => {
+    assert.equal(isWholeHostTarget("https://a.workers.dev"), true);
+    assert.equal(isWholeHostTarget("https://a.example.net/* (zone name: example.net)"), true);
+    for (const target of ["https://a.example.net/", "https://a.example.net/survey/*", "https://*.example.net/*", "a.example.net/*", "http://a.example.net"]) {
+      assert.equal(isWholeHostTarget(target), false, target);
+    }
+  });
+
+  it("without --url, skips an https route limited to a path and asks the first whole-host target", async () => {
+    const { events, options } = twoInstallations({ targets: ["https://a.example.net/survey/* (zone name: example.net)", "https://a.workers.dev"], listA: [DEPLOYMENT_KEY_SECRET] });
+    assert.equal(await runDeploy(options), 0);
+    assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", "https://a.workers.dev"]]);
+  });
+
+  it("accepts a whole-host route written with its scheme", async () => {
+    const { events, options } = twoInstallations({ targets: ["https://a.workers.dev", "https://a.example.net/* (zone name: example.net)"], listA: [DEPLOYMENT_KEY_SECRET] });
+    assert.equal(await runDeploy({ ...options, url: "https://a.example.net" }), 0);
+    assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", "https://a.example.net"]]);
+  });
+
+  it("reads the key state from an accepted custom domain when the Worker lists no key", async () => {
+    const { events, options } = twoInstallations({
+      targets: ["https://a.workers.dev", "a.example.net (custom domain)"],
+      listA: [],
+      stateA: { fingerprint: "none", key: "none" },
+    });
+    assert.equal(await runDeploy({ ...options, url: "https://A.example.net/path" }), 0);
+    assert.deepEqual(effects(events).slice(0, 2), [["list", "worker-a"], ["ask", "https://a.example.net"]]);
+  });
+
+  it("starts no key-state request after the settle limit", async () => {
+    let clock = 0;
+    const started = [];
+    // Replies that never settle (500), each taking 2.5 s, polled 3 s after each reply: one reply
+    // arrives at 178.5 s, after which a request would start at 181.5 s.
+    const fetchImpl = async () => {
+      started.push(clock);
+      clock += 2_500;
+      return new Response("", { status: 500 });
+    };
+    const settled = await waitForSettledKeyState(A_TARGET, { fetchImpl, now: () => clock, sleep: async (ms) => { clock += ms; } });
+    assert.equal(settled, null);
+    assert.ok(started.length > 0);
+    assert.ok(started.every((at) => at <= KEY_SETTLE_TIMEOUT_MS), "a request started after the limit");
+  });
+
+  /**
+   * The Worker's own address redirects every request to another Worker, which answers `mismatch`
+   * against its own stored fingerprint. Following the redirect is what `fetch` does by default; the
+   * fake follows it unless the request says `redirect: "error"`, as real `fetch` then fails.
+   */
+  function redirectingFetch(calls) {
+    return async (url, init = {}) => {
+      calls.push({ url, redirect: init.redirect });
+      if (init.redirect === "error") throw new TypeError("fetch failed: unexpected redirect");
+      return Response.json({ fingerprint: "stored", key: "mismatch" });
+    };
+  }
+
+  it("refuses redirects on the key-state read: a redirect to another Worker's mismatch puts and deletes nothing", async () => {
+    let clock = 0;
+    const calls = [];
+    const { events, options } = twoInstallations({ targets: [A_TARGET], listA: [], supplied: generateDeploymentKey() });
+    const actions = createKeyStateActions({ fetchImpl: redirectingFetch(calls), sleep: async (ms) => { clock += ms; }, now: () => clock });
+    const exit = await runDeploy({ ...options, askKeyState: actions.askKeyState, settleKeyState: actions.settleKeyState });
+    assert.equal(exit, 1);
+    assert.ok(calls.length > 0 && calls.every((call) => call.redirect === "error"));
+    assert.equal(events.filter(([kind]) => kind === "put" || kind === "delete").length, 0, "nothing put or deleted");
+    assert.deepEqual(events.filter(([kind]) => kind === "err").map(([, line]) => line), [KEY_LINES.stateUnreadable(A_TARGET)]);
+  });
+
+  it("refuses redirects on the set-up state read too", async () => {
+    let clock = 0;
+    const calls = [];
+    const state = await waitForSetupState(A_TARGET, {
+      fetchImpl: async (url, init = {}) => {
+        calls.push(init.redirect);
+        if (init.redirect === "error") throw new TypeError("fetch failed: unexpected redirect");
+        return Response.json({ state: "open" });
+      },
+      now: () => clock,
+      sleep: async (ms) => { clock += ms; },
+    });
+    assert.equal(state, null, "a redirect is no answer");
+    assert.ok(calls.length > 0 && calls.every((redirect) => redirect === "error"));
+  });
+});
+
 describe("the deploy command when Wrangler reports little", () => {
   it("issues no code when the deployment reports nothing, even with --url", async () => {
     const { calls, options } = harness({ state: "open" });
@@ -315,7 +429,10 @@ describe("deploy helpers", () => {
     ].join("\n");
     assert.deepEqual(readDeployOutput(text), { workerName: "site-studio", targets: ["https://a.workers.dev", "https://b.example.com"] });
     assert.equal(readDeployOutput(""), null);
-    assert.equal(chooseAddress(["http://x.test", "https://a.workers.dev/"]), "https://a.workers.dev");
+    // Wrangler 4.164 prefixes https:// to the workers.dev host only, with no path (`cli.js`, "Append
+    // protocol only on workers.dev domains"); an https target with a path is a route (review round 2).
+    assert.equal(chooseAddress(["http://x.test", "https://a.workers.dev"]), "https://a.workers.dev");
+    assert.equal(chooseAddress(["http://x.test", "https://a.workers.dev/"]), null);
     assert.equal(chooseAddress([]), null);
   });
 
@@ -1338,7 +1455,9 @@ describe("deployment key helpers", () => {
     });
     assert.equal(settled, null);
     assert.ok(requests < KEY_SETTLE_MIN_REPLIES, `${requests} replies`);
-    assert.ok(clock >= KEY_SETTLE_TIMEOUT_MS);
+    // It waited until no further request could start within the limit (review round 2: no request
+    // starts after it), not past it.
+    assert.ok(clock + STATE_RETRY_MS > KEY_SETTLE_TIMEOUT_MS && clock <= KEY_SETTLE_TIMEOUT_MS, `stopped at ${clock}`);
   });
 
   it("does not settle on a single reply followed by 60 s of failed requests", async () => {

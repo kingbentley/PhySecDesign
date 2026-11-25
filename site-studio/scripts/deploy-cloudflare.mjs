@@ -126,11 +126,8 @@ export function reportedHosts(targets) {
     if (typeof target !== "string") continue;
     let host;
     if (target.startsWith("https://")) {
-      try {
-        host = new URL(target).hostname;
-      } catch {
-        continue;
-      }
+      if (!isWholeHostTarget(target)) continue;
+      host = new URL(target.trim().split(/\s/, 1)[0]).hostname;
     } else {
       // A custom domain is a bare host; a route counts only when it covers the whole host
       // (`host/*`), since the key-state route sits at the origin's root and a route limited to a
@@ -146,6 +143,39 @@ export function reportedHosts(targets) {
     if (HOST_PATTERN.test(host)) hosts.add(host);
   }
   return hosts;
+}
+
+/**
+ * Whether an `https://` target names the whole of its host: the workers.dev address as Wrangler
+ * prints it (no path at all), or a route written with its scheme that covers the whole host (`/*`).
+ * A route limited to a path, or to `/` alone, does not reach the key-state route (pull request 13,
+ * review round 2). Anything after the pattern (a zone suffix) is ignored.
+ */
+export function isWholeHostTarget(target) {
+  if (typeof target !== "string" || !target.startsWith("https://")) return false;
+  const pattern = target.trim().split(/\s/, 1)[0];
+  const rest = pattern.slice("https://".length);
+  const slash = rest.search(/[/?#]/);
+  if (slash !== -1 && rest.slice(slash) !== "/*") return false;
+  try {
+    return HOST_PATTERN.test(new URL(pattern).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether the address as the operator wrote it names a port, including the default `:443`, which
+ * the URL parser drops (pull request 13, review round 2): the port is read from the raw authority.
+ * The spellings the URL parser accepts for `https` are covered: leading control characters and
+ * spaces, and any run of `/` or `\` (none included) after the scheme.
+ */
+export function hasExplicitPort(raw) {
+  const match = /^[a-z][a-z0-9+.-]*:[/\\]*([^/\\?#]*)/i.exec(String(raw ?? "").replace(/^[\u0000- ]+/, ""));
+  if (!match) return false;
+  const hostPort = match[1].slice(match[1].lastIndexOf("@") + 1);
+  const port = hostPort.startsWith("[") ? hostPort.slice(hostPort.indexOf("]") + 1) : hostPort.slice(hostPort.indexOf(":") === -1 ? hostPort.length : hostPort.indexOf(":"));
+  return port.startsWith(":");
 }
 
 /** Whether `address` (an `https://` origin) has a host Wrangler reported, compared exactly. */
@@ -259,7 +289,9 @@ export function parseSetupState(body) {
 
 /** The address to ask: the --url option, else the first HTTPS address Wrangler deployed to. */
 export function chooseAddress(targets, override) {
-  const candidate = override ?? (targets ?? []).find((target) => typeof target === "string" && target.startsWith("https://"));
+  // Without --url, the first https target that names its whole host (review round 2): a route
+  // limited to a path would hand the key-state read to whatever serves the rest of the host.
+  const candidate = override ?? (targets ?? []).find((target) => isWholeHostTarget(target));
   if (!candidate) return null;
   let url;
   try {
@@ -295,6 +327,8 @@ export async function waitForSetupState(address, { fetchImpl = fetch, sleep = de
     try {
       const response = await fetchImpl(address + SETUP_STATE_PATH, {
         headers: { accept: "application/json" },
+        // A redirect could hand the answer to another installation: it counts as no answer.
+        redirect: "error",
         signal: AbortSignal.timeout(STATE_REQUEST_TIMEOUT_MS),
       });
       if (response.status === 200) {
@@ -316,11 +350,17 @@ export function keyConfirmed(reply) {
   return reply?.fingerprint === "stored" && (reply.key === "matches" || reply.key === "mismatch");
 }
 
-/** One request to the key-state route: the exact key state of a 200 reply, else null. */
+/**
+ * One request to the key-state route: the exact key state of a 200 reply, else null. Redirects are
+ * refused (`redirect: "error"`) and so count as an unreadable reply: a redirect could hand the
+ * question to another Worker, whose `mismatch` would decide this Worker's key (pull request 13,
+ * review round 2; orchestrator ruling of 2026-11-24).
+ */
 async function fetchKeyState(address, fetchImpl) {
   try {
     const response = await fetchImpl(address + DEPLOYMENT_KEY_STATE_PATH, {
       headers: { accept: "application/json" },
+      redirect: "error",
       signal: AbortSignal.timeout(STATE_REQUEST_TIMEOUT_MS),
     });
     if (response.status === 200) return parseKeyState(await response.json());
@@ -377,7 +417,9 @@ export async function waitForSettledKeyState(address, {
     } else {
       run = null;
     }
-    if (at >= deadline) return null;
+    // No request starts after the limit: its reply could not settle anyway (pull request 13,
+    // review round 2).
+    if (at + retryMs > deadline) return null;
     await sleep(retryMs);
   }
 }
@@ -547,7 +589,7 @@ export async function runDeploy({
   // generated, put or deleted on the strength of another installation's state (pull request 13,
   // review round 1; orchestrator ruling of 2026-11-24). Nothing after this runs: no key step and
   // no set-up code.
-  if (url !== undefined && !isReportedAddress(address, deployed.targets)) {
+  if (url !== undefined && (hasExplicitPort(url) || !isReportedAddress(address, deployed.targets))) {
     printError(KEY_LINES.urlNotReported(address, deployed.workerName));
     return 1;
   }

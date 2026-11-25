@@ -4,7 +4,20 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { describe, it } from "node:test";
 import { parseKeyState } from "../scripts/deploy-cloudflare.mjs";
-import { keyStateReply } from "../deploy/selfhost/smoke.mjs";
+import { codeStillAccepted, keyStateReply } from "../deploy/selfhost/smoke.mjs";
+
+describe("the replay check's code window (pull request 13, review round 2)", () => {
+  it("counts a replay as evidence only while the code's step is still accepted, with two seconds to spare", () => {
+    const step = 1_000_000;
+    const start = step * 30_000;
+    // Accepted window at a time: the previous, current and next step.
+    assert.equal(codeStillAccepted(step, start + 10_000), true, "its own step");
+    assert.equal(codeStillAccepted(step, start + 30_000 + 27_000), true, "the next step, 3 s before it ends");
+    assert.equal(codeStillAccepted(step, start + 30_000 + 28_500), false, "the next step, under 2 s before it ends");
+    assert.equal(codeStillAccepted(step, start + 60_000 + 1_000), false, "two steps later: expired");
+    assert.equal(codeStillAccepted(null, start), false);
+  });
+});
 
 describe("deploy/selfhost/smoke.mjs key-state failure text", () => {
   it("shows a reply's values only when they are values D-18 allows; otherwise its status and invalid (C6)", () => {

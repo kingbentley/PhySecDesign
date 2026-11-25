@@ -134,8 +134,8 @@ export function secondStepOutcome(status, body, retryAfter = null) {
  * page); resolves as `secondStepOutcome` does, or refused with the network message when there is no
  * answer within the deadline.
  */
-export async function submitSecondStep(input, fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders } = {}) {
-  const reply = await postJson(fetcher, SECOND_STEP_URL, JSON.stringify({ method: input.method, code: input.code }), { timeoutMs, loadHeaders });
+export async function submitSecondStep(input, fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders, signal, onResponse } = {}) {
+  const reply = await postJson(fetcher, SECOND_STEP_URL, JSON.stringify({ method: input.method, code: input.code }), { timeoutMs, loadHeaders, signal, onResponse });
   if (reply === NO_ANSWER) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
   return secondStepOutcome(reply.status, reply.body, reply.retryAfter);
 }
@@ -160,6 +160,32 @@ export async function submitSignIn(input, fetcher = fetch, { timeoutMs = SIGN_IN
   const reply = await postJson(fetcher, SIGN_IN_URL, JSON.stringify(input), { timeoutMs, loadHeaders });
   if (reply === NO_ANSWER) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
   return signInOutcome(reply.status, reply.body, reply.retryAfter);
+}
+
+/**
+ * One second-step request that the page can abandon (pull request 13, review round 2; orchestrator
+ * ruling of 2026-11-24): `send(input)` resolves as `submitSecondStep`; `abandon()` aborts it, so a
+ * reply whose headers have not arrived is dropped by the browser with its cookies, and answers true
+ * only when a success's headers had already arrived (the browser then holds the session the server
+ * set, which the page must end). A request that has already settled is not abandoned (false).
+ */
+export function createSecondStepRun(fetcher = fetch, options = {}) {
+  const controller = new AbortController();
+  let status = null;
+  let settled = false;
+  return {
+    // A success whose body did not arrive in time (its headers did, with the session cookie): the
+    // server has signed the person in, so it is a sign-in, with no name; the page then reads the
+    // session as after any sign-in (review round 2).
+    send: (input) => submitSecondStep(input, fetcher, { ...options, signal: controller.signal, onResponse: (response) => { status = response.status; } })
+      .then((result) => (result.kind === 'refused' && status === 200 && !controller.signal.aborted ? { kind: 'signedIn', name: null } : result))
+      .finally(() => { settled = true; }),
+    abandon() {
+      if (settled) return false;
+      controller.abort();
+      return status === 200;
+    },
+  };
 }
 
 /**

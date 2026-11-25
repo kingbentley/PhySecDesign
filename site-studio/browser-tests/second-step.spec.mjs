@@ -249,6 +249,9 @@ test("Bad shape, Back to sign in: a 5-digit code and a 15-character recovery cod
   const account = await accountThroughApi(playwright, server.origin, { email: emailFor("shape", testInfo), name: "Shay Shape", password: PASSWORD });
   await openSecondStep(page, server.origin, account);
   const sent = countSecondStepRequests(page);
+  // Back with nothing in flight sends no request at all, not even a sign-out (spec 8's note on the
+  // frozen block's reading, orchestrator ruling of 2026-11-24).
+  const signOuts = countRequests(page, "/api/v1/session/sign-out");
 
   await codeField(page).fill("12345");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
@@ -271,7 +274,9 @@ test("Bad shape, Back to sign in: a 5-digit code and a 15-character recovery cod
   await expect(passwordField(page)).toHaveValue("");
   await expect(passwordField(page)).toBeFocused();
   await expect(page.locator('[role="alert"]')).toHaveText("");
+  await afterFrames(page);
   expect(sent, "no second-step request was sent").toEqual([]);
+  expect(signOuts, "Back with nothing in flight sends no sign-out").toEqual([]);
 });
 
 test("Expired: with the pending cookie removed, a code returns to the password form with the expired message", async ({ page, context, playwright }, testInfo) => {
@@ -354,10 +359,67 @@ async function countBodiesRead(page) {
  */
 async function afterBodyRead(page, path) {
   await page.waitForFunction((wanted) => (window.__bodiesRead?.[wanted] ?? 0) >= 1, path);
+  await afterFrames(page);
+}
+
+/** Two frames and a task: what the page does in response to something that has already happened is done. */
+async function afterFrames(page) {
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0)))));
 }
 
-test("In flight, a late success after Back to sign in: a second step that succeeds after the person went back does not open the app; the password form stays usable", async ({ page, playwright }, testInfo) => {
+test("Abort before headers (the premise of review round 2's fix): a reply whose request the page aborted before its headers arrived sets no cookie", async ({ page }) => {
+  const { createServer } = await import("node:http");
+  let releaseReply;
+  const replyHeld = new Promise((resolve) => { releaseReply = resolve; });
+  let reached;
+  const requestReached = new Promise((resolve) => { reached = resolve; });
+  let replied;
+  const replySent = new Promise((resolve) => { replied = resolve; });
+  // A local server: the page at `/`, and `/slow`, which the server completes only when the test
+  // releases it, then answers with a cookie.
+  const server = createServer(async (request, response) => {
+    if (request.url === "/control") {
+      // The control: answered at once with a cookie, to show this server's cookies are kept.
+      response.writeHead(200, { "set-cookie": "control=kept; Path=/", "content-type": "application/json" });
+      response.end("{}");
+      return;
+    }
+    if (request.url === "/slow") {
+      reached();
+      await replyHeld;
+      response.writeHead(200, { "set-cookie": "probe=late; Path=/", "content-type": "application/json" });
+      response.end("{}");
+      replied();
+      return;
+    }
+    response.writeHead(200, { "content-type": "text/html" });
+    response.end("<!doctype html><title>probe</title>");
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  try {
+    await page.goto(`${origin}/`);
+    await page.evaluate(() => {
+      window.__probe = new AbortController();
+      window.__probeResult = fetch("/slow", { method: "POST", signal: window.__probe.signal }).then(() => "answered", (error) => error.name);
+    });
+    await requestReached;
+    expect(await page.evaluate(() => { window.__probe.abort(); return window.__probeResult; })).toBe("AbortError");
+    releaseReply();
+    await replySent;
+    // Time for a late reply to land, were the browser to apply it.
+    await page.waitForTimeout(500);
+    await page.evaluate(() => fetch("/control", { method: "POST" }).then((response) => response.text()));
+    const names = (await page.context().cookies(origin)).map((cookie) => cookie.name);
+    expect(names, "the control's cookie was kept, so the probe could have seen one").toContain("control");
+    expect(names, "the aborted request's late reply set no cookie").not.toContain("probe");
+  } finally {
+    releaseReply();
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("In flight, a late success after Back to sign in (mocked): the abandoned request's success never reaches the page, so the app does not open; the password form stays usable", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const account = await accountThroughApi(playwright, server.origin, { email: emailFor("latesuccess", testInfo), name: "Lena Late", password: PASSWORD });
   let release;
@@ -365,11 +427,21 @@ test("In flight, a late success after Back to sign in: a second step that succee
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
   await countBodiesRead(page);
-  // Mocked: the success body only, with no session cookie, so nothing on the server changes.
+  // Mocked: the success body only, with no session cookie, so nothing on the server changes. Since
+  // review round 2 the page aborts the request on "Back to sign in", so the fulfil finds nothing to
+  // answer; `answered` settles once it has been tried either way.
+  let answered;
+  const answerTried = new Promise((resolve) => { answered = resolve; });
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
     arrived();
     await held;
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ name: account.name }) });
+    try {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ name: account.name }) });
+    } catch {
+      // Aborted by the page.
+    } finally {
+      answered();
+    }
   });
   await openSecondStep(page, server.origin, account);
   await codeField(page).fill(wrongCode(account.secret));
@@ -383,7 +455,8 @@ test("In flight, a late success after Back to sign in: a second step that succee
   const sessionReads = [];
   page.on("request", (request) => { if (new URL(request.url()).pathname === "/api/v1/session") sessionReads.push(request.url()); });
   release();
-  await afterBodyRead(page, SECOND_STEP_PATH);
+  await answerTried;
+  await afterFrames(page);
   expect(sessionReads, "no session read after the late reply").toHaveLength(0);
   await expect(signInHeading(page)).toBeVisible();
   await expect(page.getByTestId("account-name")).toHaveCount(0);
@@ -391,99 +464,281 @@ test("In flight, a late success after Back to sign in: a second step that succee
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).not.toHaveAttribute("aria-disabled", "true");
 });
 
-test("In flight, a real late success after Back to sign in: the session the server made is ended, the session read answers signed out, and the password form stays", async ({ page, playwright }, testInfo) => {
+// Pull request 13, review round 2 (orchestrator ruling of 2026-11-24, option (b)): "Back to sign in"
+// abandons the second-step request in flight. Round 1's real-server late-success tests stood here;
+// with the request aborted, a late success can no longer reach the page from a real server, so they
+// became the first two tests below.
+
+/** Counts the requests the page sends to `path`. */
+function countRequests(page, path) {
+  const seen = [];
+  page.on("request", (request) => { if (new URL(request.url()).pathname === path) seen.push(request.url()); });
+  return seen;
+}
+
+test("In flight, Back while a correct code is being checked: the request is abandoned and the page signs out, whatever it had seen; the session read answers signed out", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const context = page.context();
-  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("latereal", testInfo), name: "Rory Real", password: PASSWORD });
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("abandoned", testInfo), name: "Abe Abandon", password: PASSWORD });
   let release;
   const held = new Promise((resolve) => { release = resolve; });
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
-  await countBodiesRead(page);
-  // Held, then passed to the real server, which signs the account in and sets its session cookie.
+  // Held, then passed to the real server if the browser still wants it (Playwright's continue of a
+  // request the page has aborted does nothing, without an error).
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
     arrived();
     await held;
-    await route.continue();
+    try { await route.continue(); } catch { /* aborted by the page */ }
   });
   await openSecondStep(page, server.origin, account);
-  // The set-up confirmed a code at `account.step`; a code is accepted only for a later step (D-6).
+  const signOuts = countRequests(page, "/api/v1/session/sign-out");
+  const abandoned = [];
+  page.on("requestfailed", (request) => { if (new URL(request.url()).pathname === SECOND_STEP_PATH) abandoned.push(request.url()); });
   const { code } = await nextCode(account.secret, account.step);
   await codeField(page).fill(code);
   await page.getByRole("button", { name: "Verify and sign in" }).click();
   await routed;
   await page.getByRole("button", { name: "Back to sign in" }).click();
   await expect(signInHeading(page)).toBeVisible();
-  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
-  const reply = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
   release();
-  expect((await reply).status(), "the server signed the account in").toBe(200);
-  await afterBodyRead(page, SECOND_STEP_PATH);
-  expect((await signedOut)?.status(), "the page ended the session it does not show").toBe(200);
+  await page.waitForTimeout(1_000);
+  expect(abandoned, "the page abandoned (aborted) the second-step request").toHaveLength(1);
+  // Signed out on every abandon of a second step in flight (orchestrator ruling of 2026-11-24, (a)).
+  expect(signOuts, "the page signed out once").toHaveLength(1);
+  const session = await context.request.get(`${server.origin}/api/v1/session`);
+  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.locator('[role="alert"]')).toHaveText("");
+  await expect(passwordField(page)).toBeFocused();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).not.toHaveAttribute("aria-disabled", "true");
+});
+
+test("In flight, finding 2's sequence: A's second step held, Back, then B (two-step) signs in with password and code while A's reply is released: B's code signs in", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("seqfirst", testInfo), name: "Ada Seq", password: PASSWORD });
+  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("seqsecond", testInfo), name: "Ben Seq", password: PASSWORD });
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let arrived;
+  const routed = new Promise((resolve) => { arrived = resolve; });
+  let firstHeld = true;
+  let answered;
+  const answerTried = new Promise((resolve) => { answered = resolve; });
+  await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
+    // Only the first account's request is held; the second's goes straight to the server.
+    if (!firstHeld) return route.continue();
+    firstHeld = false;
+    // A's second step reaches the server at once, with A's pending cookie, as a request already on
+    // the wire does (a continued request would be sent with the cookies of the moment it is
+    // continued, B's); only its reply's delivery to the page is held.
+    const response = await route.fetch();
+    arrived();
+    await held;
+    try { await route.fulfill({ response }); } catch { /* aborted by the page */ } finally { answered(); }
+  });
+  await openSecondStep(page, server.origin, first);
+  await codeField(page).fill((await nextCode(first.secret, first.step)).code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await routed;
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await expect(signInHeading(page)).toBeVisible();
+  // B's password step: the page shows B's second step, with B's pending cookie set.
+  await passwordStep(page, second);
+  await expect(secondHeading(page)).toBeVisible();
+  // A's held reply is released now, after B's pending cookie was set, and delivered (or refused,
+  // the page having abandoned it) before B's code is sent.
+  release();
+  await answerTried;
+  await afterFrames(page);
+  const { code } = await nextCode(second.secret, second.step);
+  await codeField(page).fill(code);
+  const sending = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  expect((await sending).status(), "B's code signs in").toBe(200);
+  await expect(page.getByTestId("account-name")).toHaveText(second.name);
+});
+
+/**
+ * Makes the page's second-step fetch go to the real server and come back with its headers (and so
+ * its cookies) at once, while its body is held until `window.__releaseBody()`: the case where a
+ * success's headers had already arrived when the person goes back. The page's abort errors the body.
+ */
+async function holdSecondStepBody(page) {
+  await page.addInitScript((path) => {
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, init = {}) => {
+      const url = new URL(typeof input === "string" ? input : input.url, location.href);
+      if (url.pathname !== path) return realFetch(input, init);
+      const { signal, ...rest } = init;
+      const real = await realFetch(input, rest);
+      const text = await real.text();
+      let release;
+      window.__releaseBody = () => release?.();
+      const body = new ReadableStream({
+        start(controller) {
+          release = () => { try { controller.enqueue(new TextEncoder().encode(text)); controller.close(); } catch { /* errored */ } };
+          signal?.addEventListener("abort", () => { try { controller.error(new DOMException("aborted", "AbortError")); } catch { /* closed */ } });
+        },
+      });
+      window.__headersArrived = (window.__headersArrived ?? 0) + 1;
+      return new Response(body, { status: real.status, headers: real.headers });
+    };
+  }, SECOND_STEP_PATH);
+}
+
+test("In flight, the gap: a success's cookies are stored but the page has not yet seen the reply when the person goes back: the page signs out anyway, and the session read answers signed out", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("gap", testInfo), name: "Gail Gap", password: PASSWORD });
+  // The page's second-step fetch goes to the real server and completes (the browser stores the
+  // session cookie), but the page is not given the reply until `window.__releaseReply()`; the
+  // page's abort rejects it. So when Back is pressed the cookie is stored and the page knows nothing.
+  await page.addInitScript((path) => {
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, init = {}) => {
+      const url = new URL(typeof input === "string" ? input : input.url, location.href);
+      if (url.pathname !== path) return realFetch(input, init);
+      const { signal, ...rest } = init;
+      const real = await realFetch(input, rest);
+      window.__replyStored = true;
+      return new Promise((resolve, reject) => {
+        window.__releaseReply = () => resolve(real);
+        signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+      });
+    };
+  }, SECOND_STEP_PATH);
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill((await nextCode(account.secret, account.step)).code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await page.waitForFunction(() => window.__replyStored === true);
+  expect(await cookiesNamed(context, SESSION_COOKIE), "the server's session cookie is in the browser").toHaveLength(1);
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  expect((await signedOut)?.status(), "the page signed out").toBe(200);
+  const session = await context.request.get(`${server.origin}/api/v1/session`);
+  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.locator('[role="alert"]')).toHaveText("");
+});
+
+test("In flight, a success's headers already arrived when the person goes back: that session is ended at once, and the session read answers signed out", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("headers", testInfo), name: "Hedy Headers", password: PASSWORD });
+  await holdSecondStepBody(page);
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill((await nextCode(account.secret, account.step)).code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await page.waitForFunction(() => (window.__headersArrived ?? 0) >= 1);
+  expect(await cookiesNamed(context, SESSION_COOKIE), "the server's session cookie is in the browser").toHaveLength(1);
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  expect((await signedOut)?.status(), "the page ended the session at once").toBe(200);
   const session = await context.request.get(`${server.origin}/api/v1/session`);
   expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
   expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
   await expect(signInHeading(page)).toBeVisible();
   await expect(page.getByTestId("account-name")).toHaveCount(0);
+  await expect(page.locator('[role="alert"]')).toHaveText("");
   await expect(passwordField(page)).toBeFocused();
 });
 
-test("In flight, a late success after another person signed in: the page ends that session and reloads, showing the sign-in form, and the session read answers signed out", async ({ page, playwright }, testInfo) => {
+test("In flight, a sign-out from Back still running: the next password submit waits for its reply before the sign-in is sent", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
-  const context = page.context();
-  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("racefirst", testInfo), name: "Ada Race", password: PASSWORD });
-  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("racesecond", testInfo), name: "Ben Race", password: PASSWORD, twoStep: false });
-  let release;
-  const held = new Promise((resolve) => { release = resolve; });
-  let arrived;
-  const routed = new Promise((resolve) => { arrived = resolve; });
-  await countBodiesRead(page);
-  // The first account's second step goes to the real server at once (`route.fetch`), so it signs
-  // that account in before the second account's password step could discard its pending sign-in;
-  // only the reply's delivery to the page is held until the second account's app has opened.
+  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("waitfirst", testInfo), name: "Wyn Wait", password: PASSWORD });
+  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("waitsecond", testInfo), name: "Wes Wait", password: PASSWORD, twoStep: false });
+  // The second-step request is held (and abandoned by Back); the sign-out it causes is held too.
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
-    const response = await route.fetch();
-    arrived();
-    await held;
-    await route.fulfill({ response });
+    await new Promise(() => {});
+    void route;
   });
+  let releaseSignOut;
+  const signOutHeld = new Promise((resolve) => { releaseSignOut = resolve; });
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    await signOutHeld;
+    await route.continue();
+  });
+  const order = [];
+  page.on("request", (request) => { if (new URL(request.url()).pathname === "/api/v1/session/sign-in") order.push("sign-in sent"); });
+  page.on("response", (response) => { if (new URL(response.url()).pathname === "/api/v1/session/sign-out") order.push("sign-out answered"); });
   await openSecondStep(page, server.origin, first);
-  const { code } = await nextCode(first.secret, first.step);
-  await codeField(page).fill(code);
+  order.length = 0;
+  await codeField(page).fill((await nextCode(first.secret, first.step)).code);
+  const signOutSent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
-  await routed;
   await page.getByRole("button", { name: "Back to sign in" }).click();
-  await expect(signInHeading(page)).toBeVisible();
-  // The second person signs in on the same page (no two-step verification): the app opens.
-  await passwordStep(page, second);
+  await signOutSent;
+  await page.getByLabel("Email").fill(second.email);
+  await passwordField(page).fill(second.password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await afterFrames(page);
+  expect(order, "no sign-in sent while the sign-out runs").toEqual([]);
+  releaseSignOut();
   await expect(page.getByTestId("account-name")).toHaveText(second.name);
-  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 }).catch(() => null);
-  const reloaded = page.waitForEvent("load", { timeout: 30_000 }).catch(() => null);
-  release();
-  expect((await signedOut)?.status(), "the page ended the session it does not show").toBe(200);
-  expect(await reloaded, "the page reloaded after the sign-out").not.toBeNull();
-  await expect(signInHeading(page)).toBeVisible();
-  await expect(page.getByTestId("account-name")).toHaveCount(0);
-  const session = await context.request.get(`${server.origin}/api/v1/session`);
-  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+  expect(order).toEqual(["sign-out answered", "sign-in sent"]);
 });
 
-test("In flight, Back to sign in while sending: the button reads Checking…, a second click and a mode switch do nothing, and Back to sign in leaves a usable password form when the held reply arrives", async ({ page, playwright }, testInfo) => {
+test("In flight, the sign-out at Back not confirmed: the next password submit first tries it once more, then signs in", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("unconfirmed", testInfo), name: "Una Confirmed", password: PASSWORD });
+  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("unconfirmednext", testInfo), name: "Ned Next", password: PASSWORD, twoStep: false });
+  await holdSecondStepBody(page);
+  // The first sign-out gets no confirmation (a server error); later ones go through.
+  let signOutCalls = 0;
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    signOutCalls += 1;
+    if (signOutCalls === 1) return route.fulfill({ status: 500, body: "" });
+    return route.continue();
+  });
+  const order = [];
+  page.on("request", (request) => {
+    const path = new URL(request.url()).pathname;
+    if (path === "/api/v1/session/sign-out" || path === "/api/v1/session/sign-in") order.push(path);
+  });
+  await openSecondStep(page, server.origin, first);
+  await codeField(page).fill((await nextCode(first.secret, first.step)).code);
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await page.waitForFunction(() => (window.__headersArrived ?? 0) >= 1);
+  order.length = 0;
+  const unconfirmed = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out");
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  expect((await unconfirmed).status()).toBe(500);
+  await expect(signInHeading(page)).toBeVisible();
+  // The next password submit: the sign-out is tried again first, then the sign-in is sent.
+  await passwordStep(page, second);
+  await expect(page.getByTestId("account-name")).toHaveText(second.name);
+  expect(order, "sign-out at Back, the retry, then the sign-in").toEqual(["/api/v1/session/sign-out", "/api/v1/session/sign-out", "/api/v1/session/sign-in"]);
+});
+
+
+test("In flight, Back to sign in while sending: the button reads Checking…, a second click and a mode switch do nothing, and Back to sign in leaves a usable password form, the held reply abandoned", async ({ page, playwright }, testInfo) => {
   const [server] = servers(testInfo);
   const account = await accountThroughApi(playwright, server.origin, { email: emailFor("inflight", testInfo), name: "Ivan Inflight", password: PASSWORD });
   let release;
   const held = new Promise((resolve) => { release = resolve; });
   let arrived;
   const routed = new Promise((resolve) => { arrived = resolve; });
-  await countBodiesRead(page);
+  // Since review round 2 "Back to sign in" aborts the request, so the fulfil finds nothing to
+  // answer; `answered` settles once it has been tried either way.
+  let answered;
+  const answerTried = new Promise((resolve) => { answered = resolve; });
   await page.route((url) => new URL(url).pathname === SECOND_STEP_PATH, async (route) => {
     arrived();
     await held;
-    await route.fulfill({
-      status: 401,
-      contentType: "application/json",
-      body: JSON.stringify({ error: { code: "second_step_code_wrong", message: CODE_WRONG } }),
-    });
+    try {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({ error: { code: "second_step_code_wrong", message: CODE_WRONG } }),
+      });
+    } catch {
+      // Aborted by the page.
+    } finally {
+      answered();
+    }
   });
   await openSecondStep(page, server.origin, account);
   const sent = countSecondStepRequests(page);
@@ -502,10 +757,9 @@ test("In flight, Back to sign in while sending: the button reads Checking…, a 
 
   await page.getByRole("button", { name: "Back to sign in" }).click();
   await expect(signInHeading(page)).toBeVisible();
-  const reply = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
   release();
-  expect((await reply).status()).toBe(401);
-  await afterBodyRead(page, SECOND_STEP_PATH);
+  await answerTried;
+  await afterFrames(page);
   await expect(signInHeading(page)).toBeVisible();
   await expect(page.locator('[role="alert"]')).toHaveText("");
   await expect(recoveryField(page)).toHaveCount(0);

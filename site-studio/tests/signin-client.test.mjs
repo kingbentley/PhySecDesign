@@ -6,6 +6,7 @@ import { describe, test } from "node:test";
 import { REFUSALS } from "../shared/refusal.ts";
 import {
   SIGN_IN_MESSAGES,
+  createSecondStepRun,
   requestSignOut,
   secondStepOutcome,
   signInOutcome,
@@ -139,6 +140,67 @@ describe("the second step (story 1.5, spec 8, D-12, D-13)", () => {
     assert.deepEqual(await submitSecondStep({ method: "recovery", code: "x" }, wait, loaded), { kind: "restart", message: "Too many attempts. Wait 1 minute before trying again." });
     const never = (_url, init) => new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted"))));
     assert.deepEqual(await submitSecondStep({ method: "code", code: "123456" }, never, { timeoutMs: 20, ...loaded }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+  });
+});
+
+describe("an abandoned second step (pull request 13, review round 2)", () => {
+  const loaded = { loadHeaders: async () => ({ "content-type": "application/json" }), timeoutMs: 60_000 };
+  const input = { method: "code", code: "123456" };
+  // A fetch that answers only when the test lets it, and fails as a browser does when aborted.
+  function heldFetch() {
+    const state = { signal: null };
+    const fetcher = (_url, init) => new Promise((resolve, reject) => {
+      state.signal = init.signal;
+      state.answer = resolve;
+      init.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+    });
+    return { state, fetcher };
+  }
+
+  test("abandoned before its headers arrive: the request is aborted, the page learns nothing, and no session needs ending", async () => {
+    const { state, fetcher } = heldFetch();
+    const run = createSecondStepRun(fetcher, loaded);
+    const sent = run.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(run.abandon(), false, "no success had arrived");
+    assert.equal(state.signal.aborted, true, "the request was aborted");
+    assert.deepEqual(await sent, { kind: "refused", message: SIGN_IN_MESSAGES.network });
+  });
+
+  test("abandoned after a success's headers arrived, while its body is still coming: abandon answers true, so the page ends that session", async () => {
+    let releaseBody;
+    const body = new ReadableStream({ start(controller) { releaseBody = () => { controller.enqueue(new TextEncoder().encode('{"name":"Ada"}')); controller.close(); }; } });
+    let signal;
+    const fetcher = async (_url, init) => { signal = init.signal; return new Response(body, { status: 200 }); };
+    const run = createSecondStepRun(fetcher, loaded);
+    const sent = run.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(run.abandon(), true, "a success's headers had arrived");
+    assert.equal(signal.aborted, true);
+    releaseBody();
+    assert.equal((await sent).kind, "refused", "the abandoned reply is not acted on");
+  });
+
+  test("a success whose body misses the time limit counts as a sign-in (the server set the session); an abandoned one does not", async () => {
+    const stalled = () => new Response(new ReadableStream({ start() {} }), { status: 200 });
+    const timedOut = await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30 }).send(input);
+    assert.deepEqual(timedOut, { kind: "signedIn", name: null });
+    const abandonedRun = createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 60_000 });
+    const pending = abandonedRun.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    abandonedRun.abandon();
+    assert.equal((await pending).kind, "refused");
+  });
+
+  test("a refusal's headers, or a request that has already settled, never call for a sign-out", async () => {
+    const refusedRun = createSecondStepRun(async () => new Response(new ReadableStream({ start() {} }), { status: 401 }), loaded);
+    const pending = refusedRun.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(refusedRun.abandon(), false);
+    await pending;
+    const settledRun = createSecondStepRun(async () => Response.json({ name: "Ada" }), loaded);
+    assert.equal((await settledRun.send(input)).kind, "signedIn");
+    assert.equal(settledRun.abandon(), false);
   });
 });
 

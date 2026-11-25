@@ -41,6 +41,7 @@ import {
   cleanupPass,
   createCookieJar,
   createDeployCommand,
+  killTree,
   createFreshConnectionFetch,
   createJsonObjectStream,
   createRealEffects,
@@ -1186,6 +1187,33 @@ describe("check 13 times each reply by when it arrived (pull request 13, review 
   });
 });
 
+describe("check 13: replies arriving after 180 s (pull request 13, review round 2; orchestrator ruling of 2026-11-24)", () => {
+  // Replies every 3 s from `fromMs` to `toMs`, all `key`, each arriving when sent.
+  const series = (fromMs, toMs, key) => {
+    const replies = [];
+    for (let at = fromMs; at <= toMs; at += 3_000) replies.push({ atMs: at, key });
+    return replies;
+  };
+
+  it("does not let a late matching reply supply the tenth reply of the final window", () => {
+    // Nine replies arrive in the final window (126 s to 150 s; none after until 180 s), and one
+    // matching reply arrives at 185 s. Counted, the late one would make ten.
+    const replies = [...series(0, 117_000, "mismatch"), ...series(126_000, 150_000, "mismatch"), { atMs: 185_000, key: "mismatch" }];
+    const evaluated = evaluatePutPolls(replies, "mismatch");
+    assert.equal(evaluated.record.repliesInFinalWindow, 9);
+    assert.equal(evaluated.record.final, "not settled");
+    assert.equal(evaluated.pass, false);
+  });
+
+  it("still fails the put on a differing reply that arrives after 180 s", () => {
+    const replies = [...series(0, 180_000, "mismatch"), { atMs: 186_000, key: "matches" }];
+    const evaluated = evaluatePutPolls(replies, "mismatch");
+    assert.equal(evaluated.record.final, "mismatch");
+    assert.equal(evaluated.record.lastDifferingReplyMs, 186_000);
+    assert.equal(evaluated.pass, false);
+  });
+});
+
 describe("dry run against fakes: pull request 13's review", () => {
   it("check 14 (a) scans its output for the wrong key it supplied, and records only yes/no (C1)", async () => {
     const run = await dryRun({ quirks: { echoSuppliedKey: true } });
@@ -1629,6 +1657,55 @@ describe("real effects with a fake spawn", () => {
     ended.end();
     assert.equal(await settledWithin(atEnd), "");
     assert.equal(await settledWithin(createAsk({ input: new PassThrough(), output, signal: AbortSignal.abort() })("Take it? ")), "");
+  });
+
+  it("a question on an input that has already ended or been destroyed answers at once (review round 2)", async () => {
+    const { PassThrough } = await import("node:stream");
+    const { once } = await import("node:events");
+    const output = new PassThrough();
+    output.resume();
+    const ended = new PassThrough();
+    ended.resume();
+    ended.end();
+    await once(ended, "end");
+    assert.equal(await settledWithin(createAsk({ input: ended, output })("Take it? ")), "");
+    const destroyed = new PassThrough();
+    destroyed.destroy();
+    assert.equal(await settledWithin(createAsk({ input: destroyed, output })("Take it? ")), "");
+    const hiddenEnded = new PassThrough();
+    hiddenEnded.resume();
+    hiddenEnded.end();
+    await once(hiddenEnded, "end");
+    assert.equal(await settledWithin(createAskHidden({ input: hiddenEnded, output })("Password: ")), "");
+    const hiddenDestroyed = new PassThrough();
+    hiddenDestroyed.destroy();
+    assert.equal(await settledWithin(createAskHidden({ input: hiddenDestroyed, output })("Password: ")), "");
+  });
+
+  it("off Windows the deploy leads its own process group and killTree signals the group, falling back to the child (review round 2)", async () => {
+    for (const [platform, detached] of [["linux", true], ["win32", false]]) {
+      const { calls, spawnImpl } = fakeSpawn();
+      const pending = createDeployCommand({ root: "/repo", env: {}, spawnImpl, platform })(WORKERS.a, { key: null, accountId: ACCOUNT_ID });
+      assert.equal(calls[0].options.detached, detached, platform);
+      calls[0].child.emit("close", 0);
+      await pending;
+    }
+
+    const signalled = [];
+    const child = { pid: 4321, exitCode: null, kill: (signal) => signalled.push(["child", signal]) };
+    killTree(child, { platform: "linux", killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
+    assert.deepEqual(signalled, [["group", -4321, "SIGKILL"]]);
+    signalled.length = 0;
+    killTree(child, { platform: "linux", killImpl: () => { throw Object.assign(new Error("no such process group"), { code: "ESRCH" }); } });
+    assert.deepEqual(signalled, [["child", "SIGKILL"]]);
+    // The shell has exited but its group can still hold npm and Wrangler: the group is signalled.
+    signalled.length = 0;
+    const exitedShell = { pid: 4321, exitCode: 0, kill: (signal) => signalled.push(["child", signal]) };
+    killTree(exitedShell, { platform: "linux", killImpl: (pid, signal) => signalled.push(["group", pid, signal]) });
+    assert.deepEqual(signalled, [["group", -4321, "SIGKILL"]]);
+    signalled.length = 0;
+    killTree(exitedShell, { platform: "win32", spawnImpl: () => signalled.push(["taskkill"]) });
+    assert.deepEqual(signalled, [], "on Windows an exited child is left alone, as before");
   });
 
   it("main's real effects give both questions the run's signal (C5)", async () => {
