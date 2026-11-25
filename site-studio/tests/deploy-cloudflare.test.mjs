@@ -196,7 +196,8 @@ function twoInstallations({ targets, listA = [], stateA = { fingerprint: "stored
 const effects = (events) => events.filter(([kind]) => ["list", "ask", "settle", "put", "delete", "generate", "setup-state"].includes(kind));
 
 describe("--url is tied to the Worker Wrangler deployed (pull request 13, review round 1)", () => {
-  const A_TARGET = "https://a.example.net";
+  // A workers.dev address: since review round 4 the only target read without --url.
+  const A_TARGET = "https://a.example.workers.dev";
 
   it("refuses an address of another installation that would have the original key put and then deleted on its mismatch", async () => {
     const { events, options } = twoInstallations({
@@ -218,7 +219,7 @@ describe("--url is tied to the Worker Wrangler deployed (pull request 13, review
   });
 
   const accepted = [
-    ["the workers.dev address Wrangler reported", ["https://a.example.net"], "https://a.example.net"],
+    ["an https:// address Wrangler reported", ["https://a.example.net"], "https://a.example.net"],
     ["a custom domain Wrangler reported", ["https://a.workers.dev", "a.example.net (custom domain)"], "https://a.example.net/path"],
     ["a route without a wildcard", ["https://a.workers.dev", "a.example.net/* (zone name: example.net)"], "https://a.example.net"],
     ["a reported host given in capitals", ["a.example.net (custom domain - zone name: example.net)"], "https://A.Example.NET"],
@@ -252,10 +253,19 @@ describe("--url is tied to the Worker Wrangler deployed (pull request 13, review
     });
   }
 
-  it("leaves the run without --url as it was: the first https address Wrangler reported", async () => {
+  it("without --url reads the workers.dev address Wrangler reported (review round 4: the only default)", async () => {
     const { events, options } = twoInstallations({ targets: ["schedule: */5 * * * *", A_TARGET], listA: [DEPLOYMENT_KEY_SECRET] });
     assert.equal(await runDeploy(options), 0);
     assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", A_TARGET]]);
+  });
+});
+
+describe("the default address (pull request 13, review round 4)", () => {
+  it("stops after the deploy, with nothing listed, asked, put or deleted, when Wrangler reports no workers.dev address", async () => {
+    const { events, options } = twoInstallations({ targets: ["https://a.example.net", "https://a.example.net/*", "a.example.net (custom domain)"], listA: [], stateB: { fingerprint: "none", key: "none" } });
+    assert.equal(await runDeploy(options), 1);
+    assert.deepEqual(effects(events), []);
+    assert.deepEqual(events.filter(([kind]) => kind === "err").map(([, line]) => line), ["The deployment reported no https:// address. Run again with --url <https address>."]);
   });
 });
 
@@ -284,7 +294,8 @@ describe("a settled answer must complete within the limit (pull request 13, revi
 });
 
 describe("pull request 13, review round 2", () => {
-  const A_TARGET = "https://a.example.net";
+  // A workers.dev address: since review round 4 the only target read without --url.
+  const A_TARGET = "https://a.example.workers.dev";
 
   for (const [name, targets, url] of [
     ["a reported host written with the default port :443", ["a.example.net (custom domain)"], "https://a.example.net:443"],
@@ -314,7 +325,7 @@ describe("pull request 13, review round 2", () => {
     }
   });
 
-  it("without --url, skips an https route limited to a path and asks the first whole-host target", async () => {
+  it("without --url, skips an https route limited to a path and asks the workers.dev target (review round 4)", async () => {
     const { events, options } = twoInstallations({ targets: ["https://a.example.net/survey/* (zone name: example.net)", "https://a.workers.dev"], listA: [DEPLOYMENT_KEY_SECRET] });
     assert.equal(await runDeploy(options), 0);
     assert.deepEqual(effects(events), [["list", "worker-a"], ["setup-state", "https://a.workers.dev"]]);
@@ -465,6 +476,22 @@ describe("deploy helpers", () => {
     assert.equal(chooseAddress(["http://x.test", "https://a.workers.dev"]), "https://a.workers.dev");
     assert.equal(chooseAddress(["http://x.test", "https://a.workers.dev/"]), null);
     assert.equal(chooseAddress([]), null);
+  });
+
+  it("without --url reads only a workers.dev address, whatever else Wrangler reports (review round 4)", () => {
+    assert.equal(chooseAddress(["https://example.com/*"]), null, "a scheme-prefixed whole-host route is not a default");
+    assert.equal(chooseAddress(["https://example.com"]), null, "a bare https custom host is not a default");
+    assert.equal(chooseAddress(["https://example.com/*", "https://example.com", "https://a.workers.dev"]), "https://a.workers.dev", "a workers.dev address listed later is chosen");
+    assert.equal(chooseAddress(["https://A.Workers.Dev"]), "https://a.workers.dev", "the host is compared lower-cased");
+    assert.equal(chooseAddress(["https://workers.dev.example.com"]), null, "a host that only contains workers.dev");
+    assert.equal(chooseAddress(["https://aworkers.dev"]), null, "a host that ends in workers.dev without the dot");
+    assert.equal(chooseAddress(["https://workers.dev.example.com/*", "a.example.net (custom domain)"]), null);
+    assert.equal(chooseAddress(["https://workers.dev"]), null, "the bare workers.dev apex");
+    assert.equal(chooseAddress(["https://a.workers.dev/survey/*"]), null, "a workers.dev target limited to a path");
+    assert.equal(chooseAddress(["https://a.workers.dev/*"]), "https://a.workers.dev", "a workers.dev target written as a whole-host route");
+    // --url is unchanged: any https address the operator names is the one asked (checked against the
+    // reported hosts by the deploy).
+    assert.equal(chooseAddress(["https://example.com/*"], "https://example.com"), "https://example.com");
   });
 
   it("keeps asking a new Worker until it answers, and gives up at the deadline", async () => {

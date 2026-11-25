@@ -120,11 +120,12 @@ export default function SignInPage({ installationName, onSignedIn }) {
   // aborted, so a reply whose headers have not arrived never sets a cookie (pull request 13, review
   // round 2; orchestrator ruling of 2026-11-24).
   const secondStepRequest = useRef(null);
-  // True when a success's session was being ended as the person went back and the sign-out was not
-  // confirmed: the next password submit first tries the sign-out once more.
+  // True when a success's session was being ended (the person went back, or a failed session read;
+  // review round 4) and the sign-out was not confirmed: the next submit, of either form, first tries
+  // the sign-out once more.
   const leftSessionUnended = useRef(false);
-  // That sign-out while it runs: the next password submit waits for it, so its reply (which clears
-  // the session cookie) can never land after, and clear, the newer sign-in's (review round 2).
+  // That sign-out while it runs: the next submit waits for it, so its reply (which clears the session
+  // cookie) can never land after, and clear, the newer sign-in's (review rounds 2 and 4).
   const leftSessionEnding = useRef(null);
   // False once the page has gone (the app opened, for example because someone signed in meanwhile).
   const mounted = useRef(true);
@@ -176,14 +177,7 @@ export default function SignInPage({ installationName, onSignedIn }) {
     setSending(true);
     let result;
     try {
-      // A sign-out still running from "Back to sign in" finishes first; then a session left by an
-      // abandoned second step whose sign-out was not confirmed gets one more try, and the sign-in is
-      // sent whatever the outcome (never blocked; review round 2).
-      if (leftSessionEnding.current) await leftSessionEnding.current;
-      if (leftSessionUnended.current) {
-        leftSessionUnended.current = false;
-        try { await requestSignOut(); } catch { /* sent anyway */ }
-      }
+      await finishLeftSignOut();
       // The values as typed: the server trims and lower-cases the email and normalises the password.
       result = await submitSignIn({ email: values.email, password: values.password });
     } finally {
@@ -226,8 +220,8 @@ export default function SignInPage({ installationName, onSignedIn }) {
    * "Back to sign in": the pending cookie simply expires or is replaced (D-3). A second step in
    * flight is abandoned: aborted, so a reply whose headers have not arrived cannot land a cookie
    * later (findings 1 and 2 of review round 2), and the browser's session is ended with the sign-out
-   * route in case a success's cookies were already stored; the next password submit waits for that
-   * sign-out (each try is bounded by its own 15-second deadline). Nothing is shown about it. Cost,
+   * route in case a success's cookies were already stored; the next submit waits for that sign-out
+   * (`finishLeftSignOut`; each try is bounded by its own 15-second deadline). Nothing is shown about it. Cost,
    * accepted: a sign-in made in another tab while this second step was in flight is signed out too.
    */
   function backToSignIn() {
@@ -246,8 +240,32 @@ export default function SignInPage({ installationName, onSignedIn }) {
     showPasswordForm(null);
   }
 
-  /** Ends the browser's session as the person leaves a second step in flight; see `backToSignIn`. */
-  function endAbandonedSession() {
+  /**
+   * Before a sign-in or a second step is sent: a sign-out still running from `endAbandonedSession`
+   * finishes first, so its reply (which clears the session cookie) can never land after, and clear,
+   * the newer sign-in's; then a session whose sign-out was not confirmed gets one more try. The
+   * request is sent whatever the outcome (never blocked; review round 2, and since review round 4
+   * also before a second step, as a failed session read now signs out with the code form still shown).
+   */
+  async function finishLeftSignOut() {
+    // A loop: while this submit waited, another one (a code submit that "Back to sign in" then left)
+    // may have started the retry below (review round 4).
+    while (leftSessionEnding.current) await leftSessionEnding.current;
+    if (leftSessionUnended.current) {
+      leftSessionUnended.current = false;
+      // Tracked like the first try, so a submit started after "Back to sign in" interrupts this
+      // wait waits for it too (review round 4's review layers); tried once, not flagged again.
+      await endAbandonedSession({ retry: true });
+    }
+  }
+
+  /**
+   * Ends the browser's session as the person leaves a second step in flight (see `backToSignIn`), or
+   * when a second step's 200 could not be settled because the session read failed (review round 4).
+   * With `retry`, it is `finishLeftSignOut`'s one more try: not flagged again if unconfirmed.
+   * Returns the sign-out's promise, which never rejects.
+   */
+  function endAbandonedSession({ retry = false } = {}) {
     const ending = (async () => {
       let confirmed = false;
       try {
@@ -255,13 +273,14 @@ export default function SignInPage({ installationName, onSignedIn }) {
       } catch {
         confirmed = false;
       }
-      if (!confirmed) leftSessionUnended.current = true;
+      if (!confirmed) { if (!retry) leftSessionUnended.current = true; }
       // The app may have opened meanwhile (the visibility check found the session): it is reloaded
       // so it shows the truth, as `endLeftSession` does (pull request 13, review round 3).
       else if (!mounted.current) window.location.reload();
     })();
     leftSessionEnding.current = ending;
     ending.finally(() => { if (leftSessionEnding.current === ending) leftSessionEnding.current = null; });
+    return ending;
   }
 
   /**
@@ -307,15 +326,20 @@ export default function SignInPage({ installationName, onSignedIn }) {
     }
     setErrors({});
     const run = secondStepRun.current;
-    const request = createSecondStepRun();
-    secondStepRequest.current = request;
     inFlight.current = true;
     setSending(true);
+    let request = null;
     let result;
     try {
+      // A sign-out from a failed session read (below) or from Back finishes first (review round 4).
+      await finishLeftSignOut();
+      // Back to sign in, or the page going, while that sign-out ran: the code is not sent.
+      if (run !== secondStepRun.current || !mounted.current) return;
+      request = createSecondStepRun();
+      secondStepRequest.current = request;
       result = await request.send({ method, code: checked.code });
     } finally {
-      if (secondStepRequest.current === request) secondStepRequest.current = null;
+      if (request && secondStepRequest.current === request) secondStepRequest.current = null;
       // After "Back to sign in" this request no longer owns the page's sending state.
       if (run === secondStepRun.current) {
         inFlight.current = false;
@@ -343,6 +367,10 @@ export default function SignInPage({ installationName, onSignedIn }) {
         refs.current[method]?.focus();
         return;
       default:
+        // A 200 that could not be settled because the session read failed: the browser may hold
+        // that session, so it is ended as "Back to sign in" ends it; the refusal is the same
+        // (pull request 13, review round 4; orchestrator ruling of 2026-11-25).
+        if (result.endSession) endAbandonedSession();
         // A wrong code or any other refusal: the field keeps its value for correction.
         setGeneral({ message: result.message });
     }

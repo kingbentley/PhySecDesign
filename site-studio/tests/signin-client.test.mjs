@@ -187,13 +187,17 @@ describe("an abandoned second step (pull request 13, review round 2)", () => {
     const reader = (session) => async () => { reads.push(session.kind); return session; };
     const signedIn = { kind: "signedIn", name: "Ada", accountId: "a1", role: "member", installationName: "Site" };
     assert.deepEqual(await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader(signedIn) }).send(input), { kind: "signedIn", name: "Ada" });
-    for (const session of [{ kind: "signedOut", installationName: "Site" }, { kind: "unknown" }]) {
-      assert.deepEqual(
-        await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader(session) }).send(input),
-        { kind: "refused", message: SIGN_IN_MESSAGES.other },
-        `${session.kind}: the existing refusal, no sign-in`,
-      );
-    }
+    assert.deepEqual(
+      await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader({ kind: "signedOut", installationName: "Site" }) }).send(input),
+      { kind: "refused", message: SIGN_IN_MESSAGES.other },
+      "signed out: the existing refusal, no sign-in, and no session to end",
+    );
+    // A read that fails: the existing refusal, and the page is asked to end the session (review round 4).
+    assert.deepEqual(
+      await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader({ kind: "unknown" }) }).send(input),
+      { kind: "refused", message: SIGN_IN_MESSAGES.other, endSession: true },
+      "unknown: the existing refusal, no sign-in, the session ended",
+    );
     assert.deepEqual(reads, ["signedIn", "signedOut", "unknown"]);
     // A complete 200 body of the wrong shape (an intermediary's page) stays a refusal; no session read.
     reads.length = 0;
@@ -205,11 +209,16 @@ describe("an abandoned second step (pull request 13, review round 2)", () => {
     const cut = () => new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('{"na')); controller.error(new TypeError("connection reset")); } }), { status: 200 });
     assert.deepEqual(await createSecondStepRun(async () => cut(), { ...loaded, sessionReader: reader(signedIn) }).send(input), { kind: "signedIn", name: "Ada" });
     assert.deepEqual(reads, ["signedIn"]);
-    // A read that throws is treated as one that failed.
+    // A read that throws is treated as one that failed: the page is asked to end the session (review round 4).
     assert.deepEqual(
       await createSecondStepRun(async () => cut(), { ...loaded, sessionReader: async () => { throw new Error("read failed"); } }).send(input),
-      { kind: "refused", message: SIGN_IN_MESSAGES.other },
+      { kind: "refused", message: SIGN_IN_MESSAGES.other, endSession: true },
     );
+    // Only that settling read's failure asks for it: an ordinary refusal and a request with no answer do not.
+    assert.equal((await createSecondStepRun(async () => Response.json(refusal("second_step_code_wrong"), { status: 401 }), loaded).send(input)).endSession, undefined);
+    assert.equal((await createSecondStepRun(async () => new Response("<html>maintenance</html>", { status: 200 }), loaded).send(input)).endSession, undefined);
+    const neverAnswers = (_url, init) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
+    assert.equal((await createSecondStepRun(neverAnswers, { ...loaded, timeoutMs: 20 }).send(input)).endSession, undefined);
     const abandonedRun = createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 60_000, sessionReader: reader(signedIn) });
     const pending = abandonedRun.send(input);
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -228,6 +237,22 @@ describe("an abandoned second step (pull request 13, review round 2)", () => {
     assert.equal(run.abandon(), true, "a success's headers had arrived");
     answerRead({ kind: "signedIn", name: "Ada", accountId: "a1", role: "member", installationName: "Site" });
     assert.deepEqual(await pending, { kind: "refused", message: SIGN_IN_MESSAGES.network }, "the signed-in read is not acted on");
+    // A read that fails after the abandon asks for no second sign-out: the page already signed out (review round 4).
+    for (const failing of [(resolve) => resolve({ kind: "unknown" }), (_resolve, reject) => reject(new Error("read failed"))]) {
+      let begun;
+      const begunRead = new Promise((resolve) => { begun = resolve; });
+      let settle;
+      const failingRun = createSecondStepRun(async () => new Response(new ReadableStream({ start() {} }), { status: 200 }), {
+        ...loaded,
+        timeoutMs: 20,
+        sessionReader: () => { begun(); return new Promise((resolve, reject) => { settle = () => failing(resolve, reject); }); },
+      });
+      const sent = failingRun.send(input);
+      await begunRead;
+      assert.equal(failingRun.abandon(), true);
+      settle();
+      assert.deepEqual(await sent, { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    }
   });
 
   test("a refusal's headers, or a request that has already settled, never call for a sign-out", async () => {

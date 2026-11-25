@@ -166,7 +166,9 @@ export async function submitSignIn(input, fetcher = fetch, { timeoutMs = SIGN_IN
 /**
  * One second-step request that the page can abandon (pull request 13, review round 2; orchestrator
  * ruling of 2026-11-24): `send(input)` resolves to the outcomes `secondStepOutcome` gives, except
- * that a 200 whose body did not arrive is settled by a session read (see below); `abandon()` aborts
+ * that a 200 whose body did not arrive is settled by a session read (see below), and a refusal from a
+ * read that failed carries `endSession: true` (the page then ends the session the browser may hold,
+ * as "Back to sign in" does; review round 4); `abandon()` aborts
  * it, so a reply whose headers have not arrived is dropped by the browser with its cookies, and
  * answers true only when a success's headers had already arrived (the browser then holds the
  * session the server set, which the page must end). A request that has already settled is not
@@ -190,9 +192,11 @@ export function createSecondStepRun(fetcher = fetch, { timeoutMs = SIGN_IN_TIMEO
     // have set the session, or may be an intermediary's. The session read tells: signed in is a
     // sign-in (the name from the session); signed out, or a read that fails, is the existing
     // refusal. A complete body of the wrong shape stays a refusal (pull request 13, review round 3;
-    // orchestrator ruling of 2026-11-25). The read runs inside this run but takes no signal (it has
-    // its own deadline): leaving the second step meanwhile discards its result, and the page signs
-    // out as on any abandon.
+    // orchestrator ruling of 2026-11-25). A read that fails (or throws) cannot rule out that the
+    // browser holds the session, so its refusal asks the page to end it (`endSession`; review round
+    // 4, orchestrator ruling of 2026-11-25); signed out needs no sign-out. The read runs inside this
+    // run but takes no signal (it has its own deadline): leaving the second step meanwhile discards
+    // its result, and the page signs out as on any abandon.
     let session;
     try {
       session = await sessionReader(fetcher);
@@ -201,7 +205,8 @@ export function createSecondStepRun(fetcher = fetch, { timeoutMs = SIGN_IN_TIMEO
     }
     if (controller.signal.aborted) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
     if (session.kind === 'signedIn') return { kind: 'signedIn', name: session.name };
-    return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
+    if (session.kind === 'signedOut') return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
+    return { kind: 'refused', message: SIGN_IN_MESSAGES.other, endSession: true };
   }
   return {
     send: (input) => send(input).finally(() => { settled = true; }),

@@ -160,6 +160,8 @@ test("Wrong code, Wrong codes to the wait, axe (a refusal shown): a wrong code s
   await openSecondStep(page, server.origin, account);
   const wrong = wrongCode(account.secret);
   const alert = page.getByRole("alert");
+  // An ordinary refusal sends no sign-out (only a failed session read does; review round 4).
+  const signOuts = countRequests(page, "/api/v1/session/sign-out");
 
   await codeField(page).fill(wrong);
   await watchFocusOnAppear(page, "alert", CODE_WRONG);
@@ -185,6 +187,8 @@ test("Wrong code, Wrong codes to the wait, axe (a refusal shown): a wrong code s
     await expect(alert).toBeFocused();
     await expect(secondHeading(page)).toBeVisible();
   }
+  await afterFrames(page);
+  expect(signOuts, "no sign-out after a wrong code").toEqual([]);
   expect(await submitAndWait(page, "Verify and sign in"), "wrong code 4").toBe(429);
   await expect(signInHeading(page)).toBeVisible();
   await expect(alert).toHaveText(/^Too many attempts\. Wait .+ before trying again\.$/);
@@ -720,6 +724,136 @@ test("In flight, a success's headers already arrived when the person goes back: 
   await expect(page.getByTestId("account-name")).toHaveCount(0);
   await expect(page.locator('[role="alert"]')).toHaveText("");
   await expect(passwordField(page)).toBeFocused();
+});
+
+/**
+ * The page's first second-step fetch goes to the real server and completes (the browser stores the
+ * session cookie), but the page gets its body cut off part-way; from then on the page's session
+ * reads fail as a network error does, until `window.__failSessionReads` is set false. Every other
+ * request goes through (review round 4).
+ */
+async function cutSecondStepAndFailReads(page) {
+  await page.addInitScript((path) => {
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, init = {}) => {
+      const url = new URL(typeof input === "string" ? input : input.url, location.href);
+      if (url.pathname === "/api/v1/session" && window.__failSessionReads) {
+        window.__failedReads = (window.__failedReads ?? 0) + 1;
+        throw new TypeError("Failed to fetch");
+      }
+      if (url.pathname !== path || window.__cutDone) return realFetch(input, init);
+      const real = await realFetch(input, init);
+      await real.text();
+      window.__cutDone = true;
+      window.__failSessionReads = true;
+      const body = new ReadableStream({
+        start(controller) { controller.enqueue(new TextEncoder().encode('{"na')); controller.error(new TypeError("connection reset")); },
+      });
+      return new Response(body, { status: real.status, headers: real.headers });
+    };
+  }, SECOND_STEP_PATH);
+}
+
+test("A correct code's 200 cut off and the session read failing (review round 4): the page ends the session as Back does and shows the existing refusal on the code form; a code sent meanwhile waits for that sign-out", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("readfails", testInfo), name: "Reid Readfails", password: PASSWORD });
+  await cutSecondStepAndFailReads(page);
+  // The sign-out is held, so the test can see the browser still holds the session, and a code sent
+  // meanwhile, before it is answered.
+  let releaseSignOut;
+  const signOutHeld = new Promise((resolve) => { releaseSignOut = resolve; });
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    await signOutHeld;
+    await route.continue();
+  });
+  const secondSteps = countSecondStepRequests(page);
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill((await nextCode(account.secret, account.step)).code);
+  const signOutSent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 });
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await signOutSent;
+  expect(await page.evaluate(() => window.__failedReads ?? 0), "the settling session read failed").toBeGreaterThanOrEqual(1);
+  // Session reads work again from here, so the rest runs under normal conditions.
+  await page.evaluate(() => { window.__failSessionReads = false; });
+  expect(await cookiesNamed(context, SESSION_COOKIE), "the session is still in the browser while the sign-out is held").toHaveLength(1);
+  await expect(page.locator('[role="alert"]')).toHaveText("Sign-in could not be completed. Try again.");
+  await expect(secondHeading(page)).toBeVisible();
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  // A code sent while that sign-out runs waits for its reply.
+  const order = [];
+  page.on("response", (response) => { if (new URL(response.url()).pathname === "/api/v1/session/sign-out") order.push("sign-out answered"); });
+  page.on("request", (request) => { if (new URL(request.url()).pathname === SECOND_STEP_PATH) order.push("second step sent"); });
+  await codeField(page).fill("123456");
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await expect(page.getByRole("button", { name: "Checking…" })).toBeVisible();
+  await afterFrames(page);
+  expect(secondSteps, "no second step sent while the sign-out runs").toHaveLength(1);
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out");
+  const retried = page.waitForResponse((response) => new URL(response.url()).pathname === SECOND_STEP_PATH);
+  releaseSignOut();
+  expect((await signedOut).status(), "the sign-out was answered").toBe(200);
+  // The success had consumed the pending sign-in, so the code sent after the sign-out finds it expired.
+  expect((await retried).status()).toBe(401);
+  expect(secondSteps).toHaveLength(2);
+  expect(order, "the code was sent only after the sign-out's reply").toEqual(["sign-out answered", "second step sent"]);
+  await expect(signInHeading(page)).toBeVisible();
+  await expect(page.locator('[role="alert"]')).toHaveText(EXPIRED);
+  const session = await context.request.get(`${server.origin}/api/v1/session`);
+  expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+});
+
+test("The failed-read sign-out not confirmed (review round 4): a code submit and, after Back, a password submit both wait for it; the code is never sent, and the sign-in waits for the one retry's reply", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const first = await accountThroughApi(playwright, server.origin, { email: emailFor("retryfirst", testInfo), name: "Rory Retry", password: PASSWORD });
+  const second = await accountThroughApi(playwright, server.origin, { email: emailFor("retrysecond", testInfo), name: "Rena Retry", password: PASSWORD, twoStep: false });
+  await cutSecondStepAndFailReads(page);
+  // The first sign-out is held, then gets no confirmation (a server error); the second, the one
+  // retry, is held, then goes through; later ones go through.
+  let signOutCalls = 0;
+  let releaseFirst;
+  const firstHeld = new Promise((resolve) => { releaseFirst = resolve; });
+  let releaseRetry;
+  const retryHeld = new Promise((resolve) => { releaseRetry = resolve; });
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    signOutCalls += 1;
+    if (signOutCalls === 1) { await firstHeld; return route.fulfill({ status: 500, body: "" }); }
+    if (signOutCalls === 2) await retryHeld;
+    return route.continue();
+  });
+  const secondSteps = countSecondStepRequests(page);
+  await openSecondStep(page, server.origin, first);
+  await codeField(page).fill((await nextCode(first.secret, first.step)).code);
+  const firstSent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 });
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await firstSent;
+  await page.evaluate(() => { window.__failSessionReads = false; });
+  await expect(page.locator('[role="alert"]')).toHaveText("Sign-in could not be completed. Try again.");
+  // A code submit waits for that sign-out; Back; then a password submit as another account waits too.
+  await codeField(page).fill("123456");
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await expect(page.getByRole("button", { name: "Checking…" })).toBeVisible();
+  await page.getByRole("button", { name: "Back to sign in" }).click();
+  await expect(signInHeading(page)).toBeVisible();
+  await page.getByLabel("Email").fill(second.email);
+  await passwordField(page).fill(second.password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await afterFrames(page);
+  const order = [];
+  page.on("response", (response) => { if (new URL(response.url()).pathname === "/api/v1/session/sign-out") order.push("sign-out answered"); });
+  page.on("request", (request) => { if (new URL(request.url()).pathname === "/api/v1/session/sign-in") order.push("sign-in sent"); });
+  // The first sign-out is answered unconfirmed: one waiter starts the retry, and neither sends anything else meanwhile.
+  const retrySent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out");
+  releaseFirst();
+  await retrySent;
+  await afterFrames(page);
+  expect(order, "no sign-in sent while the retry runs").toEqual(["sign-out answered"]);
+  releaseRetry();
+  await expect(page.getByTestId("account-name")).toHaveText(second.name);
+  expect(order).toEqual(["sign-out answered", "sign-out answered", "sign-in sent"]);
+  expect(secondSteps, "the code typed before Back was never sent").toHaveLength(1);
+  expect(signOutCalls, "the sign-out and one retry, no more").toBe(2);
 });
 
 test("In flight, a sign-out from Back still running: the next password submit waits for its reply before the sign-in is sent", async ({ page, playwright }, testInfo) => {

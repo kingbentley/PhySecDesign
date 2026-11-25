@@ -13,7 +13,7 @@
 
 ## Jira keys
 
-- Every story has an item in the Jira project `SCRUM` on `kevinrbentley.atlassian.net`. Put the story's Jira key in its pull request title, for example `SCRUM-47 Story 1.6: ...`, so GitHub for Jira shows the pull request, its branch and its commits on the story.
+- Every story has an item in the Jira project `SCRUM` on `kevinrbentley.atlassian.net`. Put the story's Jira key in its pull request title, for example `SCRUM-47 Story 1.6: ...`, so GitHub for Jira shows the pull request on the story.
 - To find a story's key, search Jira for the label that matches its key in `sprint-status.yaml` (JQL `project = SCRUM AND labels = "<sprint-status key>"`). On the workstation the same map is in `_bmad/custom/jira-key-map.json`, which is gitignored.
 - Do not rename a pull request that is already open to add a key unless Kevin asks.
 

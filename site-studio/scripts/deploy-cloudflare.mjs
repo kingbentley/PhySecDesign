@@ -48,8 +48,8 @@
 // and it is printed once, on this command's own output. The printed order is the one-deploy-at-a-
 // time line, Wrangler's deploy output, the key lines, then the set-up lines.
 //
-// Options: --url <https address> asks that address instead of the first one Wrangler reports
-// (for a custom domain). Its host must be one Wrangler reported for this deploy (an https target,
+// Options: --url <https address> (for a custom domain) asks that address. Without it the command
+// asks only the workers.dev address Wrangler reports (review round 4). Its host must be one Wrangler reported for this deploy (an https target,
 // a custom domain or a route pattern without a wildcard, compared exactly without regard to case);
 // otherwise the command stops after the deploy with nothing listed, put or deleted and no set-up
 // code (pull request 13, review round 1). --name <worker> deploys under that Worker name instead of the one in the
@@ -287,11 +287,23 @@ export function parseSetupState(body) {
   return body.state === "open" || body.state === "closed" ? body.state : null;
 }
 
-/** The address to ask: the --url option, else the first HTTPS address Wrangler deployed to. */
+/**
+ * Whether an `https://` target names the whole of a workers.dev host (its parsed host, lower-cased,
+ * ends in `.workers.dev`): the only kind of target the command reads without --url.
+ */
+export function isWorkersDevTarget(target) {
+  if (!isWholeHostTarget(target)) return false;
+  return new URL(target.trim().split(/\s/, 1)[0]).hostname.toLowerCase().endsWith(".workers.dev");
+}
+
+/** The address to ask: the --url option, else the workers.dev address Wrangler deployed to. */
 export function chooseAddress(targets, override) {
-  // Without --url, the first https target that names its whole host (review round 2): a route
-  // limited to a path would hand the key-state read to whatever serves the rest of the host.
-  const candidate = override ?? (targets ?? []).find((target) => isWholeHostTarget(target));
+  // Without --url, the first https target that names the whole of a workers.dev host (review
+  // rounds 2 and 4): a route limited to a path would hand the key-state read to whatever serves the
+  // rest of the host, and a custom domain or a `host/*` route is used only when the operator names
+  // it in --url, so the default cannot widen if Wrangler's output changes (orchestrator ruling of
+  // 2026-11-25).
+  const candidate = override ?? (targets ?? []).find((target) => isWorkersDevTarget(target));
   if (!candidate) return null;
   let url;
   try {
