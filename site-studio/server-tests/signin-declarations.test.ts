@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { API_PREFIX, ROUTE_LIST, ROUTES, type RouteDeclaration } from "../shared/routes";
 import { requestContext } from "../server/api/router";
 import { markerCookieName } from "../server/auth/marker";
-import { sessionCookieName } from "../server/auth/session";
+import { pendingCookieName, sessionCookieName } from "../server/auth/session";
 
 // The declaration sweep (story 1.3, CAP-9, V-12): every route that reads the session cookie and is
 // not a GET must be `appOriginOnly`, so another site cannot drive a change made with a person's
@@ -23,18 +23,32 @@ describe("the route declarations", () => {
     expect(unguarded([...ROUTE_LIST, broken])).toEqual(["brokenSignOut"]);
   });
 
-  it("declare the three sign-in routes and the invite and accept routes under /api/v1/ with the flag; the session read is the only GET among them", () => {
+  it("declare the sign-in routes, the invite and accept routes, the second step and the account two-step routes under /api/v1/ with the flag; the session read and the two-step state read are the only GETs among them", () => {
     const flagged = ROUTE_LIST.filter((route) => route.readsSessionCookie);
     expect(flagged.map((route) => [route.id, route.method]).sort()).toEqual([
       ["acceptInvite", "POST"],
       ["invite", "POST"],
+      ["secondStep", "POST"],
       ["session", "GET"],
       ["signIn", "POST"],
       ["signOut", "POST"],
+      ["twoStepConfirm", "POST"],
+      ["twoStepRecoveryCodes", "POST"],
+      ["twoStepStart", "POST"],
+      ["twoStepState", "GET"],
+      ["twoStepTurnOff", "POST"],
     ]);
     for (const route of flagged) expect(route.path.startsWith(API_PREFIX)).toBe(true);
     expect(ROUTES.signIn.appOriginOnly).toBe(true);
     expect(ROUTES.signOut.appOriginOnly).toBe(true);
+    // Story 1.5 (standing rule 13, V-12): every new non-GET route is appOriginOnly; the state read
+    // and the public key-state read are not, and the key-state read gets no cookie.
+    for (const id of ["secondStep", "twoStepStart", "twoStepConfirm", "twoStepTurnOff", "twoStepRecoveryCodes"] as const) {
+      expect(ROUTES[id].appOriginOnly, id).toBe(true);
+    }
+    expect(ROUTES.twoStepState.appOriginOnly).toBeUndefined();
+    expect(ROUTES.deploymentKeyState.appOriginOnly).toBeUndefined();
+    expect(ROUTES.deploymentKeyState.readsSessionCookie).toBeUndefined();
   });
 });
 
@@ -43,16 +57,19 @@ describe("the request context", () => {
   const header = [
     `${sessionCookieName(identifier)}=session-value`,
     `${markerCookieName(identifier)}=marker-value`,
+    `${pendingCookieName(identifier)}=pending-value`,
     "unrelated=1",
+    "__Host-ssd-q-" + "a".repeat(32) + "=other-kind",
     `${sessionCookieName("b".repeat(32))}=other-installation`,
   ].join("; ");
   const request = new Request("https://survey.acme.test/api/v1/session", { headers: { cookie: header } });
   const url = new URL(request.url);
 
-  it("passes every cookie with the session prefix to a route that reads the session cookie, and nothing else", () => {
+  it("passes every session, marker and pending cookie to a route that reads the session cookie, and nothing else", () => {
     expect(requestContext(request, url, ROUTES.session).cookies).toEqual({
       [sessionCookieName(identifier)]: "session-value",
       [markerCookieName(identifier)]: "marker-value",
+      [pendingCookieName(identifier)]: "pending-value",
       [sessionCookieName("b".repeat(32))]: "other-installation",
     });
   });

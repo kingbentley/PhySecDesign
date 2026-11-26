@@ -21,6 +21,7 @@ import { callObject } from "../server/objects/call";
 import { INVITATION_TTL_MS } from "../shared/invitation";
 import { SESSION_MAX_AGE_MS } from "../shared/signin";
 import { tableExists } from "./helpers";
+import { newDeploymentKey, TWO_STEP_OPERATIONS, twoStepFixtures } from "./two-step-fixtures";
 
 // The installation object's invitation storage (story 1.4, spec 1): the I/O matrix's rows for
 // creating, reading and accepting invitations, the 7-day boundary, replacement, single use under
@@ -668,6 +669,8 @@ describe("the installation object's operations (criteria 8 and 16, standing rule
       return invitationSecretHash((result.value as InvitationCreated).secret);
     };
 
+    const twoStep = twoStepFixtures(call, sessionCookies, newDeploymentKey());
+
     // In an order that lets each fixture use what the earlier operations made; endSession last.
     const fixtures: [string, () => Promise<unknown>][] = [
       ["status", async () => null],
@@ -693,7 +696,12 @@ describe("the installation object's operations (criteria 8 and 16, standing rule
       ["sessionInfo", async () => ({ cookies: sessionCookies() })],
       ["createInvitation", async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: sessionCookies() })],
       ["invitationInfo", async () => ({ secretHash: await liveHash("read@acme.test") })],
+      ["deploymentKeyState", async () => ({})],
       ["acceptInvitation", async () => ({ secretHash: await liveHash("accept@acme.test"), name: "Accepting Person", passwordHash: madeUpHash(), cookies: {} })],
+      // Two-step verification (story 1.5, spec 2), in the order its fixtures need.
+      ...TWO_STEP_OPERATIONS.map((operation) => [operation, twoStep[operation]] as [string, () => Promise<unknown>]),
+      // Discards only a presented pending sign-in (D-3; pull request 13, review round 1).
+      ["discardPending", async () => ({ cookies: sessionCookies() })],
       ["endSession", async () => ({ cookies: sessionCookies() })],
     ];
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());

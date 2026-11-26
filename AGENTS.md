@@ -11,6 +11,12 @@
 - After pushing, wait until CodeRabbit has finished responding to that commit before starting any further fixes. If its automatic reviews are paused, its replies on the existing threads settling counts as finished; if there are no CodeRabbit threads to settle, continue without waiting.
 - Do not trigger a CodeRabbit review or resume its automatic reviews unless Kevin asks.
 
+## Jira keys
+
+- Every story has an item in the Jira project `SCRUM` on `kevinrbentley.atlassian.net`. Put the story's Jira key in its pull request title, for example `SCRUM-47 Story 1.6: ...`, so GitHub for Jira shows the pull request on the story.
+- To find a story's key, search Jira for the label that matches its key in `sprint-status.yaml` (JQL `project = SCRUM AND labels = "<sprint-status key>"`). On the workstation the same map is in `_bmad/custom/jira-key-map.json`, which is gitignored.
+- Do not rename a pull request that is already open to add a key unless Kevin asks.
+
 ## BMAD planning
 
 - The planning work of 2026-11-18 and 2026-11-19 was merged to `main` through pull request 2 on 2026-11-19. The branches `claude/wonderful-mendel-hmttcb` and `claude/determined-curie-ugawva` hold nothing beyond it; start new work from `main`.

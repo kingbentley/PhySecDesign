@@ -187,7 +187,8 @@ describe("the first administrator's stored row", () => {
   });
 });
 
-describe("password hash parameters at create", () => {
+// About a dozen real scrypt hashes: more than the default 5 s while the route suites hash in parallel.
+describe("password hash parameters at create", { timeout: 60_000 }, () => {
   it("are pinned to scrypt N = 131,072, r = 8, p = 1, a 16-byte salt and a 32-byte hash; others are refused and nothing is written", async () => {
     const name = "create-pinned-parameters";
     const [fingerprint] = await codeFingerprints();
@@ -606,16 +607,25 @@ describe("accounts and the installation's name are outside project revisions (CA
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(operations).toEqual([
       "acceptInvitation",
+      "accountCheck",
       "completeSignIn",
+      "confirmTwoStep",
       "createFirstAdministrator",
       "createInvitation",
+      "deploymentKeyState",
+      "discardPending",
       "endSession",
       "invitationInfo",
+      "renewRecoveryCodes",
+      "secondStep",
       "sessionInfo",
       "setupAttempt",
       "setupState",
       "signInAttempt",
+      "startTwoStep",
       "status",
+      "turnOffTwoStep",
+      "twoStepState",
     ]);
     expect(operations.some((operation) => /restore|revision/i.test(operation))).toBe(false);
 

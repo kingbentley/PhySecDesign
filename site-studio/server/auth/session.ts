@@ -1,4 +1,5 @@
 import { SESSION_MAX_AGE_SECONDS } from "../../shared/signin";
+import { PENDING_SIGNIN_TTL_MS } from "../../shared/twoStep";
 
 // Session tokens and the session cookie (story 1.3, D-1, D-4, E-15, NFR-5).
 //
@@ -66,6 +67,27 @@ export function sessionCookieName(identifier: string): string {
   return `${COOKIE_PREFIX}${identifier}`;
 }
 
+/** The pending sign-in cookie's name (story 1.5, D-2): `__Host-ssd-p-<identifier>`. */
+export function pendingCookieName(identifier: string): string {
+  return `${COOKIE_PREFIX}p-${identifier}`;
+}
+
+/** The pending cookie's lifetime in seconds: the pending sign-in's 5 minutes (CA-46). */
+export const PENDING_MAX_AGE_SECONDS = PENDING_SIGNIN_TTL_MS / 1000;
+
+/**
+ * The pending sign-in cookie (story 1.5, D-2): the pending token, `HttpOnly`, `Secure`,
+ * `SameSite=Strict`, `Path=/`, 5 minutes, no `Domain`. It is never a session.
+ */
+export function pendingCookieLine(identifier: string, token: string): string {
+  return `${pendingCookieName(identifier)}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${PENDING_MAX_AGE_SECONDS}`;
+}
+
+/** Clears the pending sign-in cookie with the attributes it was set with. */
+export function clearPendingCookieLine(identifier: string): string {
+  return `${pendingCookieName(identifier)}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`;
+}
+
 /** The session cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, 30 days, no `Domain`. */
 export function sessionCookieLine(identifier: string, token: string): string {
   return `${sessionCookieName(identifier)}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_MAX_AGE_SECONDS}`;
@@ -80,12 +102,15 @@ export function clearSessionCookieLine(identifier: string): string {
 export const MAX_PASSED_COOKIES = 64;
 export const MAX_COOKIE_NAME = 100;
 export const MAX_COOKIE_VALUE = 512;
-/** A session or marker cookie name: the prefix, `m-` for a marker, and an identifier. */
-const PASSED_COOKIE_NAME = new RegExp(`^${COOKIE_PREFIX}(?:m-)?${IDENTIFIER_PATTERN.source.slice(1, -1)}$`);
+/**
+ * A session, marker or pending cookie name: the prefix, `m-` for a marker or `p-` for a pending
+ * sign-in (story 1.5, D-2), and an identifier.
+ */
+const PASSED_COOKIE_NAME = new RegExp(`^${COOKIE_PREFIX}(?:m-|p-)?${IDENTIFIER_PATTERN.source.slice(1, -1)}$`);
 
 /**
- * The session and marker cookies of a `Cookie` header, the last 64, for the installation object,
- * which uses the ones named with its own identifier.
+ * The session, marker and pending cookies of a `Cookie` header, the last 64, for the installation
+ * object, which uses the ones named with its own identifier.
  */
 export function prefixedCookies(header: string | null): Record<string, string> {
   if (!header) return {};

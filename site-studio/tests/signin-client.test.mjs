@@ -4,7 +4,17 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { REFUSALS } from "../shared/refusal.ts";
-import { SIGN_IN_MESSAGES, requestSignOut, signInOutcome, signOutConfirmed, submitSignIn, waitMessage } from "../src/admin/signInClient.js";
+import {
+  SIGN_IN_MESSAGES,
+  createSecondStepRun,
+  requestSignOut,
+  secondStepOutcome,
+  signInOutcome,
+  signOutConfirmed,
+  submitSecondStep,
+  submitSignIn,
+  waitMessage,
+} from "../src/admin/signInClient.js";
 import { waitWording } from "../src/admin/waitWording.js";
 import { isSessionReply, readSession, readSetupState } from "../src/admin/setupState.js";
 
@@ -52,6 +62,208 @@ describe("sign-in refusals", () => {
     assert.equal(signOutConfirmed(500, null), false);
     assert.equal(signOutConfirmed(200, null), false);
     assert.equal(signOutConfirmed(403, refusal("origin_refused")), false);
+  });
+});
+
+describe("the second step (story 1.5, spec 8, D-12, D-13)", () => {
+  test("a sign-in reply of exactly { secondStep: true } asks for the second step; nothing else does", () => {
+    assert.deepEqual(signInOutcome(200, { secondStep: true }), { kind: "secondStep" });
+    assert.equal(signInOutcome(200, { secondStep: false }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: "true" }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: true, name: "Robin" }).kind, "refused");
+    assert.equal(signInOutcome(200, { secondStep: true, token: "x" }).kind, "refused");
+    assert.equal(signInOutcome(401, { secondStep: true }).kind, "refused");
+  });
+
+  test("a correct code signs in with the name, as a sign-in does", () => {
+    assert.deepEqual(secondStepOutcome(200, { name: "Robin Example" }), { kind: "signedIn", name: "Robin Example" });
+    assert.deepEqual(secondStepOutcome(200, { name: "Robin", token: "x" }), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(200, { secondStep: true }), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(200, null), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+  });
+
+  test("a wrong code and a wrong recovery code stay on the second step with the server's message", () => {
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_code_wrong")),
+      { kind: "refused", message: "That code does not match or was already used. Wait for the next code in your authenticator app and try again." });
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_recovery_code_wrong")),
+      { kind: "refused", message: "That recovery code does not match, or it has already been used." });
+    // Without a message in the reply, shared/refusal.ts's.
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_code_wrong" } }).message, REFUSALS.second_step_code_wrong.message);
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_recovery_code_wrong" } }).message, REFUSALS.second_step_recovery_code_wrong.message);
+  });
+
+  test("an expired pending sign-in and a wait return to the password form, the wait composed as story 1.3 does", () => {
+    assert.deepEqual(secondStepOutcome(401, refusal("second_step_expired")),
+      { kind: "restart", message: "This sign-in has expired. Sign in again with your email and password." });
+    assert.equal(secondStepOutcome(401, { error: { code: "second_step_expired" } }).message, REFUSALS.second_step_expired.message);
+    assert.deepEqual(secondStepOutcome(429, refusal("signin_wait", { retryAfterSeconds: 60 })),
+      { kind: "restart", message: "Too many attempts. Wait 1 minute before trying again." });
+    assert.equal(secondStepOutcome(429, refusal("signin_wait"), "150").message, "Too many attempts. Wait 2 minutes 30 seconds before trying again.");
+    assert.equal(secondStepOutcome(429, refusal("signin_wait")).message, "Too many attempts. Wait a few minutes before trying again.");
+  });
+
+  test("a deployment key mismatch is its own kind with its message (finding 26)", () => {
+    assert.deepEqual(secondStepOutcome(503, refusal("deployment_key_mismatch")),
+      { kind: "keyMismatch", message: REFUSALS.deployment_key_mismatch.message });
+    assert.equal(secondStepOutcome(503, { error: { code: "deployment_key_mismatch" } }).message, REFUSALS.deployment_key_mismatch.message);
+  });
+
+  test("an invalid code is named for the page to word; other codes are worded as the first step words them", () => {
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "code" })), { kind: "field", field: "code" });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "method" })), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input", { field: "email" })), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(400, refusal("invalid_input")), { kind: "refused", message: SIGN_IN_MESSAGES.invalid_input });
+    assert.deepEqual(secondStepOutcome(503, refusal("signin_busy")), { kind: "refused", message: SIGN_IN_MESSAGES.busy });
+    assert.deepEqual(secondStepOutcome(403, refusal("origin_refused")), { kind: "refused", message: SIGN_IN_MESSAGES.origin_refused });
+    assert.deepEqual(secondStepOutcome(503, refusal("updating")), { kind: "refused", message: SIGN_IN_MESSAGES.updating });
+    assert.deepEqual(secondStepOutcome(403, refusal("https_required")), { kind: "refused", message: SIGN_IN_MESSAGES.https_required });
+    assert.deepEqual(secondStepOutcome(404, refusal("not_found")), { kind: "refused", message: SIGN_IN_MESSAGES.not_found });
+    assert.deepEqual(secondStepOutcome(405, refusal("method_not_allowed")), { kind: "refused", message: SIGN_IN_MESSAGES.not_found });
+    assert.deepEqual(secondStepOutcome(500, refusal("internal_error")), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(secondStepOutcome(502, null), { kind: "refused", message: SIGN_IN_MESSAGES.other });
+  });
+
+  test("the request posts only the method and the code to the second-step route, with the app's headers and a deadline", async () => {
+    const headers = { "content-type": "application/json", accept: "application/json", "x-site-survey-design": "1" };
+    const sent = [];
+    const fetcher = async (url, init) => {
+      sent.push({ url, init });
+      return new Response(JSON.stringify({ name: "Robin Example" }), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const loaded = { loadHeaders: async () => headers };
+    assert.deepEqual(await submitSecondStep({ method: "code", code: "123456", extra: "x" }, fetcher, loaded), { kind: "signedIn", name: "Robin Example" });
+    assert.equal(sent[0].url, "/api/v1/session/second-step");
+    assert.equal(sent[0].init.method, "POST");
+    assert.deepEqual(sent[0].init.headers, headers);
+    assert.deepEqual(JSON.parse(sent[0].init.body), { method: "code", code: "123456" });
+    const wait = async () => new Response(JSON.stringify({ error: { code: "signin_wait", message: "x" } }), { status: 429, headers: { "retry-after": "60" } });
+    assert.deepEqual(await submitSecondStep({ method: "recovery", code: "x" }, wait, loaded), { kind: "restart", message: "Too many attempts. Wait 1 minute before trying again." });
+    const never = (_url, init) => new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted"))));
+    assert.deepEqual(await submitSecondStep({ method: "code", code: "123456" }, never, { timeoutMs: 20, ...loaded }), { kind: "refused", message: SIGN_IN_MESSAGES.network });
+  });
+});
+
+describe("an abandoned second step (pull request 13, review round 2)", () => {
+  const loaded = { loadHeaders: async () => ({ "content-type": "application/json" }), timeoutMs: 60_000 };
+  const input = { method: "code", code: "123456" };
+  // A fetch that answers only when the test lets it, and fails as a browser does when aborted.
+  function heldFetch() {
+    const state = { signal: null };
+    const fetcher = (_url, init) => new Promise((resolve, reject) => {
+      state.signal = init.signal;
+      state.answer = resolve;
+      init.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+    });
+    return { state, fetcher };
+  }
+
+  test("abandoned before its headers arrive: the request is aborted, the page learns nothing, and no session needs ending", async () => {
+    const { state, fetcher } = heldFetch();
+    const run = createSecondStepRun(fetcher, loaded);
+    const sent = run.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(run.abandon(), false, "no success had arrived");
+    assert.equal(state.signal.aborted, true, "the request was aborted");
+    assert.deepEqual(await sent, { kind: "refused", message: SIGN_IN_MESSAGES.network });
+  });
+
+  test("abandoned after a success's headers arrived, while its body is still coming: abandon answers true, so the page ends that session", async () => {
+    let releaseBody;
+    const body = new ReadableStream({ start(controller) { releaseBody = () => { controller.enqueue(new TextEncoder().encode('{"name":"Ada"}')); controller.close(); }; } });
+    let signal;
+    const fetcher = async (_url, init) => { signal = init.signal; return new Response(body, { status: 200 }); };
+    const run = createSecondStepRun(fetcher, loaded);
+    const sent = run.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(run.abandon(), true, "a success's headers had arrived");
+    assert.equal(signal.aborted, true);
+    releaseBody();
+    assert.equal((await sent).kind, "refused", "the abandoned reply is not acted on");
+  });
+
+  test("a 200 whose body misses the time limit is settled by the session (review round 3); an abandoned one is not", async () => {
+    const stalled = () => new Response(new ReadableStream({ start() {} }), { status: 200 });
+    const reads = [];
+    const reader = (session) => async () => { reads.push(session.kind); return session; };
+    const signedIn = { kind: "signedIn", name: "Ada", accountId: "a1", role: "member", installationName: "Site" };
+    assert.deepEqual(await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader(signedIn) }).send(input), { kind: "signedIn", name: "Ada" });
+    assert.deepEqual(
+      await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader({ kind: "signedOut", installationName: "Site" }) }).send(input),
+      { kind: "refused", message: SIGN_IN_MESSAGES.other },
+      "signed out: the existing refusal, no sign-in, and no session to end",
+    );
+    // A read that fails: the existing refusal, and the page is asked to end the session (review round 4).
+    assert.deepEqual(
+      await createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 30, sessionReader: reader({ kind: "unknown" }) }).send(input),
+      { kind: "refused", message: SIGN_IN_MESSAGES.other, endSession: true },
+      "unknown: the existing refusal, no sign-in, the session ended",
+    );
+    assert.deepEqual(reads, ["signedIn", "signedOut", "unknown"]);
+    // A complete 200 body of the wrong shape (an intermediary's page) stays a refusal; no session read.
+    reads.length = 0;
+    const page = await createSecondStepRun(async () => new Response("<html>maintenance</html>", { status: 200 }), { ...loaded, sessionReader: reader(signedIn) }).send(input);
+    assert.deepEqual(page, { kind: "refused", message: SIGN_IN_MESSAGES.other });
+    assert.deepEqual(reads, []);
+    // A 200 whose body is cut off (the stream errors) is settled by the session the same way (review layer).
+    reads.length = 0;
+    const cut = () => new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('{"na')); controller.error(new TypeError("connection reset")); } }), { status: 200 });
+    assert.deepEqual(await createSecondStepRun(async () => cut(), { ...loaded, sessionReader: reader(signedIn) }).send(input), { kind: "signedIn", name: "Ada" });
+    assert.deepEqual(reads, ["signedIn"]);
+    // A read that throws is treated as one that failed: the page is asked to end the session (review round 4).
+    assert.deepEqual(
+      await createSecondStepRun(async () => cut(), { ...loaded, sessionReader: async () => { throw new Error("read failed"); } }).send(input),
+      { kind: "refused", message: SIGN_IN_MESSAGES.other, endSession: true },
+    );
+    // Only that settling read's failure asks for it: an ordinary refusal and a request with no answer do not.
+    assert.equal((await createSecondStepRun(async () => Response.json(refusal("second_step_code_wrong"), { status: 401 }), loaded).send(input)).endSession, undefined);
+    assert.equal((await createSecondStepRun(async () => new Response("<html>maintenance</html>", { status: 200 }), loaded).send(input)).endSession, undefined);
+    const neverAnswers = (_url, init) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
+    assert.equal((await createSecondStepRun(neverAnswers, { ...loaded, timeoutMs: 20 }).send(input)).endSession, undefined);
+    const abandonedRun = createSecondStepRun(async () => stalled(), { ...loaded, timeoutMs: 60_000, sessionReader: reader(signedIn) });
+    const pending = abandonedRun.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    abandonedRun.abandon();
+    assert.equal((await pending).kind, "refused");
+  });
+
+  test("abandoned during the session read: the read's result is discarded and abandon answers true (review layer)", async () => {
+    let readStarted;
+    const started = new Promise((resolve) => { readStarted = resolve; });
+    let answerRead;
+    const sessionReader = () => { readStarted(); return new Promise((resolve) => { answerRead = resolve; }); };
+    const run = createSecondStepRun(async () => new Response(new ReadableStream({ start() {} }), { status: 200 }), { ...loaded, timeoutMs: 20, sessionReader });
+    const pending = run.send(input);
+    await started;
+    assert.equal(run.abandon(), true, "a success's headers had arrived");
+    answerRead({ kind: "signedIn", name: "Ada", accountId: "a1", role: "member", installationName: "Site" });
+    assert.deepEqual(await pending, { kind: "refused", message: SIGN_IN_MESSAGES.network }, "the signed-in read is not acted on");
+    // A read that fails after the abandon asks for no second sign-out: the page already signed out (review round 4).
+    for (const failing of [(resolve) => resolve({ kind: "unknown" }), (_resolve, reject) => reject(new Error("read failed"))]) {
+      let begun;
+      const begunRead = new Promise((resolve) => { begun = resolve; });
+      let settle;
+      const failingRun = createSecondStepRun(async () => new Response(new ReadableStream({ start() {} }), { status: 200 }), {
+        ...loaded,
+        timeoutMs: 20,
+        sessionReader: () => { begun(); return new Promise((resolve, reject) => { settle = () => failing(resolve, reject); }); },
+      });
+      const sent = failingRun.send(input);
+      await begunRead;
+      assert.equal(failingRun.abandon(), true);
+      settle();
+      assert.deepEqual(await sent, { kind: "refused", message: SIGN_IN_MESSAGES.network });
+    }
+  });
+
+  test("a refusal's headers, or a request that has already settled, never call for a sign-out", async () => {
+    const refusedRun = createSecondStepRun(async () => new Response(new ReadableStream({ start() {} }), { status: 401 }), loaded);
+    const pending = refusedRun.send(input);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(refusedRun.abandon(), false);
+    await pending;
+    const settledRun = createSecondStepRun(async () => Response.json({ name: "Ada" }), loaded);
+    assert.equal((await settledRun.send(input)).kind, "signedIn");
+    assert.equal(settledRun.abandon(), false);
   });
 });
 

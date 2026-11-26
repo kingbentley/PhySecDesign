@@ -48,6 +48,31 @@ describe("host configurations", () => {
     expect(code).toMatch(/embed "\.\.\/\.\.\/dist\/worker\/index\.js"/);
   });
 
+  it("self-hosted: binds DEPLOYMENT_KEY from the environment and never as a value in the file", () => {
+    // The text outside comments: a `#` outside a quoted string starts a comment to the line's end.
+    const code = selfhostText
+      .split(/\r?\n/)
+      .map((line) => {
+        let quoted = false;
+        for (let index = 0; index < line.length; index += 1) {
+          if (line[index] === '"') quoted = !quoted;
+          else if (line[index] === "#" && !quoted) return line.slice(0, index);
+        }
+        return line;
+      })
+      .join("\n");
+    // The Worker's bindings list (story 1.5, D-16).
+    const worker = code.slice(code.indexOf("const siteStudio"));
+    const bindings = worker.match(/bindings = \[([\s\S]*?)\n\s*\],/)?.[1];
+    expect(bindings).toBeDefined();
+    expect(bindings).toContain('(name = "DEPLOYMENT_KEY", fromEnvironment = "DEPLOYMENT_KEY")');
+    // Exactly one binding of that name anywhere, and of the kind fromEnvironment: never text,
+    // json, data or any other kind that would hold the key in the file.
+    const kinds = [...code.matchAll(/name\s*=\s*"DEPLOYMENT_KEY"\s*,\s*([A-Za-z]+)\s*=/g)].map((match) => match[1]);
+    expect(kinds).toEqual(["fromEnvironment"]);
+    expect(code.match(/"DEPLOYMENT_KEY"/g)).toHaveLength(2);
+  });
+
   it("uses the same compatibility date on both hosts", () => {
     const cloudflareDate = parseJsonc(wranglerText).compatibility_date;
     const selfhostDate = selfhostText.match(/compatibilityDate = "([0-9-]+)"/)?.[1];

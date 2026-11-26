@@ -35,9 +35,10 @@ test("the deadline also aborts a request whose headers arrived but whose body st
   let signal;
   const fetcher = async (_url, init) => {
     signal = init.signal;
+    // `postJson` reads the body as text, then parses it (review round 3).
     return {
       status: 200,
-      json() {
+      text() {
         reading.resolve();
         return pendingBody.promise;
       },
@@ -51,5 +52,17 @@ test("the deadline also aborts a request whose headers arrived but whose body st
 
   assert.equal(await result, NO_ANSWER);
   assert.equal(signal.aborted, true);
-  pendingBody.resolve({ inviterName: "Late reply" });
+  pendingBody.resolve('{"inviterName":"Late reply"}');
+});
+
+test("a body cut off before its end is marked unreadable, unlike one that is read and not JSON (review round 3)", async () => {
+  const cut = async () => new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('{"na'));
+      controller.error(new TypeError("connection reset"));
+    },
+  }), { status: 200 });
+  assert.deepEqual(await postJson(cut, URL, BODY, { timeoutMs: 1000, loadHeaders }), {
+    status: 200, body: null, bodyUnreadable: true, retryAfter: null,
+  });
 });

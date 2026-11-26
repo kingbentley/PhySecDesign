@@ -62,7 +62,7 @@ function wellFormedReviewLink(hash) {
 // Signed out, only a well-formed reviewer link skips sign-in, also when it arrives by a hash change
 // on the sign-in page (D-14); anything else shows the sign-in page. When the session read could not
 // be checked, the "Sign-in cannot be checked" page offers Try again (D-7 amended).
-function Signed({ session, onSignedIn, onSignedOut, onRetry }) {
+function Signed({ session, onSignedIn, onSignedOut, onSessionEnded, onRetry }) {
   const hash = useSyncExternalStore(observeHash, currentHash);
   if (session.kind === "signedIn" || session.kind === "none") {
     const access = readReviewLink(hash);
@@ -74,7 +74,7 @@ function Signed({ session, onSignedIn, onSignedOut, onRetry }) {
   const access = wellFormedReviewLink(hash);
   if (access) return <RevisionReviewPage key={hash} access={access}/>;
   if (session.kind === "unknown") return <Lazy page="sign-in"><SignInUnknown onRetry={onRetry}/></Lazy>;
-  return <Lazy page="sign-in"><SignInPage installationName={session.installationName} onSignedIn={onSignedIn}/></Lazy>;
+  return <Lazy page="sign-in"><SignInPage installationName={session.installationName} onSignedIn={onSignedIn} onSessionEnded={onSessionEnded}/></Lazy>;
 }
 
 // While the installation has no users, every address shows set-up at /setup (story 1.2). Once an
@@ -94,6 +94,10 @@ function Start() {
   const [session, setSession] = useState(null);
   const sessionNow = useRef(null);
   const installationName = useRef(null);
+  // The visibility check's generation (D-16, below): each check takes the next one, and a read whose
+  // generation is no longer the latest is ignored. Kept here, not in the effect, so a sign-out the
+  // sign-in page confirms can retire the reads already started (pull request 13, review round 5).
+  const sessionCheck = useRef(0);
   const live = useRef(true);
   useEffect(() => {
     live.current = true;
@@ -105,6 +109,15 @@ function Start() {
     if (next.installationName !== undefined) installationName.current = next.installationName;
     sessionNow.current = next;
     setSession(next);
+  }, []);
+
+  // The sign-in page confirmed a sign-out of a session the browser may hold (`endAbandonedSession`):
+  // a visibility read started before it may have found that session and must not open the app with
+  // it; reads started afterwards apply as usual. If one already applied it and the app is opening,
+  // the page reloads so it shows the truth (pull request 13, review round 5).
+  const sessionEnded = useCallback(() => {
+    sessionCheck.current += 1;
+    if (sessionNow.current?.kind === "signedIn") location.reload();
   }, []);
 
   const applySetupState = useCallback(async (state) => {
@@ -128,13 +141,13 @@ function Start() {
     if (signedState !== "signedIn" && signedState !== "signedOut") return undefined;
     let current = true;
     // Each check gets a generation; a read that an older check started and that finishes after a
-    // newer one began is ignored, so an out-of-date answer never replaces a newer one.
-    let generation = 0;
+    // newer one began, or after the sign-in page confirmed a sign-out (`sessionEnded`), is ignored,
+    // so an out-of-date answer never replaces a newer one.
     async function visible() {
       if (document.visibilityState !== "visible") return;
-      const mine = ++generation;
+      const mine = ++sessionCheck.current;
       const next = await readSession();
-      if (!current || mine !== generation || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
+      if (!current || mine !== sessionCheck.current || (next.kind !== "signedIn" && next.kind !== "signedOut")) return;
       const previous = sessionNow.current;
       // Accounts are told apart by their identifier, never their name (story 1.4, CAP-9).
       if (previous?.kind === "signedIn" && next.kind === "signedIn" && previous.accountId !== next.accountId
@@ -175,6 +188,7 @@ function Start() {
       // page again; a read that cannot be checked shows "Sign-in cannot be checked".
       onSignedIn={async () => applySession(await readSession())}
       onSignedOut={() => applySession({ kind: "signedOut", installationName: installationName.current })}
+      onSessionEnded={sessionEnded}
       onRetry={async () => applySession(await readSession())}
     />
   );

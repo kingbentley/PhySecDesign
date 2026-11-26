@@ -2,6 +2,7 @@ import { z } from "zod";
 import { acceptInput, INVITATION_ROLES, invitationSecretField, inviteInput } from "./invitation";
 import { SETUP_STATES, setupInput } from "./setup";
 import { signInInput } from "./signin";
+import { RECOVERY_CODE_COUNT, secondStepInput, twoStepConfirmInput, twoStepPasswordInput, twoStepRecoveryCodesInput } from "./twoStep";
 
 // Route declarations (AD-22). Every server address other than the app's own pages and files is
 // declared here with its method, path, input schema and reply schema. Only three address spaces
@@ -94,8 +95,53 @@ export const sessionReply = z.discriminatedUnion("signedIn", [
 
 export type SessionReply = z.infer<typeof sessionReply>;
 
-/** What a sign-in confirms: the account's name. The token and the marker travel only as cookies. */
-export const signInReply = z.object({ name: z.string() }).strict();
+/**
+ * What a sign-in confirms (story 1.5, D-12): the account's name, or, for an account with two-step
+ * verification on, that a second step is needed. The token, the marker and the pending token
+ * travel only as cookies.
+ */
+export const signInReply = z.union([z.object({ name: z.string() }).strict(), z.object({ secondStep: z.literal(true) }).strict()]);
+
+/** What a completed second step confirms: the account's name. The token and marker travel only as cookies. */
+export const secondStepReply = z.object({ name: z.string() }).strict();
+
+/** The signed-in account's two-step state (story 1.5, D-12). Never the secret or a code. */
+export const twoStepStateReply = z
+  .object({
+    enabled: z.boolean(),
+    recoveryCodesRemaining: z.number().int().min(0).max(RECOVERY_CODE_COUNT),
+    availability: z.enum(["available", "no_key", "key_mismatch"]),
+    email: z.string(),
+  })
+  .strict();
+
+/** A started set-up (D-10, D-12): the only reply that holds the authenticator secret (CAP-9). */
+export const twoStepStartReply = z
+  .object({
+    setupId: z.string(),
+    secret: z.string(),
+    otpauthUri: z.string(),
+    installationName: z.string(),
+    email: z.string(),
+  })
+  .strict();
+
+/** A new set of recovery codes, answered once: confirm and fresh codes only (CAP-9). */
+export const recoveryCodesReply = z.object({ recoveryCodes: z.array(z.string()).length(RECOVERY_CODE_COUNT) }).strict();
+
+/** What turning off confirms. */
+export const twoStepTurnOffReply = z.object({ enabled: z.literal(false) }).strict();
+
+/**
+ * The public key-state read (story 1.5, D-18 as ruled): whether a fingerprint is stored and whether
+ * the Worker's key is absent, present or matches it. Never the fingerprint or anything derived from the key.
+ */
+export const deploymentKeyStateReply = z
+  .object({
+    fingerprint: z.enum(["none", "stored"]),
+    key: z.enum(["none", "present", "matches", "mismatch"]),
+  })
+  .strict();
 
 /** What a sign-out confirms: the caller is no longer signed in (D-13). */
 export const signOutReply = z.object({ signedIn: z.literal(false) }).strict();
@@ -168,7 +214,22 @@ export const ROUTES = {
     path: "/api/v1/session/sign-in",
     input: signInInput,
     reply: signInReply,
-    summary: "Signs in with an email and password, setting the session cookie and the browser marker.",
+    summary:
+      "Signs in with an email and password, setting the session cookie and the browser marker; for an account with " +
+      "two-step verification on, answers that a second step is needed and sets only the pending sign-in cookie.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // The second sign-in step (story 1.5). Route class (story 1.8): person only.
+  secondStep: declareRoute({
+    id: "secondStep",
+    method: "POST",
+    path: "/api/v1/session/second-step",
+    input: secondStepInput,
+    reply: secondStepReply,
+    summary:
+      "Completes a pending sign-in with a code from the authenticator app or a recovery code, setting a new session cookie " +
+      "and the browser marker and clearing the pending sign-in cookie.",
     appOriginOnly: true,
     readsSessionCookie: true,
   }),
@@ -215,6 +276,76 @@ export const ROUTES = {
       "setting the session cookie and the browser marker.",
     appOriginOnly: true,
     readsSessionCookie: true,
+  }),
+  // Two-step verification for the signed-in account (story 1.5).
+  // Route class (story 1.8): person only.
+  twoStepState: declareRoute({
+    id: "twoStepState",
+    method: "GET",
+    path: "/api/v1/account/two-step",
+    input: z.object({}).strict(),
+    reply: twoStepStateReply,
+    summary:
+      "The signed-in account's two-step verification: whether it is on, the recovery codes left, whether it is available " +
+      "on this installation, and the account's email.",
+    readsSessionCookie: true,
+  }),
+  // Route class (story 1.8): person only.
+  twoStepStart: declareRoute({
+    id: "twoStepStart",
+    method: "POST",
+    path: "/api/v1/account/two-step/start",
+    input: twoStepPasswordInput,
+    reply: twoStepStartReply,
+    summary:
+      "Starts turning on two-step verification after the password: answers a new authenticator secret once, with its " +
+      "set-up identifier and authenticator address. Replaces any earlier set-up.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // Route class (story 1.8): person only.
+  twoStepConfirm: declareRoute({
+    id: "twoStepConfirm",
+    method: "POST",
+    path: "/api/v1/account/two-step/confirm",
+    input: twoStepConfirmInput,
+    reply: recoveryCodesReply,
+    summary: "Turns two-step verification on with the set-up's identifier and a current code; answers 10 recovery codes once.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // Route class (story 1.8): person only.
+  twoStepTurnOff: declareRoute({
+    id: "twoStepTurnOff",
+    method: "POST",
+    path: "/api/v1/account/two-step/turn-off",
+    input: twoStepPasswordInput,
+    reply: twoStepTurnOffReply,
+    summary: "Turns two-step verification off after the password, deleting the secret and every recovery code.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // Route class (story 1.8): person only.
+  twoStepRecoveryCodes: declareRoute({
+    id: "twoStepRecoveryCodes",
+    method: "POST",
+    path: "/api/v1/account/two-step/recovery-codes",
+    input: twoStepRecoveryCodesInput,
+    reply: recoveryCodesReply,
+    summary: "Replaces the recovery codes after the password and a current code; answers the 10 new codes once.",
+    appOriginOnly: true,
+    readsSessionCookie: true,
+  }),
+  // The deployment key's state (story 1.5, D-18 as ruled). Route class (story 1.8): public.
+  deploymentKeyState: declareRoute({
+    id: "deploymentKeyState",
+    method: "GET",
+    path: "/api/v1/deployment-key/state",
+    input: z.object({}).strict(),
+    reply: deploymentKeyStateReply,
+    summary:
+      "Whether this installation stores a deployment-key fingerprint and whether the Worker's key is absent, present or " +
+      "matches it. Public and read-only; never the fingerprint or anything derived from the key.",
   }),
 } as const;
 

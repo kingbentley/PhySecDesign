@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrandMark } from '../BrandMark.jsx';
 import { FIELD_HINTS, SETUP_FIELDS, checkSetupFields, submitSetup } from './setupClient.js';
 import { readSetupState } from './setupState.js';
@@ -45,9 +45,12 @@ function Frame({ children }) {
   );
 }
 
+// Focus moves that follow a reply or a newly shown view are layout effects, so focus has moved
+// before the person can start typing (story 1.5 spec 7: a passive effect can run after typing has
+// begun and lose keystrokes). Focus calls made straight in a handler stay as they are.
 function useFocusOnMount() {
   const ref = useRef(null);
-  useEffect(() => { ref.current?.focus(); }, []);
+  useLayoutEffect(() => { ref.current?.focus(); }, []);
   return ref;
 }
 
@@ -102,7 +105,7 @@ function SetupForm({ onDone, onClosed }) {
   const refs = useRef({});
   const generalRef = useRef(null);
   const focusField = (field) => refs.current[field]?.focus();
-  useEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
+  useLayoutEffect(() => { if (general.message) generalRef.current?.focus(); }, [general]);
 
   const change = (field) => (event) => {
     const value = event.target.value;

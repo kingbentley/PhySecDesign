@@ -1,0 +1,103 @@
+- id: "1"
+  title: Two-step rules, cryptography and the deployment-key guard
+  description: >-
+    Shared TOTP, base32, authenticator URI and recovery-code rules; HKDF, AES-GCM and the
+    fingerprint under DEPLOYMENT_KEY; the new refusals; the stored fingerprint and the public
+    deployment-key state. Owns criteria 23 and 26 (acceptance-trace.md).
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-6, D-7, D-9, D-14, D-15, D-18, D-22 and D-21 (refusal wording) as ruled in
+    decisions.md. No routes, pages or deploys. No key, secret or code in any file: tests
+    generate their own. Record each proving test's title in the spec file.
+- id: "2"
+  title: Two-step storage and account actions
+  description: >-
+    The installation object's two-step tables and operations: state, counted password and code
+    checks for account actions, start, confirm, turn off and fresh recovery codes. Owns criteria 10,
+    11, 24 and 28.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-5, D-6, D-9, D-10, D-12, D-15 and D-22. Reuse SignInStore's counting helpers; do
+    not copy them. Pinned operation lists in earlier tests change as brownfield.md lists.
+- id: "3"
+  title: The second sign-in step in the store
+  description: >-
+    completeSignIn's pending branch for two-step accounts, the pending table, and the second step
+    with a code or a recovery code under the shared counts and wait. Owns criteria 4, 14, 15 and 25.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-2, D-3, D-4, D-6, D-13, D-15 and D-22. Accounts without two-step verification sign
+    in exactly as before; story 1.3's store tests pass unchanged apart from the pinned writer list.
+- id: "4"
+  title: Routes and cookies
+  description: >-
+    The changed sign-in reply, the pending cookie, the second-step route, the five account
+    two-step routes and the deployment-key state route, with the Worker's key passed to the
+    object. Owns criteria 3, 5, 8, 16, 17, 18, 19 and 20.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-2, D-5, D-12, D-13, D-18 and D-22. Writes are never retried after a bare reset.
+    Every new non-GET route is appOriginOnly and readsSessionCookie. Run npm run test:browser too.
+- id: "5"
+  title: The self-hosted deployment key
+  description: >-
+    DEPLOYMENT_KEY from an environment variable in the self-hosted configuration, and smoke-suite
+    runs with a key across a restart, without one and with a changed key. Owns no criterion;
+    supporting evidence for criteria 3, 6, 11 and 23 (standing rule 7).
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-16 and D-22. Built right after spec 4. The key only in the workerd child's
+    environment, never in a file or the output.
+- id: "6"
+  title: The deploy command's deployment key
+  description: >-
+    The Cloudflare deploy command lists secrets, generates and shows the key only when absent,
+    uses an operator's key, restores and confirms a lost key, never replaces one, and says to run
+    one deploy at a time. Owns criteria 12, 13 and 22.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-17, D-18, D-22 and D-21 (deploy lines). Unit tests with fakes only; no Cloudflare
+    account is used. The set-up-code behaviour of story 1.2 is unchanged.
+- id: "7"
+  title: My account, set-up and the offer
+  description: >-
+    "My account" in the account menu with the two-step section, the turn-on flow with the QR code,
+    recovery codes with Copy and Download, fresh codes, turning off, the offer after accepting an
+    invitation, and their Playwright and axe tests. Owns criteria 1, 2, 7 and 9.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-1, D-7, D-8, D-10, D-11, D-12 and D-21. The only new dependencies are D-8's encoder
+    and one dev-only QR decoder (ruled exception, finding 8). Record the deliberate breakages'
+    failing test names in the spec file.
+- id: "8"
+  title: The second-step page
+  description: >-
+    The sign-in page's second step with a code or a recovery code, its refusals and the return to
+    the password form, the phone attributes, and their Playwright and axe tests. Owns criteria 6
+    and 27.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-3, D-13, D-20 and D-21. Navigate once per test; import browser-tests/two-step-helpers.mjs,
+    never another spec file.
+- id: "9"
+  title: Acceptance on Cloudflare
+  description: >-
+    A scripted run on the PhySec Site Studio test account: first deploy prints the key, redeploy
+    keeps it and an earlier two-step set-up still signs in, a supplied key is used, and the deploy
+    command's Wrangler assumptions, reply timing after a secret put and restore paths are shown for
+    real (checks 9 to 14, added 2026-11-23 from spec 6). Owns criterion 21.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Build to D-19, D-20 and D-17 as spec 6 built it. Ask Kevin before using the test account; check
+    the account and the three Worker names (15a, 15b, 15c) first; delete all three at the end. If
+    check 13 finds replies differing for 60 seconds or more, stop for the orchestrator. Never print,
+    log or store the key, codes or passwords beyond the deploy command's own one-time line.

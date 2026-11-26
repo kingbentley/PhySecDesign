@@ -8,9 +8,11 @@
 // (`postJson.js`, whose one deadline covers that load and the request).
 import { REFUSALS } from '../../shared/refusal.ts';
 import { NO_ANSWER, appHeaders, postJson } from './postJson.js';
+import { readSession } from './setupState.js';
 import { waitWording } from './waitWording.js';
 
 const SIGN_IN_URL = '/api/v1/session/sign-in';
+const SECOND_STEP_URL = '/api/v1/session/second-step';
 const SIGN_OUT_URL = '/api/v1/session/sign-out';
 
 /** The fields in page order: the order a refusal's focus follows. */
@@ -37,16 +39,29 @@ export function waitMessage(seconds) {
   return `Too many attempts. Wait ${waitWording(seconds)} before trying again.`;
 }
 
+/** A wait's seconds: the refusal's own, else the `Retry-After` header, else unknown. */
+function waitSeconds(error, retryAfter) {
+  if (Number.isFinite(error.retryAfterSeconds)) return error.retryAfterSeconds;
+  return retryAfter === null || retryAfter === undefined ? undefined : Number(retryAfter);
+}
+
+/** The refusal's own message, or `shared/refusal.ts`'s for its code when the reply has none. */
+function refusalMessage(error, code) {
+  return typeof error.message === 'string' && error.message ? error.message : REFUSALS[code].message;
+}
+
 /**
  * Maps a sign-in reply to what the page shows. `body` is the parsed JSON or `null`;
  * `retryAfter` is the `Retry-After` header or `null`. Returns one of
- * `{ kind: 'signedIn', name }`, `{ kind: 'field', field }` (the page words the field's message)
- * or `{ kind: 'refused', message }`.
+ * `{ kind: 'signedIn', name }`, `{ kind: 'secondStep' }` (story 1.5, D-12: the account has two-step
+ * verification on, and the page asks for a code), `{ kind: 'field', field }` (the page words the
+ * field's message) or `{ kind: 'refused', message }`.
  */
 export function signInOutcome(status, body, retryAfter = null) {
   if (status >= 200 && status < 300) {
     const keys = body && typeof body === 'object' ? Object.keys(body) : [];
     if (keys.length === 1 && typeof body.name === 'string') return { kind: 'signedIn', name: body.name };
+    if (keys.length === 1 && body.secondStep === true) return { kind: 'secondStep' };
     return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
   }
   const error = body?.error ?? {};
@@ -54,12 +69,8 @@ export function signInOutcome(status, body, retryAfter = null) {
     case 'signin_failed':
       // The server's own words: one message for every email, account and fault (CAP-2).
       return { kind: 'refused', message: typeof error.message === 'string' && error.message ? error.message : SIGN_IN_MESSAGES.failed };
-    case 'signin_wait': {
-      const seconds = Number.isFinite(error.retryAfterSeconds)
-        ? error.retryAfterSeconds
-        : retryAfter === null || retryAfter === undefined ? undefined : Number(retryAfter);
-      return { kind: 'refused', message: waitMessage(seconds) };
-    }
+    case 'signin_wait':
+      return { kind: 'refused', message: waitMessage(waitSeconds(error, retryAfter)) };
     case 'signin_busy':
       return { kind: 'refused', message: SIGN_IN_MESSAGES.busy };
     case 'invalid_input':
@@ -78,6 +89,56 @@ export function signInOutcome(status, body, retryAfter = null) {
     default:
       return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
   }
+}
+
+/**
+ * Maps a second-step reply (story 1.5, D-13) to what the page shows, as `signInOutcome` does.
+ * Returns one of
+ * - `{ kind: 'signedIn', name }`: the code was right, a session is set;
+ * - `{ kind: 'refused', message }`: a wrong or used code or recovery code, or any other failure;
+ *   the page stays on the second step and keeps the field's value;
+ * - `{ kind: 'restart', message }`: the pending sign-in has ended (`second_step_expired`, or a wait
+ *   began, `signin_wait`); the page returns to the password form with the message;
+ * - `{ kind: 'keyMismatch', message }`: codes cannot be checked on this installation; the page
+ *   offers the recovery code (finding 26);
+ * - `{ kind: 'field', field: 'code' }`: the server did not accept the field's form.
+ * No message holds what was typed.
+ */
+export function secondStepOutcome(status, body, retryAfter = null) {
+  if (status >= 200 && status < 300) {
+    const keys = body && typeof body === 'object' ? Object.keys(body) : [];
+    if (keys.length === 1 && typeof body.name === 'string') return { kind: 'signedIn', name: body.name };
+    return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
+  }
+  const error = body?.error ?? {};
+  switch (error.code) {
+    case 'second_step_code_wrong':
+    case 'second_step_recovery_code_wrong':
+      return { kind: 'refused', message: refusalMessage(error, error.code) };
+    case 'second_step_expired':
+      return { kind: 'restart', message: refusalMessage(error, error.code) };
+    case 'signin_wait':
+      return { kind: 'restart', message: waitMessage(waitSeconds(error, retryAfter)) };
+    case 'deployment_key_mismatch':
+      return { kind: 'keyMismatch', message: refusalMessage(error, error.code) };
+    case 'invalid_input':
+      if (error.field === 'code') return { kind: 'field', field: 'code' };
+      return { kind: 'refused', message: SIGN_IN_MESSAGES.invalid_input };
+    default:
+      // Every other code and a reply of no known shape, worded as for the first step.
+      return signInOutcome(status, body, retryAfter);
+  }
+}
+
+/**
+ * Sends the second step `{ method: 'code' | 'recovery', code }` (the code already normalised by the
+ * page); resolves as `secondStepOutcome` does, or refused with the network message when there is no
+ * answer within the deadline.
+ */
+export async function submitSecondStep(input, fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders, signal, onResponse } = {}) {
+  const reply = await postJson(fetcher, SECOND_STEP_URL, JSON.stringify({ method: input.method, code: input.code }), { timeoutMs, loadHeaders, signal, onResponse });
+  if (reply === NO_ANSWER) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+  return secondStepOutcome(reply.status, reply.body, reply.retryAfter);
 }
 
 /** True only when the sign-out reply confirms the caller is no longer signed in (E-6). */
@@ -100,6 +161,61 @@ export async function submitSignIn(input, fetcher = fetch, { timeoutMs = SIGN_IN
   const reply = await postJson(fetcher, SIGN_IN_URL, JSON.stringify(input), { timeoutMs, loadHeaders });
   if (reply === NO_ANSWER) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
   return signInOutcome(reply.status, reply.body, reply.retryAfter);
+}
+
+/**
+ * One second-step request that the page can abandon (pull request 13, review round 2; orchestrator
+ * ruling of 2026-11-24): `send(input)` resolves to the outcomes `secondStepOutcome` gives, except
+ * that a 200 whose body did not arrive is settled by a session read (see below), and a refusal from a
+ * read that failed carries `endSession: true` (the page then ends the session the browser may hold,
+ * as "Back to sign in" does; review round 4); `abandon()` aborts
+ * it, so a reply whose headers have not arrived is dropped by the browser with its cookies, and
+ * answers true only when a success's headers had already arrived (the browser then holds the
+ * session the server set, which the page must end). A request that has already settled is not
+ * abandoned (false).
+ */
+export function createSecondStepRun(fetcher = fetch, { timeoutMs = SIGN_IN_TIMEOUT_MS, loadHeaders = appHeaders, sessionReader = readSession } = {}) {
+  const controller = new AbortController();
+  let status = null;
+  let settled = false;
+  async function send(input) {
+    const reply = await postJson(fetcher, SECOND_STEP_URL, JSON.stringify({ method: input.method, code: input.code }), {
+      timeoutMs,
+      loadHeaders,
+      signal: controller.signal,
+      onResponse: (response) => { status = response.status; },
+    });
+    const bodyMissing = reply === NO_ANSWER ? status === 200 && !controller.signal.aborted : reply.status === 200 && reply.bodyUnreadable;
+    if (reply !== NO_ANSWER && !bodyMissing) return secondStepOutcome(reply.status, reply.body, reply.retryAfter);
+    if (!bodyMissing) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+    // A 200 whose body did not arrive (the time limit passed, or it was cut off): its headers may
+    // have set the session, or may be an intermediary's. The session read tells: signed in is a
+    // sign-in (the name from the session); signed out, or a read that fails, is the existing
+    // refusal. A complete body of the wrong shape stays a refusal (pull request 13, review round 3;
+    // orchestrator ruling of 2026-11-25). A read that fails (or throws) cannot rule out that the
+    // browser holds the session, so its refusal asks the page to end it (`endSession`; review round
+    // 4, orchestrator ruling of 2026-11-25); signed out needs no sign-out. The read runs inside this
+    // run but takes no signal (it has its own deadline): leaving the second step meanwhile discards
+    // its result, and the page signs out as on any abandon.
+    let session;
+    try {
+      session = await sessionReader(fetcher);
+    } catch {
+      session = { kind: 'unknown' };
+    }
+    if (controller.signal.aborted) return { kind: 'refused', message: SIGN_IN_MESSAGES.network };
+    if (session.kind === 'signedIn') return { kind: 'signedIn', name: session.name };
+    if (session.kind === 'signedOut') return { kind: 'refused', message: SIGN_IN_MESSAGES.other };
+    return { kind: 'refused', message: SIGN_IN_MESSAGES.other, endSession: true };
+  }
+  return {
+    send: (input) => send(input).finally(() => { settled = true; }),
+    abandon() {
+      if (settled) return false;
+      controller.abort();
+      return status === 200;
+    },
+  };
 }
 
 /**

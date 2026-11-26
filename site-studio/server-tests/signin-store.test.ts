@@ -23,6 +23,7 @@ import { callObject } from "../server/objects/call";
 import type { ObjectBase } from "../server/objects/ObjectBase";
 import { BELOW_THRESHOLD_CLEAR_MS, MARKER_MAX_AGE_MS, SESSION_MAX_AGE_MS, SIGNIN_TICKET_TTL_MS } from "../shared/signin";
 import { tableExists } from "./helpers";
+import { newDeploymentKey, TWO_STEP_OPERATIONS, twoStepFixtures } from "./two-step-fixtures";
 
 // The installation object's sign-in storage (story 1.3, spec 1): the I/O matrix's store rows, the
 // ticket binding and its expiry, the stand-in refusal, HMAC email keys, the marker count, clearing,
@@ -476,6 +477,7 @@ describe("completing an attempt", () => {
     expect(before.byAddress).toHaveLength(5);
     const done = signedIn(await completeAt(name, ticketOf(attempt), "success", now));
     expect(done).toEqual({
+      kind: "signedIn",
       identifier: await identifierOf(name),
       sessionToken: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/),
       marker: expect.any(String),
@@ -801,7 +803,7 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
     expect(await sessionsOf(name)).toHaveLength(2);
   });
 
-  it("is changed only by completeSignIn, acceptInvitation, endSession and the bounded pruning; sessionInfo changes nothing", async () => {
+  it("is changed only by completeSignIn, acceptInvitation, secondStep, endSession and the bounded pruning; sessionInfo changes nothing", async () => {
     const name = "sessions-operations";
     const fingerprint = await setupCodeFingerprint("a-set-up-code-for-this-test");
     await seedUser(name, "dana@acme.test");
@@ -810,16 +812,25 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
     const operations = await runInDurableObject(stubFor(name), (instance: Installation) => [...instance.ops.keys()].sort());
     expect(operations).toEqual([
       "acceptInvitation",
+      "accountCheck",
       "completeSignIn",
+      "confirmTwoStep",
       "createFirstAdministrator",
       "createInvitation",
+      "deploymentKeyState",
+      "discardPending",
       "endSession",
       "invitationInfo",
+      "renewRecoveryCodes",
+      "secondStep",
       "sessionInfo",
       "setupAttempt",
       "setupState",
       "signInAttempt",
+      "startTwoStep",
       "status",
+      "turnOffTwoStep",
+      "twoStepState",
     ]);
 
     const call = (operation: string, input: unknown) => callObject(env.INSTALLATION, idFor(name), operation, input);
@@ -839,6 +850,9 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
       endSession: async () => ({ cookies: live.cookies }),
       createInvitation: async () => ({ email: "invited@acme.test", name: "Invited Person", role: "standard", cookies: live.cookies }),
       invitationInfo: async () => ({ secretHash: "c".repeat(64) }),
+      deploymentKeyState: async () => ({}),
+      // Discards only a presented pending sign-in (D-3; pull request 13, review round 1).
+      discardPending: async () => ({ cookies: live.cookies }),
       acceptInvitation: async () => {
         const created = await call("createInvitation", { email: "accepting@acme.test", name: "Accepting Person", role: "standard", cookies: live.cookies });
         if (!created.ok) throw new Error(created.body.error.code);
@@ -846,16 +860,25 @@ describe("the sessions table (CAP-3, CAP-11, CA-47)", () => {
         const passwordHash = { algorithm: "scrypt", n: 131_072, r: 8, p: 1, keyLength: 32, salt: randomBase64(16), hash: randomBase64(32) };
         return { secretHash: await invitationSecretHash(secret), name: "Accepting Person", passwordHash, cookies: {} };
       },
+      // Two-step verification (story 1.5, specs 2 and 3): of these only secondStep changes the
+      // sessions table (D-10, CA-47).
+      ...twoStepFixtures(call, () => live.cookies, newDeploymentKey()),
     };
     const changed: string[] = [];
-    // endSession last, so the live session is there for the others.
-    for (const operation of [...operations.filter((op) => op !== "endSession"), "endSession"]) {
+    // The two-step operations in the order their fixtures need; endSession last, so the live session
+    // is there for the others.
+    const twoStepOperations: readonly string[] = TWO_STEP_OPERATIONS;
+    const order = [...operations.filter((op) => op !== "endSession" && !twoStepOperations.includes(op)), ...TWO_STEP_OPERATIONS, "endSession"];
+    expect([...order].sort()).toEqual(operations);
+    for (const operation of order) {
       const input = await fixtures[operation]!();
       const before = await sessionsOf(name);
-      await call(operation, input);
+      const result = await call(operation, input);
+      // Each two-step operation must succeed, so its success is what the sessions table is compared against.
+      if (twoStepOperations.includes(operation)) expect(result.ok, `${operation}: ${result.ok ? "" : result.body.error.code}`).toBe(true);
       if (JSON.stringify(await sessionsOf(name)) !== JSON.stringify(before)) changed.push(operation);
     }
-    expect(changed.sort()).toEqual(["acceptInvitation", "completeSignIn", "endSession"]);
+    expect(changed.sort()).toEqual(["acceptInvitation", "completeSignIn", "endSession", "secondStep"]);
 
     // The pruning: an attempt or a completion removes an expired session row; the read does not.
     const expiredHash = "e".repeat(64);

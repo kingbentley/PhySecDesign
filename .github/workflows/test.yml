@@ -40,7 +40,7 @@ jobs:
     # Playwright in desktop Chromium and in WebKit with an iPhone profile, with axe (K24, story 1.2).
     # Each project's server gets a set-up code generated for the run; none is stored in the repository.
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: site-studio
