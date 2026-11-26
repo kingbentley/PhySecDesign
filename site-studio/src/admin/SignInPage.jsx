@@ -95,8 +95,11 @@ export function SignInUnknown({ onRetry }) {
   );
 }
 
-/** The sign-in page. `onSignedIn({ name })` opens the app once the server has signed the person in. */
-export default function SignInPage({ installationName, onSignedIn }) {
+/**
+ * The sign-in page. `onSignedIn({ name })` opens the app once the server has signed the person in;
+ * `onSessionEnded()` is told when `endAbandonedSession` confirms a sign-out (review round 5).
+ */
+export default function SignInPage({ installationName, onSignedIn, onSessionEnded }) {
   useDocumentTitle('Sign in · Site Survey Design');
   const [values, setValues] = useState({ email: '', password: '' });
   // Which form is shown: the password form, or the second step asking for a code from the
@@ -273,10 +276,13 @@ export default function SignInPage({ installationName, onSignedIn }) {
       } catch {
         confirmed = false;
       }
-      if (!confirmed) { if (!retry) leftSessionUnended.current = true; }
+      if (!confirmed) { if (!retry) leftSessionUnended.current = true; return; }
+      // A visibility read started before this confirmation may have found the session: it is not
+      // applied (pull request 13, review round 5).
+      onSessionEnded?.();
       // The app may have opened meanwhile (the visibility check found the session): it is reloaded
       // so it shows the truth, as `endLeftSession` does (pull request 13, review round 3).
-      else if (!mounted.current) window.location.reload();
+      if (!mounted.current) window.location.reload();
     })();
     leftSessionEnding.current = ending;
     ending.finally(() => { if (leftSessionEnding.current === ending) leftSessionEnding.current = null; });

@@ -730,7 +730,10 @@ test("In flight, a success's headers already arrived when the person goes back: 
  * The page's first second-step fetch goes to the real server and completes (the browser stores the
  * session cookie), but the page gets its body cut off part-way; from then on the page's session
  * reads fail as a network error does, until `window.__failSessionReads` is set false. Every other
- * request goes through (review round 4).
+ * request goes through (review round 4). While `window.__holdSessionReads` is set, a session read
+ * goes to the server and is answered there, but the page gets the reply only at
+ * `window.__releaseSessionRead()`; `window.__heldReadSignedIn` says what the server answered (review
+ * round 5).
  */
 async function cutSecondStepAndFailReads(page) {
   await page.addInitScript((path) => {
@@ -740,6 +743,12 @@ async function cutSecondStepAndFailReads(page) {
       if (url.pathname === "/api/v1/session" && window.__failSessionReads) {
         window.__failedReads = (window.__failedReads ?? 0) + 1;
         throw new TypeError("Failed to fetch");
+      }
+      if (url.pathname === "/api/v1/session" && window.__holdSessionReads) {
+        const real = await realFetch(input, init);
+        window.__heldReadSignal = init.signal;
+        window.__heldReadSignedIn = (await real.clone().json()).signedIn;
+        return new Promise((resolve) => { window.__releaseSessionRead = () => resolve(real); });
       }
       if (url.pathname !== path || window.__cutDone) return realFetch(input, init);
       const real = await realFetch(input, init);
@@ -802,6 +811,71 @@ test("A correct code's 200 cut off and the session read failing (review round 4)
   const session = await context.request.get(`${server.origin}/api/v1/session`);
   expect((await session.json()).signedIn, "the session read answers signed out").toBe(false);
   expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+});
+
+test("A visibility read that found the session before the failed-read sign-out was confirmed (review round 5): its answer, arriving after the confirmation, does not open the app; the refusal stays on the code form, and a later read applies", async ({ page, playwright }, testInfo) => {
+  const [server] = servers(testInfo);
+  const context = page.context();
+  const account = await accountThroughApi(playwright, server.origin, { email: emailFor("staleread", testInfo), name: "Stella Stale", password: PASSWORD });
+  const other = await accountThroughApi(playwright, server.origin, { email: emailFor("laterread", testInfo), name: "Lars Later", password: PASSWORD, twoStep: false });
+  await countBodiesRead(page);
+  // The sign-out's reply is read as text (`postJson.js`): counted here, so the test knows the page has its confirmation.
+  await page.addInitScript(() => {
+    const read = Response.prototype.text;
+    Response.prototype.text = async function text() {
+      try {
+        return await read.call(this);
+      } finally {
+        if (new URL(this.url, location.href).pathname === "/api/v1/session/sign-out") window.__signOutsRead = (window.__signOutsRead ?? 0) + 1;
+      }
+    };
+  });
+  await cutSecondStepAndFailReads(page);
+  // The failed read's sign-out is held, so a visibility read can be answered while the browser still holds the session.
+  let releaseSignOut;
+  const signOutHeld = new Promise((resolve) => { releaseSignOut = resolve; });
+  await page.route((url) => new URL(url).pathname === "/api/v1/session/sign-out", async (route) => {
+    await signOutHeld;
+    await route.continue();
+  });
+  await openSecondStep(page, server.origin, account);
+  await codeField(page).fill((await nextCode(account.secret, account.step)).code);
+  const signOutSent = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/v1/session/sign-out", { timeout: 20_000 });
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  await signOutSent;
+  await expect(page.locator('[role="alert"]')).toHaveText("Sign-in could not be completed. Try again.");
+  // The tab's visibility check (D-16) reads the session; the server answers while the sign-out is held.
+  await page.evaluate(() => { window.__failSessionReads = false; window.__holdSessionReads = true; });
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await page.waitForFunction(() => window.__heldReadSignedIn !== undefined);
+  expect(await page.evaluate(() => window.__heldReadSignedIn), "the held read found the session").toBe(true);
+  await page.evaluate(() => { window.__holdSessionReads = false; });
+  // The sign-out is answered and the page has read its body (the confirmation) before the read's reply reaches it.
+  const signedOut = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/v1/session/sign-out");
+  releaseSignOut();
+  expect((await signedOut).status(), "the sign-out was answered").toBe(200);
+  await page.waitForFunction(() => (window.__signOutsRead ?? 0) >= 1);
+  await afterFrames(page);
+  const readsBefore = await page.evaluate(() => window.__bodiesRead?.["/api/v1/session"] ?? 0);
+  // Released before the read's own 5-second deadline (`readSession`) aborted it; an aborted read answers
+  // "cannot be checked", which the page ignores whatever the fix, so the test would prove nothing.
+  const abortedAtRelease = await page.evaluate(() => { const aborted = window.__heldReadSignal?.aborted === true; window.__releaseSessionRead(); return aborted; });
+  expect(abortedAtRelease, "the held read was still live when released").toBe(false);
+  await page.waitForFunction((before) => (window.__bodiesRead?.["/api/v1/session"] ?? 0) > before, readsBefore);
+  await afterFrames(page);
+  await expect(page.getByTestId("account-name")).toHaveCount(0);
+  await expect(secondHeading(page)).toBeVisible();
+  await expect(page.locator('[role="alert"]')).toHaveText("Sign-in could not be completed. Try again.");
+  expect(await cookiesNamed(context, SESSION_COOKIE)).toEqual([]);
+  // A read started after the confirmation applies as usual: signed in from another tab, the app opens.
+  const tab = await context.newPage();
+  await tab.setExtraHTTPHeaders({ "CF-Connecting-IP": addressFor(testInfo) });
+  await tab.goto(`${server.origin}/`);
+  await passwordStep(tab, other);
+  await expect(tab.getByTestId("account-name")).toHaveText(other.name);
+  await tab.close();
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await expect(page.getByTestId("account-name")).toHaveText(other.name);
 });
 
 test("The failed-read sign-out not confirmed (review round 4): a code submit and, after Back, a password submit both wait for it; the code is never sent, and the sign-in waits for the one retry's reply", async ({ page, playwright }, testInfo) => {
